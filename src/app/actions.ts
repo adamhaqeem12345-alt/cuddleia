@@ -5,8 +5,7 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
-import { Product, products } from '@/lib/products';
-import { determinePaymentGateway } from '@/ai/flows/determine-payment-gateway';
+import { Product } from '@/lib/products';
 import { headers } from 'next/headers';
 
 
@@ -37,6 +36,13 @@ async function getCountryFromIP() {
     }
 }
 
+function determinePaymentGateway(countryCode: string): 'ToyyibPay' | 'PayPal' {
+    if (countryCode === 'MY') {
+        return 'ToyyibPay';
+    }
+    return 'PayPal';
+}
+
 
 export async function createOrder(
   product: Product,
@@ -55,9 +61,9 @@ export async function createOrder(
   }
   
   try {
-     // 1. Determine payment gateway using AI
+     // 1. Determine payment gateway
     const userCountry = await getCountryFromIP();
-    const paymentMethod = await determinePaymentGateway(userCountry);
+    const paymentMethod = determinePaymentGateway(userCountry);
 
     // 2. Send initial email immediately
     const transporter = nodemailer.createTransport({
@@ -89,7 +95,6 @@ export async function createOrder(
     // 3. Handle Payment Gateway
     if (paymentMethod === 'ToyyibPay') {
         const billAmount = Math.round(product.price * 100);
-        // Pass customer info in bill-related parameters for ToyyibPay to use
         const billExternalReferenceNo = JSON.stringify({
             productId: product.id,
             customerName,
@@ -134,7 +139,13 @@ export async function createOrder(
     } else { // PayPal
         const orderId = `order_${Date.now()}`;
         const url = PAYPAL_URL;
-        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success?method=paypal&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/&custom=${orderId}` };
+        const customData = JSON.stringify({
+          orderId,
+          productId: product.id,
+          customerName,
+          customerEmail,
+        });
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success?method=paypal&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/&custom=${encodeURIComponent(customData)}` };
 
     }
 
@@ -153,6 +164,7 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
       try {
         const { productId, customerName, customerEmail } = JSON.parse(refno);
 
+        const { products } = await import('@/lib/products');
         const product = products.find(p => p.id === productId);
         if (!product) {
           console.error(`Product with ID ${productId} not found.`);
@@ -203,5 +215,60 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
       }
     } else {
       console.log(`ToyyibPay payment for bill ${billcode} was not successful. Status: ${billpayment_status}`);
+    }
+}
+
+export async function processPaypalSuccess(custom: string) {
+    try {
+        const { productId, customerName, customerEmail, orderId } = JSON.parse(decodeURIComponent(custom));
+
+        const { products } = await import('@/lib/products');
+        const product = products.find(p => p.id === productId);
+        if (!product) {
+          console.error(`Product with ID ${productId} not found.`);
+          return;
+        }
+
+        const orderRef = await addDoc(collection(db, 'orders'), {
+            customerName,
+            customerEmail,
+            productId,
+            paymentMethod: 'PayPal',
+            status: 'Paid',
+            createdAt: serverTimestamp(),
+            productName: product.name,
+            price: product.price,
+            paypalOrderId: orderId,
+        });
+
+        console.log(`Saved successful PayPal order ${orderRef.id} to Firestore.`);
+
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.zoho.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.ZOHO_EMAIL,
+                pass: process.env.ZOHO_PASSWORD,
+            },
+        });
+
+        await transporter.sendMail({
+          from: `Cuddleia <${process.env.ZOHO_EMAIL}>`,
+          to: customerEmail,
+          subject: 'Your Cuddleia Digital Product is Here!',
+          html: `
+            <h1>Thank you for your purchase, ${customerName}!</h1>
+            <p>Your payment has been confirmed. You can now download your digital product using the link below:</p>
+            <h2>${product.name}</h2>
+            <a href="${product.downloadUrl}" target="_blank">Download Now</a>
+            <p>If you have any questions, feel free to reply to this email.</p>
+            <p>With love,<br>The Cuddleia Team</p>
+          `,
+        });
+        console.log(`Digital product email sent for PayPal order ${orderRef.id}`);
+
+    } catch (error) {
+        console.error('Error processing successful PayPal payment:', error);
     }
 }
