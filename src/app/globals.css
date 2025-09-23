@@ -6,19 +6,19 @@
 @layer base {
   :root {
     --background: 350 100% 97%; /* Soft, light pink from image background */
-    --foreground: 320 30% 40%;  /* Muted purple from 'CUDDLEA' text */
+    --foreground: 320 40% 30%;  /* Darker, more saturated purple */
     --card: 350 80% 99%;
-    --card-foreground: 320 30% 40%;
+    --card-foreground: 320 40% 30%;
     --popover: 0 0% 100%;
-    --popover-foreground: 320 30% 40%;
+    --popover-foreground: 320 40% 30%;
     --primary: 340 80% 70%; /* Brighter pink from image stripes */
-    --primary-foreground: 320 30% 20%;
+    --primary-foreground: 320 50% 15%; /* Darker for primary button text */
     --secondary: 130 15% 90%; /* Soft sage green from leaves */
-    --secondary-foreground: 130 15% 30%;
+    --secondary-foreground: 130 25% 25%; /* Darker green for secondary button text */
     --muted: 350 60% 96%;
-    --muted-foreground: 350 15% 45%;
+    --muted-foreground: 350 15% 40%; /* Darker muted text */
     --accent: 350 100% 98%;   /* Very light pink for accents */
-    --accent-foreground: 340 80% 50%;
+    --accent-foreground: 340 80% 45%; /* Darker accent text */
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 350 20% 88%;
@@ -33,17 +33,17 @@
   }
   .dark {
     --background: 320 10% 15%; /* Dark purple-maroon for dark mode */
-    --foreground: 0 0% 95%;
+    --foreground: 0 0% 98%; /* Lighter for high contrast */
     --card: 320 10% 20%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 0 0% 98%;
     --popover: 24 8% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover-foreground: 0 0% 98%;
     --primary: 340 80% 70%; /* Pink remains the primary color */
     --primary-foreground: 320 30% 20%;
     --secondary: 130 15% 25%;
-    --secondary-foreground: 130 15% 90%;
+    --secondary-foreground: 130 15% 95%; /* Lighter secondary text */
     --muted: 24 5% 20%;
-    --muted-foreground: 24 5% 65%;
+    --muted-foreground: 24 5% 70%; /* Lighter muted text */
     --accent: 340 15% 25%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
