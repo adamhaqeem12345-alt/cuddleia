@@ -1,33 +1,16 @@
 
 'use client';
 
-import { Suspense, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { CheckCircle, Mail, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { processPaypalSuccess } from '@/app/actions';
 
 function SuccessContent() {
-  const searchParams = useSearchParams();
-  
-  useEffect(() => {
-    // PayPal's "return" URL does not have server-side reliability like IPN or webhooks.
-    // We get the payment details from the query params when the user is redirected back.
-    // This is less secure than a webhook, but simpler for this use case.
-    const method = searchParams.get('method');
-    const custom = searchParams.get('custom'); // This is from our original PayPal button data
-
-    // Only process if it's a PayPal return and we have the custom data.
-    // ToyyibPay is handled by its server-to-server callback.
-    if (method === 'paypal' && custom) {
-      console.log('Processing PayPal success on client...');
-      // We call the server action to record the sale and send the email.
-      // Don't await, let it run in the background.
-      processPaypalSuccess(custom);
-    }
-  }, [searchParams]);
+  // Fulfillment is now handled entirely by server-to-server webhooks (ToyyibPay callback & PayPal IPN).
+  // This page is just a confirmation for the user. The email with the download link
+  // will be sent automatically by the server once payment is confirmed.
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 p-4">
