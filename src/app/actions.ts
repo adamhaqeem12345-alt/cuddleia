@@ -17,9 +17,11 @@ const orderSchema = z.object({
 });
 
 function getAppUrl() {
-    const host = headers().get('host');
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-    return `${protocol}://${host}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) {
+        throw new Error("NEXT_PUBLIC_APP_URL is not set in the environment variables.");
+    }
+    return appUrl;
 }
 
 async function getCountryFromIP() {
@@ -54,6 +56,7 @@ export async function createOrder(
 ): Promise<{ error?: string }> {
   const customerName = formData.get('customerName') as string;
   const customerEmail = formData.get('customerEmail') as string;
+  
   const appUrl = getAppUrl();
 
   const product = products.find(p => p.id === productId);
@@ -112,7 +115,8 @@ export async function createOrder(
 
     if (paymentMethod === 'ToyyibPay') {
         const billAmount = Math.round(product.price * 100);
-        const billExternalReferenceNo = `${product.id}|${customerName}|${customerEmail}|${orderId}`;
+        // IMPORTANT: ToyyibPay's refno has a limit. Let's create a simple reference string.
+        const billExternalReferenceNo = `${orderId}|${product.id}|${customerName}|${customerEmail}`;
 
 
         const toyyibpayResponse = await fetch('https://toyyibpay.com/index.php/api/createBill', {
@@ -150,7 +154,7 @@ export async function createOrder(
         }
 
     } else { // PayPal
-        const customData = `${product.id}|${customerName}|${customerEmail}|${orderId}`;
+        const customData = `${orderId}|${product.id}|${customerName}|${customerEmail}`;
         const paypalParams = new URLSearchParams({
             cmd: '_xclick',
             business: process.env.PAYPAL_MERCHANT_EMAIL!,
@@ -247,9 +251,9 @@ export async function processToyyibpayCallback(refno: string, billcode: string, 
     // status '1' means successful payment
     if (status === '1') { 
       try {
-        const [productId, customerName, customerEmail, orderId] = refno.split('|');
+        const [orderId, productId, customerName, customerEmail] = refno.split('|');
 
-        if (!productId || !customerName || !customerEmail || !orderId) {
+        if (!orderId || !productId || !customerName || !customerEmail) {
           console.error(`[ToyyibPay Callback] Could not parse refno: ${refno}`);
           return;
         }
@@ -272,9 +276,9 @@ export async function processPaypalIPN(ipnData: any) {
         }
 
         const custom = ipnData.custom;
-        const [productId, customerName, customerEmail, orderId] = custom.split('|');
+        const [orderId, productId, customerName, customerEmail] = custom.split('|');
 
-        if (!productId || !customerName || !customerEmail || !orderId) {
+        if (!orderId || !productId || !customerName || !customerEmail) {
           console.error(`[PayPal IPN] Could not parse custom field: ${custom}`);
           return;
         }
