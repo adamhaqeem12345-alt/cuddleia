@@ -34,19 +34,12 @@ export async function createOrder(
   if (!validation.success) {
     return { error: validation.error.errors.map(e => e.message).join(', ') };
   }
+  
+  const { productName, price } = product;
+  const orderId = `order_${Date.now()}`; // Generate a temporary unique ID
 
   try {
-    // 1. Save order to Firestore
-    const orderRef = await addDoc(collection(db, 'orders'), {
-      ...validation.data,
-      status: 'Pending',
-      createdAt: serverTimestamp(),
-      productName: product.name,
-      price: product.price
-    });
-    console.log('Order created with ID: ', orderRef.id);
-
-    // 2. Send confirmation email
+    // Send initial email immediately
     const transporter = nodemailer.createTransport({
       host: 'smtp.zoho.com',
       port: 465,
@@ -62,12 +55,11 @@ export async function createOrder(
       to: customerEmail,
       subject: 'Cuddleia Order Confirmation',
       html: `
-        <h1>Thank you for your order, ${customerName}!</h1>
-        <p>We've received your order and will process it shortly.</p>
+        <h1>Thank you for your interest, ${customerName}!</h1>
+        <p>We're taking you to the payment page to complete your order.</p>
         <h2>Order Summary</h2>
         <p><b>Product:</b> ${product.name}</p>
         <p><b>Price:</b> $${product.price.toFixed(2)}</p>
-        <p><b>Status:</b> Pending</p>
         <p>You will be redirected to ${paymentMethod} to complete your purchase.</p>
         <p>Once your payment is confirmed, you will receive another email with the download link for your product.</p>
         <p>With love,<br>The Cuddleia Team</p>
@@ -76,8 +68,17 @@ export async function createOrder(
     console.log('Confirmation email sent to:', customerEmail);
 
 
-    // 3. Handle Payment Gateway
+    // Handle Payment Gateway
     if (paymentMethod === 'ToyyibPay') {
+        const billAmount = Math.round(price * 100);
+        // Pass customer info in bill-related parameters for ToyyibPay to use
+        const billExternalReferenceNo = JSON.stringify({
+            productId: product.id,
+            customerName,
+            customerEmail
+        });
+
+
         const toyyibpayResponse = await fetch('https://toyyibpay.com/index.php/api/createBill', {
             method: 'POST',
             headers: {
@@ -86,14 +87,14 @@ export async function createOrder(
             body: new URLSearchParams({
                 'userSecretKey': process.env.TOYYIBPAY_SECRET_KEY!,
                 'categoryCode': process.env.TOYYIPAY_CATEGORY_CODE!,
-                'billName': product.name,
-                'billDescription': `Order for ${product.name}`,
+                'billName': productName,
+                'billDescription': `Order for ${productName}`,
                 'billPriceSetting': '1',
                 'billPayorInfo': '1',
-                'billAmount': Math.round(product.price * 100).toString(),
+                'billAmount': billAmount.toString(),
                 'billReturnUrl': `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
                 'billCallbackUrl': `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/callback`,
-                'billExternalReferenceNo': orderRef.id,
+                'billExternalReferenceNo': billExternalReferenceNo,
                 'billTo': customerName,
                 'billEmail': customerEmail,
                 'billPhone': '0000000000', // ToyyibPay requires a phone number, using a placeholder
@@ -114,41 +115,44 @@ export async function createOrder(
 
     } else { // PayPal
         const url = PAYPAL_URL;
-        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/` };
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/&custom=${orderId}` };
 
     }
 
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error('Error creating order redirect:', error);
     return { error: 'An unexpected error occurred. Please try again.' };
   }
 }
 
-export async function processToyyibpayCallback(billcode: string, status_id: string, order_id: string) {
-    if (status_id === '1') { // Payment is successful
+export async function processToyyibpayCallback(billcode: string, status_id: string, refno: string, billpayment_status: string) {
+    if (billpayment_status === '1') { // Payment is successful
       try {
-        const q = query(collection(db, 'orders'), where('__name__', '==', order_id));
-        const querySnapshot = await getDocs(q);
+        const { productId, customerName, customerEmail } = JSON.parse(refno);
 
-        if (querySnapshot.empty) {
-          console.error(`Order with ID ${order_id} not found.`);
-          return;
-        }
-
-        const orderDoc = querySnapshot.docs[0];
-        const orderData = orderDoc.data();
-
-        // Update order status
-        await updateDoc(doc(db, 'orders', order_id), { status: 'Paid' });
-
-        // Find the product to get the download URL
-        const product = products.find(p => p.id === orderData.productId);
+        // Find the product to get the details
+        const product = products.find(p => p.id === productId);
         if (!product) {
-          console.error(`Product with ID ${orderData.productId} not found.`);
+          console.error(`Product with ID ${productId} not found.`);
           return;
         }
 
-        // Send the email with the download link
+        // 1. Now, save the successful order to Firestore
+        const orderRef = await addDoc(collection(db, 'orders'), {
+            customerName,
+            customerEmail,
+            productId,
+            paymentMethod: 'ToyyibPay',
+            status: 'Paid',
+            createdAt: serverTimestamp(),
+            productName: product.name,
+            price: product.price,
+            toyyibpayBillCode: billcode,
+        });
+
+        console.log(`Saved successful order ${orderRef.id} to Firestore.`);
+
+        // 2. Send the email with the download link
         const transporter = nodemailer.createTransport({
             host: 'smtp.zoho.com',
             port: 465,
@@ -161,10 +165,10 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
 
         await transporter.sendMail({
           from: `Cuddleia <${process.env.ZOHO_EMAIL}>`,
-          to: orderData.customerEmail,
+          to: customerEmail,
           subject: 'Your Cuddleia Digital Product is Here!',
           html: `
-            <h1>Thank you for your purchase, ${orderData.customerName}!</h1>
+            <h1>Thank you for your purchase, ${customerName}!</h1>
             <p>Your payment has been confirmed. You can now download your digital product using the link below:</p>
             <h2>${product.name}</h2>
             <a href="${product.downloadUrl}" target="_blank">Download Now</a>
@@ -172,12 +176,12 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
             <p>With love,<br>The Cuddleia Team</p>
           `,
         });
-        console.log(`Digital product email sent for order ${order_id}`);
+        console.log(`Digital product email sent for order ${orderRef.id}`);
 
       } catch (error) {
         console.error('Error processing successful ToyyibPay payment:', error);
       }
     } else {
-      console.log(`ToyyibPay payment for order ${order_id} was not successful. Status: ${status_id}`);
+      console.log(`ToyyibPay payment for bill ${billcode} was not successful. Status: ${billpayment_status}`);
     }
 }

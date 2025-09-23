@@ -34,6 +34,15 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
 
   const handleNext = () => {
     if (customerName.trim() && customerEmail.trim()) {
+      // Basic email validation
+      if (!/\S+@\S+\.\S+/.test(customerEmail)) {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid Email',
+          description: 'Please enter a valid email address.',
+        });
+        return;
+      }
       setStep('location');
     } else {
       toast({
@@ -51,8 +60,8 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
 
     if (result.url) {
       toast({
-        title: 'Order Created!',
-        description: 'Redirecting you to complete the payment...',
+        title: 'Redirecting...',
+        description: 'Please wait while we redirect you to complete the payment.',
       });
       // Redirect on the client-side
       window.location.href = result.url;
@@ -60,7 +69,7 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: result.error || 'Could not process your order.',
+        description: result.error || 'Could not process your order. Please try again.',
       });
       setStep('location'); // Go back to location step on error
     }
@@ -110,21 +119,16 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
                 This helps us provide the best payment experience for you.
               </DialogDescription>
             </DialogHeader>
-             <form action={async (formData) => {
-                const method = formData.get('paymentMethod') as 'ToyyibPay' | 'PayPal';
-                await startCheckout(method);
-             }}>
-                 <div className="grid grid-cols-1 gap-4 py-6 md:grid-cols-2">
-                    <button type="submit" name="paymentMethod" value="ToyyibPay" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-primary/10 hover:border-primary border bg-transparent p-4 flex items-center justify-center">
-                        <MapPin className="h-8 w-8 text-primary" />
-                        <span>Malaysian Buyer</span>
-                    </button>
-                    <button type="submit" name="paymentMethod" value="PayPal" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-accent/20 hover:border-accent border bg-transparent p-4 flex items-center justify-center">
-                        <Globe className="h-8 w-8 text-accent" />
-                        <span>International Buyer</span>
-                    </button>
-                </div>
-            </form>
+             <div className="grid grid-cols-1 gap-4 py-6 md:grid-cols-2">
+                <Button variant="outline" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-primary/10 hover:border-primary border bg-transparent p-4 flex items-center justify-center" onClick={() => startCheckout('ToyyibPay')}>
+                    <MapPin className="h-8 w-8 text-primary" />
+                    <span>Malaysian Buyer</span>
+                </Button>
+                <Button variant="outline" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-accent/20 hover:border-accent border bg-transparent p-4 flex items-center justify-center" onClick={() => startCheckout('PayPal')}>
+                    <Globe className="h-8 w-8 text-accent" />
+                    <span>International Buyer</span>
+                </Button>
+            </div>
           </motion.div>
         );
       case 'processing':
