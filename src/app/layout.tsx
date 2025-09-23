@@ -18,8 +18,8 @@ const alegreya = Alegreya({
 });
 
 export const metadata: Metadata = {
-  title: 'Global Cart',
-  description: 'Your global shopping destination',
+  title: 'cuddleia',
+  description: 'Cozy digital wallpapers and booklets.',
 };
 
 export default function RootLayout({

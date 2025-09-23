@@ -15,7 +15,7 @@ export function Header() {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <h1 className="text-2xl font-headline md:text-3xl">
           <a href="/" className="transition-colors hover:text-primary-foreground/70">
-            Global Cart
+            cuddleia
           </a>
         </h1>
         <div className="flex items-center">
