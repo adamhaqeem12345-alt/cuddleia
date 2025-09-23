@@ -13,7 +13,7 @@ export function Header() {
     >
       <div className="container mx-auto flex h-24 items-center justify-start px-4">
         <a href="/" className="transition-transform hover:scale-105">
-          <Logo className="h-16" />
+          <Logo className="h-16 w-auto" />
         </a>
       </div>
     </motion.header>
