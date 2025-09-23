@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 import { Product } from '@/lib/products';
+import fetch from 'node-fetch';
 
 const orderSchema = z.object({
   customerName: z.string().min(1, 'Name is required'),
@@ -14,8 +15,7 @@ const orderSchema = z.object({
   paymentMethod: z.enum(['ToyyibPay', 'PayPal']),
 });
 
-// In a real-world scenario, these would be your actual payment gateway URLs
-const TOYYIBPAY_URL = 'https://toyyibpay.com/';
+
 const PAYPAL_URL = 'https://www.paypal.com/';
 
 export async function createOrder(
@@ -75,18 +75,60 @@ export async function createOrder(
     console.log('Confirmation email sent to:', customerEmail);
 
 
-    // 3. Return payment URL
-    const url = paymentMethod === 'ToyyibPay' ? TOYYIBPAY_URL : PAYPAL_URL;
-    // In a real app, you'd append order details to the URL
-    return { url: `${url}?orderId=${orderRef.id}&product=${product.id}` };
+    // 3. Handle Payment Gateway
+    if (paymentMethod === 'ToyyibPay') {
+        const toyyibpayResponse = await fetch('https://toyyibpay.com/index.php/api/createBill', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'userSecretKey': process.env.TOYYIBPAY_SECRET_KEY!,
+                'categoryCode': process.env.TOYYIBPAY_CATEGORY_CODE!,
+                'billName': product.name,
+                'billDescription': `Order for ${product.name}`,
+                'billPriceSetting': '1',
+                'billPayorInfo': '1',
+                'billAmount': (product.price * 100).toString(),
+                'billReturnUrl': 'http://localhost:9002/payment/success', // Replace with your actual success URL
+                'billCallbackUrl': 'http://localhost:9002/payment/callback', // Replace with your actual callback URL
+                'billExternalReferenceNo': orderRef.id,
+                'billTo': customerName,
+                'billEmail': customerEmail,
+                'billPhone': '0000000000', // ToyyibPay requires a phone number, using a placeholder
+                'billSplitPayment': '0',
+                'billSplitPaymentArgs': '',
+                'billPaymentChannel': '0',
+            })
+        });
+
+        const toyyibpayData: any = await toyyibpayResponse.json();
+
+        if (toyyibpayData && toyyibpayData[0]?.BillCode) {
+            return { url: `https://toyyibpay.com/${toyyibpayData[0].BillCode}` };
+        } else {
+            console.error('ToyyibPay error:', toyyibpayData);
+            return { error: 'Could not create ToyyibPay bill.' };
+        }
+
+    } else { // PayPal
+        const url = PAYPAL_URL;
+         // In a real app, you'd append order details to the URL for PayPal
+        return { url: `${url}?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
+
+    }
 
   } catch (error) {
     console.error('Error creating order:', error);
     // This is a temporary fix to bypass Firestore permission errors for now.
     if (error instanceof Error && error.message.includes('permission')) {
         console.warn('Firestore permission error ignored, proceeding with payment redirect.');
-        const url = paymentMethod === 'ToyyibPay' ? TOYYIBPAY_URL : PAYPAL_URL;
-        return { url: `${url}?product=${product.id}&name=${encodeURIComponent(customerName)}` };
+        if (paymentMethod === 'ToyyibPay') {
+          // Cannot proceed with ToyyibPay without orderRef.id, so we show an error
+           return { error: 'Could not save order to our system due to a permissions issue. Please contact support.' };
+        }
+         const url = PAYPAL_URL;
+        return { url: `${url}?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
     }
     return { error: 'An unexpected error occurred. Please try again.' };
   }
