@@ -15,8 +15,8 @@
     --primary-foreground: 0 0% 98%;
     --secondary: 350 95% 92%; /* Lighter pink for secondary elements */
     --secondary-foreground: 350 40% 30%;
-    --muted: 24 5% 92%;
-    --muted-foreground: 24 5% 45%;
+    --muted: 350 60% 96%;
+    --muted-foreground: 350 15% 45%;
     --accent: 350 100% 97%;   /* Very light pink for accents */
     --accent-foreground: 350 78% 40%;
     --destructive: 0 84.2% 60.2%;
@@ -70,3 +70,4 @@
     @apply bg-background text-foreground;
   }
 }
+
