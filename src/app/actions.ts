@@ -74,6 +74,8 @@ export async function createOrder(
     return { error: validation.error.errors.map(e => e.message).join(', ') };
   }
   
+  let redirectUrl = '';
+
   try {
     const userCountry = await getCountryFromIP();
     const paymentMethod = determinePaymentGateway(userCountry);
@@ -111,11 +113,8 @@ export async function createOrder(
         // We can continue with the payment even if the email fails
     }
 
-    let redirectUrl = '';
-
     if (paymentMethod === 'ToyyibPay') {
         const billAmount = Math.round(product.price * 100);
-        // IMPORTANT: ToyyibPay's refno has a limit. Let's create a simple reference string.
         const billExternalReferenceNo = `${orderId}|${product.id}|${customerName}|${customerEmail}`;
 
 
@@ -137,7 +136,7 @@ export async function createOrder(
                 'billExternalReferenceNo': billExternalReferenceNo,
                 'billTo': customerName,
                 'billEmail': customerEmail,
-                'billPhone': '0000000000', // ToyyibPay requires a phone number, using a placeholder
+                'billPhone': '0000000000',
                 'billSplitPayment': '0',
                 'billSplitPaymentArgs': '',
                 'billPaymentChannel': '0',
@@ -169,13 +168,6 @@ export async function createOrder(
         });
         redirectUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`;
     }
-    
-    if (redirectUrl) {
-      redirect(redirectUrl);
-    } else {
-      return { error: 'Could not generate payment link.' };
-    }
-
   } catch (error) {
     console.error('Error creating order redirect:', error);
     let errorMessage = 'An unexpected error occurred. Please try again.';
@@ -183,6 +175,12 @@ export async function createOrder(
         errorMessage = error.message;
     }
     return { error: errorMessage };
+  }
+
+  if (redirectUrl) {
+    redirect(redirectUrl);
+  } else {
+    return { error: 'Could not generate payment link.' };
   }
 }
 
@@ -290,4 +288,6 @@ export async function processPaypalIPN(ipnData: any) {
     }
 }
     
+    
+
     
