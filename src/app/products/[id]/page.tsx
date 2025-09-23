@@ -46,3 +46,4 @@ export default function ProductPurchasePage({ params }: { params: { id: string }
     </div>
   );
 }
+
