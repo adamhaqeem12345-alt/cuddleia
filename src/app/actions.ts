@@ -3,9 +3,9 @@
 
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
-import { Product } from '@/lib/products';
+import { Product, products } from '@/lib/products';
 import fetch from 'node-fetch';
 
 const orderSchema = z.object({
@@ -69,6 +69,7 @@ export async function createOrder(
         <p><b>Price:</b> $${product.price.toFixed(2)}</p>
         <p><b>Status:</b> Pending</p>
         <p>You will be redirected to ${paymentMethod} to complete your purchase.</p>
+        <p>Once your payment is confirmed, you will receive another email with the download link for your product.</p>
         <p>With love,<br>The Cuddleia Team</p>
       `,
     });
@@ -90,8 +91,8 @@ export async function createOrder(
                 'billPriceSetting': '1',
                 'billPayorInfo': '1',
                 'billAmount': (product.price * 100).toString(),
-                'billReturnUrl': 'http://localhost:9002/payment/success', // Replace with your actual success URL
-                'billCallbackUrl': 'http://localhost:9002/payment/callback', // Replace with your actual callback URL
+                'billReturnUrl': `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
+                'billCallbackUrl': `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/callback`,
                 'billExternalReferenceNo': orderRef.id,
                 'billTo': customerName,
                 'billEmail': customerEmail,
@@ -113,8 +114,7 @@ export async function createOrder(
 
     } else { // PayPal
         const url = PAYPAL_URL;
-         // In a real app, you'd append order details to the URL for PayPal
-        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/` };
 
     }
 
@@ -128,8 +128,66 @@ export async function createOrder(
            return { error: 'Could not save order to our system due to a permissions issue. Please contact support.' };
         }
          const url = PAYPAL_URL;
-        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/` };
     }
     return { error: 'An unexpected error occurred. Please try again.' };
   }
+}
+
+export async function processToyyibpayCallback(billcode: string, status_id: string, order_id: string) {
+    if (status_id === '1') { // Payment is successful
+      try {
+        const q = query(collection(db, 'orders'), where('__name__', '==', order_id));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          console.error(`Order with ID ${order_id} not found.`);
+          return;
+        }
+
+        const orderDoc = querySnapshot.docs[0];
+        const orderData = orderDoc.data();
+
+        // Update order status
+        await updateDoc(doc(db, 'orders', order_id), { status: 'Paid' });
+
+        // Find the product to get the download URL
+        const product = products.find(p => p.id === orderData.productId);
+        if (!product) {
+          console.error(`Product with ID ${orderData.productId} not found.`);
+          return;
+        }
+
+        // Send the email with the download link
+        const transporter = nodemailer.createTransport({
+            host: 'smtp.zoho.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.ZOHO_EMAIL,
+                pass: process.env.ZOHO_PASSWORD,
+            },
+        });
+
+        await transporter.sendMail({
+          from: `Cuddleia <${process.env.ZOHO_EMAIL}>`,
+          to: orderData.customerEmail,
+          subject: 'Your Cuddleia Digital Product is Here!',
+          html: `
+            <h1>Thank you for your purchase, ${orderData.customerName}!</h1>
+            <p>Your payment has been confirmed. You can now download your digital product using the link below:</p>
+            <h2>${product.name}</h2>
+            <a href="${product.downloadUrl}" target="_blank">Download Now</a>
+            <p>If you have any questions, feel free to reply to this email.</p>
+            <p>With love,<br>The Cuddleia Team</p>
+          `,
+        });
+        console.log(`Digital product email sent for order ${order_id}`);
+
+      } catch (error) {
+        console.error('Error processing successful ToyyibPay payment:', error);
+      }
+    } else {
+      console.log(`ToyyibPay payment for order ${order_id} was not successful. Status: ${status_id}`);
+    }
 }
