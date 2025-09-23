@@ -90,7 +90,7 @@ export async function createOrder(
                 'billDescription': `Order for ${product.name}`,
                 'billPriceSetting': '1',
                 'billPayorInfo': '1',
-                'billAmount': (product.price * 100).toString(),
+                'billAmount': Math.round(product.price * 100).toString(),
                 'billReturnUrl': `${process.env.NEXT_PUBLIC_APP_URL}/payment/success`,
                 'billCallbackUrl': `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/callback`,
                 'billExternalReferenceNo': orderRef.id,
