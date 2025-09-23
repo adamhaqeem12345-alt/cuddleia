@@ -43,9 +43,11 @@ function determinePaymentGateway(countryCode: string): 'ToyyibPay' | 'PayPal' {
 
 export async function createOrder(
   productId: string,
-  customerName: string,
-  customerEmail: string,
+  prevState: any,
+  formData: FormData
 ): Promise<{ error?: string }> {
+  const customerName = formData.get('customerName') as string;
+  const customerEmail = formData.get('customerEmail') as string;
 
   const product = products.find(p => p.id === productId);
   if (!product) {
