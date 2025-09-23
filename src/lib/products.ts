@@ -11,13 +11,13 @@ export type Product = {
 
 export const products: Product[] = [
   {
-    id: 'prod_1',
-    name: 'Blush & Beige iPad Wallpaper',
-    description: 'Aesthetic, high-resolution wallpaper in a calming blush and beige palette for your iPad.',
+    id: '001',
+    name: 'Barakah Business Blueprint',
+    description: 'A practical Muslim guide to starting and growing online business the halal way',
     price: 4.50,
-    category: 'Digital Wallpaper',
-    imageUrl: 'https://images.unsplash.com/photo-1623136224345-564506a6c42a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhZXN0aGV0aWMlMjBpcGFkJTIwd2FsbHBhcGVyfGVufDB8fHx8MTc1ODU5OTgxOHww&ixlib=rb-4.1.0&q=80&w=1080',
-    downloadUrl: '#' // Replace with your actual download link
+    category: 'Islamic Booklet',
+    imageUrl: 'https://overbits.herokuapp.com/pdfconvert/temp/1c505f25fa916c564afe17fa805899e6/Barakah%20Business%20Blueprint%20(by%20Cuddleia).pdf?t=1758603940395',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk' // Replace with your actual download link
   },
   {
     id: 'prod_2',
