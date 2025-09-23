@@ -13,21 +13,21 @@ function SuccessContent() {
   // will be sent automatically by the server once payment is confirmed.
 
   return (
-    <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md text-center shadow-lg animate-fade-in border-primary/20">
+    <div className="flex min-h-[80vh] items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md text-center shadow-lg animate-fade-in border-primary/20 rounded-2xl">
         <CardHeader>
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <PartyPopper className="h-10 w-10 text-primary" />
           </div>
           <CardTitle className="mt-4 font-headline text-3xl">Payment Successful!</CardTitle>
-          <CardDescription className="mt-2 text-lg">Thank you for your order.</CardDescription>
+          <CardDescription className="mt-2 text-lg text-muted-foreground">Thank you for your order.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="rounded-md border border-primary/50 bg-primary/10 p-4">
+          <div className="rounded-lg border border-accent bg-accent/30 p-4">
                <div className="flex items-start gap-4">
-                  <Mail className="mt-1 h-6 w-6 text-primary flex-shrink-0" />
+                  <Mail className="mt-1 h-6 w-6 text-accent-foreground flex-shrink-0" />
                   <div>
-                    <h3 className="font-headline text-lg text-primary-foreground/90 text-left">Check Your Email</h3>
+                    <h3 className="font-headline text-lg text-accent-foreground/90 text-left">Check Your Email</h3>
                     <p className="text-muted-foreground text-left">
                         We've sent the download link for your digital product to your email address. If you don't see it, please check your spam folder.
                     </p>
@@ -35,7 +35,7 @@ function SuccessContent() {
                </div>
             </div>
           
-          <Button asChild size="lg" className="w-full">
+          <Button asChild size="lg" className="w-full rounded-full">
             <Link href="/">Continue Shopping</Link>
           </Button>
         </CardContent>

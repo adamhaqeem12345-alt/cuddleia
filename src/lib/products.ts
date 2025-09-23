@@ -13,7 +13,7 @@ export const products: Product[] = [
   {
     id: '001',
     name: 'Barakah Business Blueprint',
-    description: 'A practical Muslim guide to starting and growing online business the halal way',
+    description: 'A practical Muslim guide to starting and growing online business the halal way.',
     price: 25.00,
     category: 'Islamic Booklet',
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
