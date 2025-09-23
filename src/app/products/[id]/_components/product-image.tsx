@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import type { Product } from '@/lib/products';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import { Card } from '@/components/ui/card';
 
 
 interface ProductImageProps {
@@ -23,13 +24,13 @@ export function ProductImage({ product }: ProductImageProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="relative aspect-square w-full cursor-zoom-in">
+        <div className="relative aspect-square w-full cursor-zoom-in overflow-hidden rounded-2xl shadow-lg">
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-contain"
+            className="object-contain transition-transform duration-300 hover:scale-105"
           />
         </div>
       </DialogTrigger>
