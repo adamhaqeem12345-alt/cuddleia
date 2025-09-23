@@ -1,4 +1,6 @@
+
 import { config } from 'dotenv';
 config();
 
-import '@/ai/flows/determine-payment-gateway.ts';
+// No flows are defined yet.
+// import '@/ai/flows/determine-payment-gateway.ts';

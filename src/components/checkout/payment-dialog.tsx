@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -11,7 +12,6 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { handlePaymentRedirect } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/hooks/use-cart';
 
@@ -26,30 +26,17 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
   const { clearCart } = useCart();
 
   const handleCheckout = async (country: 'Malaysia' | 'Other') => {
+    // This function will need to be updated to handle the full checkout flow
+    // For now, it's a placeholder.
     setIsLoading(country);
-    try {
-      const result = await handlePaymentRedirect(country);
-      if (result.url) {
-        // Clear cart before redirecting
-        clearCart();
-        window.location.href = result.url;
-      } else if (result.error) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: result.error,
-        });
-      }
-    } catch (error) {
-      console.error('Payment redirection failed', error);
-      toast({
-        variant: 'destructive',
-        title: 'An Unexpected Error Occurred',
-        description: 'Please try again later.',
-      });
-    } finally {
-      setIsLoading(null);
-    }
+    toast({
+        title: 'Coming Soon!',
+        description: 'Full payment integration is under development.',
+    });
+    setTimeout(() => {
+        setIsLoading(null);
+        onOpenChange(false);
+    }, 2000)
   };
 
   return (
@@ -95,7 +82,7 @@ export function PaymentDialog({ open, onOpenChange }: PaymentDialogProps) {
         </div>
         <DialogFooter className="sm:justify-start">
           <p className="text-xs text-muted-foreground">
-            Our AI will select the best payment gateway based on your choice.
+            We'll select the best payment gateway based on your choice.
           </p>
         </DialogFooter>
       </DialogContent>
