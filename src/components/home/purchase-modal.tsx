@@ -17,7 +17,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { createOrder } from '@/app/actions';
 import { Product } from '@/lib/products';
-import { useFormState, useFormStatus } from 'react-dom';
 
 interface PurchaseModalProps {
   product: Product;
@@ -26,10 +25,6 @@ interface PurchaseModalProps {
 }
 
 type Step = 'details' | 'location' | 'processing';
-
-type CheckoutState = {
-  error?: string;
-};
 
 export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps) {
   const [step, setStep] = useState<Step>('details');
@@ -49,7 +44,7 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
     }
   };
 
-  const startCheckout = async (paymentMethod: 'ToyyibPay' | 'PayPal'): Promise<CheckoutState> => {
+  const startCheckout = async (paymentMethod: 'ToyyibPay' | 'PayPal') => {
     setStep('processing');
     
     const result = await createOrder(product, customerName, customerEmail, paymentMethod);
@@ -61,7 +56,6 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
       });
       // Redirect on the client-side
       window.location.href = result.url;
-      return {};
     } else {
       toast({
         variant: 'destructive',
@@ -69,7 +63,6 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
         description: result.error || 'Could not process your order.',
       });
       setStep('location'); // Go back to location step on error
-      return { error: result.error };
     }
   };
 
@@ -155,4 +148,3 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
     </Dialog>
   );
 }
-
