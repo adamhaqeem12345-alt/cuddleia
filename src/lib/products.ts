@@ -18,5 +18,14 @@ export const products: Product[] = [
     category: 'Islamic Booklet',
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk' // Replace with your actual download link
+  },
+  {
+    id: '002',
+    name: 'iPad Wallpaper (Lock Screen, Landscape) – Allah Loves You Forever (Maroon Series)',
+    description: 'A digital Islamic wallpaper featuring floral art and Arabic calligraphy of Allah and Muhammad ﷺ, with the reminder ‘Allah Loves You Forever.’',
+    price: 6.00,
+    category: 'Digital Wallpaper',
+    imageUrl: 'https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png',
+    downloadUrl: 'https://drive.google.com/file/d/1OyatP86tevbHRiazIMEsal09fcFOMSZl/view?usp=drivesdk'
   }
 ];
