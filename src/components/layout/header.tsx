@@ -10,7 +10,7 @@ export function Header() {
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
       className="absolute top-0 z-40 w-full"
     >
-      <div className="container mx-auto flex h-24 items-center justify-start px-4">
+      <div className="container mx-auto flex h-24 items-center justify-center px-4">
         <a href="/" className="transition-transform hover:scale-105">
           <Logo />
         </a>
