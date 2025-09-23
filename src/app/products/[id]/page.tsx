@@ -28,8 +28,7 @@ export default function ProductPurchasePage({ params }: { params: { id: string }
             </Card>
         </div>
 
-        <div className="flex flex-col h-full">
-          <Card className="flex-grow flex flex-col border-none bg-transparent shadow-none">
+        <Card className="flex flex-col h-full rounded-2xl shadow-xl">
             <CardHeader className="pb-4">
               <CardTitle className="font-headline text-4xl lg:text-5xl text-foreground">{product.name}</CardTitle>
               <p className="font-headline text-3xl lg:text-4xl font-bold text-primary pt-2">{formatCurrency(product.price)}</p>
@@ -37,13 +36,11 @@ export default function ProductPurchasePage({ params }: { params: { id: string }
             <CardContent className="flex-grow">
               <div className="prose prose-lg text-foreground/80 max-w-none whitespace-pre-line font-body">{product.description}</div>
             </CardContent>
-            <CardFooter className="pt-8">
+            <CardFooter className="mt-auto pt-8">
                 <PurchaseForm productId={product.id} />
             </CardFooter>
-          </Card>
-        </div>
+        </Card>
       </div>
     </div>
   );
 }
-
