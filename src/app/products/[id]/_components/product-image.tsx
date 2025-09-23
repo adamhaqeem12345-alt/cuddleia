@@ -7,8 +7,11 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
+  DialogTitle
 } from '@/components/ui/dialog';
 import type { Product } from '@/lib/products';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+
 
 interface ProductImageProps {
   product: Product;
@@ -31,6 +34,11 @@ export function ProductImage({ product }: ProductImageProps) {
         </div>
       </DialogTrigger>
       <DialogContent className="max-w-4xl h-auto p-2 bg-transparent border-none shadow-none">
+         <DialogTitle>
+            <VisuallyHidden>
+                {product.name} - Full Size
+            </VisuallyHidden>
+        </DialogTitle>
         <div className="relative aspect-auto w-full h-[90vh]">
             <Image
                 src={product.imageUrl}
