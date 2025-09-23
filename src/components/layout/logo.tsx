@@ -1,16 +1,11 @@
-
 import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { Flower2 } from 'lucide-react';
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn('relative w-64 h-16', className)}>
-       <Image
-            src="https://cuddleia-logo.tiiny.site/Cuddleia-logo.svg"
-            alt="Cuddleia Logo"
-            fill
-            className="object-contain"
-          />
+    <div className={cn('flex items-center gap-2 text-foreground', className)}>
+      <Flower2 className="h-8 w-8 text-primary" />
+      <span className="font-headline text-3xl">cuddleia</span>
     </div>
   );
 }
