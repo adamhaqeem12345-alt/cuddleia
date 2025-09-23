@@ -3,9 +3,8 @@ import { motion } from 'framer-motion';
 import { Logo } from './logo';
 
 export function Header() {
-
   return (
-    <motion.header 
+    <motion.header
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
