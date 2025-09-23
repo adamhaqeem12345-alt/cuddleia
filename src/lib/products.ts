@@ -16,7 +16,7 @@ export const products: Product[] = [
     description: 'A practical Muslim guide to starting and growing online business the halal way',
     price: 25.00,
     category: 'Islamic Booklet',
-    imageUrl: 'https://overbits.herokuapp.com/pdfconvert/temp/1c505f25fa916c564afe17fa805899e6/Barakah%20Business%20Blueprint%20(by%20Cuddleia).pdf?t=1758603940395',
+    imageUrl: 'https://i.imgur.com/vH4o4G9.png',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk' // Replace with your actual download link
   },
   {

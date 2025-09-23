@@ -40,6 +40,12 @@ const nextConfig: NextConfig = {
         hostname: 'overbits.herokuapp.com',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.imgur.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
