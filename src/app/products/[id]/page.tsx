@@ -1,9 +1,9 @@
 
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import { products } from '@/lib/products';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { PurchaseForm } from './_components/purchase-form';
+import { ProductImage } from './_components/product-image';
 
 export default function ProductPurchasePage({ params }: { params: { id: string } }) {
   const product = products.find(p => p.id === params.id);
@@ -23,15 +23,7 @@ export default function ProductPurchasePage({ params }: { params: { id: string }
     <div className="container mx-auto max-w-4xl py-12 px-4">
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
         <Card className="overflow-hidden border-none shadow-2xl rounded-2xl">
-          <div className="relative aspect-square w-full">
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
+          <ProductImage product={product} />
         </Card>
 
         <div className="flex flex-col h-full">
