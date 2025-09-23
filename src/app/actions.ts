@@ -84,7 +84,7 @@ export async function createOrder(
             },
             body: new URLSearchParams({
                 'userSecretKey': process.env.TOYYIBPAY_SECRET_KEY!,
-                'categoryCode': process.env.TOYYIBPAY_CATEGORY_CODE!,
+                'categoryCode': process.env.TOYYIPAY_CATEGORY_CODE!,
                 'billName': product.name,
                 'billDescription': `Order for ${product.name}`,
                 'billPriceSetting': '1',
@@ -114,7 +114,7 @@ export async function createOrder(
     } else { // PayPal
         const url = PAYPAL_URL;
          // In a real app, you'd append order details to the URL for PayPal
-        return { url: `${url}?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
 
     }
 
@@ -128,7 +128,7 @@ export async function createOrder(
            return { error: 'Could not save order to our system due to a permissions issue. Please contact support.' };
         }
          const url = PAYPAL_URL;
-        return { url: `${url}?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=http://localhost:9002/payment/success&cancel_return=http://localhost:9002/` };
     }
     return { error: 'An unexpected error occurred. Please try again.' };
   }
