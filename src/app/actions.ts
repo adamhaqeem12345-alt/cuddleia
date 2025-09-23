@@ -96,16 +96,31 @@ export async function createOrder(
         await transporter.sendMail({
           from: `Cuddleia <${process.env.ZOHO_EMAIL}>`,
           to: customerEmail,
-          subject: 'Cuddleia Order Confirmation',
+          subject: `Your Cuddleia Order is Almost Complete!`,
           html: `
-            <h1>Thank you for your interest, ${customerName}!</h1>
-            <p>We're taking you to the payment page to complete your order.</p>
-            <h2>Order Summary</h2>
-            <p><b>Product:</b> ${product.name}</p>
-            <p><b>Price:</b> $${product.price.toFixed(2)}</p>
-            <p>You will be redirected to ${paymentMethod} to complete your purchase.</p>
-            <p>Once your payment is confirmed, you will receive another email with the download link for your product.</p>
-            <p>With love,<br>The Cuddleia Team</p>
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; padding: 20px;">
+              <h1 style="color: #d17b88; font-family: var(--font-belleza), sans-serif;">Almost there, ${customerName}!</h1>
+              <p>Thank you for your interest. We're now redirecting you to a secure payment page to complete your order.</p>
+              
+              <div style="background-color: #fdf6f7; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h2 style="color: #9d5c63; border-bottom: 2px solid #e6c2c7; padding-bottom: 10px; font-family: var(--font-belleza), sans-serif;">Order Summary</h2>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr>
+                    <td style="padding: 10px 0; font-weight: bold;">Product:</td>
+                    <td style="padding: 10px 0;">${product.name}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0; font-weight: bold;">Price:</td>
+                    <td style="padding: 10px 0;">$${product.price.toFixed(2)}</td>
+                  </tr>
+                </table>
+              </div>
+              
+              <p>You will be redirected to <strong>${paymentMethod}</strong> to finalize your purchase.</p>
+              <p>Once your payment is confirmed, you will receive a separate email containing the download link for your product.</p>
+              
+              <p style="margin-top: 30px;">With love,<br><strong>The Cuddleia Team</strong></p>
+            </div>
           `,
         });
     } catch (emailError) {
@@ -228,14 +243,43 @@ async function fulfillOrder(orderId: string, customerName: string, customerEmail
         await transporter.sendMail({
           from: `Cuddleia <${process.env.ZOHO_EMAIL}>`,
           to: customerEmail,
-          subject: 'Your Cuddleia Digital Product is Here!',
+          subject: `Your Cuddleia Digital Product is Here! (Order #${orderId})`,
           html: `
-            <h1>Thank you for your purchase, ${customerName}!</h1>
-            <p>Your payment has been confirmed. You can now download your digital product using the link below:</p>
-            <h2>${product.name}</h2>
-            <a href="${product.downloadUrl}" target="_blank">Download Now</a>
-            <p>If you have any questions, feel free to reply to this email.</p>
-            <p>With love,<br>The Cuddleia Team</p>
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px; padding: 20px;">
+              <h1 style="color: #d17b88; font-family: var(--font-belleza), sans-serif;">Thank you for your purchase, ${customerName}!</h1>
+              <p>Your payment has been successfully confirmed. You can now access your digital product below.</p>
+              
+              <div style="background-color: #fdf6f7; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h2 style="color: #9d5c63; border-bottom: 2px solid #e6c2c7; padding-bottom: 10px; font-family: var(--font-belleza), sans-serif;">Your Digital Product</h2>
+                <div style="padding: 15px 0;">
+                  <h3 style="margin: 0; color: #333;">${product.name}</h3>
+                  <a href="${product.downloadUrl}" target="_blank" style="display: inline-block; background-color: #d17b88; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 25px; margin-top: 15px; font-weight: bold; text-align: center;">
+                    Download Now
+                  </a>
+                </div>
+              </div>
+
+              <div style="border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px;">
+                <h3 style="color: #9d5c63; font-family: var(--font-belleza), sans-serif;">Order Details</h3>
+                <table style="width: 100%; font-size: 14px; color: #555;">
+                  <tr>
+                    <td style="padding: 5px 0; font-weight: bold;">Order ID:</td>
+                    <td style="padding: 5px 0;">${orderId}</td>
+                  </tr>
+                   <tr>
+                    <td style="padding: 5px 0; font-weight: bold;">Transaction ID:</td>
+                    <td style="padding: 5px 0;">${transactionId}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 5px 0; font-weight: bold;">Payment Method:</td>
+                    <td style="padding: 5px 0;">${paymentMethod}</td>
+                  </tr>
+                </table>
+              </div>
+
+              <p style="margin-top: 30px;">If you have any questions, feel free to reply to this email. We're here to help!</p>
+              <p>With love,<br><strong>The Cuddleia Team</strong></p>
+            </div>
           `,
         });
         console.log(`[Fulfill] Digital product email sent for order ${orderRef.id}`);
@@ -288,6 +332,8 @@ export async function processPaypalIPN(ipnData: any) {
     }
 }
     
+    
+
     
 
     
