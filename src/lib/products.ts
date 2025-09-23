@@ -42,7 +42,7 @@ export const products: Product[] = [
   },
   {
     id: 'prod_5',
-    name 'Velvet Lipstick Set',
+    name: 'Velvet Lipstick Set',
     description: 'A set of three creamy, long-lasting lipsticks in universally flattering shades.',
     price: 70.0,
     category: 'Makeup',
@@ -70,7 +70,7 @@ export const products: Product[] = [
     description: 'A lightweight foundation that provides buildable coverage and a radiant finish.',
     price: 49.99,
     category: 'Makeup',
-imageId: 'product-8',
+    imageId: 'product-8',
   },
 ];
 

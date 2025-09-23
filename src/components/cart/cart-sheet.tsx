@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { MinusCircle, PlusCircle, Trash2, X } from 'lucide-react';
+import { MinusCircle, PlusCircle, Trash2, X, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import {
