@@ -3,43 +3,63 @@
 
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import nodemailer from 'nodemailer';
 import { Product, products } from '@/lib/products';
-import fetch from 'node-fetch';
+import { determinePaymentGateway } from '@/ai/flows/determine-payment-gateway';
+import { headers } from 'next/headers';
+
 
 const orderSchema = z.object({
   customerName: z.string().min(1, 'Name is required'),
   customerEmail: z.string().email('Invalid email address'),
   productId: z.string(),
-  paymentMethod: z.enum(['ToyyibPay', 'PayPal']),
 });
 
 
 const PAYPAL_URL = 'https://www.paypal.com/';
 
+async function getCountryFromIP() {
+    const FALLBACK_IP = '8.8.8.8'; // Google's DNS
+    const ip = (headers().get('x-forwarded-for') ?? FALLBACK_IP).split(',')[0];
+
+    try {
+        const response = await fetch(`https://ipapi.co/${ip}/json/`);
+        if (!response.ok) {
+            console.warn(`Could not determine country from IP ${ip}. Defaulting to US.`);
+            return 'US'; // Default to international if lookup fails
+        }
+        const data = await response.json();
+        return data.country_code || 'US';
+    } catch (error) {
+        console.error('Error fetching country from IP:', error);
+        return 'US'; // Default to international on error
+    }
+}
+
+
 export async function createOrder(
   product: Product,
   customerName: string,
   customerEmail: string,
-  paymentMethod: 'ToyyibPay' | 'PayPal'
 ): Promise<{ url?: string; error?: string }> {
+
   const validation = orderSchema.safeParse({
     customerName,
     customerEmail,
     productId: product.id,
-    paymentMethod,
   });
 
   if (!validation.success) {
     return { error: validation.error.errors.map(e => e.message).join(', ') };
   }
   
-  const { productName, price } = product;
-  const orderId = `order_${Date.now()}`; // Generate a temporary unique ID
-
   try {
-    // Send initial email immediately
+     // 1. Determine payment gateway using AI
+    const userCountry = await getCountryFromIP();
+    const paymentMethod = await determinePaymentGateway(userCountry);
+
+    // 2. Send initial email immediately
     const transporter = nodemailer.createTransport({
       host: 'smtp.zoho.com',
       port: 465,
@@ -65,12 +85,10 @@ export async function createOrder(
         <p>With love,<br>The Cuddleia Team</p>
       `,
     });
-    console.log('Confirmation email sent to:', customerEmail);
 
-
-    // Handle Payment Gateway
+    // 3. Handle Payment Gateway
     if (paymentMethod === 'ToyyibPay') {
-        const billAmount = Math.round(price * 100);
+        const billAmount = Math.round(product.price * 100);
         // Pass customer info in bill-related parameters for ToyyibPay to use
         const billExternalReferenceNo = JSON.stringify({
             productId: product.id,
@@ -87,8 +105,8 @@ export async function createOrder(
             body: new URLSearchParams({
                 'userSecretKey': process.env.TOYYIBPAY_SECRET_KEY!,
                 'categoryCode': process.env.TOYYIPAY_CATEGORY_CODE!,
-                'billName': productName,
-                'billDescription': `Order for ${productName}`,
+                'billName': product.name,
+                'billDescription': `Order for ${product.name}`,
                 'billPriceSetting': '1',
                 'billPayorInfo': '1',
                 'billAmount': billAmount.toString(),
@@ -114,14 +132,19 @@ export async function createOrder(
         }
 
     } else { // PayPal
+        const orderId = `order_${Date.now()}`;
         const url = PAYPAL_URL;
-        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/&custom=${orderId}` };
+        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success?method=paypal&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/&custom=${orderId}` };
 
     }
 
   } catch (error) {
     console.error('Error creating order redirect:', error);
-    return { error: 'An unexpected error occurred. Please try again.' };
+    let errorMessage = 'An unexpected error occurred. Please try again.';
+    if (error instanceof Error) {
+        errorMessage = error.message;
+    }
+    return { error: errorMessage };
   }
 }
 
@@ -130,14 +153,12 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
       try {
         const { productId, customerName, customerEmail } = JSON.parse(refno);
 
-        // Find the product to get the details
         const product = products.find(p => p.id === productId);
         if (!product) {
           console.error(`Product with ID ${productId} not found.`);
           return;
         }
 
-        // 1. Now, save the successful order to Firestore
         const orderRef = await addDoc(collection(db, 'orders'), {
             customerName,
             customerEmail,
@@ -152,7 +173,6 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
 
         console.log(`Saved successful order ${orderRef.id} to Firestore.`);
 
-        // 2. Send the email with the download link
         const transporter = nodemailer.createTransport({
             host: 'smtp.zoho.com',
             port: 465,

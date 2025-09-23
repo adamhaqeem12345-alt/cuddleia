@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Loader2, Mail, MapPin, User, X } from 'lucide-react';
+import { Loader2, Mail, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,7 +13,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { createOrder } from '@/app/actions';
 import { Product } from '@/lib/products';
@@ -24,7 +23,7 @@ interface PurchaseModalProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
-type Step = 'details' | 'location' | 'processing';
+type Step = 'details' | 'processing';
 
 export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps) {
   const [step, setStep] = useState<Step>('details');
@@ -32,36 +31,24 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
   const [customerEmail, setCustomerEmail] = useState('');
   const { toast } = useToast();
 
-  const handleNext = () => {
-    if (customerName.trim() && customerEmail.trim()) {
-      // Basic email validation
-      if (!/\S+@\S+\.\S+/.test(customerEmail)) {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid Email',
-          description: 'Please enter a valid email address.',
-        });
-        return;
-      }
-      setStep('location');
-    } else {
+  const startCheckout = async () => {
+     if (!customerName.trim() || !customerEmail.trim() || !/\S+@\S+\.\S+/.test(customerEmail)) {
       toast({
         variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please enter your name and email.',
+        title: 'Invalid Information',
+        description: 'Please enter a valid name and email address.',
       });
+      return;
     }
-  };
 
-  const startCheckout = async (paymentMethod: 'ToyyibPay' | 'PayPal') => {
     setStep('processing');
     
-    const result = await createOrder(product, customerName, customerEmail, paymentMethod);
+    const result = await createOrder(product, customerName, customerEmail);
 
     if (result.url) {
       toast({
-        title: 'Redirecting...',
-        description: 'Please wait while we redirect you to complete the payment.',
+        title: 'Redirecting to Payment...',
+        description: 'Please wait while we prepare your secure payment page.',
       });
       // Redirect on the client-side
       window.location.href = result.url;
@@ -71,12 +58,13 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
         title: 'Error',
         description: result.error || 'Could not process your order. Please try again.',
       });
-      setStep('location'); // Go back to location step on error
+      setStep('details'); // Go back to details step on error
     }
   };
 
   const resetAndClose = () => {
     setIsOpen(false);
+    // Add a delay to allow the closing animation to finish before resetting state
     setTimeout(() => {
         setStep('details');
         setCustomerName('');
@@ -88,14 +76,14 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
     switch (step) {
       case 'details':
         return (
-          <motion.div key="details" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{opacity: 0, x: 50}} transition={{ duration: 0.3 }}>
+          <motion.div key="details" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl">Your Details</DialogTitle>
+              <DialogTitle className="font-headline text-2xl">Complete Your Purchase</DialogTitle>
               <DialogDescription>
-                Just a few details before we proceed to payment.
+                Enter your details below to proceed to payment.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-6">
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input id="name" placeholder="Your Name" className="pl-10" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
@@ -106,27 +94,8 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
               </div>
             </div>
             <div className="flex justify-end">
-                <Button onClick={handleNext} className="rounded-full bg-accent text-accent-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">Next</Button>
-            </div>
-          </motion.div>
-        );
-      case 'location':
-        return (
-          <motion.div key="location" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{opacity: 0, x: 50}} transition={{ duration: 0.3 }}>
-            <DialogHeader>
-              <DialogTitle className="font-headline text-2xl">Choose Your Location</DialogTitle>
-              <DialogDescription>
-                This helps us provide the best payment experience for you.
-              </DialogDescription>
-            </DialogHeader>
-             <div className="grid grid-cols-1 gap-4 py-6 md:grid-cols-2">
-                <Button variant="outline" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-primary/10 hover:border-primary border bg-transparent p-4 flex items-center justify-center" onClick={() => startCheckout('ToyyibPay')}>
-                    <MapPin className="h-8 w-8 text-primary" />
-                    <span>Malaysian Buyer</span>
-                </Button>
-                <Button variant="outline" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-accent/20 hover:border-accent border bg-transparent p-4 flex items-center justify-center" onClick={() => startCheckout('PayPal')}>
-                    <Globe className="h-8 w-8 text-accent" />
-                    <span>International Buyer</span>
+                <Button onClick={startCheckout} className="w-full rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">
+                  Buy Now for {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(product.price)}
                 </Button>
             </div>
           </motion.div>
