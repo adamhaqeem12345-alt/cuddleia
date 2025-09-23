@@ -52,6 +52,12 @@ const nextConfig: NextConfig = {
         hostname: 'i.postimg.cc',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cuddleia-logo.tiiny.site',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
