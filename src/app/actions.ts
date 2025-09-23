@@ -67,6 +67,7 @@ export async function createOrder(
   try {
     const userCountry = await getCountryFromIP();
     const paymentMethod = determinePaymentGateway(userCountry);
+    const orderId = `order_${Date.now()}`;
 
     // Send initial email immediately
     try {
@@ -105,7 +106,7 @@ export async function createOrder(
     if (paymentMethod === 'ToyyibPay') {
         const billAmount = Math.round(product.price * 100);
         // Toyyibpay's billExternalReferenceNo has limitations. We'll pass a simple delimited string.
-        const billExternalReferenceNo = `${product.id}|${customerName}|${customerEmail}`;
+        const billExternalReferenceNo = `${product.id}|${customerName}|${customerEmail}|${orderId}`;
 
 
         const toyyibpayResponse = await fetch('https://toyyibpay.com/index.php/api/createBill', {
@@ -143,8 +144,6 @@ export async function createOrder(
         }
 
     } else { // PayPal
-        const orderId = `order_${Date.now()}`;
-        // Using a simple delimited string for PayPal custom field as well for consistency
         const customData = `${product.id}|${customerName}|${customerEmail}|${orderId}`;
         const paypalParams = new URLSearchParams({
             cmd: '_xclick',
@@ -155,6 +154,7 @@ export async function createOrder(
             no_shipping: '1',
             return: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?method=paypal`,
             cancel_return: `${process.env.NEXT_PUBLIC_APP_URL}/products/${product.id}?status=cancelled`,
+            notify_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/ipn`,
             custom: customData,
         });
         redirectUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`;
@@ -176,12 +176,13 @@ export async function createOrder(
   }
 }
 
-export async function processToyyibpayCallback(billcode: string, status_id: string, refno: string, billpayment_status: string) {
-    if (billpayment_status === '1') { // Payment is successful
+export async function processToyyibpayCallback(refno: string, billcode: string, status: string) {
+    // status '1' means successful payment
+    if (status === '1') { 
       try {
-        const [productId, customerName, customerEmail] = refno.split('|');
+        const [productId, customerName, customerEmail, orderId] = refno.split('|');
 
-        if (!productId || !customerName || !customerEmail) {
+        if (!productId || !customerName || !customerEmail || !orderId) {
           console.error(`Could not parse refno: ${refno}`);
           return;
         }
@@ -192,10 +193,13 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
           return;
         }
 
+        // TODO: Check if order already exists in Firestore to prevent duplicates
+
         const orderRef = await addDoc(collection(db, 'orders'), {
             customerName,
             customerEmail,
             productId,
+            orderId,
             paymentMethod: 'ToyyibPay',
             status: 'Paid',
             createdAt: serverTimestamp(),
@@ -204,7 +208,7 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
             toyyibpayBillCode: billcode,
         });
 
-        console.log(`Saved successful order ${orderRef.id} to Firestore.`);
+        console.log(`Saved successful ToyyibPay order ${orderRef.id} to Firestore.`);
 
         const transporter = nodemailer.createTransport({
             host: 'smtp.zoho.com',
@@ -229,13 +233,13 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
             <p>With love,<br>The Cuddleia Team</p>
           `,
         });
-        console.log(`Digital product email sent for order ${orderRef.id}`);
+        console.log(`Digital product email sent for ToyyibPay order ${orderRef.id}`);
 
       } catch (error) {
         console.error('Error processing successful ToyyibPay payment:', error);
       }
     } else {
-      console.log(`ToyyibPay payment for bill ${billcode} was not successful. Status: ${billpayment_status}`);
+      console.log(`ToyyibPay payment for bill ${billcode} was not successful. Status: ${status}`);
     }
 }
 
@@ -254,16 +258,19 @@ export async function processPaypalSuccess(custom: string) {
           return;
         }
 
+        // TODO: Check if order already exists in Firestore to prevent duplicates
+
         const orderRef = await addDoc(collection(db, 'orders'), {
             customerName,
             customerEmail,
             productId,
+            orderId,
             paymentMethod: 'PayPal',
             status: 'Paid',
             createdAt: serverTimestamp(),
             productName: product.name,
             price: product.price,
-            paypalOrderId: orderId,
+            paypalOrderId: orderId, // Or use a transaction ID if available
         });
 
         console.log(`Saved successful PayPal order ${orderRef.id} to Firestore.`);
@@ -297,5 +304,6 @@ export async function processPaypalSuccess(custom: string) {
         console.error('Error processing successful PayPal payment:', error);
     }
 }
+    
 
     

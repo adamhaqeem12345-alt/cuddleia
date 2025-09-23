@@ -11,18 +11,23 @@ import { processPaypalSuccess } from '@/app/actions';
 
 function SuccessContent() {
   const searchParams = useSearchParams();
-  const method = searchParams.get('method');
-  // For PayPal, the custom data is in the 'custom' query parameter.
-  const custom = searchParams.get('custom');
   
   useEffect(() => {
-    // We only need to manually process the success if it's from PayPal,
-    // as ToyyibPay uses a server-to-server callback.
+    // PayPal's "return" URL does not have server-side reliability like IPN or webhooks.
+    // We get the payment details from the query params when the user is redirected back.
+    // This is less secure than a webhook, but simpler for this use case.
+    const method = searchParams.get('method');
+    const custom = searchParams.get('custom'); // This is from our original PayPal button data
+
+    // Only process if it's a PayPal return and we have the custom data.
+    // ToyyibPay is handled by its server-to-server callback.
     if (method === 'paypal' && custom) {
-      // Don't await, let it run in the background
+      console.log('Processing PayPal success on client...');
+      // We call the server action to record the sale and send the email.
+      // Don't await, let it run in the background.
       processPaypalSuccess(custom);
     }
-  }, [method, custom]);
+  }, [searchParams]);
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-gray-50 p-4">
