@@ -4,24 +4,34 @@ import { motion } from 'framer-motion';
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden bg-primary/10 py-20 md:py-32">
+    <section className="relative overflow-hidden bg-accent/50 py-24 md:py-32">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
           className="text-center"
         >
-          <h1 className="font-headline text-4xl font-bold tracking-tight text-primary-foreground/90 sm:text-5xl md:text-6xl">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: 'easeOut' }}
+            className="font-headline text-5xl font-bold tracking-tight text-primary-foreground/90 sm:text-6xl md:text-7xl"
+          >
             Welcome to <span className="text-primary">cuddleia</span>
-          </h1>
-          <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-foreground/80 font-body">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' }}
+            className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-foreground/80 font-body"
+          >
             Discover cozy digital wallpapers and thoughtfully designed Islamic booklets that bring warmth and serenity to your day.
-          </p>
+          </motion.p>
         </motion.div>
       </div>
-       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/10 via-transparent to-transparent" />
-       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+       <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 }

@@ -30,14 +30,15 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6, ease: 'easeInOut' }}
+      viewport={{ once: true, amount: 0.2 }}
+      className="h-full"
     >
-      <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl border-none bg-card shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
+      <Card className="group flex h-full transform flex-col overflow-hidden rounded-2xl border-none bg-card shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
         <CardHeader className="p-0">
-          <div className="relative aspect-square w-full">
+          <div className="relative aspect-square w-full overflow-hidden">
             <Image
               src={product.imageUrl}
               alt={product.name}
@@ -49,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardHeader>
         <CardContent className="flex flex-1 flex-col p-6">
-          <CardTitle className="mb-2 font-headline text-2xl text-primary-foreground/90">{product.name}</CardTitle>
+          <CardTitle className="mb-2 font-headline text-2xl text-primary-foreground/90 transition-colors duration-300 group-hover:text-primary">{product.name}</CardTitle>
           <CardDescription className="flex-grow font-body text-foreground/80">{product.description}</CardDescription>
         </CardContent>
         <CardFooter className="flex items-center justify-between p-6 pt-0">
