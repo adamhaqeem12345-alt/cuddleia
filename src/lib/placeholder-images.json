@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "product-1",
+      "description": "A bottle of facial serum on a pink background.",
+      "imageUrl": "https://images.unsplash.com/photo-1619166855062-f63c187def3d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxmYWNpYWwlMjBzZXJ1bXxlbnwwfHx8fDE3NTg1OTk4MTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "facial serum"
+    },
+    {
+      "id": "product-2",
+      "description": "A makeup palette with various colors.",
+      "imageUrl": "https://images.unsplash.com/photo-1758272421352-37565cb20a02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWFrZXVwJTIwcGFsZXR0ZXxlbnwwfHx8fDE3NTg1OTk4MTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "makeup palette"
+    },
+    {
+      "id": "product-3",
+      "description": "A stylish handbag.",
+      "imageUrl": "https://images.unsplash.com/photo-1758274251785-72758ded4798?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzdHlsaXNoJTIwaGFuZGJhZ3xlbnwwfHx8fDE3NTg1OTk4MTh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "stylish handbag"
+    },
+    {
+      "id": "product-4",
+      "description": "A jar of face cream.",
+      "imageUrl": "https://images.unsplash.com/photo-1585945037805-5fd82c2e60b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxmYWNlJTIwY3JlYW18ZW58MHx8fHwxNzU4NTkzMjgyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "face cream"
+    },
+    {
+      "id": "product-5",
+      "description": "A set of lipstick tubes.",
+      "imageUrl": "https://images.unsplash.com/photo-1610071785322-631cfd059282?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bGlwc3RpY2slMjBzZXR8ZW58MHx8fHwxNzU4NTk5ODE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lipstick set"
+    },
+    {
+      "id": "product-6",
+      "description": "A pair of sunglasses.",
+      "imageUrl": "https://images.unsplash.com/photo-1511499767150-a48a237f0083?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzdW5nbGFzc2VzfGVufDB8fHx8MTc1ODU5OTgxOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sunglasses"
+    },
+    {
+      "id": "product-7",
+      "description": "A gentle skin cleanser.",
+      "imageUrl": "https://images.unsplash.com/photo-1563417994879-58755bba00a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxza2luJTIwY2xlYW5zZXJ8ZW58MHx8fHwxNzU4NTk5ODE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "skin cleanser"
+    },
+    {
+      "id": "product-8",
+      "description": "A bottle of foundation.",
+      "imageUrl": "https://images.unsplash.com/photo-1546951400-c106ca5fc813?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmb3VuZGF0aW9uJTIwYm90dGxlfGVufDB8fHx8MTc1ODU5OTgxOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "foundation bottle"
+    }
+  ]
 }
