@@ -1,6 +1,6 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Mail, Briefcase, Bot, Code } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 export function AboutUs() {
@@ -22,43 +22,17 @@ export function AboutUs() {
           className="text-center"
         >
           <h2 className="font-headline text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Our Mission
+            Crafted with Love
           </h2>
           <p className="mt-4 max-w-3xl mx-auto text-lg leading-8 text-foreground/80 font-body">
-            Cuddleia is dedicated to empowering the Muslim community by providing expert guidance in modern business, AI-driven automation, and professional website development, all grounded in our shared values.
+            At Cuddleia, we pour our hearts into creating beautiful digital products. From cozy iPad wallpapers to thoughtfully designed Islamic booklets, each creation is made to bring a touch of warmth and serenity into your life.
           </p>
         </motion.div>
 
-        <div className="mt-16 grid max-w-lg mx-auto gap-10 lg:max-w-none lg:grid-cols-3">
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Briefcase className="h-6 w-6" />
-            </div>
-            <h3 className="mt-5 font-headline text-xl font-semibold text-foreground">Halal Business Guidance</h3>
-            <p className="mt-2 text-base text-foreground/70">Navigate the world of entrepreneurship with strategies that align with your principles.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Bot className="h-6 w-6" />
-            </div>
-            <h3 className="mt-5 font-headline text-xl font-semibold text-foreground">AI Automation</h3>
-            <p className="mt-2 text-base text-foreground/70">Leverage the power of artificial intelligence to streamline your business and boost efficiency.</p>
-          </div>
-          <div className="flex flex-col items-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Code className="h-6 w-6" />
-            </div>
-            <h3 className="mt-5 font-headline text-xl font-semibold text-foreground">Web Development</h3>
-            <p className="mt-2 text-base text-foreground/70">Build a powerful online presence with our expert website design and development services.</p>
-          </div>
-        </div>
-
-        <div className="mt-20 text-center">
-            <h3 className="font-headline text-2xl text-foreground">Have a Project in Mind?</h3>
-            <p className="mt-2 text-lg text-foreground/70">Let's work together to bring your vision to life.</p>
-             <Link href="mailto:hello@cuddleia.com" className="inline-flex items-center gap-2 mt-4 text-primary font-bold hover:underline">
-                <Mail className="h-5 w-5" />
-                hello@cuddleia.com
+         <div className="mt-16 text-center">
+            <Link href="#products" className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">
+                <Sparkles className="h-5 w-5" />
+                Explore Our Creations
             </Link>
         </div>
       </div>
