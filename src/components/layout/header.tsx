@@ -1,6 +1,7 @@
 
 'use client';
 import { motion } from 'framer-motion';
+import { Logo } from './logo';
 
 export function Header() {
 
@@ -13,9 +14,7 @@ export function Header() {
     >
       <div className="container mx-auto flex h-24 items-center justify-center px-4">
         <a href="/" className="transition-transform hover:scale-105">
-          <h1 className="text-5xl font-headline md:text-6xl text-foreground transition-colors hover:text-primary">
-            cuddleia
-          </h1>
+          <Logo className="h-10 text-foreground transition-colors hover:text-primary" />
         </a>
       </div>
     </motion.header>
