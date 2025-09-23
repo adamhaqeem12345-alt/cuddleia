@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { createOrder } from '@/app/actions';
 import { Product } from '@/lib/products';
+import { useFormState, useFormStatus } from 'react-dom';
 
 interface PurchaseModalProps {
   product: Product;
@@ -26,11 +27,14 @@ interface PurchaseModalProps {
 
 type Step = 'details' | 'location' | 'processing';
 
+type CheckoutState = {
+  error?: string;
+};
+
 export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps) {
   const [step, setStep] = useState<Step>('details');
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const { toast } = useToast();
 
   const handleNext = () => {
@@ -44,10 +48,9 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
       });
     }
   };
-  
-  const handleCheckout = async (paymentMethod: 'ToyyibPay' | 'PayPal') => {
+
+  const startCheckout = async (paymentMethod: 'ToyyibPay' | 'PayPal'): Promise<CheckoutState> => {
     setStep('processing');
-    setIsLoading(true);
     
     const result = await createOrder(product, customerName, customerEmail, paymentMethod);
 
@@ -56,26 +59,26 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
         title: 'Order Created!',
         description: 'Redirecting you to complete the payment...',
       });
+      // Redirect on the client-side
       window.location.href = result.url;
+      return {};
     } else {
       toast({
         variant: 'destructive',
         title: 'Error',
         description: result.error || 'Could not process your order.',
       });
-      setStep('location');
+      setStep('location'); // Go back to location step on error
+      return { error: result.error };
     }
-    setIsLoading(false);
   };
 
   const resetAndClose = () => {
     setIsOpen(false);
-    // Add a small delay to allow the closing animation to finish
     setTimeout(() => {
         setStep('details');
         setCustomerName('');
         setCustomerEmail('');
-        setIsLoading(false);
     }, 300);
   }
 
@@ -83,7 +86,7 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
     switch (step) {
       case 'details':
         return (
-          <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{opacity: 0, x: 50}} transition={{ duration: 0.3 }}>
+          <motion.div key="details" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{opacity: 0, x: 50}} transition={{ duration: 0.3 }}>
             <DialogHeader>
               <DialogTitle className="font-headline text-2xl">Your Details</DialogTitle>
               <DialogDescription>
@@ -107,28 +110,33 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
         );
       case 'location':
         return (
-          <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{opacity: 0, x: 50}} transition={{ duration: 0.3 }}>
+          <motion.div key="location" initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} exit={{opacity: 0, x: 50}} transition={{ duration: 0.3 }}>
             <DialogHeader>
               <DialogTitle className="font-headline text-2xl">Choose Your Location</DialogTitle>
               <DialogDescription>
                 This helps us provide the best payment experience for you.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-1 gap-4 py-6 md:grid-cols-2">
-                <Button variant="outline" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-primary/10 hover:border-primary" onClick={() => handleCheckout('ToyyibPay')}>
-                    <MapPin className="h-8 w-8 text-primary" />
-                    <span>Malaysian Buyer</span>
-                </Button>
-                <Button variant="outline" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-accent/20 hover:border-accent" onClick={() => handleCheckout('PayPal')}>
-                    <Globe className="h-8 w-8 text-accent" />
-                    <span>International Buyer</span>
-                </Button>
-            </div>
+             <form action={async (formData) => {
+                const method = formData.get('paymentMethod') as 'ToyyibPay' | 'PayPal';
+                await startCheckout(method);
+             }}>
+                 <div className="grid grid-cols-1 gap-4 py-6 md:grid-cols-2">
+                    <button type="submit" name="paymentMethod" value="ToyyibPay" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-primary/10 hover:border-primary border bg-transparent p-4 flex items-center justify-center">
+                        <MapPin className="h-8 w-8 text-primary" />
+                        <span>Malaysian Buyer</span>
+                    </button>
+                    <button type="submit" name="paymentMethod" value="PayPal" className="h-28 flex-col gap-2 text-base rounded-2xl transition-all hover:bg-accent/20 hover:border-accent border bg-transparent p-4 flex items-center justify-center">
+                        <Globe className="h-8 w-8 text-accent" />
+                        <span>International Buyer</span>
+                    </button>
+                </div>
+            </form>
           </motion.div>
         );
       case 'processing':
         return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="flex flex-col items-center justify-center space-y-4 py-12">
+            <motion.div key="processing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="flex flex-col items-center justify-center space-y-4 py-12">
                 <Loader2 className="h-16 w-16 animate-spin text-primary" />
                 <h2 className="text-2xl font-headline">Processing Your Order</h2>
                 <p className="text-muted-foreground text-center">Please wait... we're preparing everything for you.</p>
@@ -147,3 +155,4 @@ export function PurchaseModal({ product, isOpen, setIsOpen }: PurchaseModalProps
     </Dialog>
   );
 }
+
