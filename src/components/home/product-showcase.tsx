@@ -12,7 +12,7 @@ export function ProductShowcase({ products }: ProductShowcaseProps) {
     <section className="py-16 sm:py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-            <h2 className="font-headline text-3xl font-bold tracking-tight text-primary-foreground/90 sm:text-4xl">Our Creations</h2>
+            <h2 className="font-headline text-3xl font-bold tracking-tight text-foreground sm:text-4xl">Our Creations</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg leading-8 text-foreground/70 font-body">
                 Handcrafted with love, just for you.
             </p>

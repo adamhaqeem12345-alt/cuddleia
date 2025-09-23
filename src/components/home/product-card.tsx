@@ -50,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardHeader>
         <CardContent className="flex flex-1 flex-col p-6">
-          <CardTitle className="mb-2 font-headline text-2xl text-primary-foreground/90 transition-colors duration-300 group-hover:text-primary">{product.name}</CardTitle>
+          <CardTitle className="mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">{product.name}</CardTitle>
           <CardDescription className="flex-grow font-body text-foreground/80">{product.description}</CardDescription>
         </CardContent>
         <CardFooter className="flex items-center justify-between p-6 pt-0">

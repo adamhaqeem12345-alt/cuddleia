@@ -29,7 +29,7 @@ export default function ProductPurchasePage({ params }: { params: { id: string }
         <div className="flex flex-col h-full">
           <Card className="flex-grow flex flex-col border-none bg-transparent shadow-none">
             <CardHeader>
-              <CardTitle className="font-headline text-4xl lg:text-5xl text-primary-foreground/90">{product.name}</CardTitle>
+              <CardTitle className="font-headline text-4xl lg:text-5xl text-foreground">{product.name}</CardTitle>
               <p className="font-headline text-3xl lg:text-4xl font-bold text-primary">{formatCurrency(product.price)}</p>
             </CardHeader>
             <CardContent className="flex-grow">
