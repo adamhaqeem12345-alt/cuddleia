@@ -1,7 +1,8 @@
 
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { createOrder } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +25,7 @@ function SubmitButton() {
 }
 
 export function PurchaseForm({ productId }: { productId: string }) {
-  const [state, formAction] = useFormState(createOrder.bind(null, productId), initialState);
+  const [state, formAction] = useActionState(createOrder.bind(null, productId), initialState);
   const { toast } = useToast();
 
    useEffect(() => {
