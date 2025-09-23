@@ -37,4 +37,13 @@ export const products: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1562664377-709f2c337eb2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjYWxtaW5nJTIwbmF0dXJlJTIwd2FsbHBhcGVyfGVufDB8fHx8MTc1ODU5OTgxOHww&ixlib=rb-4.1.0&q=80&w=1080',
     downloadUrl: '#' // Replace with your actual download link
   },
+  {
+    id: 'prod_4',
+    name: 'iPad Wallpaper (Lock Screen, Landscape) – Allah Loves You Forever (Maroon Series)',
+    description: 'A digital Islamic wallpaper featuring floral art and Arabic calligraphy of Allah and Muhammad ﷺ, with the reminder ‘Allah Loves You Forever.’',
+    price: 6.00,
+    category: 'Digital Wallpaper',
+    imageUrl: 'https://overbits.herokuapp.com/pdfconvert/temp/1c505f25fa916c564afe17fa805899e6/Islamic%20iPad%20Wallpaper.zip%20-%202.pdf?t=1758612810610',
+    downloadUrl: 'https://drive.google.com/file/d/1OyatP86tevbHRiazIMEsal09fcFOMSZl/view?usp=drivesdk'
+  }
 ];
