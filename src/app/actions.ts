@@ -120,16 +120,6 @@ export async function createOrder(
 
   } catch (error) {
     console.error('Error creating order:', error);
-    // This is a temporary fix to bypass Firestore permission errors for now.
-    if (error instanceof Error && error.message.includes('permission')) {
-        console.warn('Firestore permission error ignored, proceeding with payment redirect.');
-        if (paymentMethod === 'ToyyibPay') {
-          // Cannot proceed with ToyyibPay without orderRef.id, so we show an error
-           return { error: 'Could not save order to our system due to a permissions issue. Please contact support.' };
-        }
-         const url = PAYPAL_URL;
-        return { url: `${url}?cmd=_xclick&business=${process.env.PAYPAL_MERCHANT_EMAIL}&item_name=${encodeURIComponent(product.name)}&amount=${product.price}&currency_code=USD&no_shipping=1&return=${process.env.NEXT_PUBLIC_APP_URL}/payment/success&cancel_return=${process.env.NEXT_PUBLIC_APP_URL}/` };
-    }
     return { error: 'An unexpected error occurred. Please try again.' };
   }
 }
