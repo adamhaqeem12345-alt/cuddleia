@@ -3,7 +3,7 @@
 
 import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, Package, Mail, Loader2 } from 'lucide-react';
+import { CheckCircle, Mail, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -12,9 +12,12 @@ import { processPaypalSuccess } from '@/app/actions';
 function SuccessContent() {
   const searchParams = useSearchParams();
   const method = searchParams.get('method');
+  // For PayPal, the custom data is in the 'custom' query parameter.
   const custom = searchParams.get('custom');
   
   useEffect(() => {
+    // We only need to manually process the success if it's from PayPal,
+    // as ToyyibPay uses a server-to-server callback.
     if (method === 'paypal' && custom) {
       // Don't await, let it run in the background
       processPaypalSuccess(custom);
@@ -65,3 +68,5 @@ export default function PaymentSuccessPage() {
         </Suspense>
     )
 }
+
+    

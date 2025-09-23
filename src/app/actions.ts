@@ -104,11 +104,8 @@ export async function createOrder(
 
     if (paymentMethod === 'ToyyibPay') {
         const billAmount = Math.round(product.price * 100);
-        const billExternalReferenceNo = JSON.stringify({
-            productId: product.id,
-            customerName,
-            customerEmail
-        });
+        // Toyyibpay's billExternalReferenceNo has limitations. We'll pass a simple delimited string.
+        const billExternalReferenceNo = `${product.id}|${customerName}|${customerEmail}`;
 
 
         const toyyibpayResponse = await fetch('https://toyyibpay.com/index.php/api/createBill', {
@@ -147,12 +144,8 @@ export async function createOrder(
 
     } else { // PayPal
         const orderId = `order_${Date.now()}`;
-        const customData = JSON.stringify({
-          orderId,
-          productId: product.id,
-          customerName,
-          customerEmail,
-        });
+        // Using a simple delimited string for PayPal custom field as well for consistency
+        const customData = `${product.id}|${customerName}|${customerEmail}|${orderId}`;
         const paypalParams = new URLSearchParams({
             cmd: '_xclick',
             business: process.env.PAYPAL_MERCHANT_EMAIL!,
@@ -186,7 +179,12 @@ export async function createOrder(
 export async function processToyyibpayCallback(billcode: string, status_id: string, refno: string, billpayment_status: string) {
     if (billpayment_status === '1') { // Payment is successful
       try {
-        const { productId, customerName, customerEmail } = JSON.parse(refno);
+        const [productId, customerName, customerEmail] = refno.split('|');
+
+        if (!productId || !customerName || !customerEmail) {
+          console.error(`Could not parse refno: ${refno}`);
+          return;
+        }
 
         const product = products.find(p => p.id === productId);
         if (!product) {
@@ -243,7 +241,12 @@ export async function processToyyibpayCallback(billcode: string, status_id: stri
 
 export async function processPaypalSuccess(custom: string) {
     try {
-        const { productId, customerName, customerEmail, orderId } = JSON.parse(decodeURIComponent(custom));
+        const [productId, customerName, customerEmail, orderId] = custom.split('|');
+
+        if (!productId || !customerName || !customerEmail || !orderId) {
+          console.error(`Could not parse custom field from PayPal: ${custom}`);
+          return;
+        }
 
         const product = products.find(p => p.id === productId);
         if (!product) {
@@ -294,3 +297,5 @@ export async function processPaypalSuccess(custom: string) {
         console.error('Error processing successful PayPal payment:', error);
     }
 }
+
+    

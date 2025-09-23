@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 
 const initialState = {
-  error: '',
+  error: undefined,
 };
 
 function SubmitButton() {
@@ -57,7 +57,7 @@ export function PurchaseForm({ productId }: { productId: string }) {
       </div>
       <SubmitButton />
        {state?.error && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-destructive">
+        <div className="mt-4 flex items-center gap-2 text-sm text-destructive sr-only">
             <AlertCircle className="h-4 w-4" />
             <p>{state.error}</p>
         </div>
@@ -65,3 +65,5 @@ export function PurchaseForm({ productId }: { productId: string }) {
     </form>
   );
 }
+
+    
