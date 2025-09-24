@@ -3,14 +3,14 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Heart, Feather, Sparkles } from 'lucide-react';
+import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
 
 export default function AboutPage() {
   const teamMember = {
     name: 'Fatimah',
     role: 'Founder & Creator',
     bio: 'Fatimah is the heart and soul behind Cuddleia. With a passion for art, faith, and all things cozy, she pours her love into every digital creation, hoping to bring a little bit of warmth and serenity into your digital space.',
-    imageUrl: 'https://images.unsplash.com/photo-1588497805169-354313093553?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkaWdpdGFsJTIwYXJ0aXN0JTIwd29ya3NwYWNlfGVufDB8fHx8MTc1ODg5ODg0OHww&ixlib=rb-4.1.0&q=80&w=1080',
+    imageUrl: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjcmVhdG9yJTIwYXQlMjB3b3JrfGVufDB8fHx8MTc1ODkwMDEyNHww&ixlib=rb-4.1.0&q=80&w=1080',
   };
 
   const Feature = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
@@ -91,7 +91,7 @@ export default function AboutPage() {
               Our work is guided by these core principles.
             </p>
           </div>
-          <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-3">
+          <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
             <Feature
               icon={<Heart size={24} />}
               title="Made with Love"
@@ -106,6 +106,11 @@ export default function AboutPage() {
               icon={<Sparkles size={24} />}
               title="Aesthetic & Functional"
               description="Our designs are not only beautiful but also practical, helping you organize your digital life with style."
+            />
+            <Feature
+              icon={<ShieldCheck size={24} />}
+              title="Built on Honesty"
+              description="We believe in transparency and sincerity, from how we create our products to how we interact with you."
             />
           </div>
         </div>
