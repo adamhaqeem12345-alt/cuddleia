@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -11,8 +12,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTrigger,
-  SheetClose
+  SheetClose,
+  SheetTitle,
 } from '@/components/ui/sheet';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 export function Header() {
     const { cartCount, isHydrating } = useCart();
@@ -57,6 +60,9 @@ export function Header() {
                     </SheetTrigger>
                     <SheetContent side="left" className="w-[300px]">
                         <SheetHeader className="mb-8">
+                           <VisuallyHidden>
+                                <SheetTitle>Main Menu</SheetTitle>
+                           </VisuallyHidden>
                            <Logo />
                         </SheetHeader>
                         <nav className="flex flex-col items-start gap-6">
