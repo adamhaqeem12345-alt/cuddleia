@@ -37,7 +37,7 @@ export default function AboutPage() {
         >
           <h1 className="font-headline text-5xl font-bold text-primary sm:text-6xl">Our Story</h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/80">
-            Crafting digital goods with love, faith, and honesty.
+            Cuddleia began with honesty, faith, and a dream to create something meaningful.
           </p>
         </motion.div>
       </section>
