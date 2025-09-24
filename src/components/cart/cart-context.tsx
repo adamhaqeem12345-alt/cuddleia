@@ -30,7 +30,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load cart from localStorage on initial render
+    // Load cart from localStorage on initial render, only on the client
     try {
       const localData = window.localStorage.getItem('cuddleia-cart');
       if (localData) {
@@ -42,7 +42,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Save cart to localStorage whenever it changes
+    // Save cart to localStorage whenever it changes, only on the client
     try {
         window.localStorage.setItem('cuddleia-cart', JSON.stringify(cartItems));
     } catch (error) {

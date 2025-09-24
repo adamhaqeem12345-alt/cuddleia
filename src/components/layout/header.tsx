@@ -1,6 +1,6 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ShoppingBag } from 'lucide-react';
 import { Logo } from './logo';
@@ -11,6 +11,11 @@ import { CartSheet } from '@/components/cart/cart-sheet';
 export function Header() {
     const { cartCount } = useCart();
     const [isCartOpen, setCartOpen] = useState(false);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const navItems = [
         { href: '/', label: 'Home' },
@@ -32,10 +37,10 @@ export function Header() {
                     </Link>
                 ))}
             </nav>
-            <Button variant="ghost" className="relative h-14 w-14 rounded-full" onClick={() => setCartOpen(true)}>
-                <ShoppingBag className="h-7 w-7 text-foreground" />
-                {cartCount > 0 && (
-                    <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+            <Button variant="ghost" className="relative h-16 w-16 rounded-full" onClick={() => setCartOpen(true)}>
+                <ShoppingBag className="h-8 w-8 text-foreground" />
+                {isClient && cartCount > 0 && (
+                    <span className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                         {cartCount}
                     </span>
                 )}
