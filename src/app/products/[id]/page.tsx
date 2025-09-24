@@ -5,6 +5,7 @@ import { ProductImage } from './_components/product-image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddToCartButton } from './_components/add-to-cart-button';
 import { formatCurrency } from '@/lib/utils';
+import { ProductStory } from './_components/product-story';
 
 export default function ProductPurchasePage({ params }: { params: { id:string } }) {
   const product = products.find(p => p.id === params.id);
@@ -34,6 +35,7 @@ export default function ProductPurchasePage({ params }: { params: { id:string } 
                       <div className="flex flex-col sm:flex-row gap-4 pt-4">
                         <AddToCartButton product={product} />
                       </div>
+                      <ProductStory product={product} />
                   </CardContent>
                   <CardFooter>
                       {/* Footer is kept for layout consistency but content is removed */}
