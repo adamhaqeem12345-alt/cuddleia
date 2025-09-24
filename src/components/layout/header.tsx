@@ -23,28 +23,31 @@ export function Header() {
     <>
     <header className="w-full border-b sticky top-0 z-40 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
-        <Link href="/" className="transition-transform hover:scale-105">
+        <Link href="/" className="transition-transform hover:scale-105 mr-auto">
           <Logo />
         </Link>
-        <nav className="hidden md:flex items-center gap-6">
-            {navItems.map((item) => (
-                <Link key={item.label} href={item.href} className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary">
-                    {item.label}
-                </Link>
-            ))}
-        </nav>
-        <Button variant="ghost" className="relative h-12 w-12 rounded-full" onClick={() => setCartOpen(true)}>
-            <ShoppingBag className="h-6 w-6 text-foreground" />
-            {cartCount > 0 && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-                    {cartCount}
-                </span>
-            )}
-            <span className="sr-only">Open Shopping Cart</span>
-        </Button>
+        <div className="flex items-center gap-4">
+            <nav className="hidden md:flex items-center gap-6">
+                {navItems.map((item) => (
+                    <Link key={item.label} href={item.href} className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary">
+                        {item.label}
+                    </Link>
+                ))}
+            </nav>
+            <Button variant="ghost" className="relative h-12 w-12 rounded-full" onClick={() => setCartOpen(true)}>
+                <ShoppingBag className="h-6 w-6 text-foreground" />
+                {cartCount > 0 && (
+                    <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                        {cartCount}
+                    </span>
+                )}
+                <span className="sr-only">Open Shopping Cart</span>
+            </Button>
+        </div>
       </div>
     </header>
     <CartSheet open={isCartOpen} onOpenChange={setCartOpen} />
     </>
   );
 }
+
