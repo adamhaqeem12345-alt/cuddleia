@@ -233,7 +233,7 @@ export async function createOrder(
         // Default to the live environment unless PAYPAL_SANDBOX is explicitly 'true'
         const useSandbox = process.env.PAYPAL_SANDBOX === 'true';
         const paypalUrl = useSandbox
-            ? 'https://www.paypal.com/sandbox/cgi-bin/webscr'
+            ? 'https://www.sandbox.paypal.com/cgi-bin/webscr'
             : 'https://www.paypal.com/cgi-bin/webscr';
             
         redirectUrl = `${paypalUrl}?${paypalParams.toString()}`;
