@@ -32,7 +32,7 @@ export default function ProductPurchasePage({ params }: { params: { id:string } 
                   </CardHeader>
                   <CardContent className="flex-grow space-y-6">
                       <div className="prose prose-lg text-foreground/80 max-w-none whitespace-pre-line font-body">{product.description}</div>
-                      <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex flex-col sm:flex-row gap-4 pt-4">
                         <AddToCartButton product={product} />
                         <StoryWeaver product={product} />
                       </div>

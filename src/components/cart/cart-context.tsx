@@ -21,12 +21,14 @@ export interface CartContextType {
   clearCart: () => void;
   cartCount: number;
   cartTotal: number;
+  isHydrating: boolean;
 }
 
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isHydrating, setIsHydrating] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,17 +40,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Failed to load cart from localStorage", error);
+    } finally {
+        setIsHydrating(false);
     }
   }, []);
 
   useEffect(() => {
     // Save cart to localStorage whenever it changes, only on the client
-    try {
-        window.localStorage.setItem('cuddleia-cart', JSON.stringify(cartItems));
-    } catch (error) {
-        console.error("Failed to save cart to localStorage", error);
+    if (!isHydrating) {
+        try {
+            window.localStorage.setItem('cuddleia-cart', JSON.stringify(cartItems));
+        } catch (error) {
+            console.error("Failed to save cart to localStorage", error);
+        }
     }
-  }, [cartItems]);
+  }, [cartItems, isHydrating]);
 
   const addToCart = useCallback(
     (product: Product, quantity: number = 1) => {
@@ -97,8 +103,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [toast]);
 
   const cartCount = useMemo(() => {
+    if (isHydrating) return 0;
     return cartItems.reduce((total, item) => total + item.quantity, 0);
-  }, [cartItems]);
+  }, [cartItems, isHydrating]);
 
   const cartTotal = useMemo(() => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -113,8 +120,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       clearCart,
       cartCount,
       cartTotal,
+      isHydrating,
     }),
-    [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal]
+    [cartItems, addToCart, removeFromCart, updateQuantity, clearCart, cartCount, cartTotal, isHydrating]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

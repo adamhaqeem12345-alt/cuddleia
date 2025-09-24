@@ -34,7 +34,7 @@ function SubmitButton() {
 
 
 export default function CheckoutPage() {
-    const { cartItems, cartTotal, cartCount } = useCart();
+    const { cartItems, cartTotal, cartCount, isHydrating } = useCart();
     const [state, formAction] = useActionState(createOrder, initialState);
     const { toast } = useToast();
 
@@ -47,6 +47,14 @@ export default function CheckoutPage() {
         });
         }
     }, [state, toast]);
+
+    if (isHydrating) {
+        return (
+             <div className="flex min-h-[80vh] items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        )
+    }
 
     if (cartCount === 0) {
         return (
@@ -130,13 +138,13 @@ export default function CheckoutPage() {
                                     </div>
                                     </div>
                                 </div>
-                                <SubmitButton />
                                 {state?.error && (
-                                    <div className="mt-4 flex items-center gap-2 text-sm text-destructive sr-only">
+                                    <div className="mt-4 flex items-center gap-2 text-sm text-destructive">
                                         <AlertCircle className="h-4 w-4" />
                                         <p>{state.error}</p>
                                     </div>
                                 )}
+                                <SubmitButton />
                             </form>
                         </CardContent>
                     </Card>
