@@ -45,36 +45,36 @@ export default function AboutPage() {
       {/* Mission Section */}
       <section className="py-24 sm:py-32">
         <div className="container mx-auto px-4">
-            <div className="mx-auto max-w-6xl">
-                <div className="grid grid-cols-1 items-center gap-12 md:grid-cols-2 lg:gap-20">
-                    <div className="order-last md:order-first">
-                        <h2 className="font-headline text-4xl leading-tight text-foreground">
-                            From a simple idea to a cozy corner of the internet.
-                        </h2>
-                        <div className="prose prose-lg mt-6 max-w-none font-body text-foreground/80">
-                            <p>
-                                Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.
-                            </p>
-                            <p>
-                                Every product is made with love, written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and ideas, but every decision, design, and final touch is guided by us with heart and faith.
-                            </p>
-                            <p>
-                                Our mission is to create digital goods that uplift hearts, inspire faith, and make your screens a place of comfort and reflection.
-                            </p>
-                        </div>
-                    </div>
-                    <div className="relative aspect-[4/5] w-full max-w-md mx-auto">
-                        <Image
-                        src="https://i.postimg.cc/0rg91k8k/IMG-0426.png"
-                        alt="Pastel floral graphics background"
-                        fill
-                        className="rounded-2xl object-cover shadow-lg"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                        data-ai-hint="pastel flowers"
-                        />
-                    </div>
+            <div className="mx-auto max-w-4xl text-center">
+                <h2 className="font-headline text-4xl leading-tight text-foreground">
+                    From a simple idea to a cozy corner of the internet.
+                </h2>
+                <div className="prose prose-lg mt-6 max-w-none font-body text-foreground/80 mx-auto">
+                    <p>
+                        Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.
+                    </p>
+                    <p>
+                        Every product is made with love written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and shaping ideas, but every decision, design, and final touch is guided by us with heart and faith.
+                    </p>
+                    <p>
+                        Our mission is to create digital goods that uplift hearts, inspire faith, and make your screens a place of comfort and reflection.
+                    </p>
                 </div>
             </div>
+        </div>
+      </section>
+
+      {/* Image Section */}
+      <section className="container mx-auto px-4 mb-24 sm:mb-32">
+        <div className="relative aspect-video w-full">
+            <Image
+            src="https://i.postimg.cc/0rg91k8k/IMG-0426.png"
+            alt="Pastel floral graphics background"
+            fill
+            className="rounded-2xl object-cover shadow-lg"
+            sizes="100vw"
+            data-ai-hint="pastel flowers"
+            />
         </div>
       </section>
       
