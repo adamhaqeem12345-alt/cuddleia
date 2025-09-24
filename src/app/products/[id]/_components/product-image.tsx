@@ -11,8 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import type { Product } from '@/lib/products';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { Card } from '@/components/ui/card';
-
 
 interface ProductImageProps {
   product: Product;
