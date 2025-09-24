@@ -44,12 +44,12 @@ export default function AboutPage() {
 
       {/* Mission Section */}
       <section className="py-24 sm:py-32">
-        <div className="container mx-auto grid grid-cols-1 gap-16 px-4 md:grid-cols-2 md:items-center lg:gap-24">
-          <div className="space-y-8">
+        <div className="container mx-auto max-w-4xl px-4">
+          <div className="space-y-8 text-center">
             <h2 className="font-headline text-4xl leading-tight text-foreground">
               From a simple idea to a cozy corner of the internet.
             </h2>
-            <div className="prose prose-lg text-foreground/80 max-w-none font-body">
+            <div className="prose prose-lg text-foreground/80 max-w-none font-body text-left">
                <p>
                 Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.
               </p>
@@ -61,22 +61,6 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="relative h-96 w-full overflow-hidden rounded-2xl shadow-xl"
-          >
-            <Image
-              src="https://i.postimg.cc/k4xT4C3H/d-2.png"
-              alt="A graphic background of pastel colored flowers."
-              fill
-              className="object-cover"
-              data-ai-hint="pastel flowers"
-            />
-             <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
-          </motion.div>
         </div>
       </section>
       
