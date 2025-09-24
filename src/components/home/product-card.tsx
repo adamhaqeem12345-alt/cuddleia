@@ -70,7 +70,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         </Link>
                     </Button>
                     <Button onClick={() => addToCart(product)} className="rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">
-                        <ShoppingCart className="mr-2 h-5 w-5" /> Add
+                        <ShoppingCart className="mr-2 h-5 w-5" /> Select
                     </Button>
                 </div>
             </CardFooter>

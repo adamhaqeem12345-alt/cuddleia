@@ -181,7 +181,10 @@ export async function createOrder(
             notify_url: `${appUrl}/api/payment/ipn`,
             custom: customData,
         });
-        redirectUrl = `https://www.paypal.com/cgi-bin/webscr?${paypalParams.toString()}`;
+        const paypalUrl = process.env.PAYPAL_SANDBOX === 'true' 
+            ? 'https://www.sandbox.paypal.com/cgi-bin/webscr'
+            : 'https://www.paypal.com/cgi-bin/webscr';
+        redirectUrl = `${paypalUrl}?${paypalParams.toString()}`;
     }
   } catch (error) {
     console.error('Error creating order redirect:', error);
@@ -331,9 +334,3 @@ export async function processPaypalIPN(ipnData: any) {
         console.error('[PayPal IPN] Error processing IPN:', error);
     }
 }
-    
-    
-
-    
-
-    

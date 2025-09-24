@@ -2,7 +2,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { CheckCircle, Mail, Loader2, PartyPopper } from 'lucide-react';
+import { Mail, Loader2, PartyPopper } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';

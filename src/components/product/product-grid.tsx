@@ -1,6 +1,6 @@
 
 import type { Product } from '@/lib/products';
-import { ProductCard } from '@/components/product/product-card';
+import { ProductCard } from '@/components/home/product-card'; // Re-using the card from home
 
 interface ProductGridProps {
   products: Product[];
@@ -17,7 +17,7 @@ export function ProductGrid({ products }: ProductGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

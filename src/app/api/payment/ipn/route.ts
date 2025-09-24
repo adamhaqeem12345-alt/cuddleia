@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     // It will then make a post back to PayPal to verify the data.
     const isVerified = await new Promise<boolean>((resolve, reject) => {
       // The 'paypal-ipn' library types are a bit off, we need to cast the options
-      const options = { allow_sandbox: true }; 
+      const options = { allow_sandbox: process.env.PAYPAL_SANDBOX === 'true' }; 
       ipn.verify(body, options as any, (err: Error | null, msg: string) => {
         if (err) {
           console.error('PayPal IPN Verification Error:', err);

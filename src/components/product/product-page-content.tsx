@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 import type { Product } from '@/lib/products';
 import { Input } from '@/components/ui/input';
 import { CategoryFilters } from '@/components/product/category-filters';
-import { ProductGrid } from '@/components/product/product-grid';
+import { ProductGrid } from './product-grid';
 
 interface ProductPageContentProps {
   products: Product[];
@@ -32,11 +32,11 @@ export function ProductPageContent({ products, categories }: ProductPageContentP
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="relative flex-1 md:max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search products..."
-            className="w-full rounded-full bg-card pl-10"
+            className="w-full rounded-full bg-card pl-12 h-12"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
