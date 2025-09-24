@@ -95,7 +95,7 @@ export async function createOrder(
           return { error: `Product with ID ${item.id} not found.` };
       }
       totalAmount += product.price * item.quantity;
-      validatedProducts.push(product);
+      validatedProducts.push({ ...product, quantity: item.quantity } as Product & { quantity: number });
   }
   
   let redirectUrl = '';
@@ -199,18 +199,17 @@ export async function createOrder(
             custom: customData,
         });
 
-        cartItems.forEach((item, index) => {
-            const product = validatedProducts.find(p => p.id === item.id);
-            if (product) {
-                paypalParams.append(`item_name_${index + 1}`, product.name);
-                paypalParams.append(`amount_${index + 1}`, product.price.toFixed(2));
-                paypalParams.append(`quantity_${index + 1}`, item.quantity.toString());
-            }
+        validatedProducts.forEach((product, index) => {
+            paypalParams.append(`item_name_${index + 1}`, product.name);
+            paypalParams.append(`amount_${index + 1}`, product.price.toFixed(2));
+            paypalParams.append(`quantity_${index + 1}`, (product as any).quantity.toString());
         });
 
-        const paypalUrl = process.env.PAYPAL_SANDBOX === 'true' 
+        const useSandbox = process.env.PAYPAL_SANDBOX === 'true';
+        const paypalUrl = useSandbox
             ? 'https://www.sandbox.paypal.com/cgi-bin/webscr'
             : 'https://www.paypal.com/cgi-bin/webscr';
+            
         redirectUrl = `${paypalUrl}?${paypalParams.toString()}`;
     }
   } catch (error) {
@@ -382,3 +381,5 @@ export async function processPaypalIPN(ipnData: any) {
         console.error('[PayPal IPN] Error processing IPN:', error);
     }
 }
+
+    
