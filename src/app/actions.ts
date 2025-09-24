@@ -53,15 +53,16 @@ async function getCountryFromIP() {
 
 async function getUsdToMyrRate(): Promise<number> {
     try {
+        // Using a more reliable API endpoint if available, or a fallback.
         const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
         if (!response.ok) {
-            console.warn(`Could not fetch exchange rate. Defaulting to 4.7. Status: ${response.status}`);
+            console.warn(`Could not fetch exchange rate. Status: ${response.status}. Defaulting to fallback rate 4.7.`);
             return 4.7; // Fallback rate
         }
         const data = await response.json();
         const rate = data.rates.MYR;
         if (!rate) {
-            console.warn('MYR not found in exchange rate response. Defaulting to 4.7.');
+            console.warn('MYR not found in exchange rate response. Defaulting to fallback rate 4.7.');
             return 4.7; // Fallback rate
         }
         console.log(`Fetched USD to MYR exchange rate: ${rate}`);
@@ -222,6 +223,7 @@ export async function createOrder(
             cancel_return: `${appUrl}/checkout?status=cancelled`,
             notify_url: `${appUrl}/api/payment/ipn`,
             custom: customData,
+            invoice: orderId, // Use the unique order ID as the invoice number
         });
 
         validatedProducts.forEach((product, index) => {
@@ -381,17 +383,19 @@ export async function processToyyibpayCallback(refno: string, billcode: string, 
 export async function processPaypalIPN(ipnData: any) {
     try {
         console.log(`[PayPal IPN] Received IPN data. Verifying...`);
-        console.log(`[PayPal IPN] Transaction ID: ${ipnData.txn_id}, Payment Status: ${ipnData.payment_status}`);
+        // Use invoice number for logging if available, otherwise txn_id
+        const logIdentifier = ipnData.invoice || ipnData.txn_id;
+        console.log(`[PayPal IPN] Identifier: ${logIdentifier}, Payment Status: ${ipnData.payment_status}`);
 
 
         if (ipnData.payment_status !== 'Completed') {
-            console.log(`[PayPal IPN] Payment status is not 'Completed' (${ipnData.payment_status}) for txn_id ${ipnData.txn_id}. Skipping.`);
+            console.log(`[PayPal IPN] Payment status is not 'Completed' (${ipnData.payment_status}) for identifier ${logIdentifier}. Skipping.`);
             return;
         }
 
         const custom = ipnData.custom;
         if (!custom) {
-            console.error(`[PayPal IPN] Custom field is missing from IPN data for txn_id ${ipnData.txn_id}. Cannot fulfill order.`);
+            console.error(`[PayPal IPN] Custom field is missing from IPN data for identifier ${logIdentifier}. Cannot fulfill order.`);
             return;
         }
         
@@ -400,14 +404,17 @@ export async function processPaypalIPN(ipnData: any) {
         const [orderId, productIds, customerName, customerEmail] = custom.split('|');
 
         if (!orderId || !productIds || !customerName || !customerEmail) {
-          console.error(`[PayPal IPN] Could not parse custom field: "${custom}" for txn_id ${ipnData.txn_id}. Aborting fulfillment.`);
+          console.error(`[PayPal IPN] Could not parse custom field: "${custom}" for identifier ${logIdentifier}. Aborting fulfillment.`);
           return;
         }
         
-        console.log(`[PayPal IPN] Processing successful payment for order: ${orderId}`);
-        await fulfillOrder(orderId, customerName, customerEmail, productIds, 'PayPal', ipnData.txn_id);
+        // Prioritize invoice for the transaction ID, fall back to txn_id
+        const transactionId = ipnData.invoice || ipnData.txn_id;
+        console.log(`[PayPal IPN] Processing successful payment for order: ${orderId} with transaction ID ${transactionId}`);
+        await fulfillOrder(orderId, customerName, customerEmail, productIds, 'PayPal', transactionId);
 
     } catch (error) {
         console.error('[PayPal IPN] Error processing IPN:', error);
     }
 }
+
