@@ -1,13 +1,11 @@
 
 import { notFound } from 'next/navigation';
 import { products } from '@/lib/products';
-import { PurchaseForm } from './_components/purchase-form';
 import { ProductImage } from './_components/product-image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { StoryWeaver } from './_components/story-weaver';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart } from 'lucide-react';
 import { AddToCartButton } from './_components/add-to-cart-button';
+import { formatCurrency } from '@/lib/utils';
 
 export default function ProductPurchasePage({ params }: { params: { id:string } }) {
   const product = products.find(p => p.id === params.id);
@@ -15,13 +13,6 @@ export default function ProductPurchasePage({ params }: { params: { id:string } 
   if (!product) {
     notFound();
   }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
 
   return (
       <div className="container mx-auto max-w-6xl py-12 px-4 sm:py-16">
@@ -47,8 +38,7 @@ export default function ProductPurchasePage({ params }: { params: { id:string } 
                       </div>
                   </CardContent>
                   <CardFooter>
-                      {/* The purchase form for single-item direct checkout can be an alternative flow */}
-                      {/* For now, we prioritize adding to cart */}
+                      {/* Footer is kept for layout consistency but content is removed */}
                   </CardFooter>
               </Card>
           </div>
