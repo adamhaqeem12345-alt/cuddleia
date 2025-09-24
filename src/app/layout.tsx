@@ -4,8 +4,8 @@ import { Alegreya, Belleza } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
+import { Header } from '@/components/layout/header';
 
 const belleza = Belleza({
   subsets: ['latin'],

@@ -6,12 +6,10 @@ import { products } from '@/lib/products';
 
 export default async function Home() {
   return (
-    <div className="flex flex-col min-h-dvh">
-      <main className="flex-1">
-        <Hero />
-        <AboutUs />
-        <ProductShowcase products={products} />
-      </main>
-    </div>
+    <>
+      <Hero />
+      <AboutUs />
+      <ProductShowcase products={products} />
+    </>
   );
 }
