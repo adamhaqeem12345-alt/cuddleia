@@ -37,7 +37,7 @@ export default function AboutPage() {
         >
           <h1 className="font-headline text-5xl font-bold text-primary sm:text-6xl">Our Story</h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/80">
-            Crafting digital goods with love, faith, and a touch of coziness.
+            Crafting digital goods with love, faith, and honesty.
           </p>
         </motion.div>
       </section>
@@ -49,12 +49,18 @@ export default function AboutPage() {
             <h2 className="font-headline text-4xl leading-tight text-foreground">
               From a simple idea to a cozy corner of the internet.
             </h2>
-            <div className="space-y-6 text-lg text-foreground/80">
+            <div className="prose prose-lg text-foreground/80 max-w-none font-body">
               <p>
-                Cuddleia was born from a desire to blend modern aesthetics with timeless faith. We believe that the digital spaces we inhabit every day—our phone screens, our tablets, our planners—should be sources of peace and inspiration.
+                Cuddleia began with honesty, faith, and a dream to create something meaningful. What started as a small idea grew into a space where love, creativity, and trust come together.
               </p>
               <p>
-                Our mission is to create high-quality, beautiful, and heartwarming digital products that not only organize your life but also nourish your soul. Each design is thoughtfully crafted, each booklet written with care, and each wallpaper imbued with a message of hope and love.
+                We believe in being transparent. Many of our creations are built with the help of AI, but always guided by human intention, care, and our values. Every design, every booklet, every product is thoughtfully crafted to balance modern tools with timeless faith.
+              </p>
+              <p>
+                Our mission is simple: to bring peace, warmth, and inspiration into the digital spaces you visit daily. Whether it’s a planner that keeps you grounded, a wallpaper that lifts your spirit, or a booklet that shares wisdom, each piece of Cuddleia carries with it sincerity, faith, and a touch of coziness.
+              </p>
+              <p>
+                Cuddleia is more than just digital goods. It’s a reflection of who we are: honest, hopeful, and deeply committed to making life a little lighter, one design at a time.
               </p>
             </div>
           </div>
