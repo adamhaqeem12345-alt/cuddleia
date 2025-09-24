@@ -88,14 +88,14 @@ export async function createOrder(
 
   // Calculate total and validate products
   let totalAmount = 0;
-  const validatedProducts: Product[] = [];
+  const validatedProducts: (Product & { quantity: number })[] = [];
   for (const item of cartItems) {
       const product = products.find(p => p.id === item.id);
       if (!product) {
           return { error: `Product with ID ${item.id} not found.` };
       }
       totalAmount += product.price * item.quantity;
-      validatedProducts.push({ ...product, quantity: item.quantity } as Product & { quantity: number });
+      validatedProducts.push({ ...product, quantity: item.quantity });
   }
   
   let redirectUrl = '';
@@ -202,12 +202,13 @@ export async function createOrder(
         validatedProducts.forEach((product, index) => {
             paypalParams.append(`item_name_${index + 1}`, product.name);
             paypalParams.append(`amount_${index + 1}`, product.price.toFixed(2));
-            paypalParams.append(`quantity_${index + 1}`, (product as any).quantity.toString());
+            paypalParams.append(`quantity_${index + 1}`, product.quantity.toString());
         });
 
+        // Default to the live environment unless PAYPAL_SANDBOX is explicitly 'true'
         const useSandbox = process.env.PAYPAL_SANDBOX === 'true';
         const paypalUrl = useSandbox
-            ? 'https://www.sandbox.paypal.com/cgi-bin/webscr'
+            ? 'https://www.paypal.com/sandbox/cgi-bin/webscr'
             : 'https://www.paypal.com/cgi-bin/webscr';
             
         redirectUrl = `${paypalUrl}?${paypalParams.toString()}`;
@@ -336,7 +337,7 @@ export async function processToyyibpayCallback(refno: string, billcode: string, 
     // status '1' means successful payment
     if (status === '1') { 
       try {
-        console.log(`[ToyyibPay Callback] Processing successful payment for refno: ${refno}`);
+        console.log(`[ToyyibPay Callback] Processing successful payment for refno: ${refno}, billcode: ${billcode}`);
         const [orderId, productIds, customerName, customerEmail] = refno.split('|');
 
         if (!orderId || !productIds || !customerName || !customerEmail) {
@@ -354,7 +355,9 @@ export async function processToyyibpayCallback(refno: string, billcode: string, 
 
 export async function processPaypalIPN(ipnData: any) {
     try {
-        console.log('[PayPal IPN] Received IPN data for transaction:', ipnData.txn_id);
+        console.log(`[PayPal IPN] Received IPN data. Verifying...`);
+        console.log(`[PayPal IPN] Transaction ID: ${ipnData.txn_id}, Payment Status: ${ipnData.payment_status}`);
+
 
         if (ipnData.payment_status !== 'Completed') {
             console.log(`[PayPal IPN] Payment status is not 'Completed' (${ipnData.payment_status}) for txn_id ${ipnData.txn_id}. Skipping.`);
@@ -366,6 +369,8 @@ export async function processPaypalIPN(ipnData: any) {
             console.error(`[PayPal IPN] Custom field is missing from IPN data for txn_id ${ipnData.txn_id}. Cannot fulfill order.`);
             return;
         }
+        
+        console.log(`[PayPal IPN] Custom field received: "${custom}"`);
 
         const [orderId, productIds, customerName, customerEmail] = custom.split('|');
 
@@ -381,5 +386,3 @@ export async function processPaypalIPN(ipnData: any) {
         console.error('[PayPal IPN] Error processing IPN:', error);
     }
 }
-
-    
