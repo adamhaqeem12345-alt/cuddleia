@@ -69,11 +69,11 @@ export default function AboutPage() {
             className="relative h-96 w-full overflow-hidden rounded-2xl shadow-xl"
           >
             <Image
-              src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmVhdG9yJTIwYXQlMjB3b3JrfGVufDB8fHx8MTc1ODU5OTgxOXww&ixlib=rb-4.1.0&q=80&w=1080"
-              alt="A person's hands drawing on a tablet, representing the act of creation."
+              src="https://images.unsplash.com/photo-1565530999933-3820a631f235?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxncmFwaGljJTIwcGFzdGVsJTIwZmxvd2VycyUyMGJhY2tncm91bmR8ZW58MHx8fHwxNzU4NzQ2MzQ4fDA&ixlib=rb-4.1.0&q=80&w=1080"
+              alt="A graphic background of pastel colored flowers."
               fill
               className="object-cover"
-              data-ai-hint="creator workspace"
+              data-ai-hint="pastel flowers"
             />
              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
           </motion.div>
