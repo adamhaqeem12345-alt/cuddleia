@@ -2,7 +2,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
-import { Button }s from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2, RefreshCw } from 'lucide-react';
 import { generateStory, type StoryWeaverOutput } from '@/ai/flows/story-weaver-flow';
 import type { Product } from '@/lib/products';
