@@ -1,6 +1,6 @@
 
 import type { Metadata } from 'next';
-import { Alegreya, Belleza, Mali } from 'next/font/google';
+import { Alegreya, Belleza } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
@@ -19,13 +19,6 @@ const alegreya = Alegreya({
   variable: '--font-alegreya',
 });
 
-const mali = Mali({
-  subsets: ['latin'],
-  weight: ['400', '600'],
-  variable: '--font-logo',
-});
-
-
 export const metadata: Metadata = {
   title: 'cuddleia',
   description: 'Cozy digital wallpapers and booklets.',
@@ -42,8 +35,7 @@ export default function RootLayout({
         className={cn(
           'min-h-screen bg-background font-body antialiased',
           belleza.variable,
-          alegreya.variable,
-          mali.variable
+          alegreya.variable
         )}
       >
         <CartProvider>
