@@ -92,22 +92,22 @@ export default function AboutPage() {
             <Feature
               icon={<Heart size={24} />}
               title="Made with Love"
-              description="Every product is a labor of love, designed with attention to detail and a personal touch."
+              description="Every product is created with intention and care. From the words to the design, each detail is touched by both human heart and thoughtful creativity."
             />
             <Feature
               icon={<Feather size={24} />}
               title="Gentle & Uplifting"
-              description="We aim to create content that is positive, inspiring, and brings a sense of calm to your day."
+              description="Our goal is to bring peace, positivity, and faith-driven encouragement into your everyday digital life."
             />
             <Feature
               icon={<Sparkles size={24} />}
               title="Aesthetic & Functional"
-              description="Our designs are not only beautiful but also practical, helping you organize your digital life with style."
+              description="We believe beauty and purpose belong together. Our products are designed to look inspiring while also helping you stay organized and focused."
             />
             <Feature
               icon={<ShieldCheck size={24} />}
               title="Built on Honesty"
-              description="We believe in transparency and sincerity, from how we create our products to how we interact with you."
+              description="We’re transparent about how we create. Our process combines faith, human creativity, and the support of AI in writing and ideas. Everything is refined and designed by hand, ensuring each product carries a genuine and personal touch."
             />
           </div>
         </div>
