@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -28,6 +27,7 @@ export function Header() {
     const navItems = [
         { href: '/', label: 'Home' },
         { href: '/products', label: 'Products' },
+        { href: '/about', label: 'About' },
         { href: '/contact', label: 'Contact' },
     ]
 
