@@ -10,7 +10,7 @@ export default function AboutPage() {
     name: 'Fatimah',
     role: 'Founder & Creator',
     bio: 'Fatimah is the heart and soul behind Cuddleia. With a passion for art, faith, and all things cozy, she pours her love into every digital creation, hoping to bring a little bit of warmth and serenity into your digital space.',
-    imageUrl: 'https://images.unsplash.com/photo-1593104547489-5cfb3839a3b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmVhdG9yJTIwYXQlMjB3b3JrfGVufDB8fHx8MTc1ODkwMDEyNHww&ixlib=rb-4.1.0&q=80&w=1080',
+    imageUrl: 'https://i.postimg.cc/Kc9MvNGS/Pink-Blush-Circle-Creative-Logo-Design.png',
   };
 
   const Feature = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
@@ -54,7 +54,7 @@ export default function AboutPage() {
                 Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.
               </p>
               <p>
-                Every product is made with love, written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and shaping ideas, but every decision, design, and final touch is guided by us with heart and faith.
+                Every product is made with love, written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and ideas, but every decision, design, and final touch is guided by us with heart and faith.
               </p>
               <p>
                 Our mission is to create digital goods that uplift hearts, inspire faith, and make your screens a place of comfort and reflection.
