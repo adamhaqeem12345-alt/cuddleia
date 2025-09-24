@@ -14,7 +14,7 @@ export const products: Product[] = [
     id: '001',
     name: 'Barakah Business Blueprint',
     description: 'The Barakah Business Blueprint is a beginner-friendly guidebook designed for Muslims who want to start an online business from zero while staying true to halal principles. It covers the main business models you can begin with (digital products, dropshipping, or physical goods), the best platforms to use without wasting money (Shopify, Gumroad, Etsy, Shopee, and more), and halal payment gateways like Toyyibpay, Stripe, and PayPal. You’ll also learn why having your own domain and branding builds long-term trust, how simple automation and AI tools such as n8n, Google Scripts, and Canva AI can save hours of work, and how to market effectively on TikTok, Instagram, and Pinterest. This is not a heavy textbook but a clear starting point that highlights the essentials, avoids the common pitfalls, and helps you take your first steps with confidence. Start your halal business journey today, build with integrity, earn with barakah.',
-    price: 25.00,
+    price: 15.00,
     category: 'Booklets',
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk' // Replace with your actual download link
