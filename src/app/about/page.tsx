@@ -10,7 +10,7 @@ export default function AboutPage() {
     name: 'Fatimah',
     role: 'Founder & Creator',
     bio: 'Fatimah is the heart and soul behind Cuddleia. With a passion for art, faith, and all things cozy, she pours her love into every digital creation, hoping to bring a little bit of warmth and serenity into your digital space.',
-    imageUrl: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjcmVhdG9yJTIwYXQlMjB3b3JrfGVufDB8fHx8MTc1ODkwMDEyNHww&ixlib=rb-4.1.0&q=80&w=1080',
+    imageUrl: 'https://images.unsplash.com/photo-1593104547489-5cfb3839a3b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmVhdG9yJTIwYXQlMjB3b3JrfGVufDB8fHx8MTc1ODkwMDEyNHww&ixlib=rb-4.1.0&q=80&w=1080',
   };
 
   const Feature = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
@@ -57,10 +57,10 @@ export default function AboutPage() {
                 We believe in being transparent. Many of our creations are built with the help of AI, but always guided by human intention, care, and our values. Every design, every booklet, every product is thoughtfully crafted to balance modern tools with timeless faith.
               </p>
               <p>
-                Our mission is simple: to bring peace, warmth, and inspiration into the digital spaces you visit daily. Whether it’s a planner that keeps you grounded, a wallpaper that lifts your spirit, or a booklet that shares wisdom, each piece of Cuddleia carries with it sincerity, faith, and a touch of coziness.
+                Our mission is simple: to bring peace, warmth, and inspiration into the digital spaces you visit daily. Whether it is a planner that keeps you grounded, a wallpaper that lifts your spirit, or a booklet that shares wisdom, each piece of Cuddleia carries with it sincerity, faith, and a touch of coziness.
               </p>
               <p>
-                Cuddleia is more than just digital goods. It’s a reflection of who we are: honest, hopeful, and deeply committed to making life a little lighter, one design at a time.
+                Cuddleia is more than just digital goods. It is a reflection of who we are: honest, hopeful, and deeply committed to making life a little lighter, one design at a time.
               </p>
             </div>
           </div>
