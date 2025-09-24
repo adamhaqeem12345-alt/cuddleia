@@ -1,14 +1,25 @@
 
 import { cn } from '@/lib/utils';
-import { Flower2 } from 'lucide-react';
+import { CustomFlowerIcon } from './custom-flower-icon';
 
 export function Logo({ className }: { className?: string }) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <Flower2 className="h-8 w-8 text-primary" />
-      <span className="font-headline text-3xl font-bold text-foreground" style={{ textShadow: '2px 2px 4px hsla(var(--foreground), 0.2)' }}>
-        cuddleia
+    <div className={cn('flex items-center gap-1', className)}>
+      <span 
+        className="font-logo text-4xl font-semibold tracking-wider text-primary" 
+        style={{ textShadow: '2px 2px 0px hsla(var(--foreground), 0.15)' }}
+      >
+        CUDDLE
       </span>
+      <div className="flex flex-col items-center justify-center -ml-3 -mr-2 mt-1">
+        <CustomFlowerIcon className="h-8 w-8 text-primary/80" />
+        <span 
+          className="font-logo text-4xl font-semibold tracking-wider text-primary" 
+          style={{ textShadow: '2px 2px 0px hsla(var(--foreground), 0.15)' }}
+        >
+          A
+        </span>
+      </div>
     </div>
   );
 }

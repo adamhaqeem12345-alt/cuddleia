@@ -20,6 +20,7 @@ export default {
       fontFamily: {
         body: ['var(--font-alegreya)', 'serif'],
         headline: ['var(--font-belleza)', 'sans-serif'],
+        logo: ['var(--font-logo)', 'cursive'],
       },
       colors: {
         background: 'hsl(var(--background))',
