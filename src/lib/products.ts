@@ -45,5 +45,14 @@ export const products: Product[] = [
     category: 'Wallpapers',
     imageUrl: 'https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png',
     downloadUrl: 'https://drive.google.com/file/d/1LTR13t8qBa3js0n01cQq8197tGRDAnTw/view?usp=drivesdk'
+  },
+  {
+    id: '005',
+    name: 'Cuddleia Test product',
+    description: 'Act as Cuddleia test product',
+    price: 0.24,
+    category: 'Wallpapers',
+    imageUrl: 'https://i.postimg.cc/MTBtTMXR/Heading.png',
+    downloadUrl: 'https://drive.google.com/file/d/1Kf9NdBI6T7rAow-D5Pf4F_5--Em5cjr0/view?usp=drivesdk'
   }
 ];
