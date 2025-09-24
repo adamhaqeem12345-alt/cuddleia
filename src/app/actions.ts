@@ -51,6 +51,27 @@ async function getCountryFromIP() {
     }
 }
 
+async function getUsdToMyrRate(): Promise<number> {
+    try {
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+        if (!response.ok) {
+            console.warn(`Could not fetch exchange rate. Defaulting to 4.7. Status: ${response.status}`);
+            return 4.7; // Fallback rate
+        }
+        const data = await response.json();
+        const rate = data.rates.MYR;
+        if (!rate) {
+            console.warn('MYR not found in exchange rate response. Defaulting to 4.7.');
+            return 4.7; // Fallback rate
+        }
+        console.log(`Fetched USD to MYR exchange rate: ${rate}`);
+        return rate;
+    } catch (error) {
+        console.error('Error fetching exchange rate:', error);
+        return 4.7; // Fallback rate on error
+    }
+}
+
 
 function determinePaymentGateway(countryCode: string): 'ToyyibPay' | 'PayPal' {
     if (countryCode === 'MY') {
@@ -87,14 +108,14 @@ export async function createOrder(
   }
 
   // Calculate total and validate products
-  let totalAmount = 0;
+  let totalAmountUsd = 0;
   const validatedProducts: (Product & { quantity: number })[] = [];
   for (const item of cartItems) {
       const product = products.find(p => p.id === item.id);
       if (!product) {
           return { error: `Product with ID ${item.id} not found.` };
       }
-      totalAmount += product.price * item.quantity;
+      totalAmountUsd += product.price * item.quantity;
       validatedProducts.push({ ...product, quantity: item.quantity });
   }
   
@@ -132,7 +153,7 @@ export async function createOrder(
               <div style="background-color: #fdf6f7; border-radius: 8px; padding: 20px; margin: 20px 0;">
                 <h2 style="color: #9d5c63; border-bottom: 2px solid #e6c2c7; padding-bottom: 10px; font-family: var(--font-belleza), sans-serif;">Order Summary</h2>
                 <p>${orderDescription}</p>
-                <p style="font-size: 1.2em; font-weight: bold; color: #333; margin-top: 10px;">Total: $${totalAmount.toFixed(2)}</p>
+                <p style="font-size: 1.2em; font-weight: bold; color: #333; margin-top: 10px;">Total: $${totalAmountUsd.toFixed(2)} USD</p>
               </div>
               
               <p>You will be redirected to <strong>${paymentMethod}</strong> to finalize your purchase.</p>
@@ -148,8 +169,12 @@ export async function createOrder(
     }
 
     if (paymentMethod === 'ToyyibPay') {
-        const billAmount = Math.round(totalAmount * 100);
+        const usdToMyrRate = await getUsdToMyrRate();
+        const totalAmountMyr = totalAmountUsd * usdToMyrRate;
+        const billAmountInCents = Math.round(totalAmountMyr * 100);
+        
         const billExternalReferenceNo = `${orderId}|${productIds}|${customerName}|${customerEmail}`;
+        const billDescriptionWithCurrency = `${orderDescription} (Total: RM ${totalAmountMyr.toFixed(2)})`;
 
         const toyyibpayResponse = await fetch('https://toyyibpay.com/index.php/api/createBill', {
             method: 'POST',
@@ -160,10 +185,10 @@ export async function createOrder(
                 'userSecretKey': process.env.TOYYIBPAY_SECRET_KEY!,
                 'categoryCode': process.env.TOYYIPAY_CATEGORY_CODE!,
                 'billName': 'Cuddleia Order',
-                'billDescription': orderDescription,
+                'billDescription': billDescriptionWithCurrency,
                 'billPriceSetting': '1',
                 'billPayorInfo': '1',
-                'billAmount': billAmount.toString(),
+                'billAmount': billAmountInCents.toString(),
                 'billReturnUrl': `${appUrl}/payment/success`,
                 'billCallbackUrl': `${appUrl}/api/payment/callback`,
                 'billExternalReferenceNo': billExternalReferenceNo,
