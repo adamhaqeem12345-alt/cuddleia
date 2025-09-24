@@ -50,17 +50,14 @@ export default function AboutPage() {
               From a simple idea to a cozy corner of the internet.
             </h2>
             <div className="prose prose-lg text-foreground/80 max-w-none font-body">
-              <p>
-                Cuddleia began with honesty, faith, and a dream to create something meaningful. What started as a small idea grew into a space where love, creativity, and trust come together.
+               <p>
+                Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.
               </p>
               <p>
-                We believe in being transparent. Many of our creations are built with the help of AI, but always guided by human intention, care, and our values. Every design, every booklet, every product is thoughtfully crafted to balance modern tools with timeless faith.
+                Every product is made with love, written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and shaping ideas, but every decision, design, and final touch is guided by us with heart and faith.
               </p>
               <p>
-                Our mission is simple: to bring peace, warmth, and inspiration into the digital spaces you visit daily. Whether it is a planner that keeps you grounded, a wallpaper that lifts your spirit, or a booklet that shares wisdom, each piece of Cuddleia carries with it sincerity, faith, and a touch of coziness.
-              </p>
-              <p>
-                Cuddleia is more than just digital goods. It is a reflection of who we are: honest, hopeful, and deeply committed to making life a little lighter, one design at a time.
+                Our mission is to create digital goods that uplift hearts, inspire faith, and make your screens a place of comfort and reflection.
               </p>
             </div>
           </div>
