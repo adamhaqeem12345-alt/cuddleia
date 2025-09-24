@@ -1,3 +1,4 @@
+
 'use client';
 
 import { motion } from 'framer-motion';
@@ -9,7 +10,7 @@ export default function AboutPage() {
     name: 'Fatimah',
     role: 'Founder & Creator',
     bio: 'Fatimah is the heart and soul behind Cuddleia. With a passion for art, faith, and all things cozy, she pours her love into every digital creation, hoping to bring a little bit of warmth and serenity into your digital space.',
-    imageUrl: 'https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png',
+    imageUrl: 'https://images.unsplash.com/photo-1588497805169-354313093553?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxkaWdpdGFsJTIwYXJ0aXN0JTIwd29ya3NwYWNlfGVufDB8fHx8MTc1ODg5ODg0OHww&ixlib=rb-4.1.0&q=80&w=1080',
   };
 
   const Feature = ({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) => (
