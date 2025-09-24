@@ -7,9 +7,9 @@ import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
 
 export default function AboutPage() {
   const teamMember = {
-    name: 'Fatimah',
+    name: 'Adam Haqeem',
     role: 'Founder & Creator',
-    bio: 'Fatimah is the heart and soul behind Cuddleia. With a passion for art, faith, and all things cozy, she pours her love into every digital creation, hoping to bring a little bit of warmth and serenity into your digital space.',
+    bio: 'Adam Haqeem is the heart and soul behind Cuddleia. With a deep love for faith, creativity, and honesty, he pours sincerity into every digital creation. Guided by the belief that digital spaces should inspire peace and purpose, Adam uses both design and the help of AI to craft products that uplift, comfort, and remind us of what truly matters.',
     imageUrl: 'https://i.postimg.cc/Kc9MvNGS/Pink-Blush-Circle-Creative-Logo-Design.png',
   };
 
@@ -69,10 +69,11 @@ export default function AboutPage() {
             className="relative h-96 w-full overflow-hidden rounded-2xl shadow-xl"
           >
             <Image
-              src="https://images.unsplash.com/photo-1599591876211-782b39a35a64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxpc2xhbWljJTIwYm9va2xldHxlbnwwfHx8fDE3NTg1OTk4MTh8MA&ixlib=rb-4.1.0&q=80&w=1080"
-              alt="A person writing in a journal"
+              src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjcmVhdG9yJTIwYXQlMjB3b3JrfGVufDB8fHx8MTc1ODU5OTgxOXww&ixlib=rb-4.1.0&q=80&w=1080"
+              alt="A person's hands drawing on a tablet, representing the act of creation."
               fill
               className="object-cover"
+              data-ai-hint="creator workspace"
             />
              <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent" />
           </motion.div>
