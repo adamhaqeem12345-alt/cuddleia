@@ -11,23 +11,25 @@ export async function POST(req: NextRequest) {
     const billcode = formData.get('billcode') as string;
     const msg = formData.get('msg') as string; // Optional message
 
-    console.log('ToyyibPay Server-to-Server Callback (POST) Received:', { refno, status, billcode, msg });
+    console.log('[ToyyibPay Callback] Received POST data:', { refno, status, billcode, msg });
 
     if (!refno || !status || !billcode) {
-        console.error('ToyyibPay POST callback missing required parameters.');
+        console.error('[ToyyibPay Callback] Missing required parameters.', { refno, status, billcode });
         return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
     
     // Process the callback asynchronously. This handles saving the order and sending the email.
+    // We don't await this so we can respond to ToyyibPay immediately.
     processToyyibpayCallback(refno, billcode, status).catch(err => {
-        console.error("Error in background processing of ToyyibPay callback:", err);
+        console.error("[ToyyibPay Callback] Error during background processing:", err);
     });
 
     // Respond immediately to ToyyibPay with OK to acknowledge receipt.
+    // This is crucial for ToyyibPay's system.
     return new NextResponse('OK', { status: 200 });
 
   } catch (error) {
-    console.error('Error handling ToyyibPay POST callback:', error);
+    console.error('[ToyyibPay Callback] Error handling POST request:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
@@ -39,7 +41,7 @@ export async function GET(req: NextRequest) {
     const billcode = searchParams.get('billcode');
     const order_id = searchParams.get('order_id'); // ToyyibPay's internal order ID
 
-    console.log('ToyyibPay User Redirect (GET) Received:', { status_id, billcode, order_id });
+    console.log('[ToyyibPay Redirect] User landed on GET redirect:', { status_id, billcode, order_id });
     
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {

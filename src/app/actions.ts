@@ -30,12 +30,17 @@ function getAppUrl() {
 
 async function getCountryFromIP() {
     const FALLBACK_IP = '8.8.8.8'; // Google's DNS
-    const ip = (headers().get('x-forwarded-for') ?? FALLBACK_IP).split(',')[0];
+    let ip = (headers().get('x-forwarded-for') ?? FALLBACK_IP).split(',')[0].trim();
+    
+    // In development (localhost), x-forwarded-for might not be set.
+    if (ip === '::1' || ip.startsWith('127.0.0.1')) {
+        ip = FALLBACK_IP;
+    }
 
     try {
         const response = await fetch(`https://ipapi.co/${ip}/json/`);
         if (!response.ok) {
-            console.warn(`Could not determine country from IP ${ip}. Defaulting to US.`);
+            console.warn(`Could not determine country from IP ${ip}. Response: ${response.status}. Defaulting to US.`);
             return 'US'; // Default to international if lookup fails
         }
         const data = await response.json();
@@ -45,6 +50,7 @@ async function getCountryFromIP() {
         return 'US'; // Default to international on error
     }
 }
+
 
 function determinePaymentGateway(countryCode: string): 'ToyyibPay' | 'PayPal' {
     if (countryCode === 'MY') {
@@ -243,19 +249,25 @@ async function fulfillOrder(orderId: string, customerName: string, customerEmail
 
     const totalOrderPrice = orderedProducts.reduce((sum, p) => sum + p.price, 0);
 
-    const orderRef = await addDoc(ordersRef, {
-        customerName,
-        customerEmail,
-        productIds,
-        orderId,
-        paymentMethod,
-        status: 'Paid',
-        createdAt: serverTimestamp(),
-        productNames: orderedProducts.map(p => p.name),
-        price: totalOrderPrice,
-        transactionId: transactionId,
-    });
-    console.log(`[Fulfill] Saved successful ${paymentMethod} order ${orderRef.id} to Firestore.`);
+    try {
+        const orderRef = await addDoc(ordersRef, {
+            customerName,
+            customerEmail,
+            productIds,
+            orderId,
+            paymentMethod,
+            status: 'Paid',
+            createdAt: serverTimestamp(),
+            productNames: orderedProducts.map(p => p.name),
+            price: totalOrderPrice,
+            transactionId: transactionId,
+        });
+        console.log(`[Fulfill] Saved successful ${paymentMethod} order ${orderRef.id} to Firestore.`);
+    } catch(dbError) {
+        console.error(`[Fulfill-DB] Failed to save order ${orderId} to Firestore. Error:`, dbError);
+        // Even if DB fails, we should still try to send the email.
+    }
+
 
     try {
         const transporter = nodemailer.createTransport({
@@ -314,9 +326,9 @@ async function fulfillOrder(orderId: string, customerName: string, customerEmail
             </div>
           `,
         });
-        console.log(`[Fulfill] Digital product email sent for order ${orderRef.id}`);
+        console.log(`[Fulfill-Email] Digital product email sent for order ${orderId}`);
     } catch (emailError) {
-        console.error(`[Fulfill] Error sending final email for order ${orderRef.id}:`, emailError);
+        console.error(`[Fulfill-Email] Error sending final email for order ${orderId}:`, emailError);
     }
 }
 
@@ -325,10 +337,11 @@ export async function processToyyibpayCallback(refno: string, billcode: string, 
     // status '1' means successful payment
     if (status === '1') { 
       try {
+        console.log(`[ToyyibPay Callback] Processing successful payment for refno: ${refno}`);
         const [orderId, productIds, customerName, customerEmail] = refno.split('|');
 
         if (!orderId || !productIds || !customerName || !customerEmail) {
-          console.error(`[ToyyibPay Callback] Could not parse refno: ${refno}`);
+          console.error(`[ToyyibPay Callback] Could not parse refno: ${refno}. Aborting fulfillment.`);
           return;
         }
         await fulfillOrder(orderId, customerName, customerEmail, productIds, 'ToyyibPay', billcode);
@@ -342,21 +355,27 @@ export async function processToyyibpayCallback(refno: string, billcode: string, 
 
 export async function processPaypalIPN(ipnData: any) {
     try {
-        console.log('[PayPal IPN] Received IPN data:', ipnData);
+        console.log('[PayPal IPN] Received IPN data for transaction:', ipnData.txn_id);
 
         if (ipnData.payment_status !== 'Completed') {
-            console.log(`[PayPal IPN] Payment status is not 'Completed' (${ipnData.payment_status}). Skipping.`);
+            console.log(`[PayPal IPN] Payment status is not 'Completed' (${ipnData.payment_status}) for txn_id ${ipnData.txn_id}. Skipping.`);
             return;
         }
 
         const custom = ipnData.custom;
+        if (!custom) {
+            console.error(`[PayPal IPN] Custom field is missing from IPN data for txn_id ${ipnData.txn_id}. Cannot fulfill order.`);
+            return;
+        }
+
         const [orderId, productIds, customerName, customerEmail] = custom.split('|');
 
         if (!orderId || !productIds || !customerName || !customerEmail) {
-          console.error(`[PayPal IPN] Could not parse custom field: ${custom}`);
+          console.error(`[PayPal IPN] Could not parse custom field: "${custom}" for txn_id ${ipnData.txn_id}. Aborting fulfillment.`);
           return;
         }
-
+        
+        console.log(`[PayPal IPN] Processing successful payment for order: ${orderId}`);
         await fulfillOrder(orderId, customerName, customerEmail, productIds, 'PayPal', ipnData.txn_id);
 
     } catch (error) {
