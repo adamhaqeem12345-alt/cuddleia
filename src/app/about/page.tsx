@@ -69,7 +69,7 @@ export default function AboutPage() {
             className="relative h-96 w-full overflow-hidden rounded-2xl shadow-xl"
           >
             <Image
-              src="https://images.unsplash.com/photo-1565530999933-3820a631f235?q=80&w=1080&auto=format&fit=crop"
+              src="https://i.postimg.cc/k4xT4C3H/d-2.png"
               alt="A graphic background of pastel colored flowers."
               fill
               className="object-cover"
