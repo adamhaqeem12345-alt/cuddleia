@@ -11,13 +11,13 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
-export const StoryWeaverInputSchema = z.object({
+const StoryWeaverInputSchema = z.object({
   productName: z.string().describe('The name of the digital product.'),
   productDescription: z.string().describe('The description of the digital product.'),
 });
 export type StoryWeaverInput = z.infer<typeof StoryWeaverInputSchema>;
 
-export const StoryWeaverOutputSchema = z.object({
+const StoryWeaverOutputSchema = z.object({
   story: z.string().describe('A short, uplifting, and inspiring Islamic story or reflection related to the product.'),
 });
 export type StoryWeaverOutput = z.infer<typeof StoryWeaverOutputSchema>;
