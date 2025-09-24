@@ -38,7 +38,7 @@ export function ProductStory({ product }: { product: Product }) {
       {!isPending && story && (
          <div className="animate-fade-in space-y-4 rounded-xl border border-primary/20 bg-primary/5 p-8">
             <h3 className="flex items-center gap-3 font-headline text-2xl text-primary">
-              <Sparkles className="h-6 w-6" />A Moment of Reflection, Weaved by AI
+              <Sparkles className="h-6 w-6" />A Gentle Story, Woven with a Spark of AI
             </h3>
             <p className="whitespace-pre-wrap font-body text-lg leading-relaxed text-foreground/80">
               {story.story}
