@@ -16,10 +16,10 @@ import {
 } from '@/components/ui/sheet';
 
 export function Header() {
-    const { cartCount } = useCart();
+    const { cartCount, isHydrating } = useCart();
     const [isCartOpen, setCartOpen] = useState(false);
-    const [isClient, setIsClient] = useState(false);
     const [isMenuOpen, setMenuOpen] = useState(false);
+    const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
         setIsClient(true);
@@ -28,6 +28,7 @@ export function Header() {
     const navItems = [
         { href: '/', label: 'Home' },
         { href: '/products', label: 'Products' },
+        { href: '/contact', label: 'Contact' },
     ]
 
   return (
