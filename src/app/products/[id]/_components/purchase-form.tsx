@@ -30,7 +30,7 @@ function SubmitButton() {
 }
 
 export function PurchaseForm({ productId }: { productId: string }) {
-  const [state, formAction] = useActionState(createOrder.bind(null, productId), initialState);
+  const [state, formAction] = useActionState(createOrder.bind(null), initialState);
   const { toast } = useToast();
 
    useEffect(() => {
@@ -43,8 +43,11 @@ export function PurchaseForm({ productId }: { productId: string }) {
     }
   }, [state, toast]);
 
+  const cartItemsForForm = JSON.stringify([{ id: productId, quantity: 1 }]);
+
   return (
     <form action={formAction} className="w-full space-y-6">
+      <input type="hidden" name="cartItems" value={cartItemsForForm} />
       <div className="space-y-4">
         <div>
           <Label htmlFor="name" className="font-headline text-base">Your Name</Label>

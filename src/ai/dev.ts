@@ -2,6 +2,4 @@
 import { config } from 'dotenv';
 config();
 
-// No flows are defined yet.
-
-    
+import './flows/story-weaver-flow';

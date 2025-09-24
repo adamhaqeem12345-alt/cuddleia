@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
+import { formatCurrency } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -23,13 +24,6 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-
   return (
     <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
       <Link href={`/products/${product.id}`} className="block">
@@ -55,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <CardFooter className="flex items-center justify-between gap-4 p-6 pt-0">
         <p className="text-2xl font-headline font-bold text-primary">{formatCurrency(product.price)}</p>
         <Button onClick={() => addToCart(product)} className="rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">
-            <ShoppingCart className="mr-2 h-5 w-5" /> Select
+            <ShoppingCart className="mr-2 h-5 w-5" /> Add to cart
         </Button>
       </CardFooter>
     </Card>

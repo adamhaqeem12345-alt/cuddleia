@@ -1,9 +1,9 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
-import { MinusCircle, PlusCircle, Trash2, ShoppingBag, X } from 'lucide-react';
+import { MinusCircle, PlusCircle, Trash2, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,9 +16,8 @@ import {
 } from '@/components/ui/sheet';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { products } from '@/lib/products';
 import Link from 'next/link';
-
+import { formatCurrency } from '@/lib/utils';
 
 interface CartSheetProps {
   open: boolean;
@@ -26,77 +25,90 @@ interface CartSheetProps {
 }
 
 export function CartSheet({ open, onOpenChange }: CartSheetProps) {
-  const { cartItems, removeFromCart, addToCart, clearCart, cartTotal, cartCount } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount } = useCart();
   
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
-  
-  // Since we only allow one item at a time, we can get the product directly
-  const cartProduct = cartItems.length > 0 ? products.find(p => p.id === cartItems[0].id) : null;
-
   return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="flex w-full flex-col pr-0 sm:max-w-lg">
           <SheetHeader className="px-6">
-            <SheetTitle className="font-headline text-2xl">Your Selection</SheetTitle>
+            <SheetTitle className="font-headline text-2xl flex items-center gap-2">
+              <ShoppingCart className="h-6 w-6" />
+              Your Cart ({cartCount})
+            </SheetTitle>
           </SheetHeader>
-          <Separator className="my-4" />
-          {cartProduct ? (
-            <div className="flex h-full flex-col">
-              <div className="flex-1 overflow-y-auto px-6">
-                <div className="flex flex-col gap-6">
-                    <div key={cartProduct.id} className="space-y-4">
-                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg">
+          
+          {cartItems.length > 0 ? (
+            <>
+            <div className="flex items-center justify-between px-6 mt-4">
+                <p className="text-sm text-muted-foreground">{cartItems.length} unique item(s)</p>
+                <Button variant="outline" size="sm" onClick={() => clearCart()} className="text-xs">
+                    <Trash2 className="mr-1 h-3 w-3" />
+                    Clear Cart
+                </Button>
+            </div>
+            <Separator className="my-4" />
+            <ScrollArea className="flex-1 px-6">
+              <div className="flex flex-col gap-6">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center gap-4">
+                      <div className="relative aspect-square w-24 overflow-hidden rounded-md">
                         <Image
-                          src={cartProduct.imageUrl}
-                          alt={cartProduct.name}
+                          src={item.imageUrl}
+                          alt={item.name}
                           fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          sizes="96px"
                           className="object-cover"
                         />
                       </div>
-                      <div>
-                        <h3 className="font-headline text-xl">{cartProduct.name}</h3>
-                        <p className="font-headline text-2xl font-bold text-primary">{formatCurrency(cartProduct.price)}</p>
-                         <div className="mt-4 flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">You can only purchase one item at a time.</p>
-                            <Button variant="outline" size="icon" onClick={() => clearCart()}>
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Remove item</span>
-                            </Button>
-                         </div>
+                      <div className="flex-1">
+                        <Link href={`/products/${item.id}`} className="font-headline text-base hover:underline">{item.name}</Link>
+                        <p className="text-sm text-muted-foreground">{formatCurrency(item.price)}</p>
+                        <div className="mt-2 flex items-center gap-2">
+                           <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
+                                <MinusCircle className="h-4 w-4" />
+                           </Button>
+                           <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                                <PlusCircle className="h-4 w-4" />
+                           </Button>
+                        </div>
                       </div>
+                       <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => removeFromCart(item.id)}>
+                            <Trash2 className="h-4 w-4 text-muted-foreground" />
+                            <span className="sr-only">Remove item</span>
+                        </Button>
                     </div>
-                </div>
+                  ))}
               </div>
+            </ScrollArea>
 
-              <SheetFooter className="mt-auto border-t bg-background px-6 py-4">
-                 <div className="w-full space-y-4">
-                    <div className="flex justify-between font-headline text-lg">
-                        <span>Total</span>
-                        <span>{formatCurrency(cartProduct.price)}</span>
-                    </div>
-                    <SheetClose asChild>
-                      <Button asChild size="lg" className="w-full">
-                          <Link href={`/products/${cartProduct.id}`}>
-                              Proceed to Purchase
-                          </Link>
-                      </Button>
-                    </SheetClose>
-                 </div>
-              </SheetFooter>
-            </div>
+            <SheetFooter className="mt-auto border-t bg-background/95 px-6 py-4">
+                <div className="w-full space-y-4">
+                  <div className="flex justify-between font-headline text-lg">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(cartTotal)}</span>
+                  </div>
+                  <SheetClose asChild>
+                    <Button asChild size="lg" className="w-full">
+                        <Link href="/checkout">
+                            Proceed to Checkout
+                        </Link>
+                    </Button>
+                  </SheetClose>
+                </div>
+            </SheetFooter>
+            </>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center px-6">
-              <ShoppingBag className="h-16 w-16 text-muted-foreground" />
+              <ShoppingCart className="h-16 w-16 text-muted-foreground" />
               <h2 className="font-headline text-2xl">Your cart is empty</h2>
               <p className="text-muted-foreground">Add a product to get started.</p>
               <SheetClose asChild>
-                <Button>Continue Shopping</Button>
+                <Button asChild>
+                    <Link href="/products">
+                        Continue Shopping
+                    </Link>
+                </Button>
               </SheetClose>
             </div>
           )}

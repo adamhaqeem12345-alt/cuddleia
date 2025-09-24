@@ -30,7 +30,7 @@ function FailedContent() {
             </p>
           
           <Button asChild size="lg" className="w-full rounded-full">
-            <Link href="/products">Try Again</Link>
+            <Link href="/checkout">Try Again</Link>
           </Button>
         </CardContent>
       </Card>

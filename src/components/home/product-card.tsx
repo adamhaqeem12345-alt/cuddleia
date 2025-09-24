@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useCart } from '@/hooks/use-cart';
+import { formatCurrency } from '@/lib/utils';
 
 
 interface ProductCardProps {
@@ -24,12 +25,6 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
     const { addToCart } = useCart();
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
 
   return (
     <motion.div
@@ -70,7 +65,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         </Link>
                     </Button>
                     <Button onClick={() => addToCart(product)} className="rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95">
-                        <ShoppingCart className="mr-2 h-5 w-5" /> Select
+                        <ShoppingCart className="mr-2 h-5 w-5" /> Add to cart
                     </Button>
                 </div>
             </CardFooter>

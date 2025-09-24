@@ -4,6 +4,10 @@ import { products } from '@/lib/products';
 import { PurchaseForm } from './_components/purchase-form';
 import { ProductImage } from './_components/product-image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { StoryWeaver } from './_components/story-weaver';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart } from 'lucide-react';
+import { AddToCartButton } from './_components/add-to-cart-button';
 
 export default function ProductPurchasePage({ params }: { params: { id:string } }) {
   const product = products.find(p => p.id === params.id);
@@ -35,11 +39,16 @@ export default function ProductPurchasePage({ params }: { params: { id:string } 
                       <CardTitle className="font-headline text-4xl lg:text-5xl">{product.name}</CardTitle>
                       <CardDescription className="font-headline text-3xl lg:text-4xl font-bold text-primary pt-2">{formatCurrency(product.price)}</CardDescription>
                   </CardHeader>
-                  <CardContent className="flex-grow">
+                  <CardContent className="flex-grow space-y-6">
                       <div className="prose prose-lg text-foreground/80 max-w-none whitespace-pre-line font-body">{product.description}</div>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <AddToCartButton product={product} />
+                        <StoryWeaver product={product} />
+                      </div>
                   </CardContent>
                   <CardFooter>
-                      <PurchaseForm productId={product.id} />
+                      {/* The purchase form for single-item direct checkout can be an alternative flow */}
+                      {/* For now, we prioritize adding to cart */}
                   </CardFooter>
               </Card>
           </div>
