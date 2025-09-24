@@ -7,8 +7,6 @@ import { Logo } from './logo';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { CartSheet } from '@/components/cart/cart-sheet';
-import { cn } from '@/lib/utils';
-
 
 export function Header() {
     const { cartCount } = useCart();
@@ -23,7 +21,7 @@ export function Header() {
     <>
     <header className="w-full border-b sticky top-0 z-40 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
-        <Link href="/" className="transition-transform hover:scale-105 mr-auto">
+        <Link href="/" className="transition-transform hover:scale-105">
           <Logo />
         </Link>
         <div className="flex items-center gap-4">
@@ -34,8 +32,8 @@ export function Header() {
                     </Link>
                 ))}
             </nav>
-            <Button variant="ghost" className="relative h-12 w-12 rounded-full" onClick={() => setCartOpen(true)}>
-                <ShoppingBag className="h-6 w-6 text-foreground" />
+            <Button variant="ghost" className="relative h-14 w-14 rounded-full" onClick={() => setCartOpen(true)}>
+                <ShoppingBag className="h-7 w-7 text-foreground" />
                 {cartCount > 0 && (
                     <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                         {cartCount}
@@ -50,4 +48,3 @@ export function Header() {
     </>
   );
 }
-
