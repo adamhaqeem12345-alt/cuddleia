@@ -45,7 +45,7 @@ export const products: Product[] = [
     id: "005",
     name: "Cuddleia Test product",
     description: "Act as Cuddleia test product",
-    price: 1.15,
+    price: 1.00,
     priceUSD: 0.24,
     imageUrl: "https://i.postimg.cc/MTBtTMXR/Heading.png",
     category: 'Wallpapers',
