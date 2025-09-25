@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    httpAgentOptions: {
+      keepAlive: false,
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -18,5 +23,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
-    
