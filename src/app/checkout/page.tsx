@@ -48,7 +48,7 @@ export default function CheckoutPage() {
 
         const usePayPal = (country !== 'MY') || (customerAge < 18) || (customerAge >= 18 && country === 'MY' && paymentMethod === 'paypal');
         const currencyForEmail = usePayPal ? 'USD' : 'MYR';
-        const priceCountryForEmail = usePayPal ? 'Other' : 'MYR';
+        const priceCountryForEmail = usePayPal ? 'Other' : 'MY';
         const currencyPrefixForEmail = usePayPal ? '$' : 'RM';
         
         const subtotalForEmailCalc = cart.reduce((acc, item) => acc + getPrice(item, priceCountryForEmail) * item.quantity, 0);
@@ -192,18 +192,18 @@ export default function CheckoutPage() {
                                     </div>
                                      <div className="space-y-2">
                                         <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
-                                         <Select name="country" required disabled={isProcessing} onValueChange={(value) => { setSelectedCountry(value); setAge(undefined); (document.getElementById('age') as HTMLInputElement).value = ''; }} defaultValue={selectedCountry}>
-                                            <SelectTrigger className="w-full">
-                                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                              <div className="pl-5">
-                                                <SelectValue placeholder="Select your country" />
-                                              </div>
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="MY">Malaysia</SelectItem>
-                                              <SelectItem value="Other">Other</SelectItem>
-                                            </SelectContent>
-                                          </Select>
+                                         <div className="relative">
+                                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
+                                             <Select name="country" required disabled={isProcessing} onValueChange={(value) => { setSelectedCountry(value); setAge(undefined); (document.getElementById('age') as HTMLInputElement).value = ''; }} defaultValue={selectedCountry}>
+                                                <SelectTrigger className="w-full pl-10">
+                                                    <SelectValue placeholder="Select your country" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="MY">Malaysia</SelectItem>
+                                                  <SelectItem value="Other">Other</SelectItem>
+                                                </SelectContent>
+                                              </Select>
+                                        </div>
                                     </div>
 
                                     {isMalaysianAdult && (
