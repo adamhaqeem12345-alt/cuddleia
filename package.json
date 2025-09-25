@@ -1,9 +1,14 @@
 {
-  "name": "new-project",
+  "name": "static-site",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {},
+  "description": "A simple static site.",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
 }
