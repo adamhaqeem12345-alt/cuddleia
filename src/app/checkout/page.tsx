@@ -19,14 +19,13 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage() {
-    const { cart, selectedCountry, setSelectedCountry, clearCart } = useCart();
+    const { cart, selectedCountry, setSelectedCountry } = useCart();
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
 
     const isMalaysianAdult = selectedCountry === 'MY' && age !== undefined && age >= 18;
     
-    // Determine the country and currency for the order summary display
     const usePayPalForDisplay = selectedCountry !== 'MY' || (age !== undefined && age < 18) || (isMalaysianAdult && paymentMethod === 'paypal');
     const countryForPrice = usePayPalForDisplay ? 'Other' : 'MY';
     const currencyPrefix = countryForPrice === 'MY' ? 'RM' : '$';
