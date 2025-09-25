@@ -20,7 +20,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage() {
-    const { cart, selectedCountry, setSelectedCountry, clearCart } = useCart();
+    const { cart, selectedCountry, setSelectedCountry } = useCart();
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -74,31 +74,7 @@ export default function CheckoutPage() {
 
         const usePayPal = selectedCountry !== 'MY' || (customerAge !== undefined && customerAge < 18) || (isMalaysianAdult && paymentMethod === 'paypal');
         
-        const finalCountryForPrice = usePayPal ? 'Other' : 'MY';
-        const finalCurrencyPrefix = usePayPal ? '$' : 'RM';
-        const subtotalForEmail = cart.reduce((acc, item) => acc + getPrice(item, finalCountryForPrice) * item.quantity, 0);
-
-        const finalSubtotalString = `${finalCurrencyPrefix}${subtotalForEmail.toFixed(2)}`;
-
-        const cartForEmail = cart.map(item => ({
-            ...item,
-            price: getPrice(item, finalCountryForPrice),
-            downloadUrl: item.downloadUrl,
-        }));
-
-
         try {
-             await fetch('/api/send-email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    to: email, 
-                    name: name, 
-                    cart: cartForEmail, 
-                    subtotal: finalSubtotalString
-                }),
-            });
-
             if (usePayPal) {
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
                 const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
@@ -117,7 +93,7 @@ export default function CheckoutPage() {
             } else {
                 const toyyibPaySubtotal = cart.reduce((acc, item) => acc + getPrice(item, 'MY') * item.quantity, 0);
                 
-                const returnUrl = `${window.location.protocol}//${window.location.host}/cart`;
+                const returnUrl = `${window.location.protocol}//${window.location.host}/products`;
 
                 const billResponse = await fetch('/api/create-bill', {
                     method: 'POST',
@@ -285,3 +261,5 @@ export default function CheckoutPage() {
         </div>
     )
 }
+
+    
