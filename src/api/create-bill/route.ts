@@ -20,7 +20,6 @@ export async function POST(request: Request) {
     formData.append('billPayorInfo', '1');
     formData.append('billAmount', billAmount.toString());
     formData.append('billReturnUrl', '');
-    formData.append('billCallbackUrl', '');
     formData.append('billExternalReferenceNo', externalReferenceNo);
     formData.append('billTo', billTo);
     formData.append('billEmail', billEmail);
@@ -50,10 +49,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'Failed to create ToyyibPay bill due to unexpected response format.', error: data }, { status: 500 });
         }
     } catch(jsonError) {
-        const errorText = await response.text();
+        const responseText = await response.text();
         console.error('Failed to parse Toyyibpay JSON response:', jsonError);
-        console.error('Toyyibpay raw response:', errorText);
-        return NextResponse.json({ message: 'Failed to parse Toyyibpay response.', error: errorText }, { status: 500 });
+        console.error('Toyyibpay raw response:', responseText);
+        return NextResponse.json({ message: 'Failed to parse Toyyibpay response.', error: responseText }, { status: 500 });
     }
 
   } catch (error)
