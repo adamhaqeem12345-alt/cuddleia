@@ -17,16 +17,15 @@ export async function POST(request: Request) {
       },
     });
 
-    const productList = cart.map((item: any) => {
-        const priceString = item.priceUSD ? `RM${item.price.toFixed(2)} / $${item.priceUSD.toFixed(2)}` : `RM${item.price.toFixed(2)}`;
-        return `
-        <li style="margin-bottom: 20px;">
-            <span style="font-weight: bold;">${item.name}</span> (x${item.quantity}) - ${priceString}
-            <br />
-            <a href="${item.downloadUrl}" style="color: #3498db; text-decoration: none;">Download Here</a>
-        </li>
-        `
-    }).join('');
+    const currencyPrefix = subtotal.startsWith('$') ? '$' : 'RM';
+    
+    const productList = cart.map((item: any) => `
+      <li style="margin-bottom: 20px;">
+        <span style="font-weight: bold;">${item.name}</span> (x${item.quantity}) - ${currencyPrefix}${(item.price * item.quantity).toFixed(2)}
+        <br />
+        <a href="${item.downloadUrl}" style="color: #3498db; text-decoration: none;">Download Here</a>
+      </li>
+    `).join('');
 
     const mailOptions = {
       from: `"Cuddleia" <${process.env.ZOHO_EMAIL}>`,

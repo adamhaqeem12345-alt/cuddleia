@@ -16,8 +16,14 @@ import {
 } from "@/components/ui/table"
 
 export default function CartPage() {
-    const { cart, removeFromCart, updateQuantity } = useCart();
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const { cart, removeFromCart, updateQuantity, selectedCountry } = useCart();
+    
+    const subtotal = cart.reduce((acc, item) => {
+        const price = selectedCountry === 'MY' ? item.price : item.priceUSD;
+        return acc + price * item.quantity;
+    }, 0);
+
+    const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -56,29 +62,32 @@ export default function CartPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {cart.map(item => (
-                                            <TableRow key={item.id}>
-                                                <TableCell className="hidden md:table-cell">
-                                                     <div className="relative h-20 w-20 rounded-md overflow-hidden">
-                                                        <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="font-medium font-headline text-lg">{item.name}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-4 w-4" /></Button>
-                                                        <Input type="number" value={item.quantity} onChange={e => updateQuantity(item.id, parseInt(e.target.value))} className="w-16 h-8 text-center" />
-                                                        <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-right font-body font-semibold">RM{(item.price * item.quantity).toFixed(2)}</TableCell>
-                                                <TableCell>
-                                                    <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="rounded-full">
-                                                        <X className="h-5 w-5" />
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {cart.map(item => {
+                                            const price = selectedCountry === 'MY' ? item.price : item.priceUSD;
+                                            return (
+                                                <TableRow key={item.id}>
+                                                    <TableCell className="hidden md:table-cell">
+                                                         <div className="relative h-20 w-20 rounded-md overflow-hidden">
+                                                            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="font-medium font-headline text-lg">{item.name}</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-4 w-4" /></Button>
+                                                            <Input type="number" value={item.quantity} onChange={e => updateQuantity(item.id, parseInt(e.target.value))} className="w-16 h-8 text-center" />
+                                                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-body font-semibold">{currencyPrefix}{(price * item.quantity).toFixed(2)}</TableCell>
+                                                    <TableCell>
+                                                        <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="rounded-full">
+                                                            <X className="h-5 w-5" />
+                                                        </Button>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -86,11 +95,11 @@ export default function CartPage() {
                                 <h2 className="font-headline text-3xl font-bold">Summary</h2>
                                 <div className="flex justify-between font-body text-lg">
                                     <span>Subtotal</span>
-                                    <span>RM{subtotal.toFixed(2)}</span>
+                                    <span>{currencyPrefix}{subtotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between font-body text-lg font-bold">
                                     <span>Total</span>
-                                    <span>RM{subtotal.toFixed(2)}</span>
+                                    <span>{currencyPrefix}{subtotal.toFixed(2)}</span>
                                 </div>
                                 <Button size="lg" className="w-full rounded-full text-lg py-6" asChild>
                                     <Link href="/checkout">

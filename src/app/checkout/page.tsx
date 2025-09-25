@@ -19,13 +19,13 @@ import {
 
 
 export default function CheckoutPage() {
-    const { cart, clearCart } = useCart();
+    const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
+    
     const subtotalMYR = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const subtotalUSD = cart.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
 
     const [isProcessing, setIsProcessing] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState('MY');
-
+    
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsProcessing(true);
@@ -44,6 +44,11 @@ export default function CheckoutPage() {
 
         const isInternational = country !== 'MY';
         const subtotalForEmail = isInternational ? `$${subtotalUSD.toFixed(2)}` : `RM${subtotalMYR.toFixed(2)}`;
+        const cartForEmail = cart.map(item => ({
+            ...item,
+            price: isInternational ? item.priceUSD : item.price,
+        }));
+
 
         try {
             const emailResponse = await fetch('/api/send-email', {
@@ -52,7 +57,7 @@ export default function CheckoutPage() {
                 body: JSON.stringify({
                     to: email,
                     name: name,
-                    cart: cart,
+                    cart: cartForEmail,
                     subtotal: subtotalForEmail,
                 }),
             });
@@ -64,7 +69,7 @@ export default function CheckoutPage() {
             clearCart();
 
             if (age < 18 || isInternational) {
-                const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL'; // <-- IMPORTANT: Replace with your email
+                const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL';
                 let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
 
                 cart.forEach((item, index) => {
@@ -76,8 +81,7 @@ export default function CheckoutPage() {
                 
                 window.location.href = paypalUrl;
             } else {
-                // Redirect to ToyyibPay for Malaysian customers 18 and over
-                const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`; // <-- IMPORTANT: Replace with your ToyyibPay Collection ID
+                const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`;
                 window.location.href = toyyibpayUrl;
             }
 
@@ -89,6 +93,7 @@ export default function CheckoutPage() {
     };
 
     const displaySubtotal = selectedCountry === 'MY' ? `RM${subtotalMYR.toFixed(2)}` : `$${subtotalUSD.toFixed(2)}`;
+    const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -137,7 +142,7 @@ export default function CheckoutPage() {
                                         </div>
                                          <div className="space-y-2">
                                             <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
-                                             <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} defaultValue="MY">
+                                             <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} defaultValue={selectedCountry}>
                                                 <SelectTrigger className="w-full">
                                                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                                   <div className="pl-5">
@@ -176,7 +181,7 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">{selectedCountry === 'MY' ? `RM${item.price.toFixed(2)}` : `$${item.priceUSD.toFixed(2)}`}</p>
+                                            <p className="font-body font-semibold">{currencyPrefix}{(selectedCountry === 'MY' ? item.price : item.priceUSD).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>

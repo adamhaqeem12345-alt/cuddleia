@@ -13,12 +13,15 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  selectedCountry: string;
+  setSelectedCountry: (country: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState('MY');
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -54,7 +57,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, selectedCountry, setSelectedCountry }}>
       {children}
     </CartContext.Provider>
   );

@@ -16,11 +16,13 @@ import {
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const product = products.find(p => p.id === params.id)
-  const { addToCart } = useCart()
+  const { addToCart, selectedCountry } = useCart()
 
   if (!product) {
     notFound()
   }
+
+  const price = selectedCountry === 'MY' ? `RM${product.price.toFixed(2)}` : `$${product.priceUSD.toFixed(2)}`;
 
   return (
     <AnimateIn>
@@ -54,7 +56,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             <div className="flex flex-1 flex-col rounded-lg border bg-card text-card-foreground shadow-sm">
               <div className="flex flex-col space-y-1.5 p-6">
                 <h1 className="font-headline text-4xl lg:text-5xl font-semibold tracking-tight">{product.name}</h1>
-                <p className="font-headline text-3xl lg:text-4xl font-bold text-primary pt-2">RM{product.price.toFixed(2)}</p>
+                <p className="font-headline text-3xl lg:text-4xl font-bold text-primary pt-2">{price}</p>
               </div>
               <div className="p-6 pt-0 flex-grow space-y-6">
                 <div className="prose prose-lg text-foreground/80 max-w-none whitespace-pre-line font-body">

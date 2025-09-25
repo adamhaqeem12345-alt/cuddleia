@@ -11,7 +11,9 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
 const ProductCard = ({ product }: { product: Product }) => {
-    const { addToCart } = useCart();
+    const { addToCart, selectedCountry } = useCart();
+    const price = selectedCountry === 'MY' ? `RM${product.price.toFixed(2)}` : `$${product.priceUSD.toFixed(2)}`;
+
     return (
         <div className="h-full">
             <div className="border text-card-foreground group flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
@@ -33,7 +35,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                     </Link>
                 </div>
                 <div className="flex items-center justify-between gap-4 p-6 pt-0">
-                    <p className="text-2xl font-headline font-bold text-primary">RM{product.price.toFixed(2)}</p>
+                    <p className="text-2xl font-headline font-bold text-primary">{price}</p>
                     <div className="flex gap-2">
                         <Button variant="outline" size="icon" className="rounded-full h-10 w-10" asChild>
                             <Link href={`/products/${product.id}`}>
