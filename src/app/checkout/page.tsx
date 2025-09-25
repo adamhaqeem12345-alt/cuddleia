@@ -132,7 +132,7 @@ export default function CheckoutPage() {
                 const billData = await billResponse.json();
 
                 if (!billResponse.ok) {
-                    throw new Error(billData.message || 'Failed to create ToyyibPay bill.');
+                    throw new Error(billData.message || 'Failed to create payment bill.');
                 }
                 
                 window.location.href = billData.paymentUrl;
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
 
         } catch (error: any) {
             console.error('Checkout process failed:', error);
-            setError(error.message || 'There was an error processing your order. Please try again.');
+            setError(error.message || 'An unexpected error occurred. Please try again.');
             setIsProcessing(false);
         }
     };
@@ -234,9 +234,9 @@ export default function CheckoutPage() {
 
                                      {error && (
                                         <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg p-3 flex items-start gap-3">
-                                            <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                                            <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                                             <div>
-                                                <p className="font-bold">An error occurred</p>
+                                                <p className="font-bold">Payment Error</p>
                                                 <p>{error}</p>
                                             </div>
                                         </div>

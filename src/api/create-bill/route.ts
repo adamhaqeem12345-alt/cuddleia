@@ -8,11 +8,17 @@ export async function POST(request: Request) {
 
     const userSecretKey = process.env.TOYYIBPAY_USER_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
+    
+    if (!userSecretKey || !categoryCode) {
+        console.error("ToyyibPay environment variables are not set.");
+        return NextResponse.json({ message: 'Server configuration error. Please contact support.' }, { status: 500 });
+    }
+
     const externalReferenceNo = uuidv4();
 
     const formData = new URLSearchParams();
-    formData.append('userSecretKey', userSecretKey!);
-    formData.append('categoryCode', categoryCode!);
+    formData.append('userSecretKey', userSecretKey);
+    formData.append('categoryCode', categoryCode);
     formData.append('billName', billName);
     formData.append('billDescription', billDescription);
     formData.append('billPriceSetting', '1');
@@ -32,39 +38,46 @@ export async function POST(request: Request) {
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: formData.toString(),
+      // By passing the URLSearchParams object directly to the body,
+      // fetch automatically sets the correct 'Content-Type': 'application/x-www-form-urlencoded' header.
+      body: formData,
     });
     
     const responseText = await response.text();
 
     if (!response.ok) {
         console.error('ToyyibPay API HTTP Error:', response.status, responseText);
-        return NextResponse.json({ message: 'Failed to create ToyyibPay bill. The service returned an HTTP error.', error: responseText }, { status: response.status });
+        return NextResponse.json({ message: `Failed to create ToyyibPay bill. The gateway returned an HTTP error: ${response.status}.`, error: responseText }, { status: response.status });
     }
 
     try {
         const data = JSON.parse(responseText);
 
+        // A successful response is an array with one object: [{ "BillCode": "..." }]
         if (Array.isArray(data) && data.length > 0 && data[0].BillCode) {
           const billCode = data[0].BillCode;
           const paymentUrl = `https://toyyibpay.com/${billCode}`;
           return NextResponse.json({ paymentUrl });
-        } else {
-            console.error('ToyyibPay API Error (non-array response):', data);
-            const errorMessage = data.msg || 'Failed to create bill due to unexpected response format.';
-            return NextResponse.json({ message: errorMessage, error: data }, { status: 400 });
+        } 
+        // An API logic error is an object, sometimes in an array: [{ "msg": "Invalid Category Code" }] or {"msg": ...}
+        else {
+            let errorMessage = 'Failed to create bill due to an unknown API error.';
+            if (Array.isArray(data) && data.length > 0 && data[0].msg) {
+                errorMessage = data[0].msg;
+            } else if (typeof data === 'object' && data !== null && 'msg' in data) {
+                errorMessage = (data as {msg: string}).msg;
+            }
+            console.error('ToyyibPay API Logic Error:', responseText);
+            return NextResponse.json({ message: `ToyyibPay Error: ${errorMessage}`, error: data }, { status: 400 });
         }
     } catch(jsonError) {
         console.error('Failed to parse Toyyibpay JSON response:', jsonError);
         console.error('Toyyibpay raw response text:', responseText);
-        return NextResponse.json({ message: 'Failed to parse Toyyibpay response. Check server logs for the raw response from the gateway.', error: responseText }, { status: 500 });
+        return NextResponse.json({ message: 'The payment gateway returned an unexpected response. Please check server logs for details.', error: responseText }, { status: 500 });
     }
 
   } catch (error: any) {
     console.error('Internal server error in create-bill:', error);
-    return NextResponse.json({ message: 'Internal server error: ' + error.message }, { status: 500 });
+    return NextResponse.json({ message: 'An internal server error occurred: ' + error.message }, { status: 500 });
   }
 }
