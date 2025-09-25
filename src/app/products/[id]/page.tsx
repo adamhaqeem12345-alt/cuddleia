@@ -38,13 +38,13 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   />
                 </div>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl h-auto p-4">
+              <DialogContent className="max-w-3xl w-full p-0 bg-transparent border-0">
                  <div className="relative aspect-square w-full">
                     <Image
                         alt={product.name}
                         src={product.imageUrl}
                         fill
-                        className="object-contain"
+                        className="object-contain rounded-lg"
                     />
                  </div>
               </DialogContent>
