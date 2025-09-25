@@ -1,4 +1,4 @@
-// This rate is for converting MYR to USD.
-// Example: 1 MYR = 0.21 USD
+// This rate is for converting USD to MYR.
+// Example: 1 USD = 4.7 MYR
 // You can update this value periodically to reflect the latest exchange rates.
-export const MYR_TO_USD_RATE = 0.21;
+export const USD_TO_MYR_RATE = 4.7;

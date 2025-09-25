@@ -5,12 +5,12 @@ import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart } from 'lucide-react';
-import { MYR_TO_USD_RATE } from '@/lib/currency';
+import { USD_TO_MYR_RATE } from '@/lib/currency';
 
 export const ProductCard = ({ product }: { product: Product }) => {
     const { addToCart } = useCart();
-    const priceMYR = `RM${product.price.toFixed(2)}`;
-    const priceUSD = `$${(product.price * MYR_TO_USD_RATE).toFixed(2)}`;
+    const priceUSD = `$${product.price.toFixed(2)}`;
+    const priceMYR = `RM${(product.price * USD_TO_MYR_RATE).toFixed(2)}`;
     
     return (
         <div className="h-full">
@@ -34,7 +34,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
                         </Link>
                     </div>
                     <div className="flex items-center justify-between gap-4 pt-6">
-                        <p className="text-xl font-headline font-bold text-primary">{priceMYR} <span className="text-foreground/50">|</span> {priceUSD}</p>
+                        <p className="text-xl font-headline font-bold text-primary">{priceUSD} <span className="text-foreground/50">|</span> {priceMYR}</p>
                         <div className="flex gap-2">
                             <Button variant="outline" size="icon" className="rounded-full h-10 w-10" asChild>
                                 <Link href={`/products/${product.id}`}>

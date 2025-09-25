@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import type { Product } from '@/lib/types';
-import { MYR_TO_USD_RATE } from '@/lib/currency';
+import { USD_TO_MYR_RATE } from '@/lib/currency';
 
 interface CartItem extends Product {
   quantity: number;
@@ -22,7 +22,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('MY');
+  const [selectedCountry, setSelectedCountry] = useState('Other');
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -75,8 +75,8 @@ export const useCart = () => {
 // Helper function to get the price in the selected currency
 export const getPrice = (product: Product, selectedCountry: string) => {
     if (selectedCountry === 'MY') {
-        return product.price;
+        return product.price * USD_TO_MYR_RATE;
     } else {
-        return product.price * MYR_TO_USD_RATE;
+        return product.price;
     }
 }

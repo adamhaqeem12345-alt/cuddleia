@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { MYR_TO_USD_RATE } from "@/lib/currency";
+import { USD_TO_MYR_RATE } from "@/lib/currency";
 
 
 export default function CheckoutPage() {
@@ -77,9 +77,9 @@ export default function CheckoutPage() {
 
                 cart.forEach((item, index) => {
                     const itemNumber = index + 1;
-                    const priceUSD = item.price * MYR_TO_USD_RATE;
+                    // Price is already in USD in the product definition
                     paypalUrl += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
-                    paypalUrl += `&amount_${itemNumber}=${priceUSD.toFixed(2)}`;
+                    paypalUrl += `&amount_${itemNumber}=${item.price.toFixed(2)}`;
                     paypalUrl += `&quantity_${itemNumber}=${item.quantity}`;
                 });
                 
