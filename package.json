@@ -1,14 +1,9 @@
 {
-  "name": "cuddleia-static-site",
+  "name": "new-project",
   "version": "1.0.0",
-  "description": "Static website for Cuddleia.",
-  "main": "index.html",
-  "scripts": {
-    "start": "serve ."
-  },
-  "dependencies": {
-    "serve": "^14.2.3"
-  },
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
   "author": "",
   "license": "ISC"
 }
