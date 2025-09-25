@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
@@ -25,13 +26,12 @@ export async function POST(request: Request) {
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
           <h1 style="color: #333;">Thank you for your order, ${name}!</h1>
-          <p>We've received your order and will process it shortly. Here are the details:</p>
+          <p>We've received your order. Once your payment is confirmed, you will be able to access your digital downloads.</p>
           <h2>Order Summary</h2>
           <ul>
             ${productList}
           </ul>
           <h3>Total: $${subtotal}</h3>
-          <p>You will receive another email with your download links shortly.</p>
           <p>With love,<br>The Cuddleia Team</p>
         </div>
       `,
