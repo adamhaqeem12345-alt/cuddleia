@@ -19,7 +19,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage() {
-    const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
+    const { cart, selectedCountry, setSelectedCountry } = useCart();
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -69,16 +69,14 @@ export default function CheckoutPage() {
         
         const finalCountryForPrice = usePayPal ? 'Other' : 'MY';
         const finalCurrencyPrefix = usePayPal ? '$' : 'RM';
-        
-        const finalSubtotalForEmail = cart.reduce((acc, item) => acc + getPrice(item, finalCountryForPrice) * item.quantity, 0);
-        const subtotalForEmailString = `${finalCurrencyPrefix}${finalSubtotalForEmail.toFixed(2)}`;
-        
+        const subtotalForEmail = cart.reduce((acc, item) => acc + getPrice(item, finalCountryForPrice) * item.quantity, 0);
+
+        const finalSubtotalString = `${finalCurrencyPrefix}${subtotalForEmail.toFixed(2)}`;
+
         const cartForEmail = cart.map(item => ({
             ...item,
             price: getPrice(item, finalCountryForPrice),
             downloadUrl: item.downloadUrl,
-            quantity: item.quantity,
-            name: item.name,
         }));
 
 
@@ -90,7 +88,7 @@ export default function CheckoutPage() {
                     to: email, 
                     name: name, 
                     cart: cartForEmail, 
-                    subtotal: subtotalForEmailString 
+                    subtotal: finalSubtotalString
                 }),
             });
 
@@ -107,7 +105,6 @@ export default function CheckoutPage() {
                     paypalItemsQuery += `&quantity_${itemNumber}=${item.quantity}`;
                 });
                 
-                clearCart();
                 window.location.href = paypalUrl + paypalItemsQuery;
 
             } else {
@@ -131,8 +128,6 @@ export default function CheckoutPage() {
                 }
                 
                 const { paymentUrl } = await billResponse.json();
-
-                clearCart();
                 window.location.href = paymentUrl;
             }
 
@@ -269,3 +264,5 @@ export default function CheckoutPage() {
         </div>
     )
 }
+
+    
