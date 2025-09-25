@@ -19,7 +19,6 @@ export async function POST(request: Request) {
     formData.append('billPriceSetting', '1');
     formData.append('billPayorInfo', '1');
     formData.append('billAmount', billAmount.toString());
-    formData.append('billReturnUrl', `${process.env.NEXT_PUBLIC_URL}/products`);
     formData.append('billCallbackUrl', '');
     formData.append('billExternalReferenceNo', externalReferenceNo);
     formData.append('billTo', billTo);
