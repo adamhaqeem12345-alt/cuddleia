@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "serve public"
+    "start": "serve ."
   },
   "dependencies": {
     "serve": "^14.2.1"
