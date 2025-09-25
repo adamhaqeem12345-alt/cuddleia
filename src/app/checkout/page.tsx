@@ -6,7 +6,7 @@ import { useCart, getPrice } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
-import { User, Mail, Globe, Wand2, CalendarDays } from "lucide-react";
+import { User, Mail, Globe, Wand2, CalendarDays, AlertTriangle } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent, useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ export default function CheckoutPage() {
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const isMalaysianAdult = selectedCountry === 'MY' && age !== undefined && age >= 18;
     
@@ -39,6 +40,7 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         setAge(undefined);
+        setError(null);
         const ageInput = document.getElementById('age') as HTMLInputElement;
         if (ageInput) ageInput.value = '';
         if(selectedCountry === 'MY') {
@@ -51,6 +53,7 @@ export default function CheckoutPage() {
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsProcessing(true);
+        setError(null);
 
         const formData = new FormData(event.currentTarget);
         const name = formData.get('name') as string;
@@ -58,13 +61,13 @@ export default function CheckoutPage() {
         const customerAge = age;
 
         if (!name || !email || !selectedCountry) {
-            alert('Please fill in all your details.');
+            setError('Please fill in all your details.');
             setIsProcessing(false);
             return;
         }
 
         if (selectedCountry === 'MY' && (customerAge === undefined || customerAge <= 0)) {
-            alert('Please enter a valid age.');
+            setError('Please enter a valid age.');
             setIsProcessing(false);
             return;
         }
@@ -126,18 +129,18 @@ export default function CheckoutPage() {
                     }),
                 });
 
+                const billData = await billResponse.json();
+
                 if (!billResponse.ok) {
-                    const errorData = await billResponse.json();
-                    throw new Error(errorData.message || 'Failed to create ToyyibPay bill.');
+                    throw new Error(billData.message || 'Failed to create ToyyibPay bill.');
                 }
                 
-                const { paymentUrl } = await billResponse.json();
-                window.location.href = paymentUrl;
+                window.location.href = billData.paymentUrl;
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Checkout process failed:', error);
-            alert('There was an error processing your order. Please try again.');
+            setError(error.message || 'There was an error processing your order. Please try again.');
             setIsProcessing(false);
         }
     };
@@ -228,6 +231,17 @@ export default function CheckoutPage() {
                                             : "International customers will be directed to PayPal (USD)."
                                         }
                                      </p>
+
+                                     {error && (
+                                        <div className="bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg p-3 flex items-start gap-3">
+                                            <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                                            <div>
+                                                <p className="font-bold">An error occurred</p>
+                                                <p>{error}</p>
+                                            </div>
+                                        </div>
+                                     )}
+
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
                                         {isProcessing ? 'Processing...' : (
                                             <>
@@ -268,5 +282,3 @@ export default function CheckoutPage() {
         </div>
     )
 }
-
-    
