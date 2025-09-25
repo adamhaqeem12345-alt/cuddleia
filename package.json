@@ -22,7 +22,8 @@
     "nodemailer": "^6.9.14",
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-label": "^2.1.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "@radix-ui/react-radio-group": "^1.2.0"
   },
   "devDependencies": {
     "typescript": "^5",

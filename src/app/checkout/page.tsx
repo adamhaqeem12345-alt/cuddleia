@@ -5,7 +5,7 @@ import { useCart, getPrice } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
-import { User, Mail, Globe, Wand2 } from "lucide-react";
+import { User, Mail, Globe, Wand2, CalendarDays } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent, useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -16,9 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage() {
     const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
+    const [age, setAge] = useState<number | undefined>();
+    const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     
     const subtotal = cart.reduce((acc, item) => {
         const price = getPrice(item, selectedCountry);
@@ -35,20 +38,25 @@ export default function CheckoutPage() {
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
         const country = formData.get('country') as string;
+        const customerAge = formData.get('age') ? parseInt(formData.get('age') as string) : 0;
 
-        if (!name || !email || !country) {
-            alert('Please fill in all your details.');
+        if (!name || !email || !country || !customerAge) {
+            alert('Please fill in all your details, including your age.');
             setIsProcessing(false);
             return;
         }
 
-        const isInternational = country !== 'MY';
-        const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
-        const subtotalForEmail = `${currencyPrefix}${subtotal.toFixed(2)}`;
-
+        const usePayPal = (country !== 'MY') || (customerAge < 18) || (customerAge >= 18 && country === 'MY' && paymentMethod === 'paypal');
+        const currencyForEmail = usePayPal ? 'USD' : 'MYR';
+        const priceCountryForEmail = usePayPal ? 'Other' : 'MYR';
+        const currencyPrefixForEmail = usePayPal ? '$' : 'RM';
+        
+        const subtotalForEmailCalc = cart.reduce((acc, item) => acc + getPrice(item, priceCountryForEmail) * item.quantity, 0);
+        const subtotalForEmail = `${currencyPrefixForEmail}${subtotalForEmailCalc.toFixed(2)}`;
+        
         const cartForEmail = cart.map(item => ({
             ...item,
-            price: getPrice(item, selectedCountry),
+            price: getPrice(item, priceCountryForEmail),
             downloadUrl: item.downloadUrl,
             quantity: item.quantity,
             name: item.name,
@@ -56,7 +64,7 @@ export default function CheckoutPage() {
 
 
         try {
-            if (isInternational) {
+            if (usePayPal) {
                 // PayPal Flow
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
                 const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
@@ -81,7 +89,7 @@ export default function CheckoutPage() {
                 window.location.href = paypalUrl + paypalItemsQuery;
 
             } else {
-                // Malaysian customer, use ToyyibPay Bill API
+                // Malaysian customer (18+), use ToyyibPay Bill API
                 const billResponse = await fetch('/api/create-bill', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -119,8 +127,22 @@ export default function CheckoutPage() {
         }
     };
 
-    const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
-    const displaySubtotal = `${currencyPrefix}${subtotal.toFixed(2)}`;
+    const isMalaysianAdult = selectedCountry === 'MY' && age !== undefined && age >= 18;
+    const isMalaysian = selectedCountry === 'MY';
+    
+    let currencyPrefix = '$';
+    let countryForPrice = 'Other';
+
+    if (isMalaysian && (!isMalaysianAdult || paymentMethod === 'toyyibpay')) {
+        currencyPrefix = 'RM';
+        countryForPrice = 'MY';
+    }
+
+    const finalSubtotal = cart.reduce((acc, item) => {
+        return acc + getPrice(item, countryForPrice) * item.quantity;
+    }, 0);
+
+    const displaySubtotal = `${currencyPrefix}${finalSubtotal.toFixed(2)}`;
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -145,11 +167,20 @@ export default function CheckoutPage() {
                                 <h2 className="font-headline text-3xl font-bold">Your Details</h2>
                                 <p className="text-muted-foreground font-body">We need this to process your order and send your files.</p>
                                 <form className="space-y-6" onSubmit={handleSubmit}>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
-                                        <div className="relative">
-                                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required disabled={isProcessing} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required disabled={isProcessing} />
+                                            </div>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="age" className="font-body text-sm font-medium">Age</Label>
+                                            <div className="relative">
+                                                <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required disabled={isProcessing} onChange={(e) => setAge(parseInt(e.target.value))} />
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="space-y-2">
@@ -161,7 +192,7 @@ export default function CheckoutPage() {
                                     </div>
                                      <div className="space-y-2">
                                         <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
-                                         <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} defaultValue={selectedCountry}>
+                                         <Select name="country" required disabled={isProcessing} onValueChange={(value) => { setSelectedCountry(value); setAge(undefined); (document.getElementById('age') as HTMLInputElement).value = ''; }} defaultValue={selectedCountry}>
                                             <SelectTrigger className="w-full">
                                               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                               <div className="pl-5">
@@ -174,7 +205,29 @@ export default function CheckoutPage() {
                                             </SelectContent>
                                           </Select>
                                     </div>
-                                     <p className="text-xs text-muted-foreground font-body">International customers will be directed to PayPal (USD). Malaysian customers will be directed to ToyyibPay (MYR).</p>
+
+                                    {isMalaysianAdult && (
+                                        <div className="space-y-3 rounded-lg border bg-accent/50 p-4">
+                                            <Label className="font-body text-sm font-medium">Payment Method</Label>
+                                             <RadioGroup defaultValue="toyyibpay" onValueChange={setPaymentMethod}>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="toyyibpay" id="toyyibpay" />
+                                                    <Label htmlFor="toyyibpay" className="font-normal">ToyyibPay (MYR)</Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="paypal" id="paypal" />
+                                                    <Label htmlFor="paypal" className="font-normal">PayPal (USD)</Label>
+                                                </div>
+                                            </RadioGroup>
+                                        </div>
+                                    )}
+
+                                     <p className="text-xs text-muted-foreground font-body">
+                                        { isMalaysian ? 
+                                            (age === undefined ? "Please enter your age." : (age < 18 ? "You will be directed to PayPal (USD)." : "Malaysian customers 18+ can choose their payment method."))
+                                            : "International customers will be directed to PayPal (USD)."
+                                        }
+                                     </p>
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
                                         {isProcessing ? 'Processing...' : (
                                             <>
@@ -199,7 +252,7 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">{currencyPrefix}{(getPrice(item, selectedCountry) * item.quantity).toFixed(2)}</p>
+                                            <p className="font-body font-semibold">{currencyPrefix}{(getPrice(item, countryForPrice) * item.quantity).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
