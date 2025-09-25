@@ -60,12 +60,20 @@ export default function CheckoutPage() {
 
             if (age < 18 || country !== 'MY') {
                 // Redirect to PayPal for users under 18 or international customers
-                const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&currency_code=USD&amount=${subtotal.toFixed(2)}&item_name=Cuddleia_Products`;
+                const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL'; // <-- IMPORTANT: Replace with your email
+                let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
+
+                cart.forEach((item, index) => {
+                    const itemNumber = index + 1;
+                    paypalUrl += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
+                    paypalUrl += `&amount_${itemNumber}=${item.price.toFixed(2)}`;
+                    paypalUrl += `&quantity_${itemNumber}=${item.quantity}`;
+                });
+                
                 window.location.href = paypalUrl;
             } else {
-                // Redirect to a placeholder ToyyibPay URL for Malaysian customers over 18
-                // You will need to replace this with your actual ToyyibPay collection URL
-                const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`;
+                // Redirect to ToyyibPay for Malaysian customers 18 and over
+                const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`; // <-- IMPORTANT: Replace with your ToyyibPay Collection ID
                 window.location.href = toyyibpayUrl;
             }
 
