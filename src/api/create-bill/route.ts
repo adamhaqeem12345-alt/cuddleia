@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
     
     if (!userSecretKey || !categoryCode) {
-        console.error("ToyyibPay environment variables are not set.");
+        console.error("ToyyibPay environment variables (TOYYIBPAY_USER_SECRET_KEY, TOYYIBPAY_CATEGORY_CODE) are not set in .env.local");
         return NextResponse.json({ message: 'Server configuration error. Please contact support.' }, { status: 500 });
     }
 
