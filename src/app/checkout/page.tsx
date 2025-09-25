@@ -1,3 +1,4 @@
+
 'use client'
 
 import Image from "next/image";
@@ -19,7 +20,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage() {
-    const { cart, selectedCountry, setSelectedCountry, clearCart } = useCart();
+    const { cart, selectedCountry, setSelectedCountry } = useCart();
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -40,7 +41,11 @@ export default function CheckoutPage() {
         setAge(undefined);
         const ageInput = document.getElementById('age') as HTMLInputElement;
         if (ageInput) ageInput.value = '';
-        setPaymentMethod('toyyibpay');
+        if(selectedCountry === 'MY') {
+            setPaymentMethod('toyyibpay');
+        } else {
+            setPaymentMethod('paypal');
+        }
     }, [selectedCountry]);
     
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
