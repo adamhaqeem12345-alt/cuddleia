@@ -9,7 +9,6 @@ import { User, Mail, Calendar, Globe, Wand2 } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent, useState } from "react";
 import { Label } from "@/components/ui/label";
-import { MYR_TO_USD_RATE } from "@/lib/currency";
 import {
   Select,
   SelectContent,
@@ -17,13 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { MYR_TO_USD_RATE } from "@/lib/currency";
 
 
 export default function CheckoutPage() {
     const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
     
-    const subtotalMYR = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const subtotalUSD = cart.reduce((acc, item) => acc + (item.price * MYR_TO_USD_RATE) * item.quantity, 0);
+    const subtotal = cart.reduce((acc, item) => {
+        const price = getPrice(item, selectedCountry);
+        return acc + price * item.quantity;
+    }, 0);
 
     const [isProcessing, setIsProcessing] = useState(false);
     
@@ -44,7 +46,7 @@ export default function CheckoutPage() {
         }
 
         const isInternational = country !== 'MY';
-        const subtotalForEmail = isInternational ? `$${subtotalUSD.toFixed(2)}` : `RM${subtotalMYR.toFixed(2)}`;
+        const subtotalForEmail = isInternational ? `$${subtotal.toFixed(2)}` : `RM${subtotal.toFixed(2)}`;
         const cartForEmail = cart.map(item => ({
             ...item,
             price: getPrice(item, selectedCountry),
@@ -94,8 +96,8 @@ export default function CheckoutPage() {
         }
     };
 
-    const displaySubtotal = selectedCountry === 'MY' ? `RM${subtotalMYR.toFixed(2)}` : `$${subtotalUSD.toFixed(2)}`;
     const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
+    const displaySubtotal = `${currencyPrefix}${subtotal.toFixed(2)}`;
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -183,7 +185,7 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">{currencyPrefix}{(getPrice(item, selectedCountry)).toFixed(2)}</p>
+                                            <p className="font-body font-semibold">{currencyPrefix}{(getPrice(item, selectedCountry) * item.quantity).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
