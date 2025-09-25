@@ -16,6 +16,7 @@ export async function POST(request: Request) {
 
     const externalReferenceNo = uuidv4();
     
+    // Create a success URL with a query parameter
     const successUrl = returnUrl ? `${returnUrl}?status=success` : '';
 
     const formData = new URLSearchParams();
@@ -36,6 +37,7 @@ export async function POST(request: Request) {
     formData.append('billSplitPaymentArgs', '');
     formData.append('billPaymentChannel', '0');
     formData.append('billContentEmail', '');
+    // billChargeToCustomer '1' for FPX, '2' for Credit Card
     formData.append('billChargeToCustomer', '1');
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
@@ -48,6 +50,8 @@ export async function POST(request: Request) {
     
     const responseText = await response.text();
 
+    // ToyyibPay might return non-200 on some logic errors, but also might return 200 with an error object.
+    // So we first check if the response is fundamentally okay.
     if (!response.ok) {
         console.error('ToyyibPay API HTTP Error:', response.status, responseText);
         return NextResponse.json({ message: `Failed to create ToyyibPay bill. The gateway returned an HTTP error: ${response.status}.`, error: responseText }, { status: response.status });
@@ -56,22 +60,25 @@ export async function POST(request: Request) {
     try {
         const data = JSON.parse(responseText);
 
+        // SUCCESS Case: ToyyibPay returns an array with a BillCode.
         if (Array.isArray(data) && data.length > 0 && data[0].BillCode) {
           const billCode = data[0].BillCode;
           const paymentUrl = `https://toyyibpay.com/${billCode}`;
           return NextResponse.json({ paymentUrl });
         } 
-        else {
-            let errorMessage = 'Failed to create bill due to an unknown API error.';
-            if (Array.isArray(data) && data.length > 0 && data[0].msg) {
-                errorMessage = data[0].msg;
-            } else if (typeof data === 'object' && data !== null && 'msg' in data) {
-                errorMessage = (data as {msg: string}).msg;
-            }
+        // ERROR Case: ToyyibPay returns an object with a 'msg' field.
+        else if (typeof data === 'object' && data !== null && 'msg' in data) {
+            const errorMessage = (data as {msg: string}).msg;
             console.error('ToyyibPay API Logic Error:', responseText);
             return NextResponse.json({ message: `ToyyibPay Error: ${errorMessage}`, error: data }, { status: 400 });
         }
+        // UNKNOWN Case: The response is JSON but not in a format we expect.
+        else {
+            console.error('ToyyibPay API Unknown JSON format:', responseText);
+            return NextResponse.json({ message: 'Failed to create bill due to an unknown API response.', error: data }, { status: 500 });
+        }
     } catch(jsonError) {
+        // CATCH-ALL: The response from ToyyibPay was not valid JSON at all (e.g., an HTML error page).
         console.error('Failed to parse Toyyibpay JSON response:', jsonError);
         console.error('Toyyibpay raw response text:', responseText);
         return NextResponse.json({ message: 'The payment gateway returned an unexpected response. Please check server logs for details.', error: responseText }, { status: 500 });
