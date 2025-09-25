@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     formData.append('billDescription', billDescription);
     formData.append('billPriceSetting', '1');
     formData.append('billPayorInfo', '1');
-    formData.append('billAmount', billAmount.toString());
+    formData.append('billAmount', Math.round(billAmount).toString());
     formData.append('billReturnUrl', '');
     formData.append('billCallbackUrl', '');
     formData.append('billExternalReferenceNo', externalReferenceNo);
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: formData, // Passing the object directly, letting fetch handle it with our explicit header.
+      body: formData.toString(),
     });
     
     const responseText = await response.text();
