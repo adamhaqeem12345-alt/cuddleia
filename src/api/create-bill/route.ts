@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: formData.toString(),
+      body: formData, // Passing the object directly, letting fetch handle it with our explicit header.
     });
     
     const responseText = await response.text();
