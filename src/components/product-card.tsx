@@ -26,23 +26,25 @@ export const ProductCard = ({ product }: { product: Product }) => {
                     </div>
                 </Link>
                 <div className="flex flex-1 flex-col p-6">
-                    <Link href={`/products/${product.id}`} className="flex-grow">
-                        <div className="font-semibold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">{product.name}</div>
-                        <div className="text-sm font-body text-foreground/70 line-clamp-3">{product.description}</div>
-                    </Link>
-                </div>
-                <div className="flex items-center justify-between gap-4 p-6 pt-0">
-                    <p className="text-xl font-headline font-bold text-primary">{priceMYR} <span className="text-foreground/50">|</span> {priceUSD}</p>
-                    <div className="flex gap-2">
-                        <Button variant="outline" size="icon" className="rounded-full h-10 w-10" asChild>
-                            <Link href={`/products/${product.id}`}>
-                                <Eye />
-                                <span className="sr-only">View Product</span>
-                            </Link>
-                        </Button>
-                        <Button className="rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95" onClick={() => addToCart(product)}>
-                            <ShoppingCart className="mr-2 h-5 w-5" /> Add
-                        </Button>
+                    <div className="flex-1">
+                        <Link href={`/products/${product.id}`}>
+                            <h3 className="font-semibold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">{product.name}</h3>
+                            <p className="text-sm font-body text-foreground/70 line-clamp-3">{product.description}</p>
+                        </Link>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 pt-6">
+                        <p className="text-xl font-headline font-bold text-primary">{priceMYR} <span className="text-foreground/50">|</span> {priceUSD}</p>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="icon" className="rounded-full h-10 w-10" asChild>
+                                <Link href={`/products/${product.id}`}>
+                                    <Eye />
+                                    <span className="sr-only">View Product</span>
+                                </Link>
+                            </Button>
+                            <Button className="rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95" onClick={() => addToCart(product)}>
+                                <ShoppingCart className="mr-2 h-5 w-5" /> Add
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
