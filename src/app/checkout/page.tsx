@@ -7,10 +7,37 @@ import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
 import { User, Mail, Calendar, Wand2 } from "lucide-react";
 import Link from 'next/link';
+import { FormEvent } from "react";
 
 export default function CheckoutPage() {
-    const { cart } = useCart();
+    const { cart, clearCart } = useCart();
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const age = Number(formData.get('age'));
+        const name = formData.get('name') as string;
+        const email = formData.get('email') as string;
+
+        if (!name || !email || !age) {
+            alert('Please fill in all your details.');
+            return;
+        }
+
+        if (age < 18) {
+            // Redirect to PayPal for users under 18
+            const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&currency_code=USD&amount=${subtotal.toFixed(2)}&item_name=Cuddleia_Products`;
+            window.location.href = paypalUrl;
+        } else {
+            // Placeholder for ToyyibPay or other gateways
+            alert(`Thank you, ${name}! Proceeding to payment for $${subtotal.toFixed(2)}.`);
+            // Here you would redirect to ToyyibPay or another payment gateway
+            // For now, we'll just clear the cart to simulate a successful order.
+            clearCart();
+            window.location.href = '/'; // Redirect to home after 'payment'
+        }
+    };
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -34,26 +61,26 @@ export default function CheckoutPage() {
                             <div className="bg-card p-8 rounded-2xl shadow-lg space-y-6">
                                 <h2 className="font-headline text-3xl font-bold">Your Details</h2>
                                 <p className="text-muted-foreground font-body">We need this to process your order and send your files.</p>
-                                <form className="space-y-6">
+                                <form className="space-y-6" onSubmit={handleSubmit}>
                                     <div className="space-y-2">
                                         <label className="font-body text-sm font-medium">Your Name</label>
                                         <div className="relative">
                                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="name" placeholder="e.g. Fatimah" className="pl-10" />
+                                            <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="font-body text-sm font-medium">Your Email</label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="email" type="email" placeholder="you@example.com" className="pl-10" />
+                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="font-body text-sm font-medium">Your Age</label>
                                         <div className="relative">
                                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="age" type="number" placeholder="e.g. 25" className="pl-10" />
+                                            <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required />
                                         </div>
                                     </div>
                                      <p className="text-xs text-muted-foreground font-body">Customers under 18 will be directed to PayPal.</p>
