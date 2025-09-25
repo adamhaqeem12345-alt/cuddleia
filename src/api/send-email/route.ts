@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       },
     });
 
-    const currencyPrefix = subtotal.startsWith('$') ? '$' : 'RM';
+    const currencyPrefix = subtotal.startsWith('RM') ? 'RM' : '$';
     
     const productList = cart.map((item: any) => `
       <li style="margin-bottom: 20px;">

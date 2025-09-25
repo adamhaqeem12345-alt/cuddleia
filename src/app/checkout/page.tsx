@@ -34,10 +34,9 @@ export default function CheckoutPage() {
         const formData = new FormData(event.currentTarget);
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
-        const age = Number(formData.get('age'));
         const country = formData.get('country') as string;
 
-        if (!name || !email || !age || !country) {
+        if (!name || !email || !country) {
             alert('Please fill in all your details.');
             setIsProcessing(false);
             return;
@@ -57,24 +56,8 @@ export default function CheckoutPage() {
 
 
         try {
-            const emailResponse = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: email,
-                    name: name,
-                    cart: cartForEmail,
-                    subtotal: subtotalForEmail,
-                }),
-            });
-
-            if (!emailResponse.ok) {
-                 throw new Error('Failed to send confirmation email.');
-            }
-            
-            clearCart();
-
-            if (age < 18 || isInternational) {
+            if (isInternational) {
+                // PayPal Flow
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
                 const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
 
@@ -86,8 +69,17 @@ export default function CheckoutPage() {
                     paypalItemsQuery += `&amount_${itemNumber}=${usdPrice.toFixed(2)}`;
                     paypalItemsQuery += `&quantity_${itemNumber}=${item.quantity}`;
                 });
-                
+
+                // Send email *before* redirecting
+                await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: email, name: name, cart: cartForEmail, subtotal: subtotalForEmail }),
+                });
+
+                clearCart();
                 window.location.href = paypalUrl + paypalItemsQuery;
+
             } else {
                 // Malaysian customer, use ToyyibPay Bill API
                 const billResponse = await fetch('/api/create-bill', {
@@ -103,10 +95,20 @@ export default function CheckoutPage() {
                 });
 
                 if (!billResponse.ok) {
-                    throw new Error('Failed to create ToyyibPay bill.');
+                    const errorData = await billResponse.json();
+                    throw new Error(errorData.message || 'Failed to create ToyyibPay bill.');
                 }
                 
                 const { paymentUrl } = await billResponse.json();
+
+                // Send email *before* redirecting
+                 await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: email, name: name, cart: cartForEmail, subtotal: subtotalForEmail }),
+                });
+
+                clearCart();
                 window.location.href = paymentUrl;
             }
 
@@ -157,31 +159,22 @@ export default function CheckoutPage() {
                                             <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required disabled={isProcessing} />
                                         </div>
                                     </div>
-                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="age" className="font-body text-sm font-medium">Your Age</Label>
-                                            <div className="relative">
-                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required disabled={isProcessing} />
-                                            </div>
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
-                                             <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} defaultValue={selectedCountry}>
-                                                <SelectTrigger className="w-full">
-                                                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                  <div className="pl-5">
-                                                    <SelectValue placeholder="Select your country" />
-                                                  </div>
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                  <SelectItem value="MY">Malaysia</SelectItem>
-                                                  <SelectItem value="Other">Other</SelectItem>
-                                                </SelectContent>
-                                              </Select>
-                                        </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
+                                         <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} defaultValue={selectedCountry}>
+                                            <SelectTrigger className="w-full">
+                                              <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                              <div className="pl-5">
+                                                <SelectValue placeholder="Select your country" />
+                                              </div>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="MY">Malaysia</SelectItem>
+                                              <SelectItem value="Other">Other</SelectItem>
+                                            </SelectContent>
+                                          </Select>
                                     </div>
-                                     <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal (USD). Malaysian customers will be directed to ToyyibPay (MYR).</p>
+                                     <p className="text-xs text-muted-foreground font-body">International customers will be directed to PayPal (USD). Malaysian customers will be directed to ToyyibPay (MYR).</p>
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
                                         {isProcessing ? 'Processing...' : (
                                             <>
@@ -222,5 +215,3 @@ export default function CheckoutPage() {
         </div>
     )
 }
-
-    
