@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
 import { User, Mail, Globe, Wand2, CalendarDays } from "lucide-react";
 import Link from 'next/link';
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -22,13 +22,26 @@ export default function CheckoutPage() {
     const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
-    
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    // Determine the country and currency to use for price calculations
+    const isMalaysianAdult = selectedCountry === 'MY' && age !== undefined && age >= 18;
+    const countryForPrice = (selectedCountry === 'MY' && !isMalaysianAdult) || (isMalaysianAdult && paymentMethod === 'toyyibpay') ? 'MY' : 'Other';
+    const currencyPrefix = countryForPrice === 'MY' ? 'RM' : '$';
+
     const subtotal = cart.reduce((acc, item) => {
-        const price = getPrice(item, selectedCountry);
-        return acc + price * item.quantity;
+        return acc + getPrice(item, countryForPrice) * item.quantity;
     }, 0);
 
-    const [isProcessing, setIsProcessing] = useState(false);
+    const displaySubtotal = `${currencyPrefix}${subtotal.toFixed(2)}`;
+
+    useEffect(() => {
+        // Reset age and payment method when country changes
+        setAge(undefined);
+        const ageInput = document.getElementById('age') as HTMLInputElement;
+        if (ageInput) ageInput.value = '';
+        setPaymentMethod('toyyibpay');
+    }, [selectedCountry]);
     
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -37,26 +50,31 @@ export default function CheckoutPage() {
         const formData = new FormData(event.currentTarget);
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
-        const country = formData.get('country') as string;
-        const customerAge = formData.get('age') ? parseInt(formData.get('age') as string) : 0;
+        const customerAge = age;
 
-        if (!name || !email || !country || !customerAge) {
-            alert('Please fill in all your details, including your age.');
+        if (!name || !email || !selectedCountry) {
+            alert('Please fill in all your details.');
             setIsProcessing(false);
             return;
         }
 
-        const usePayPal = (country !== 'MY') || (customerAge < 18) || (customerAge >= 18 && country === 'MY' && paymentMethod === 'paypal');
-        const currencyForEmail = usePayPal ? 'USD' : 'MYR';
-        const priceCountryForEmail = usePayPal ? 'Other' : 'MY';
-        const currencyPrefixForEmail = usePayPal ? '$' : 'RM';
+        if (selectedCountry === 'MY' && (customerAge === undefined || customerAge <= 0)) {
+            alert('Please enter a valid age.');
+            setIsProcessing(false);
+            return;
+        }
+
+        const usePayPal = selectedCountry !== 'MY' || (customerAge !== undefined && customerAge < 18) || (isMalaysianAdult && paymentMethod === 'paypal');
         
-        const subtotalForEmailCalc = cart.reduce((acc, item) => acc + getPrice(item, priceCountryForEmail) * item.quantity, 0);
-        const subtotalForEmail = `${currencyPrefixForEmail}${subtotalForEmailCalc.toFixed(2)}`;
+        const finalCountryForPrice = usePayPal ? 'Other' : 'MY';
+        const finalCurrencyPrefix = usePayPal ? '$' : 'RM';
+        
+        const finalSubtotalForEmail = cart.reduce((acc, item) => acc + getPrice(item, finalCountryForPrice) * item.quantity, 0);
+        const subtotalForEmailString = `${finalCurrencyPrefix}${finalSubtotalForEmail.toFixed(2)}`;
         
         const cartForEmail = cart.map(item => ({
             ...item,
-            price: getPrice(item, priceCountryForEmail),
+            price: getPrice(item, finalCountryForPrice),
             downloadUrl: item.downloadUrl,
             quantity: item.quantity,
             name: item.name,
@@ -64,6 +82,18 @@ export default function CheckoutPage() {
 
 
         try {
+            // First, always send the confirmation email
+             await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    to: email, 
+                    name: name, 
+                    cart: cartForEmail, 
+                    subtotal: subtotalForEmailString 
+                }),
+            });
+
             if (usePayPal) {
                 // PayPal Flow
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
@@ -77,26 +107,21 @@ export default function CheckoutPage() {
                     paypalItemsQuery += `&amount_${itemNumber}=${usdPrice.toFixed(2)}`;
                     paypalItemsQuery += `&quantity_${itemNumber}=${item.quantity}`;
                 });
-
-                // Send email *before* redirecting
-                await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ to: email, name: name, cart: cartForEmail, subtotal: subtotalForEmail }),
-                });
-
+                
                 clearCart();
                 window.location.href = paypalUrl + paypalItemsQuery;
 
             } else {
                 // Malaysian customer (18+), use ToyyibPay Bill API
+                const toyyibPaySubtotal = cart.reduce((acc, item) => acc + getPrice(item, 'MY') * item.quantity, 0);
+
                 const billResponse = await fetch('/api/create-bill', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         billName: 'Cuddleia Order',
                         billDescription: `Your order from Cuddleia.`,
-                        billAmount: subtotal * 100, // Amount in cents
+                        billAmount: toyyibPaySubtotal * 100, // Amount in cents
                         billTo: name,
                         billEmail: email,
                     }),
@@ -109,13 +134,6 @@ export default function CheckoutPage() {
                 
                 const { paymentUrl } = await billResponse.json();
 
-                // Send email *before* redirecting
-                 await fetch('/api/send-email', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ to: email, name: name, cart: cartForEmail, subtotal: subtotalForEmail }),
-                });
-
                 clearCart();
                 window.location.href = paymentUrl;
             }
@@ -126,24 +144,7 @@ export default function CheckoutPage() {
             setIsProcessing(false);
         }
     };
-
-    const isMalaysianAdult = selectedCountry === 'MY' && age !== undefined && age >= 18;
-    const isMalaysian = selectedCountry === 'MY';
     
-    let currencyPrefix = '$';
-    let countryForPrice = 'Other';
-
-    if (isMalaysian && (!isMalaysianAdult || paymentMethod === 'toyyibpay')) {
-        currencyPrefix = 'RM';
-        countryForPrice = 'MY';
-    }
-
-    const finalSubtotal = cart.reduce((acc, item) => {
-        return acc + getPrice(item, countryForPrice) * item.quantity;
-    }, 0);
-
-    const displaySubtotal = `${currencyPrefix}${finalSubtotal.toFixed(2)}`;
-
     return (
         <div className="bg-background min-h-[80vh]">
             <AnimateIn>
@@ -167,34 +168,11 @@ export default function CheckoutPage() {
                                 <h2 className="font-headline text-3xl font-bold">Your Details</h2>
                                 <p className="text-muted-foreground font-body">We need this to process your order and send your files.</p>
                                 <form className="space-y-6" onSubmit={handleSubmit}>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
-                                            <div className="relative">
-                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required disabled={isProcessing} />
-                                            </div>
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label htmlFor="age" className="font-body text-sm font-medium">Age</Label>
-                                            <div className="relative">
-                                                <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required disabled={isProcessing} onChange={(e) => setAge(parseInt(e.target.value))} />
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="email" className="font-body text-sm font-medium">Your Email</Label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required disabled={isProcessing} />
-                                        </div>
-                                    </div>
-                                     <div className="space-y-2">
                                         <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
                                          <div className="relative">
                                               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
-                                             <Select name="country" required disabled={isProcessing} onValueChange={(value) => { setSelectedCountry(value); setAge(undefined); (document.getElementById('age') as HTMLInputElement).value = ''; }} defaultValue={selectedCountry}>
+                                             <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} value={selectedCountry}>
                                                 <SelectTrigger className="w-full pl-10">
                                                     <SelectValue placeholder="Select your country" />
                                                 </SelectTrigger>
@@ -205,11 +183,36 @@ export default function CheckoutPage() {
                                               </Select>
                                         </div>
                                     </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
+                                            <div className="relative">
+                                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required disabled={isProcessing} />
+                                            </div>
+                                        </div>
+                                        {selectedCountry === 'MY' && (
+                                             <div className="space-y-2">
+                                                <Label htmlFor="age" className="font-body text-sm font-medium">Age</Label>
+                                                <div className="relative">
+                                                    <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                    <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required={selectedCountry === 'MY'} disabled={isProcessing} onChange={(e) => setAge(parseInt(e.target.value) || undefined)} />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email" className="font-body text-sm font-medium">Your Email</Label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required disabled={isProcessing} />
+                                        </div>
+                                    </div>
 
                                     {isMalaysianAdult && (
                                         <div className="space-y-3 rounded-lg border bg-accent/50 p-4">
                                             <Label className="font-body text-sm font-medium">Payment Method</Label>
-                                             <RadioGroup defaultValue="toyyibpay" onValueChange={setPaymentMethod}>
+                                             <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod}>
                                                 <div className="flex items-center space-x-2">
                                                     <RadioGroupItem value="toyyibpay" id="toyyibpay" />
                                                     <Label htmlFor="toyyibpay" className="font-normal">ToyyibPay (MYR)</Label>
@@ -222,9 +225,9 @@ export default function CheckoutPage() {
                                         </div>
                                     )}
 
-                                     <p className="text-xs text-muted-foreground font-body">
-                                        { isMalaysian ? 
-                                            (age === undefined ? "Please enter your age." : (age < 18 ? "You will be directed to PayPal (USD)." : "Malaysian customers 18+ can choose their payment method."))
+                                     <p className="text-xs text-muted-foreground font-body h-8 flex items-center">
+                                        { selectedCountry === 'MY' ? 
+                                            (age === undefined ? "Please enter your age to see payment options." : (age < 18 ? "You will be directed to PayPal (USD)." : "You can choose your preferred payment method."))
                                             : "International customers will be directed to PayPal (USD)."
                                         }
                                      </p>
@@ -268,3 +271,5 @@ export default function CheckoutPage() {
         </div>
     )
 }
+
+    
