@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     formData.append('billPriceSetting', '1');
     formData.append('billPayorInfo', '1');
     formData.append('billAmount', billAmount.toString());
-    formData.append('billCallbackUrl', '');
+    formData.append('billReturnUrl', '');
     formData.append('billExternalReferenceNo', externalReferenceNo);
     formData.append('billTo', billTo);
     formData.append('billEmail', billEmail);
