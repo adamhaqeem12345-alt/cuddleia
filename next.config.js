@@ -10,6 +10,13 @@ const nextConfig = {
       },
     ],
   },
+  env: {
+    NEXT_PUBLIC_URL: process.env.NODE_ENV === 'development' 
+      ? 'http://localhost:3000' 
+      : 'https://www.cuddleia.com',
+  }
 };
 
 module.exports = nextConfig;
+
+    

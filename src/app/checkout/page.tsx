@@ -89,9 +89,25 @@ export default function CheckoutPage() {
                 
                 window.location.href = paypalUrl + paypalItemsQuery;
             } else {
-                const toyyibpayCollectionId = process.env.NEXT_PUBLIC_TOYYIBPAY_COLLECTION_ID;
-                const toyyibpayUrl = `https://toyyibpay.com/${toyyibpayCollectionId}`;
-                window.location.href = toyyibpayUrl;
+                // Malaysian customer, use ToyyibPay Bill API
+                const billResponse = await fetch('/api/create-bill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        billName: 'Cuddleia Order',
+                        billDescription: `Your order from Cuddleia.`,
+                        billAmount: subtotal * 100, // Amount in cents
+                        billTo: name,
+                        billEmail: email,
+                    }),
+                });
+
+                if (!billResponse.ok) {
+                    throw new Error('Failed to create ToyyibPay bill.');
+                }
+                
+                const { paymentUrl } = await billResponse.json();
+                window.location.href = paymentUrl;
             }
 
         } catch (error) {
@@ -165,7 +181,7 @@ export default function CheckoutPage() {
                                               </Select>
                                         </div>
                                     </div>
-                                     <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal (USD).</p>
+                                     <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal (USD). Malaysian customers will be directed to ToyyibPay (MYR).</p>
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
                                         {isProcessing ? 'Processing...' : (
                                             <>
@@ -206,3 +222,5 @@ export default function CheckoutPage() {
         </div>
     )
 }
+
+    
