@@ -5,7 +5,7 @@ import { useCart, getPrice } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
-import { User, Mail, Calendar, Globe, Wand2 } from "lucide-react";
+import { User, Mail, Globe, Wand2 } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent, useState } from "react";
 import { Label } from "@/components/ui/label";

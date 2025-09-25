@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,6 +32,12 @@ export async function POST(request: Request) {
     });
     
     // The response from toyyibpay is an array with a single object on success
+    if (!response.ok) {
+        const errorText = await response.text();
+        console.error('ToyyibPay API Error:', errorText);
+        return NextResponse.json({ message: 'Failed to create ToyyibPay bill. The service returned an error.', error: errorText }, { status: response.status });
+    }
+
     const data = await response.json();
 
     if (data && data.length > 0 && data[0].BillCode) {
@@ -39,8 +46,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ paymentUrl });
     } else {
         // Log the actual error response from ToyyibPay
-        console.error('ToyyibPay API Error:', data);
-        return NextResponse.json({ message: 'Failed to create ToyyibPay bill', error: data }, { status: 500 });
+        console.error('ToyyibPay API Error (unexpected format):', data);
+        return NextResponse.json({ message: 'Failed to create ToyyibPay bill due to unexpected response format.', error: data }, { status: 500 });
     }
 
   } catch (error)
