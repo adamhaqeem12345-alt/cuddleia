@@ -20,7 +20,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export default function CheckoutPage() {
-    const { cart, selectedCountry, setSelectedCountry } = useCart();
+    const { cart, selectedCountry, setSelectedCountry, clearCart } = useCart();
     const [age, setAge] = useState<number | undefined>();
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -268,3 +268,5 @@ export default function CheckoutPage() {
         </div>
     )
 }
+
+    

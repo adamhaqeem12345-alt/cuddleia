@@ -49,10 +49,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'Failed to create ToyyibPay bill due to unexpected response format.', error: data }, { status: 500 });
         }
     } catch(jsonError) {
+        // This block will catch cases where the response is not valid JSON,
+        // which can happen if ToyyibPay returns an HTML error page, for example.
         const responseText = await response.text();
         console.error('Failed to parse Toyyibpay JSON response:', jsonError);
         console.error('Toyyibpay raw response:', responseText);
-        return NextResponse.json({ message: 'Failed to parse Toyyibpay response.', error: responseText }, { status: 500 });
+        return NextResponse.json({ message: 'Failed to parse Toyyibpay response. The service may be down or returning an error.', error: responseText }, { status: 500 });
     }
 
   } catch (error)
@@ -61,3 +63,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }
+
+    
