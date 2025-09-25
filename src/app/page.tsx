@@ -16,7 +16,7 @@ export default function Home() {
     </header>
 
     <main>
-        <section className="hero">
+        <section className="hero" style={{backgroundImage: "url('https://picsum.photos/seed/hero/1200/600')"}}>
             <div className="hero-content">
                 <h1>Welcome to Cuddleia</h1>
                 <p>Where every stitch is a hug</p>
@@ -28,22 +28,22 @@ export default function Home() {
             <h2>Our Creations</h2>
             <div className="product-grid">
                 <div className="product-card">
-                    <img src="https://picsum.photos/seed/1/300/300" alt="Plushie 1" data-ai-hint="cute plushie" />
+                    <Image src="https://picsum.photos/seed/1/300/300" alt="Plushie 1" data-ai-hint="cute plushie" width={300} height={300} />
                     <h3>Barnaby the Bear</h3>
                     <p>$25.00</p>
                 </div>
                 <div className="product-card">
-                    <img src="https://picsum.photos/seed/2/300/300" alt="Plushie 2" data-ai-hint="cute octopus" />
+                    <Image src="https://picsum.photos/seed/2/300/300" alt="Plushie 2" data-ai-hint="cute octopus" width={300} height={300} />
                     <h3>Olly the Octopus</h3>
                     <p>$30.00</p>
                 </div>
                 <div className="product-card">
-                    <img src="https://picsum.photos/seed/3/300/300" alt="Plushie 3" data-ai-hint="cute dinosaur" />
+                    <Image src="https://picsum.photos/seed/3/300/300" alt="Plushie 3" data-ai-hint="cute dinosaur" width={300} height={300} />
                     <h3>Rex the Dino</h3>
                     <p>$28.00</p>
                 </div>
                  <div className="product-card">
-                    <img src="https://picsum.photos/seed/4/300/300" alt="Plushie 4" data-ai-hint="fluffy bunny" />
+                    <Image src="https://picsum.photos/seed/4/300/300" alt="Plushie 4" data-ai-hint="fluffy bunny" width={300} height={300} />
                     <h3>Luna the Bunny</h3>
                     <p>$22.00</p>
                 </div>
