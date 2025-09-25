@@ -1,0 +1,104 @@
+
+body {
+    font-family: 'Lora', serif;
+    background-color: #FDF6F7; /* Soft pink background */
+    color: #5C4742; /* Warm brown text color */
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    width: 100%;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 3rem;
+    color: #D17B88; /* Primary pink from the theme */
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.hero {
+    margin-bottom: 60px;
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    color: #7A6A65; /* Muted text color */
+}
+
+.products h3 {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #4A3F3C;
+}
+
+.products .subtitle {
+    font-size: 1.1rem;
+    color: #7A6A65;
+    margin-bottom: 40px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    justify-items: center;
+}
+
+.product-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+    max-width: 350px;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.product-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+}
+
+.product-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 15px 20px 10px;
+}
+
+.product-card .price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #D17B88;
+    margin: 0 20px 20px;
+}
+
+footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid #E6C2C7; /* Light pink border */
+    font-size: 0.9rem;
+    color: #7A6A65;
+}
