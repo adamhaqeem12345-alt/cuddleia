@@ -92,8 +92,10 @@ export default function CartPage() {
                                     <span>Total</span>
                                     <span>${subtotal.toFixed(2)}</span>
                                 </div>
-                                <Button size="lg" className="w-full rounded-full text-lg py-6">
-                                    Proceed to Checkout
+                                <Button size="lg" className="w-full rounded-full text-lg py-6" asChild>
+                                    <Link href="/checkout">
+                                        Proceed to Checkout
+                                    </Link>
                                 </Button>
                             </div>
                         </div>
