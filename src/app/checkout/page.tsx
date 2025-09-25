@@ -75,13 +75,13 @@ export default function CheckoutPage() {
             clearCart();
 
             if (age < 18 || isInternational) {
-                const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL';
+                const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
                 const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
 
                 let paypalItemsQuery = "";
                 cart.forEach((item, index) => {
                     const itemNumber = index + 1;
-                    const usdPrice = getPrice(item, 'Other'); // Always use USD for PayPal
+                    const usdPrice = getPrice(item, 'Other');
                     paypalItemsQuery += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
                     paypalItemsQuery += `&amount_${itemNumber}=${usdPrice.toFixed(2)}`;
                     paypalItemsQuery += `&quantity_${itemNumber}=${item.quantity}`;
@@ -89,7 +89,8 @@ export default function CheckoutPage() {
                 
                 window.location.href = paypalUrl + paypalItemsQuery;
             } else {
-                const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`;
+                const toyyibpayCollectionId = process.env.NEXT_PUBLIC_TOYYIBPAY_COLLECTION_ID;
+                const toyyibpayUrl = `https://toyyibpay.com/${toyyibpayCollectionId}`;
                 window.location.href = toyyibpayUrl;
             }
 
