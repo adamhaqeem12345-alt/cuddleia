@@ -38,9 +38,10 @@ export async function POST(request: Request) {
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
       method: 'POST',
-      // By passing the URLSearchParams object directly to the body,
-      // fetch automatically sets the correct 'Content-Type': 'application/x-www-form-urlencoded' header.
-      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString(),
     });
     
     const responseText = await response.text();
