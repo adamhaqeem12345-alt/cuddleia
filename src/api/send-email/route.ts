@@ -2,66 +2,54 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 
-// This API route now simulates a manual order fulfillment process.
-// It sends an email to an internal address, notifying the admin that a new order
-// has been paid and requires manual fulfillment of download links.
-
 export async function POST(request: Request) {
   try {
-    const { customerName, customerEmail, cart, subtotal, paymentId } = await request.json();
+    const { to, name, cart, subtotal } = await request.json();
 
+    // Create a transporter object using Zoho's SMTP settings
     const transporter = nodemailer.createTransport({
       host: 'smtp.zoho.com',
       port: 465,
-      secure: true, 
+      secure: true, // use SSL
       auth: {
-        user: process.env.ZOHO_EMAIL,
-        pass: process.env.ZOHO_PASSWORD,
+        user: process.env.ZOHO_EMAIL, // Your Zoho email address from .env.local
+        pass: process.env.ZOHO_PASSWORD, // Your Zoho App Password from .env.local
       },
     });
 
     const productList = cart.map((item: any) => `
-      <li>
-        ${item.name} (x${item.quantity}) - ${item.downloadUrl}
+      <li style="margin-bottom: 20px;">
+        <span style="font-weight: bold;">${item.name}</span> (x${item.quantity})
+        <br />
+        <a href="${item.downloadUrl}" style="color: #3498db; text-decoration: none;">Download Here</a>
       </li>
     `).join('');
-    
-    // Email to the administrator for fulfillment
-    const adminMailOptions = {
-      from: `"Cuddleia System" <${process.env.ZOHO_EMAIL}>`,
-      to: `admin@cuddleia.com`, // Internal admin email
-      subject: `[ACTION REQUIRED] New Paid Order - ${customerName}`,
-      html: `
-        <div style="font-family: sans-serif;">
-          <h1>New Paid Order</h1>
-          <p>A new order has been marked as paid and requires manual fulfillment.</p>
-          
-          <h2>Customer Details:</h2>
-          <ul>
-            <li><strong>Name:</strong> ${customerName}</li>
-            <li><strong>Email:</strong> ${customerEmail}</li>
-          </ul>
 
-          <h2>Order Details:</h2>
-          <ul>
+    const mailOptions = {
+      from: `"Cuddleia" <${process.env.ZOHO_EMAIL}>`,
+      to: to,
+      subject: 'Your Cuddleia Order Confirmation & Downloads',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+          <h1 style="color: #333; text-align: center;">Thank you for your order, ${name}!</h1>
+          <p>We've received your order and payment. You can access your digital downloads immediately using the links below.</p>
+          <h2 style="border-bottom: 1px solid #eee; padding-bottom: 10px;">Your Downloads</h2>
+          <ul style="list-style: none; padding: 0;">
             ${productList}
           </ul>
-          <p><strong>Total:</strong> ${subtotal}</p>
-          <p><strong>Payment ID:</strong> ${paymentId || 'N/A'}</p>
-
-          <p>Please send the download links to the customer's email address listed above.</p>
+          <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+            <h3 style="text-align: right;">Total: ${subtotal}</h3>
+          </div>
+          <p style="text-align: center; margin-top: 30px; color: #777;">With love,<br>The Cuddleia Team</p>
         </div>
       `,
     };
 
-    await transporter.sendMail(adminMailOptions);
+    await transporter.sendMail(mailOptions);
 
-    return NextResponse.json({ message: 'Admin notification sent successfully' }, { status: 200 });
-
+    return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
   } catch (error) {
-    console.error('Error sending admin notification email:', error);
-    return NextResponse.json({ message: 'Failed to send admin notification' }, { status: 500 });
+    console.error('Error sending email:', error);
+    return NextResponse.json({ message: 'Failed to send email' }, { status: 500 });
   }
 }
-
-    

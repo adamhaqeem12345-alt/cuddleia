@@ -76,8 +76,11 @@ export default function CheckoutPage() {
         
         try {
             if (usePayPal) {
+                // For PayPal, we redirect the user to PayPal with cart details.
+                // Fulfillment would need to be manual or via webhooks.
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
-                const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
+                const returnUrl = `${window.location.protocol}//${window.location.host}/thank-you`;
+                const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD&return=${encodeURIComponent(returnUrl)}`;
 
                 let paypalItemsQuery = "";
                 cart.forEach((item, index) => {
@@ -91,9 +94,10 @@ export default function CheckoutPage() {
                 window.location.href = paypalUrl + paypalItemsQuery;
 
             } else {
+                // For ToyyibPay, create a bill and redirect.
+                // The return URL will handle the "thank you" message.
                 const toyyibPaySubtotal = cart.reduce((acc, item) => acc + getPrice(item, 'MY') * item.quantity, 0);
-                
-                const returnUrl = `${window.location.protocol}//${window.location.host}/products`;
+                const returnUrl = `${window.location.protocol}//${window.location.host}/thank-you`;
 
                 const billResponse = await fetch('/api/create-bill', {
                     method: 'POST',
@@ -145,7 +149,7 @@ export default function CheckoutPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start max-w-5xl mx-auto">
                             <div className="bg-card p-8 rounded-2xl shadow-lg space-y-6">
                                 <h2 className="font-headline text-3xl font-bold">Your Details</h2>
-                                <p className="text-muted-foreground font-body">We need this to process your order and send your files.</p>
+                                <p className="text-muted-foreground font-body">We need this to process your order.</p>
                                 <form className="space-y-6" onSubmit={handleSubmit}>
                                     <div className="space-y-2">
                                         <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
@@ -221,7 +225,7 @@ export default function CheckoutPage() {
                                         </div>
                                      )}
 
-                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
+                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing || cart.length === 0}>
                                         {isProcessing ? 'Processing...' : (
                                             <>
                                                 <Wand2 className="mr-2 h-5 w-5" />
@@ -261,5 +265,3 @@ export default function CheckoutPage() {
         </div>
     )
 }
-
-    
