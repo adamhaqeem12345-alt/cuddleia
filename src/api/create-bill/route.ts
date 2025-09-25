@@ -10,7 +10,6 @@ export async function POST(request: Request) {
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
     const externalReferenceNo = uuidv4();
 
-    // Use URLSearchParams for x-www-form-urlencoded
     const formData = new URLSearchParams();
     formData.append('userSecretKey', userSecretKey!);
     formData.append('categoryCode', categoryCode!);
@@ -20,48 +19,53 @@ export async function POST(request: Request) {
     formData.append('billPayorInfo', '1');
     formData.append('billAmount', billAmount.toString());
     formData.append('billReturnUrl', '');
+    formData.append('billCallbackUrl', ''); // Keep this blank as per docs for no callback
     formData.append('billExternalReferenceNo', externalReferenceNo);
     formData.append('billTo', billTo);
     formData.append('billEmail', billEmail);
     formData.append('billPhone', ''); 
+    formData.append('billSplitPayment', '0');
+    formData.append('billSplitPaymentArgs', '');
+    formData.append('billPaymentChannel', '0');
+    formData.append('billContentEmail', '');
+    formData.append('billChargeToCustomer', '1'); // Pass processing fee to customer
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
       method: 'POST',
       body: formData,
     });
     
-    // The response from toyyibpay is an array with a single object on success
+    // The raw response text is useful for debugging in all cases.
+    const responseText = await response.text();
+
     if (!response.ok) {
-        const errorText = await response.text();
-        console.error('ToyyibPay API Error:', errorText);
-        return NextResponse.json({ message: 'Failed to create ToyyibPay bill. The service returned an error.', error: errorText }, { status: response.status });
+        console.error('ToyyibPay API HTTP Error:', response.status, responseText);
+        return NextResponse.json({ message: 'Failed to create ToyyibPay bill. The service returned an HTTP error.', error: responseText }, { status: response.status });
     }
 
     try {
-        const data = await response.json();
+        const data = JSON.parse(responseText);
 
-        if (data && data.length > 0 && data[0].BillCode) {
+        // Toyyibpay returns an array with a single object on success.
+        // On failure, it can return a single object with an error message.
+        if (Array.isArray(data) && data.length > 0 && data[0].BillCode) {
           const billCode = data[0].BillCode;
           const paymentUrl = `https://toyyibpay.com/${billCode}`;
           return NextResponse.json({ paymentUrl });
         } else {
-            console.error('ToyyibPay API Error (unexpected format):', data);
-            return NextResponse.json({ message: 'Failed to create ToyyibPay bill due to unexpected response format.', error: data }, { status: 500 });
+            // This handles cases where Toyyibpay returns an error object, e.g., { "status": "error", "msg": "Invalid Category" }
+            console.error('ToyyibPay API Error (non-array response):', data);
+            const errorMessage = data.msg || 'Failed to create bill due to unexpected response format.';
+            return NextResponse.json({ message: errorMessage, error: data }, { status: 400 });
         }
     } catch(jsonError) {
-        // This block will catch cases where the response is not valid JSON,
-        // which can happen if ToyyibPay returns an HTML error page, for example.
-        const responseText = await response.text();
         console.error('Failed to parse Toyyibpay JSON response:', jsonError);
-        console.error('Toyyibpay raw response:', responseText);
-        return NextResponse.json({ message: 'Failed to parse Toyyibpay response. The service may be down or returning an error.', error: responseText }, { status: 500 });
+        console.error('Toyyibpay raw response text:', responseText);
+        return NextResponse.json({ message: 'Failed to parse Toyyibpay response. Check server logs for the raw response from the gateway.', error: responseText }, { status: 500 });
     }
 
-  } catch (error)
-   {
-    console.error('Error creating ToyyibPay bill:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Internal server error in create-bill:', error);
+    return NextResponse.json({ message: 'Internal server error: ' + error.message }, { status: 500 });
   }
 }
-
-    
