@@ -18,32 +18,38 @@ export async function POST(request: Request) {
     
     const successUrl = returnUrl ? `${returnUrl}?status=success` : '';
 
-    const formData = new URLSearchParams();
-    formData.append('userSecretKey', userSecretKey);
-    formData.append('categoryCode', categoryCode);
-    formData.append('billName', billName);
-    formData.append('billDescription', billDescription);
-    formData.append('billPriceSetting', '1');
-    formData.append('billPayorInfo', '1');
-    formData.append('billAmount', Math.round(billAmount).toString());
-    formData.append('billReturnUrl', successUrl);
-    formData.append('billCallbackUrl', '');
-    formData.append('billExternalReferenceNo', externalReferenceNo);
-    formData.append('billTo', billTo);
-    formData.append('billEmail', billEmail);
-    formData.append('billPhone', ''); 
-    formData.append('billSplitPayment', '0');
-    formData.append('billSplitPaymentArgs', '');
-    formData.append('billPaymentChannel', '0');
-    formData.append('billContentEmail', '');
-    formData.append('billChargeToCustomer', '1');
+    const billData = {
+        userSecretKey: userSecretKey,
+        categoryCode: categoryCode,
+        billName: billName,
+        billDescription: billDescription,
+        billPriceSetting: '1',
+        billPayorInfo: '1',
+        billAmount: Math.round(billAmount).toString(),
+        billReturnUrl: successUrl,
+        billCallbackUrl: '',
+        billExternalReferenceNo: externalReferenceNo,
+        billTo: billTo,
+        billEmail: billEmail,
+        billPhone: '', 
+        billSplitPayment: '0',
+        billSplitPaymentArgs: '',
+        billPaymentChannel: '0',
+        billContentEmail: '',
+        billChargeToCustomer: '1',
+    };
+
+    // Manual construction of x-www-form-urlencoded string
+    const bodyString = Object.entries(billData)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: formData.toString(),
+      body: bodyString,
     });
     
     const responseText = await response.text();
