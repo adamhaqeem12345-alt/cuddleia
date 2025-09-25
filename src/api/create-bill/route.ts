@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     formData.append('billPayorInfo', '1');
     formData.append('billAmount', billAmount.toString());
     formData.append('billReturnUrl', '');
-    formData.append('billCallbackUrl', ''); // Keep this blank as per docs for no callback
+    formData.append('billCallbackUrl', '');
     formData.append('billExternalReferenceNo', externalReferenceNo);
     formData.append('billTo', billTo);
     formData.append('billEmail', billEmail);
