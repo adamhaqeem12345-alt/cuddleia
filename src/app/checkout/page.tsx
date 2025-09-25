@@ -61,7 +61,7 @@ export default function CheckoutPage() {
             if (age < 18 || country !== 'MY') {
                 // Redirect to PayPal for users under 18 or international customers
                 const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL'; // <-- IMPORTANT: Replace with your email
-                let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
+                let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=MYR`;
 
                 cart.forEach((item, index) => {
                     const itemNumber = index + 1;
@@ -170,13 +170,13 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">${item.price.toFixed(2)}</p>
+                                            <p className="font-body font-semibold">RM{item.price.toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="border-t border-border pt-4 mt-4 flex justify-between font-bold text-lg">
                                     <p>Total</p>
-                                    <p>${subtotal.toFixed(2)}</p>
+                                    <p>RM{subtotal.toFixed(2)}</p>
                                 </div>
                             </div>
                         </div>

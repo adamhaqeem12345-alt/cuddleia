@@ -71,7 +71,7 @@ export default function CartPage() {
                                                         <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-right font-body font-semibold">${(item.price * item.quantity).toFixed(2)}</TableCell>
+                                                <TableCell className="text-right font-body font-semibold">RM{(item.price * item.quantity).toFixed(2)}</TableCell>
                                                 <TableCell>
                                                     <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="rounded-full">
                                                         <X className="h-5 w-5" />
@@ -86,11 +86,11 @@ export default function CartPage() {
                                 <h2 className="font-headline text-3xl font-bold">Summary</h2>
                                 <div className="flex justify-between font-body text-lg">
                                     <span>Subtotal</span>
-                                    <span>${subtotal.toFixed(2)}</span>
+                                    <span>RM{subtotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between font-body text-lg font-bold">
                                     <span>Total</span>
-                                    <span>${subtotal.toFixed(2)}</span>
+                                    <span>RM{subtotal.toFixed(2)}</span>
                                 </div>
                                 <Button size="lg" className="w-full rounded-full text-lg py-6" asChild>
                                     <Link href="/checkout">
