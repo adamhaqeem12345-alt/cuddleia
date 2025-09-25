@@ -16,8 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { USD_TO_MYR_RATE } from "@/lib/currency";
-
 
 export default function CheckoutPage() {
     const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
@@ -46,10 +44,15 @@ export default function CheckoutPage() {
         }
 
         const isInternational = country !== 'MY';
-        const subtotalForEmail = isInternational ? `$${subtotal.toFixed(2)}` : `RM${subtotal.toFixed(2)}`;
+        const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
+        const subtotalForEmail = `${currencyPrefix}${subtotal.toFixed(2)}`;
+
         const cartForEmail = cart.map(item => ({
             ...item,
             price: getPrice(item, selectedCountry),
+            downloadUrl: item.downloadUrl,
+            quantity: item.quantity,
+            name: item.name,
         }));
 
 
@@ -73,17 +76,18 @@ export default function CheckoutPage() {
 
             if (age < 18 || isInternational) {
                 const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL';
-                let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
+                const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
 
+                let paypalItemsQuery = "";
                 cart.forEach((item, index) => {
                     const itemNumber = index + 1;
-                    // Price is already in USD in the product definition
-                    paypalUrl += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
-                    paypalUrl += `&amount_${itemNumber}=${item.price.toFixed(2)}`;
-                    paypalUrl += `&quantity_${itemNumber}=${item.quantity}`;
+                    const usdPrice = getPrice(item, 'Other'); // Always use USD for PayPal
+                    paypalItemsQuery += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
+                    paypalItemsQuery += `&amount_${itemNumber}=${usdPrice.toFixed(2)}`;
+                    paypalItemsQuery += `&quantity_${itemNumber}=${item.quantity}`;
                 });
                 
-                window.location.href = paypalUrl;
+                window.location.href = paypalUrl + paypalItemsQuery;
             } else {
                 const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`;
                 window.location.href = toyyibpayUrl;
