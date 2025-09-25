@@ -24,9 +24,11 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState('toyyibpay');
     const [isProcessing, setIsProcessing] = useState(false);
 
-    // Determine the country and currency to use for price calculations
     const isMalaysianAdult = selectedCountry === 'MY' && age !== undefined && age >= 18;
-    const countryForPrice = (selectedCountry === 'MY' && !isMalaysianAdult) || (isMalaysianAdult && paymentMethod === 'toyyibpay') ? 'MY' : 'Other';
+    
+    // Determine the country and currency for the order summary display
+    const usePayPalForDisplay = selectedCountry !== 'MY' || (age !== undefined && age < 18) || (isMalaysianAdult && paymentMethod === 'paypal');
+    const countryForPrice = usePayPalForDisplay ? 'Other' : 'MY';
     const currencyPrefix = countryForPrice === 'MY' ? 'RM' : '$';
 
     const subtotal = cart.reduce((acc, item) => {
@@ -36,7 +38,6 @@ export default function CheckoutPage() {
     const displaySubtotal = `${currencyPrefix}${subtotal.toFixed(2)}`;
 
     useEffect(() => {
-        // Reset age and payment method when country changes
         setAge(undefined);
         const ageInput = document.getElementById('age') as HTMLInputElement;
         if (ageInput) ageInput.value = '';
@@ -82,7 +83,6 @@ export default function CheckoutPage() {
 
 
         try {
-            // First, always send the confirmation email
              await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -95,7 +95,6 @@ export default function CheckoutPage() {
             });
 
             if (usePayPal) {
-                // PayPal Flow
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
                 const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
 
@@ -112,7 +111,6 @@ export default function CheckoutPage() {
                 window.location.href = paypalUrl + paypalItemsQuery;
 
             } else {
-                // Malaysian customer (18+), use ToyyibPay Bill API
                 const toyyibPaySubtotal = cart.reduce((acc, item) => acc + getPrice(item, 'MY') * item.quantity, 0);
 
                 const billResponse = await fetch('/api/create-bill', {
@@ -173,7 +171,7 @@ export default function CheckoutPage() {
                                          <div className="relative">
                                               <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground z-10" />
                                              <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} value={selectedCountry}>
-                                                <SelectTrigger className="w-full pl-10">
+                                                <SelectTrigger className="w-full pl-10 rounded-full h-12">
                                                     <SelectValue placeholder="Select your country" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -188,7 +186,7 @@ export default function CheckoutPage() {
                                             <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
                                             <div className="relative">
                                                 <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required disabled={isProcessing} />
+                                                <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10 rounded-full h-12" required disabled={isProcessing} />
                                             </div>
                                         </div>
                                         {selectedCountry === 'MY' && (
@@ -196,7 +194,7 @@ export default function CheckoutPage() {
                                                 <Label htmlFor="age" className="font-body text-sm font-medium">Age</Label>
                                                 <div className="relative">
                                                     <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                    <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required={selectedCountry === 'MY'} disabled={isProcessing} onChange={(e) => setAge(parseInt(e.target.value) || undefined)} />
+                                                    <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10 rounded-full h-12" required={selectedCountry === 'MY'} disabled={isProcessing} onChange={(e) => setAge(parseInt(e.target.value) || undefined)} />
                                                 </div>
                                             </div>
                                         )}
@@ -205,7 +203,7 @@ export default function CheckoutPage() {
                                         <Label htmlFor="email" className="font-body text-sm font-medium">Your Email</Label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required disabled={isProcessing} />
+                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10 rounded-full h-12" required disabled={isProcessing} />
                                         </div>
                                     </div>
 
