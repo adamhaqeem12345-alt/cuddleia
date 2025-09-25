@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
 import { User, Mail, Calendar, Wand2, Globe } from "lucide-react";
 import Link from 'next/link';
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -21,9 +21,12 @@ import {
 export default function CheckoutPage() {
     const { cart, clearCart } = useCart();
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        setIsProcessing(true);
+
         const formData = new FormData(event.currentTarget);
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
@@ -32,12 +35,12 @@ export default function CheckoutPage() {
 
         if (!name || !email || !age || !country) {
             alert('Please fill in all your details.');
+            setIsProcessing(false);
             return;
         }
 
-        // Send confirmation email
         try {
-            await fetch('/api/send-email', {
+            const emailResponse = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -47,29 +50,29 @@ export default function CheckoutPage() {
                     subtotal: subtotal.toFixed(2),
                 }),
             });
-        } catch (error) {
-            console.error('Failed to send email:', error);
-            // We can decide if we want to stop the process if email fails
-        }
-        
-        // Clear cart for simulated successful order
-        clearCart();
 
-        // Redirect to payment gateway
-        if (age < 18 || country !== 'MY') {
-            // Redirect to PayPal for users under 18 or international customers
-            const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&currency_code=USD&amount=${subtotal.toFixed(2)}&item_name=Cuddleia_Products`;
-            window.location.href = paypalUrl;
-        } else {
-            // Redirect to ToyyibPay for Malaysian customers over 18
-            alert(`Thank you, ${name}! Proceeding to ToyyibPay for $${subtotal.toFixed(2)}.`);
-            // You will need to replace this with your actual ToyyibPay integration logic
-            // For example:
-            // const toyyibpayUrl = `https://toyyibpay.com/...`;
-            // window.location.href = toyyibpayUrl;
+            if (!emailResponse.ok) {
+                 throw new Error('Failed to send confirmation email.');
+            }
             
-            // For now, redirecting to home
-            window.location.href = '/'; 
+            // Email sent successfully, now clear cart and redirect.
+            clearCart();
+
+            if (age < 18 || country !== 'MY') {
+                // Redirect to PayPal for users under 18 or international customers
+                const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&currency_code=USD&amount=${subtotal.toFixed(2)}&item_name=Cuddleia_Products`;
+                window.location.href = paypalUrl;
+            } else {
+                // Redirect to a placeholder ToyyibPay URL for Malaysian customers over 18
+                // You will need to replace this with your actual ToyyibPay collection URL
+                const toyyibpayUrl = `https://toyyibpay.com/YOUR_COLLECTION_ID`;
+                window.location.href = toyyibpayUrl;
+            }
+
+        } catch (error) {
+            console.error('Checkout process failed:', error);
+            alert('There was an error processing your order. Please try again.');
+            setIsProcessing(false);
         }
     };
 
@@ -100,14 +103,14 @@ export default function CheckoutPage() {
                                         <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
                                         <div className="relative">
                                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required />
+                                            <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required disabled={isProcessing} />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="email" className="font-body text-sm font-medium">Your Email</Label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required />
+                                            <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required disabled={isProcessing} />
                                         </div>
                                     </div>
                                      <div className="grid grid-cols-2 gap-4">
@@ -115,12 +118,12 @@ export default function CheckoutPage() {
                                             <Label htmlFor="age" className="font-body text-sm font-medium">Your Age</Label>
                                             <div className="relative">
                                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                                <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required />
+                                                <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required disabled={isProcessing} />
                                             </div>
                                         </div>
                                          <div className="space-y-2">
                                             <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
-                                             <Select name="country" required>
+                                             <Select name="country" required disabled={isProcessing}>
                                                 <SelectTrigger className="w-full">
                                                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                                   <div className="pl-5">
@@ -135,9 +138,13 @@ export default function CheckoutPage() {
                                         </div>
                                     </div>
                                      <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal.</p>
-                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg">
-                                        <Wand2 className="mr-2 h-5 w-5" />
-                                        Proceed to Payment
+                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
+                                        {isProcessing ? 'Processing...' : (
+                                            <>
+                                                <Wand2 className="mr-2 h-5 w-5" />
+                                                Proceed to Payment
+                                            </>
+                                        )}
                                     </Button>
                                 </form>
                             </div>
