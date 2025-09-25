@@ -3,131 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acme Inc.</title>
+    <title>Dental Care</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
+    <header>
+        <nav>
             <div class="logo">
-                <img src="https://picsum.photos/seed/picsum/100/40" alt="Acme Inc. Logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tooth"><path d="M9 22v-3.26a4 4 0 0 1 1.09-2.65L12 14l1.91 2.09A4 4 0 0 1 15 18.74V22"/><path d="M15.46 7.4L14 2h-4l-1.46 5.4A2 2 0 0 0 10 9.57V12h4v-2.43a2 2 0 0 0 1.46-2.17Z"/></svg>
+                Dental Care
             </div>
-            <nav class="nav">
-                <a href="#features">Features</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#contact">Contact</a>
-            </nav>
-            <div class="auth-buttons">
-                <button class="btn btn-secondary">Log In</button>
-                <button class="btn btn-primary">Sign Up</button>
-            </div>
-        </div>
+            <ul>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#about">About Us</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="appointment-btn">Book Appointment</button>
+        </nav>
     </header>
 
     <main>
-        <section class="hero" style="background-image: url('https://picsum.photos/seed/hero/1200/600');">
-            <div class="container">
-                <div class="hero-content">
-                    <h1>Innovative Solutions for a Dynamic World</h1>
-                    <p>Discover how Acme Inc. can propel your business to new heights with our cutting-edge technology and expert services.</p>
-                    <button class="btn btn-primary btn-large">Get Started for Free</button>
+        <section class="hero" style="background-image: url('https://picsum.photos/seed/1/1200/600');" data-ai-hint="dental clinic background">
+            <div class="hero-content">
+                <h1>Your Smile, Our Passion</h1>
+                <p>Providing the best dental care to keep you smiling.</p>
+                <button class="appointment-btn">Book an Appointment</button>
+            </div>
+        </section>
+
+        <section id="services" class="services">
+            <h2>Our Services</h2>
+            <div class="service-cards">
+                <div class="card">
+                    <img src="https://picsum.photos/seed/2/400/300" alt="Teeth Cleaning" data-ai-hint="teeth cleaning">
+                    <h3>Teeth Cleaning</h3>
+                    <p>Professional cleaning to keep your teeth healthy.</p>
+                </div>
+                <div class="card">
+                    <img src="https://picsum.photos/seed/3/400/300" alt="Whitening" data-ai-hint="teeth whitening">
+                    <h3>Teeth Whitening</h3>
+                    <p>Brighten your smile with our whitening services.</p>
+                </div>
+                <div class="card">
+                    <img src="https://picsum.photos/seed/4/400/300" alt="Dental Implants" data-ai-hint="dental implant">
+                    <h3>Dental Implants</h3>
+                    <p>Restore your smile with our durable implants.</p>
                 </div>
             </div>
         </section>
 
-        <section id="features" class="features">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Why Choose Acme?</h2>
-                    <p>We provide the best tools to help you succeed.</p>
-                </div>
-                <div class="features-grid">
-                    <div class="feature-card">
-                        <img src="https://picsum.photos/seed/feature1/300/200" alt="Feature 1" class="feature-img">
-                        <h3>Advanced Analytics</h3>
-                        <p>Gain deep insights into your business with our powerful analytics platform.</p>
-                    </div>
-                    <div class="feature-card">
-                        <img src="https://picsum.photos/seed/feature2/300/200" alt="Feature 2" class="feature-img">
-                        <h3>Seamless Integration</h3>
-                        <p>Easily connect with the tools you already use and love.</p>
-                    </div>
-                    <div class="feature-card">
-                        <img src="https://picsum.photos/seed/feature3/300/200" alt="Feature 3" class="feature-img">
-                        <h3>24/7 Support</h3>
-                        <p>Our dedicated support team is here to help you around the clock.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="pricing" class="pricing">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Flexible Pricing for Teams of All Sizes</h2>
-                    <p>Start for free and scale as you grow. No hidden fees.</p>
-                </div>
-                <div class="pricing-grid">
-                    <div class="pricing-card">
-                        <h3>Basic</h3>
-                        <div class="price">$10<span>/mo</span></div>
-                        <ul>
-                            <li>Feature A</li>
-                            <li>Feature B</li>
-                            <li>Feature C</li>
-                        </ul>
-                        <button class="btn btn-primary">Choose Plan</button>
-                    </div>
-                    <div class="pricing-card popular">
-                        <div class="popular-badge">Most Popular</div>
-                        <h3>Pro</h3>
-                        <div class="price">$25<span>/mo</span></div>
-                        <ul>
-                            <li>All Basic Features</li>
-                            <li>Feature D</li>
-                            <li>Feature E</li>
-                        </ul>
-                        <button class="btn btn-primary">Choose Plan</button>
-                    </div>
-                    <div class="pricing-card">
-                        <h3>Enterprise</h3>
-                        <div class="price">Contact Us</div>
-                        <ul>
-                            <li>All Pro Features</li>
-                            <li>Dedicated Support</li>
-                            <li>Custom Integrations</li>
-                        </ul>
-                        <button class="btn btn-primary">Contact Sales</button>
-                    </div>
+        <section id="about" class="about">
+            <div class="about-content">
+                <img src="https://picsum.photos/seed/5/400/400" alt="Dentist" data-ai-hint="friendly dentist">
+                <div class="about-text">
+                    <h2>About Us</h2>
+                    <p>We are a team of dedicated professionals committed to providing top-quality dental care. Our state-of-the-art facility and friendly staff ensure a comfortable and pleasant experience for all our patients.</p>
                 </div>
             </div>
         </section>
 
         <section id="contact" class="contact">
-            <div class="container">
-                <div class="section-header">
-                    <h2>Get in Touch</h2>
-                    <p>Have questions? We'd love to hear from you.</p>
-                </div>
-                <form class="contact-form">
-                    <input type="text" placeholder="Name">
-                    <input type="email" placeholder="Email">
-                    <textarea placeholder="Your Message"></textarea>
-                    <button type="submit" class="btn btn-primary">Send Message</button>
-                </form>
-            </div>
+            <h2>Contact Us</h2>
+            <form>
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="email" name="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit" class="appointment-btn">Send Message</button>
+            </form>
         </section>
     </main>
 
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2024 Acme Inc. All rights reserved.</p>
-            <div class="social-links">
-                <a href="#">Facebook</a>
-                <a href="#">Twitter</a>
-                <a href="#">LinkedIn</a>
-            </div>
-        </div>
+    <footer>
+        <p>&copy; 2024 Dental Care. All rights reserved.</p>
     </footer>
 </body>
 </html>
