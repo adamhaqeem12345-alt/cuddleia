@@ -4,7 +4,7 @@
 import { products } from '@/lib/products'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { useCart } from '@/context/cart-context'
+import { useCart, getPrice } from '@/context/cart-context'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart } from 'lucide-react'
 import { AnimateIn } from '@/components/animate-in'
@@ -22,7 +22,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
     notFound()
   }
 
-  const price = selectedCountry === 'MY' ? `RM${product.price.toFixed(2)}` : `$${product.priceUSD.toFixed(2)}`;
+  const priceValue = getPrice(product, selectedCountry);
+  const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
+  const price = `${currencyPrefix}${priceValue.toFixed(2)}`;
 
   return (
     <AnimateIn>

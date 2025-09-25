@@ -1,7 +1,7 @@
 'use client'
 
 import Image from "next/image";
-import { useCart } from "@/context/cart-context";
+import { useCart, getPrice } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
@@ -9,6 +9,7 @@ import { User, Mail, Calendar, Globe, Wand2 } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent, useState } from "react";
 import { Label } from "@/components/ui/label";
+import { MYR_TO_USD_RATE } from "@/lib/currency";
 import {
   Select,
   SelectContent,
@@ -22,7 +23,7 @@ export default function CheckoutPage() {
     const { cart, clearCart, selectedCountry, setSelectedCountry } = useCart();
     
     const subtotalMYR = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const subtotalUSD = cart.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
+    const subtotalUSD = cart.reduce((acc, item) => acc + (item.price * MYR_TO_USD_RATE) * item.quantity, 0);
 
     const [isProcessing, setIsProcessing] = useState(false);
     
@@ -46,7 +47,7 @@ export default function CheckoutPage() {
         const subtotalForEmail = isInternational ? `$${subtotalUSD.toFixed(2)}` : `RM${subtotalMYR.toFixed(2)}`;
         const cartForEmail = cart.map(item => ({
             ...item,
-            price: isInternational ? item.priceUSD : item.price,
+            price: getPrice(item, selectedCountry),
         }));
 
 
@@ -74,8 +75,9 @@ export default function CheckoutPage() {
 
                 cart.forEach((item, index) => {
                     const itemNumber = index + 1;
+                    const priceUSD = item.price * MYR_TO_USD_RATE;
                     paypalUrl += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
-                    paypalUrl += `&amount_${itemNumber}=${item.priceUSD.toFixed(2)}`;
+                    paypalUrl += `&amount_${itemNumber}=${priceUSD.toFixed(2)}`;
                     paypalUrl += `&quantity_${itemNumber}=${item.quantity}`;
                 });
                 
@@ -181,7 +183,7 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">{currencyPrefix}{(selectedCountry === 'MY' ? item.price : item.priceUSD).toFixed(2)}</p>
+                                            <p className="font-body font-semibold">{currencyPrefix}{(getPrice(item, selectedCountry)).toFixed(2)}</p>
                                         </div>
                                     ))}
                                 </div>

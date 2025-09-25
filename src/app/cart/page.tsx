@@ -1,6 +1,6 @@
 'use client'
 import Image from "next/image";
-import { useCart } from "@/context/cart-context";
+import { useCart, getPrice } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
@@ -19,7 +19,7 @@ export default function CartPage() {
     const { cart, removeFromCart, updateQuantity, selectedCountry } = useCart();
     
     const subtotal = cart.reduce((acc, item) => {
-        const price = selectedCountry === 'MY' ? item.price : item.priceUSD;
+        const price = getPrice(item, selectedCountry);
         return acc + price * item.quantity;
     }, 0);
 
@@ -63,7 +63,7 @@ export default function CartPage() {
                                     </TableHeader>
                                     <TableBody>
                                         {cart.map(item => {
-                                            const price = selectedCountry === 'MY' ? item.price : item.priceUSD;
+                                            const price = getPrice(item, selectedCountry);
                                             return (
                                                 <TableRow key={item.id}>
                                                     <TableCell className="hidden md:table-cell">

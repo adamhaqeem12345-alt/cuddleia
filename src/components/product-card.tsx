@@ -5,11 +5,12 @@ import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart } from 'lucide-react';
+import { MYR_TO_USD_RATE } from '@/lib/currency';
 
 export const ProductCard = ({ product }: { product: Product }) => {
     const { addToCart } = useCart();
     const priceMYR = `RM${product.price.toFixed(2)}`;
-    const priceUSD = `$${product.priceUSD.toFixed(2)}`;
+    const priceUSD = `$${(product.price * MYR_TO_USD_RATE).toFixed(2)}`;
     
     return (
         <div className="h-full">

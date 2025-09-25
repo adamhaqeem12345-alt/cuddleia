@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import type { Product } from '@/lib/types';
+import { MYR_TO_USD_RATE } from '@/lib/currency';
 
 interface CartItem extends Product {
   quantity: number;
@@ -70,3 +71,12 @@ export const useCart = () => {
   }
   return context;
 };
+
+// Helper function to get the price in the selected currency
+export const getPrice = (product: Product, selectedCountry: string) => {
+    if (selectedCountry === 'MY') {
+        return product.price;
+    } else {
+        return product.price * MYR_TO_USD_RATE;
+    }
+}
