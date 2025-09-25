@@ -1,23 +1,34 @@
 'use client'
 import { Search } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
-import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { ProductCard } from '@/components/product-card';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { Product } from '@/lib/types';
 
 export default function ProductsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
 
-    const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
+    const firestore = useFirestore();
 
-    const filteredProducts = products.filter(product => {
+    const productsCollection = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'products');
+    }, [firestore]);
+
+    const { data: allProducts, isLoading } = useCollection<Product>(productsCollection);
+
+    const categories = ['All', ...Array.from(new Set(allProducts?.map(p => p.category) || []))];
+
+    const filteredProducts = allProducts?.filter(product => {
         const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
         const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
-    });
+    }) || [];
 
 
   return (
@@ -55,6 +66,8 @@ export default function ProductsPage() {
                 </div>
             </div>
 
+            {isLoading && <div className="text-center col-span-full">Loading products...</div>}
+            
             <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product, i) => (
                 <AnimateIn key={product.id} delay={i * 150} start="opacity-0 scale-95">
