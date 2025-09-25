@@ -28,14 +28,16 @@ export async function POST(request: Request) {
     formData.append('billSplitPaymentArgs', '');
     formData.append('billPaymentChannel', '0');
     formData.append('billContentEmail', '');
-    formData.append('billChargeToCustomer', '1'); // Pass processing fee to customer
+    formData.append('billChargeToCustomer', '1');
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
       method: 'POST',
-      body: formData,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData.toString(),
     });
     
-    // The raw response text is useful for debugging in all cases.
     const responseText = await response.text();
 
     if (!response.ok) {
@@ -46,14 +48,11 @@ export async function POST(request: Request) {
     try {
         const data = JSON.parse(responseText);
 
-        // Toyyibpay returns an array with a single object on success.
-        // On failure, it can return a single object with an error message.
         if (Array.isArray(data) && data.length > 0 && data[0].BillCode) {
           const billCode = data[0].BillCode;
           const paymentUrl = `https://toyyibpay.com/${billCode}`;
           return NextResponse.json({ paymentUrl });
         } else {
-            // This handles cases where Toyyibpay returns an error object, e.g., { "status": "error", "msg": "Invalid Category" }
             console.error('ToyyibPay API Error (non-array response):', data);
             const errorMessage = data.msg || 'Failed to create bill due to unexpected response format.';
             return NextResponse.json({ message: errorMessage, error: data }, { status: 400 });
