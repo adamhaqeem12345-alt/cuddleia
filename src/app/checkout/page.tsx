@@ -5,37 +5,71 @@ import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
-import { User, Mail, Calendar, Wand2 } from "lucide-react";
+import { User, Mail, Calendar, Wand2, Globe } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent } from "react";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
 
 export default function CheckoutPage() {
     const { cart, clearCart } = useCart();
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const age = Number(formData.get('age'));
         const name = formData.get('name') as string;
         const email = formData.get('email') as string;
+        const age = Number(formData.get('age'));
+        const country = formData.get('country') as string;
 
-        if (!name || !email || !age) {
+        if (!name || !email || !age || !country) {
             alert('Please fill in all your details.');
             return;
         }
 
-        if (age < 18) {
-            // Redirect to PayPal for users under 18
+        // Send confirmation email
+        try {
+            await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: email,
+                    name: name,
+                    cart: cart,
+                    subtotal: subtotal.toFixed(2),
+                }),
+            });
+        } catch (error) {
+            console.error('Failed to send email:', error);
+            // We can decide if we want to stop the process if email fails
+        }
+        
+        // Clear cart for simulated successful order
+        clearCart();
+
+        // Redirect to payment gateway
+        if (age < 18 || country !== 'MY') {
+            // Redirect to PayPal for users under 18 or international customers
             const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&currency_code=USD&amount=${subtotal.toFixed(2)}&item_name=Cuddleia_Products`;
             window.location.href = paypalUrl;
         } else {
-            // Placeholder for ToyyibPay or other gateways
-            alert(`Thank you, ${name}! Proceeding to payment for $${subtotal.toFixed(2)}.`);
-            // Here you would redirect to ToyyibPay or another payment gateway
-            // For now, we'll just clear the cart to simulate a successful order.
-            clearCart();
-            window.location.href = '/'; // Redirect to home after 'payment'
+            // Redirect to ToyyibPay for Malaysian customers over 18
+            alert(`Thank you, ${name}! Proceeding to ToyyibPay for $${subtotal.toFixed(2)}.`);
+            // You will need to replace this with your actual ToyyibPay integration logic
+            // For example:
+            // const toyyibpayUrl = `https://toyyibpay.com/...`;
+            // window.location.href = toyyibpayUrl;
+            
+            // For now, redirecting to home
+            window.location.href = '/'; 
         }
     };
 
@@ -63,27 +97,44 @@ export default function CheckoutPage() {
                                 <p className="text-muted-foreground font-body">We need this to process your order and send your files.</p>
                                 <form className="space-y-6" onSubmit={handleSubmit}>
                                     <div className="space-y-2">
-                                        <label className="font-body text-sm font-medium">Your Name</label>
+                                        <Label htmlFor="name" className="font-body text-sm font-medium">Your Name</Label>
                                         <div className="relative">
                                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                             <Input id="name" name="name" placeholder="e.g. Fatimah" className="pl-10" required />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="font-body text-sm font-medium">Your Email</label>
+                                        <Label htmlFor="email" className="font-body text-sm font-medium">Your Email</Label>
                                         <div className="relative">
                                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                             <Input id="email" name="email" type="email" placeholder="you@example.com" className="pl-10" required />
                                         </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="font-body text-sm font-medium">Your Age</label>
-                                        <div className="relative">
-                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                                            <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required />
+                                     <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="age" className="font-body text-sm font-medium">Your Age</Label>
+                                            <div className="relative">
+                                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                <Input id="age" name="age" type="number" placeholder="e.g. 25" className="pl-10" required />
+                                            </div>
+                                        </div>
+                                         <div className="space-y-2">
+                                            <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
+                                             <Select name="country" required>
+                                                <SelectTrigger className="w-full">
+                                                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                                                  <div className="pl-5">
+                                                    <SelectValue placeholder="Select your country" />
+                                                  </div>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                  <SelectItem value="MY">Malaysia</SelectItem>
+                                                  <SelectItem value="Other">Other</SelectItem>
+                                                </SelectContent>
+                                              </Select>
                                         </div>
                                     </div>
-                                     <p className="text-xs text-muted-foreground font-body">Customers under 18 will be directed to PayPal.</p>
+                                     <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal.</p>
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg">
                                         <Wand2 className="mr-2 h-5 w-5" />
                                         Proceed to Payment
