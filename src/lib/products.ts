@@ -8,6 +8,7 @@ export const products: Product[] = [
     price: 15.00,
     imageUrl: "https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png",
     category: 'Booklets',
+    downloadUrl: '#',
   },
   {
     id: "002",
@@ -16,6 +17,7 @@ export const products: Product[] = [
     price: 6.00,
     imageUrl: "https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png",
     category: 'Wallpapers',
+    downloadUrl: 'https://drive.google.com/file/d/1OyatP86tevbHRiazIMEsal09fcFOMSZl/view?usp=drivesdk',
   },
   {
     id: "003",
@@ -24,6 +26,7 @@ export const products: Product[] = [
     price: 5.00,
     imageUrl: "https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png",
     category: 'Wallpapers',
+    downloadUrl: '#',
   },
   {
     id: "004",
@@ -32,6 +35,7 @@ export const products: Product[] = [
     price: 5.00,
     imageUrl: "https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png",
     category: 'Wallpapers',
+    downloadUrl: '#',
   },
   {
     id: "005",
@@ -40,5 +44,6 @@ export const products: Product[] = [
     price: 0.24,
     imageUrl: "https://i.postimg.cc/MTBtTMXR/Heading.png",
     category: 'Wallpapers',
+    downloadUrl: '#',
   },
 ];
