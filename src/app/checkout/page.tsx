@@ -116,6 +116,8 @@ export default function CheckoutPage() {
 
             } else {
                 const toyyibPaySubtotal = cart.reduce((acc, item) => acc + getPrice(item, 'MY') * item.quantity, 0);
+                
+                const returnUrl = `${window.location.protocol}//${window.location.host}/cart`;
 
                 const billResponse = await fetch('/api/create-bill', {
                     method: 'POST',
@@ -126,6 +128,7 @@ export default function CheckoutPage() {
                         billAmount: toyyibPaySubtotal * 100, // Amount in cents
                         billTo: name,
                         billEmail: email,
+                        returnUrl: returnUrl,
                     }),
                 });
 

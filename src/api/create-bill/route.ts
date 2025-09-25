@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(request: Request) {
   try {
-    const { billName, billDescription, billAmount, billTo, billEmail } = await request.json();
+    const { billName, billDescription, billAmount, billTo, billEmail, returnUrl } = await request.json();
 
     const userSecretKey = process.env.TOYYIBPAY_USER_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
@@ -15,6 +15,8 @@ export async function POST(request: Request) {
     }
 
     const externalReferenceNo = uuidv4();
+    
+    const successUrl = returnUrl ? `${returnUrl}?status=success` : '';
 
     const formData = new URLSearchParams();
     formData.append('userSecretKey', userSecretKey);
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
     formData.append('billPriceSetting', '1');
     formData.append('billPayorInfo', '1');
     formData.append('billAmount', Math.round(billAmount).toString());
-    formData.append('billReturnUrl', '');
+    formData.append('billReturnUrl', successUrl);
     formData.append('billCallbackUrl', '');
     formData.append('billExternalReferenceNo', externalReferenceNo);
     formData.append('billTo', billTo);
@@ -54,13 +56,11 @@ export async function POST(request: Request) {
     try {
         const data = JSON.parse(responseText);
 
-        // A successful response is an array with one object: [{ "BillCode": "..." }]
         if (Array.isArray(data) && data.length > 0 && data[0].BillCode) {
           const billCode = data[0].BillCode;
           const paymentUrl = `https://toyyibpay.com/${billCode}`;
           return NextResponse.json({ paymentUrl });
         } 
-        // An API logic error is an object, sometimes in an array: [{ "msg": "Invalid Category Code" }] or {"msg": ...}
         else {
             let errorMessage = 'Failed to create bill due to an unknown API error.';
             if (Array.isArray(data) && data.length > 0 && data[0].msg) {
