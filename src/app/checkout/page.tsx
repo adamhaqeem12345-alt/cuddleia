@@ -5,7 +5,7 @@ import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
-import { User, Mail, Calendar, Wand2, Globe } from "lucide-react";
+import { User, Mail, Calendar, Globe, Wand2 } from "lucide-react";
 import Link from 'next/link';
 import { FormEvent, useState } from "react";
 import { Label } from "@/components/ui/label";
@@ -20,8 +20,11 @@ import {
 
 export default function CheckoutPage() {
     const { cart, clearCart } = useCart();
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotalMYR = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotalUSD = cart.reduce((acc, item) => acc + item.priceUSD * item.quantity, 0);
+
     const [isProcessing, setIsProcessing] = useState(false);
+    const [selectedCountry, setSelectedCountry] = useState('MY');
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -39,6 +42,9 @@ export default function CheckoutPage() {
             return;
         }
 
+        const isInternational = country !== 'MY';
+        const subtotalForEmail = isInternational ? `$${subtotalUSD.toFixed(2)}` : `RM${subtotalMYR.toFixed(2)}`;
+
         try {
             const emailResponse = await fetch('/api/send-email', {
                 method: 'POST',
@@ -47,7 +53,7 @@ export default function CheckoutPage() {
                     to: email,
                     name: name,
                     cart: cart,
-                    subtotal: subtotal.toFixed(2),
+                    subtotal: subtotalForEmail,
                 }),
             });
 
@@ -55,18 +61,16 @@ export default function CheckoutPage() {
                  throw new Error('Failed to send confirmation email.');
             }
             
-            // Email sent successfully, now clear cart and redirect.
             clearCart();
 
-            if (age < 18 || country !== 'MY') {
-                // Redirect to PayPal for users under 18 or international customers
+            if (age < 18 || isInternational) {
                 const paypalBusinessEmail = 'YOUR_PAYPAL_EMAIL'; // <-- IMPORTANT: Replace with your email
-                let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=MYR`;
+                let paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD`;
 
                 cart.forEach((item, index) => {
                     const itemNumber = index + 1;
                     paypalUrl += `&item_name_${itemNumber}=${encodeURIComponent(item.name)}`;
-                    paypalUrl += `&amount_${itemNumber}=${item.price.toFixed(2)}`;
+                    paypalUrl += `&amount_${itemNumber}=${item.priceUSD.toFixed(2)}`;
                     paypalUrl += `&quantity_${itemNumber}=${item.quantity}`;
                 });
                 
@@ -83,6 +87,8 @@ export default function CheckoutPage() {
             setIsProcessing(false);
         }
     };
+
+    const displaySubtotal = selectedCountry === 'MY' ? `RM${subtotalMYR.toFixed(2)}` : `$${subtotalUSD.toFixed(2)}`;
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -131,7 +137,7 @@ export default function CheckoutPage() {
                                         </div>
                                          <div className="space-y-2">
                                             <Label htmlFor="country" className="font-body text-sm font-medium">Country</Label>
-                                             <Select name="country" required disabled={isProcessing}>
+                                             <Select name="country" required disabled={isProcessing} onValueChange={setSelectedCountry} defaultValue="MY">
                                                 <SelectTrigger className="w-full">
                                                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                                                   <div className="pl-5">
@@ -145,7 +151,7 @@ export default function CheckoutPage() {
                                               </Select>
                                         </div>
                                     </div>
-                                     <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal.</p>
+                                     <p className="text-xs text-muted-foreground font-body">International customers and those under 18 will be directed to PayPal (USD).</p>
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-6 shadow-lg" disabled={isProcessing}>
                                         {isProcessing ? 'Processing...' : (
                                             <>
@@ -170,13 +176,13 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">RM{item.price.toFixed(2)}</p>
+                                            <p className="font-body font-semibold">{selectedCountry === 'MY' ? `RM${item.price.toFixed(2)}` : `$${item.priceUSD.toFixed(2)}`}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="border-t border-border pt-4 mt-4 flex justify-between font-bold text-lg">
                                     <p>Total</p>
-                                    <p>RM{subtotal.toFixed(2)}</p>
+                                    <p>{displaySubtotal}</p>
                                 </div>
                             </div>
                         </div>

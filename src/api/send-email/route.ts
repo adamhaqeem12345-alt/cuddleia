@@ -17,13 +17,16 @@ export async function POST(request: Request) {
       },
     });
 
-    const productList = cart.map((item: any) => `
-      <li style="margin-bottom: 20px;">
-        <span style="font-weight: bold;">${item.name}</span> (x${item.quantity}) - RM${(item.price * item.quantity).toFixed(2)}
-        <br />
-        <a href="${item.downloadUrl}" style="color: #3498db; text-decoration: none;">Download Here</a>
-      </li>
-    `).join('');
+    const productList = cart.map((item: any) => {
+        const priceString = item.priceUSD ? `RM${item.price.toFixed(2)} / $${item.priceUSD.toFixed(2)}` : `RM${item.price.toFixed(2)}`;
+        return `
+        <li style="margin-bottom: 20px;">
+            <span style="font-weight: bold;">${item.name}</span> (x${item.quantity}) - ${priceString}
+            <br />
+            <a href="${item.downloadUrl}" style="color: #3498db; text-decoration: none;">Download Here</a>
+        </li>
+        `
+    }).join('');
 
     const mailOptions = {
       from: `"Cuddleia" <${process.env.ZOHO_EMAIL}>`,
@@ -38,7 +41,7 @@ export async function POST(request: Request) {
             ${productList}
           </ul>
           <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
-            <h3 style="text-align: right;">Total: RM${subtotal}</h3>
+            <h3 style="text-align: right;">Total: ${subtotal}</h3>
           </div>
           <p style="text-align: center; margin-top: 30px; color: #777;">With love,<br>The Cuddleia Team</p>
         </div>
