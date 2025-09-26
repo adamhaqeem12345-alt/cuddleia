@@ -22,13 +22,8 @@ export default function CartPage() {
     const { cart, removeFromCart, updateQuantity, getPrice, selectedCountry, setSelectedCountry } = useCart();
     
     const subtotal = cart.reduce((acc, item) => {
-        return acc + getPrice(item.price).raw * item.quantity;
+        return acc + item.price * item.quantity;
     }, 0);
-
-    const formattedSubtotal = selectedCountry === 'MY' ? `RM${subtotal.toFixed(2)}` : `$${(subtotal / (selectedCountry === 'MY' ? USD_TO_MYR_RATE : 1)).toFixed(2)}`;
-
-    // This is a temporary fix to ensure the cart page works without the complex pricing logic that was causing issues
-    const simpleSubtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -97,11 +92,11 @@ export default function CartPage() {
                                 <h2 className="font-headline text-3xl font-bold">Summary</h2>
                                 <div className="flex justify-between font-body text-lg">
                                     <span>Subtotal</span>
-                                    <span>{getPrice(simpleSubtotal).formatted}</span>
+                                    <span>{getPrice(subtotal).formatted}</span>
                                 </div>
                                 <div className="flex justify-between font-body text-lg font-bold">
                                     <span>Total</span>
-                                    <span>{getPrice(simpleSubtotal).formatted}</span>
+                                    <span>{getPrice(subtotal).formatted}</span>
                                 </div>
                                  <div className="space-y-2">
                                     <Label>Your location:</Label>

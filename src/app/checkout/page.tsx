@@ -54,7 +54,7 @@ export default function CheckoutPage() {
                 const data = await response.json();
                 
                 if (data.billUrl) {
-                    clearCart();
+                    // Don't clear cart here, clear it on the thank you page after payment confirmation
                     window.location.href = data.billUrl;
                 } else {
                     throw new Error('Bill URL not returned from API');
@@ -64,6 +64,8 @@ export default function CheckoutPage() {
                 setIsLoading(false);
             }
         } else { // PayPal
+             // This is a placeholder for PayPal integration
+             // In a real app, you would redirect to PayPal here
              setTimeout(() => {
                 clearCart();
                 router.push('/thank-you?status=success');

@@ -20,15 +20,20 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('Other');
+  const [selectedCountry, setSelectedCountry] = useState('MY');
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    // Logic to set default country based on user's location could be added here
   }, []);
 
   const getPrice = (price: number) => {
-    if (!isClient) return { formatted: `$${price.toFixed(2)}`, raw: price };
+    if (!isClient) {
+        // Default to MYR on server or during initial render
+        const priceMYR = price * USD_TO_MYR_RATE;
+        return { formatted: `RM${priceMYR.toFixed(2)}`, raw: priceMYR };
+    }
     
     if (selectedCountry === 'MY') {
       const priceMYR = price * USD_TO_MYR_RATE;
