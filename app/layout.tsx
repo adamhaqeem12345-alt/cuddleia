@@ -1,6 +1,7 @@
+
 import type { Metadata } from 'next';
 import { Belleza, Alegreya } from 'next/font/google';
-import './globals.css';
+import '@/app/globals.css';
 import { cn } from '@/lib/utils';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
