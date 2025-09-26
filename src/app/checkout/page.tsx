@@ -39,27 +39,22 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        // Send the entire cart context to the backend
         body: JSON.stringify({ cart }),
       });
+      
       const order = await response.json();
 
-      if (!response.ok || order.error) {
+      if (!response.ok || !order.id) {
         throw new Error(order.error || 'Failed to create PayPal order.');
       }
 
-      if (order.id) {
-        console.log("Frontend: create-order API successful. Order ID:", order.id);
-        return order.id;
-      } else {
-        console.error("Order ID is missing from create-order response:", order);
-        throw new Error('Unexpected error from server: Order ID is missing.');
-      }
+      console.log("Frontend: create-order API successful. Order ID:", order.id);
+      return order.id;
+
     } catch (error: any) {
       console.error("Frontend: PayPal createOrder error:", error.message);
       setErrorMessage(error.message);
-      // We must throw an error here to stop the PayPal flow
-      throw new Error(error.message);
+      throw new Error(error.message); // This is required to stop the PayPal flow
     }
   };
 
@@ -81,12 +76,9 @@ export default function CheckoutPage() {
          throw new Error(orderDetails.error || 'Failed to capture payment.');
       }
       
-      const purchaseUnit = orderDetails.purchase_units?.[0] || orderDetails;
-      const capture = purchaseUnit.payments?.captures?.[0];
-
       // Verify the final status of the payment
-      if (orderDetails.status !== 'COMPLETED' && capture?.status !== 'COMPLETED') {
-        throw new Error(`Payment not completed. Status: ${orderDetails.status || capture?.status}`);
+      if (orderDetails.status !== 'COMPLETED') {
+        throw new Error(`Payment not completed. Status: ${orderDetails.status}`);
       }
       
       console.log("Frontend: Payment capture successful. Clearing cart and redirecting.");
@@ -96,14 +88,12 @@ export default function CheckoutPage() {
     } catch (error: any) {
       console.error("Frontend: onApprove error:", error.message);
       setErrorMessage(error.message);
-      setIsProcessing(false); // Allow user to try again if needed
-      // Redirect to a failure page so the user knows something went wrong
+      setIsProcessing(false);
       router.push(`/thank-you?status=error&orderID=${data.orderID}&message=${encodeURIComponent(error.message)}`);
     }
   };
   
   const onError = (err: any) => {
-     // This function is called by the PayPal script if it encounters an error.
      setErrorMessage("An error occurred with the PayPal payment. Please try again.");
      console.error("PayPal Buttons onError:", err);
   }
@@ -232,6 +222,7 @@ export default function CheckoutPage() {
                                   createOrder={handleCreateOrder}
                                   onApprove={onApprove}
                                   onError={onError}
+                                  disabled={!isFormValid}
                                 />
                             </div>
                             {!isFormValid && (
