@@ -2,11 +2,7 @@
 import { NextResponse } from 'next/server';
 import { createOrder as createPaypalOrder } from '@/lib/paypal-api';
 import { products as allProducts } from '@/lib/products';
-
-interface CartItem {
-  id: string;
-  quantity: number;
-}
+import { CartItem } from '@/lib/types';
 
 export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/create-order");
