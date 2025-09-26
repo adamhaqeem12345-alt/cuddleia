@@ -1,0 +1,102 @@
+
+import { products } from '@/lib/products';
+import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { AnimateIn } from '@/components/animate-in';
+import Link from 'next/link';
+import { AddToCartButton } from './add-to-cart-button';
+
+
+// Generate static paths for all products
+export async function generateStaticParams() {
+  return products.map((product) => ({
+    id: product.id,
+  }));
+}
+
+// Generate metadata for each product page
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const product = products.find((p) => p.id === params.id);
+  if (!product) {
+    return {
+      title: 'Product Not Found',
+    }
+  }
+  return {
+    title: `${product.name} | Cuddleia`,
+    description: product.description.substring(0, 160),
+     openGraph: {
+      title: `${product.name} | Cuddleia`,
+      description: product.description.substring(0, 160),
+      images: [
+        {
+          url: product.imageUrl,
+          width: 1200,
+          height: 630,
+          alt: product.name,
+        }
+      ],
+    },
+     twitter: {
+      card: 'summary_large_image',
+      title: `${product.name} | Cuddleia`,
+      description: product.description.substring(0, 160),
+      images: [product.imageUrl],
+    },
+  };
+}
+
+
+export default function ProductPage({ params }: { params: { id: string } }) {
+  const product = products.find((p) => p.id === params.id);
+
+  if (!product) {
+    notFound();
+  }
+
+  return (
+    <div className="bg-rose-50/30">
+        <div className="container mx-auto px-4 py-16 sm:py-24">
+            <AnimateIn>
+                <div className="mb-8">
+                    <Button asChild variant="ghost">
+                        <Link href="/products">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to All Products
+                        </Link>
+                    </Button>
+                </div>
+            </AnimateIn>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
+                <AnimateIn>
+                    <div className="aspect-[4/3] relative rounded-2xl shadow-2xl overflow-hidden">
+                        <Image
+                            src={product.imageUrl}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                        />
+                    </div>
+                </AnimateIn>
+
+                <AnimateIn delay={150}>
+                    <div className="flex flex-col h-full">
+                        <h1 className="font-headline text-4xl lg:text-5xl font-bold text-foreground mb-4">{product.name}</h1>
+                        <p className="font-headline text-3xl font-bold text-primary mb-6">${product.price.toFixed(2)}</p>
+                        
+                        <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap">
+                            <p>{product.description}</p>
+                        </div>
+
+                        <div className="mt-auto pt-8">
+                           <AddToCartButton product={product} />
+                        </div>
+                    </div>
+                </AnimateIn>
+            </div>
+        </div>
+    </div>
+  );
+}
