@@ -37,7 +37,7 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ total: getPrice(subtotal).raw }),
+        body: JSON.stringify({ cart: cart.map(item => ({ id: item.id, quantity: item.quantity })) }),
       });
       const order = await response.json();
 
