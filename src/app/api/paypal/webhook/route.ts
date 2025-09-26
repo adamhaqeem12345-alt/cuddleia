@@ -10,6 +10,8 @@ const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID!;
 async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
     try {
         const accessToken = await getAccessToken();
+        const body = JSON.parse(rawBody);
+
         const verificationBody = {
             auth_algo: headers.get('paypal-auth-algo'),
             cert_url: headers.get('paypal-cert-url'),
@@ -17,7 +19,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
             transmission_sig: headers.get('paypal-transmission-sig'),
             transmission_time: headers.get('paypal-transmission-time'),
             webhook_id: WEBHOOK_ID,
-            webhook_event: JSON.parse(rawBody),
+            webhook_event: body,
         };
 
         const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
@@ -55,20 +57,19 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
         const capture = body.resource;
-        const orderId = capture.id; // This is the capture ID, not order ID
         
-        // The order ID is in supplementary_data.related_ids.order_id for captures
+        // In a capture event, the order ID is in a different place
         const payPalOrderId = capture.supplementary_data?.related_ids?.order_id;
 
         if (!payPalOrderId) {
-            console.error(`Webhook Error: Could not find PayPal Order ID for capture ${orderId}`);
+            console.error(`Webhook Error: Could not find PayPal Order ID for capture ${capture.id}`);
             return NextResponse.json({ message: 'Could not find order ID, but webhook acknowledged.' },{ status: 200 });
         }
         
         const orderDetails = await getOrderDetails(payPalOrderId);
         
         if (!orderDetails) {
-             console.error(`Webhook Error: Could not retrieve order details from capture for PayPal Order ID ${payPalOrderId}.`);
+             console.error(`Webhook Error: Could not retrieve order details for PayPal Order ID ${payPalOrderId}.`);
              return NextResponse.json({ message: 'Could not retrieve order details, but webhook acknowledged.' },{ status: 200 });
         }
 
@@ -88,14 +89,13 @@ export async function POST(request: Request): Promise<NextResponse> {
             };
         }).filter((p: ProductInfo) => p.downloadUrl);
 
-
         if (productsInOrder.length > 0) {
             await sendOrderConfirmationEmail({
               customerName,
               customerEmail,
               orderId: payPalOrderId,
               total: parseFloat(amount.value),
-              products: productsInOrder,
+              products: productsIn-order,
             });
         } else {
             console.warn(`Webhook: No products with download URLs found for order ${payPalOrderId}. Email not sent.`);

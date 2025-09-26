@@ -41,18 +41,20 @@ export default function CheckoutPage() {
       });
       const order = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || order.error) {
         throw new Error(order.error || 'Failed to create PayPal order.');
       }
 
       if (order.id) {
         return order.id;
       } else {
+        console.error("Order ID is missing from create-order response:", order);
         throw new Error('Unexpected error: Order ID is missing.');
       }
     } catch (error: any) {
       setErrorMessage(error.message);
-      return '';
+      // PayPal SDK expects a rejected promise on failure
+      throw new Error(error.message);
     }
   };
 
@@ -73,38 +75,28 @@ export default function CheckoutPage() {
          throw new Error(orderDetails.error || 'Failed to capture payment.');
       }
       
-      if (orderDetails.status !== 'COMPLETED') {
-        throw new Error('Payment not completed.');
+      const purchaseUnit = orderDetails.purchase_units[0];
+      const capture = purchaseUnit.payments.captures[0];
+
+      if (capture.status !== 'COMPLETED') {
+        throw new Error(`Payment not completed. Status: ${capture.status}`);
       }
       
-      // Payment is successful, now send the email
-      await fetch('/api/send-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customerName,
-          customerEmail,
-          total: getPrice(subtotal).raw,
-          orderId: data.orderID,
-          products: cart.map((item) => ({
-            name: item.name,
-            quantity: item.quantity,
-            downloadUrl: item.downloadUrl,
-            price: item.price,
-          })),
-        }),
-      });
-
+      // Payment is successful
       clearCart();
       router.push(`/thank-you?status=success&orderID=${data.orderID}`);
 
     } catch (error: any) {
       setErrorMessage(error.message);
       setIsProcessing(false);
+      router.push(`/thank-you?status=error&orderID=${data.orderID}`);
     }
   };
+  
+  const onError = (err: any) => {
+     setErrorMessage("An error occurred with the PayPal payment. Please try again.");
+     console.error("PayPal Buttons Error:", err);
+  }
 
   const isFormValid = customerName !== '' && customerEmail !== '' && /^\S+@\S+\.\S+$/.test(customerEmail);
 
@@ -229,7 +221,7 @@ export default function CheckoutPage() {
                                   style={{ layout: "vertical", shape: 'pill' }}
                                   createOrder={handleCreateOrder}
                                   onApprove={onApprove}
-                                  onError={(err: any) => setErrorMessage(err.message)}
+                                  onError={onError}
                                 />
                             </div>
                             {!isFormValid && (

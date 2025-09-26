@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createOrder as createPaypalOrder } from '@/lib/paypal-api';
 import { products as allProducts } from '@/lib/products';
-import { USD_TO_MYR_RATE } from '@/lib/currency';
 
 interface CartItem {
   id: string;
@@ -37,7 +36,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid total amount' }, { status: 400 });
     }
     
-    const orderId = await createPaypalOrder(total);
+    const orderId = await createPaypalOrder(total, items);
     return NextResponse.json({ id: orderId });
 
   } catch (error: any) {

@@ -30,7 +30,7 @@ export async function getAccessToken() {
     return data.access_token;
 }
 
-export async function createOrder(total: number) {
+export async function createOrder(total: number, items: any[]) {
     try {
         const accessToken = await getAccessToken();
         
@@ -46,7 +46,14 @@ export async function createOrder(total: number) {
                     amount: {
                         currency_code: 'USD',
                         value: total.toFixed(2),
+                        breakdown: {
+                            item_total: {
+                                currency_code: 'USD',
+                                value: total.toFixed(2),
+                            }
+                        }
                     },
+                    items: items,
                 }],
             }),
             cache: 'no-store'
