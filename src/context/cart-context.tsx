@@ -3,7 +3,6 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import type { Product, CartItem } from '@/lib/types';
-import { USD_TO_MYR_RATE } from '@/lib/currency';
 
 interface CartContextType {
   cart: CartItem[];
@@ -11,15 +10,12 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  selectedCountry: string;
-  setSelectedCountry: (country: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('Other');
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -55,7 +51,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, selectedCountry, setSelectedCountry }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
@@ -68,12 +64,3 @@ export const useCart = () => {
   }
   return context;
 };
-
-// Helper function to get the price in the selected currency
-export const getPrice = (product: Product, selectedCountry: string) => {
-    if (selectedCountry === 'MY') {
-        return product.price * USD_TO_MYR_RATE;
-    } else {
-        return product.price;
-    }
-}

@@ -1,34 +1,31 @@
 
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AnimateIn } from '@/components/animate-in';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCart, getPrice } from '@/context/cart-context';
+import { useCart } from '@/context/cart-context';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
-    const { cart, selectedCountry } = useCart();
+    const { cart } = useCart();
     const [customerName, setCustomerName] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
     const subtotal = cart.reduce((acc, item) => {
-        const price = getPrice(item, selectedCountry);
-        return acc + price * item.quantity;
+        return acc + item.price * item.quantity;
     }, 0);
-    const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
+    const currencyPrefix = '$';
 
     const handleCheckout = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setError(null);
 
         // Simulate a delay for processing a PayPal payment
         setTimeout(() => {
@@ -37,7 +34,6 @@ export default function CheckoutPage() {
             router.push('/thank-you?status=success');
         }, 1500);
     };
-
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -64,9 +60,7 @@ export default function CheckoutPage() {
                             <div className="bg-card p-8 rounded-2xl shadow-lg space-y-6 md:order-2">
                                 <h2 className="font-headline text-3xl font-bold border-b pb-4">Order Summary</h2>
                                 <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                                    {cart.map(item => {
-                                         const price = getPrice(item, selectedCountry);
-                                        return (
+                                    {cart.map(item => (
                                         <div key={item.id} className="flex items-center justify-between">
                                             <div className="flex items-center gap-4">
                                                 <div className="relative h-16 w-16 rounded-md overflow-hidden">
@@ -77,9 +71,9 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">{currencyPrefix}{(price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-body font-semibold">{currencyPrefix}{(item.price * item.quantity).toFixed(2)}</p>
                                         </div>
-                                    )})}
+                                    ))}
                                 </div>
                                 <div className="border-t pt-6 space-y-4">
                                      <div className="flex justify-between font-body text-lg">
@@ -127,8 +121,6 @@ export default function CheckoutPage() {
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7 bg-[#00457C] hover:bg-[#003057]" disabled={isLoading}>
                                         {isLoading ? 'Processing...' : `Pay with PayPal (${currencyPrefix}${subtotal.toFixed(2)})`}
                                     </Button>
-
-                                    {error && <p className="text-destructive text-center pt-2">{error}</p>}
 
                                      <p className="text-xs text-muted-foreground text-center pt-4">
                                         By clicking "Pay", you agree to our Terms of Service and Privacy Policy. All payments are processed securely via PayPal.

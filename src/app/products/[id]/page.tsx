@@ -4,7 +4,7 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { products } from '@/lib/products'
-import { useCart, getPrice } from '@/context/cart-context'
+import { useCart } from '@/context/cart-context'
 import { Button } from '@/components/ui/button'
 import { ShoppingCart } from 'lucide-react'
 import { AnimateIn } from '@/components/animate-in'
@@ -13,20 +13,16 @@ import {
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import type { Product } from '@/lib/types';
-
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const product = products.find((p) => p.id === params.id)
-  const { addToCart, selectedCountry } = useCart()
+  const { addToCart } = useCart()
 
   if (!product) {
     notFound()
   }
 
-  const priceValue = getPrice(product, selectedCountry);
-  const currencyPrefix = selectedCountry === 'MY' ? 'RM' : '$';
-  const price = `${currencyPrefix}${priceValue.toFixed(2)}`;
+  const price = `$${product.price.toFixed(2)}`;
 
   return (
     <AnimateIn>
