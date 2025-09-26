@@ -2,12 +2,8 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react';
-import type { Product } from '@/lib/types';
+import type { Product, CartItem } from '@/lib/types';
 import { USD_TO_MYR_RATE } from '@/lib/currency';
-
-interface CartItem extends Product {
-  quantity: number;
-}
 
 interface CartContextType {
   cart: CartItem[];
