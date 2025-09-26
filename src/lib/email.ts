@@ -18,6 +18,13 @@ export interface EmailPayload {
 export async function sendOrderConfirmationEmail(payload: EmailPayload) {
     const { customerName, customerEmail, total, orderId, products } = payload;
     
+    // Basic validation
+    if (!customerEmail || !customerName || !orderId || !products || products.length === 0) {
+        console.error('sendOrderConfirmationEmail validation failed: Missing required fields.');
+        // Silently fail to prevent crashes, but log the issue.
+        return;
+    }
+    
     const transporter = nodemailer.createTransport({
         host: 'smtp.zoho.com',
         port: 465,
@@ -97,6 +104,6 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
         console.log('Confirmation email sent successfully to', customerEmail);
     } catch (error) {
         console.error('Error sending email:', error);
-        throw error;
+        // Do not re-throw here to prevent crashing the caller, especially a webhook.
     }
 }
