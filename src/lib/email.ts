@@ -4,6 +4,7 @@ import { products as allProducts } from '@/lib/products';
 export interface ProductInfo {
     name: string;
     quantity: number;
+    downloadUrl: string;
 }
 
 export interface EmailPayload {
@@ -17,20 +18,22 @@ export interface EmailPayload {
 export async function sendOrderConfirmationEmail(payload: EmailPayload) {
     const { customerName, customerEmail, total, orderId, products } = payload;
     
+    // Updated transporter configuration for Zoho Mail
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.zoho.com',
+        port: 465,
+        secure: true, // true for 465, false for other ports
         auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD,
+            user: process.env.GMAIL_USER, // Your Zoho email address
+            pass: process.env.GMAIL_APP_PASSWORD, // Your Zoho app-specific password
         },
     });
 
     const productDetails = products.map(p => {
-        const productData = allProducts.find(prod => prod.name === p.name);
         return `
             <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
                 <h4 style="margin:0; font-size: 16px;">${p.name} (x${p.quantity})</h4>
-                ${productData ? `<p style="margin: 5px 0 0; font-size: 14px;"><a href="${productData.downloadUrl}">Download Now</a></p>` : ''}
+                <p style="margin: 5px 0 0; font-size: 14px;"><a href="${p.downloadUrl}">Download Now</a></p>
             </div>
         `;
     }).join('');
