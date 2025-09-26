@@ -16,8 +16,8 @@ interface EmailPayload {
     products: ProductInfo[];
 }
 
-// Function to send email
-export async function sendOrderConfirmationEmail(payload: EmailPayload) {
+// This is now a local helper function, not a direct export from the route file.
+async function sendOrderConfirmationEmail(payload: EmailPayload) {
     const { customerName, customerEmail, total, orderId, products } = payload;
     
     const transporter = nodemailer.createTransport({
@@ -65,10 +65,12 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
     } catch (error) {
         console.error('Error sending email:', error);
         // We don't re-throw here because the payment might have succeeded, and failing the email shouldn't block the user flow.
+        // In a real scenario, you might want to add this to a retry queue.
+        throw error; // re-throwing for the context of the calling API route
     }
 }
 
-// API route handler (if you need to call it directly via fetch)
+// This is the valid Next.js API route export for the POST method.
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as EmailPayload;
@@ -79,3 +81,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message || 'Failed to send email' }, { status: 500 });
   }
 }
+
+// Export the helper function for use in other API routes (like create-bill)
+export { sendOrderConfirmationEmail };
