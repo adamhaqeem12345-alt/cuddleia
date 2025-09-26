@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
 import { X, Minus, Plus } from "lucide-react";
 import Link from 'next/link';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Table,
   TableBody,
@@ -20,8 +22,13 @@ export default function CartPage() {
     const { cart, removeFromCart, updateQuantity, getPrice, selectedCountry, setSelectedCountry } = useCart();
     
     const subtotal = cart.reduce((acc, item) => {
-        return acc + item.price * item.quantity;
+        return acc + getPrice(item.price).raw * item.quantity;
     }, 0);
+
+    const formattedSubtotal = selectedCountry === 'MY' ? `RM${subtotal.toFixed(2)}` : `$${(subtotal / (selectedCountry === 'MY' ? USD_TO_MYR_RATE : 1)).toFixed(2)}`;
+
+    // This is a temporary fix to ensure the cart page works without the complex pricing logic that was causing issues
+    const simpleSubtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -90,11 +97,11 @@ export default function CartPage() {
                                 <h2 className="font-headline text-3xl font-bold">Summary</h2>
                                 <div className="flex justify-between font-body text-lg">
                                     <span>Subtotal</span>
-                                    <span>{getPrice(subtotal).formatted}</span>
+                                    <span>{getPrice(simpleSubtotal).formatted}</span>
                                 </div>
                                 <div className="flex justify-between font-body text-lg font-bold">
                                     <span>Total</span>
-                                    <span>{getPrice(subtotal).formatted}</span>
+                                    <span>{getPrice(simpleSubtotal).formatted}</span>
                                 </div>
                                  <div className="space-y-2">
                                     <Label>Your location:</Label>

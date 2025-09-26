@@ -13,11 +13,11 @@ import { useRouter } from 'next/navigation';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function CheckoutPage() {
-    const { cart, getPrice, clearCart } = useCart();
+    const { cart, getPrice, clearCart, selectedCountry } = useCart();
     const [customerName, setCustomerName] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [paymentMethod, setPaymentMethod] = useState('paypal');
+    const [paymentMethod, setPaymentMethod] = useState(selectedCountry === 'MY' ? 'toyyibpay' : 'paypal');
     const router = useRouter();
 
     const subtotal = cart.reduce((acc, item) => {
@@ -30,7 +30,9 @@ export default function CheckoutPage() {
 
         setIsLoading(true);
 
-        if (paymentMethod === 'toyyibpay') {
+        const finalPaymentMethod = selectedCountry === 'MY' ? paymentMethod : 'paypal';
+
+        if (finalPaymentMethod === 'toyyibpay') {
             try {
                 const response = await fetch('/api/create-bill', {
                     method: 'POST',
@@ -61,8 +63,7 @@ export default function CheckoutPage() {
                 console.error('ToyyibPay checkout error:', error);
                 setIsLoading(false);
             }
-        } else {
-            // Simulate PayPal flow
+        } else { // PayPal
              setTimeout(() => {
                 clearCart();
                 router.push('/thank-you?status=success');
@@ -151,6 +152,7 @@ export default function CheckoutPage() {
                                         />
                                     </div>
 
+                                    {selectedCountry === 'MY' && (
                                     <div>
                                          <Label className="text-lg font-headline mb-4 block">Payment Method</Label>
                                         <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="flex flex-col space-y-2">
@@ -160,10 +162,11 @@ export default function CheckoutPage() {
                                             </div>
                                             <div className="flex items-center space-x-2">
                                                 <RadioGroupItem value="toyyibpay" id="toyyibpay" />
-                                                <Label htmlFor="toyyibpay" className="text-base font-body">ToyyibPay (for MYR)</Label>
+                                                <Label htmlFor="toyyibpay" className="text-base font-body">ToyyibPay (Online Banking / FPX)</Label>
                                             </div>
                                         </RadioGroup>
                                     </div>
+                                    )}
 
                                     <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7" disabled={isLoading}>
                                         {isLoading ? 'Processing...' : `Pay ${getPrice(subtotal).formatted}`}
