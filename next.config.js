@@ -16,7 +16,7 @@ const nextConfig = {
       ? 'http://localhost:3000' 
       : 'https://www.cuddleia.com',
     NEXT_PUBLIC_PAYPAL_CLIENT_ID: 'AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW',
-    PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
+    PAYPAL_CLIENT_SECRET: 'AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW',
     PAYPAL_EMAIL: 'adamhaqeem12345@gmail.com',
     GMAIL_USER: 'hello@cuddleia.com',
     GMAIL_APP_PASSWORD: 'ZNFE8nNe0WM4',
