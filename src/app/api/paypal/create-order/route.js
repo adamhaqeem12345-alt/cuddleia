@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { products as allProducts } from '@/lib/products';
 
 // This function gets a PayPal access token. It is self-contained.
 async function getAccessToken() {
@@ -32,6 +31,9 @@ export async function POST(request) {
     if (!cart || !Array.isArray(cart)) {
       return NextResponse.json({ error: 'Invalid cart data' }, { status: 400 });
     }
+    
+    // We must re-fetch product details on the server to ensure price integrity
+    const allProducts = (await import('@/lib/products')).products;
 
     let total = 0;
     const items = cart.map(cartItem => {
