@@ -14,8 +14,8 @@ export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/capture-order");
 
   // Environment Variable Check
-  if (!process.env.PAYPAL_API_URL) {
-    console.error("Configuration error: PAYPAL_API_URL is not set.");
+  if (!process.env.PAYPAL_API_URL || !process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+    console.error("Configuration error: PayPal environment variables are not fully set.");
     return NextResponse.json({ error: "Server configuration error." }, { status: 500 });
   }
 
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("API /capture-order Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to capture order" }, { status: 500 });
+    // Return a more generic error to the client, but log the detailed one.
+    return NextResponse.json({ error: "Failed to capture order" }, { status: 500 });
   }
 }

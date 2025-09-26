@@ -7,8 +7,8 @@ export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/create-order");
 
   // Environment Variable Check
-  if (!process.env.PAYPAL_API_URL) {
-    console.error("Configuration error: PAYPAL_API_URL is not set.");
+  if (!process.env.PAYPAL_API_URL || !process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || !process.env.PAYPAL_CLIENT_SECRET) {
+    console.error("Configuration error: PayPal environment variables are not fully set.");
     return NextResponse.json({ error: "Server configuration error." }, { status: 500 });
   }
 
@@ -25,6 +25,6 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error("API /create-order Error:", error);
-    return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
 }
