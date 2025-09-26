@@ -1,35 +1,29 @@
-
 'use client';
 
 import { AnimateIn } from '@/components/animate-in';
 import { Button } from '@/components/ui/button';
-import { useCart } from '@/context/cart-context';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 function ThankYouStatus() {
-  const { clearCart } = useCart();
   const searchParams = useSearchParams();
   const status = searchParams.get('status');
-
-  // Clear the cart once the user lands on this page after a successful transaction
-  useEffect(() => {
-    if (status === 'success') {
-      clearCart();
-    }
-  }, [status, clearCart]);
+  const orderID = searchParams.get('orderID');
 
   return (
     <>
       {status === 'success' ? (
+        <>
         <p className="mt-6 text-lg leading-8 text-foreground/80 font-body">
-          Your payment was successful! A confirmation email with your download links will be sent to you shortly. Please check your inbox (and spam folder, just in case).
+          Your payment was successful! A confirmation email with your download links has been sent to you. Please check your inbox (and spam folder, just in case).
         </p>
+        <p className="mt-4 text-sm text-muted-foreground font-mono">Order ID: {orderID}</p>
+        </>
       ) : (
         <p className="mt-6 text-lg leading-8 text-foreground/80 font-body">
-          We are processing your order. If you have completed the payment, a confirmation email with your download links will be sent to you shortly. Please check your inbox (and spam folder, just in case).
+         Your order was cancelled or there was an issue. If you believe this is an error, please contact support.
         </p>
       )}
     </>

@@ -15,7 +15,9 @@ const nextConfig = {
     NEXT_PUBLIC_URL: process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
       : 'https://www.cuddleia.com',
-    NEXT_PUBLIC_PAYPAL_EMAIL: 'adamhaqeem12345@gmail.com',
+    NEXT_PUBLIC_PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
+    PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
+    PAYPAL_EMAIL: 'adamhaqeem12345@gmail.com',
     GMAIL_USER: 'hello@cuddleia.com',
     GMAIL_APP_PASSWORD: 'ZNFE8nNe0WM4',
   }
