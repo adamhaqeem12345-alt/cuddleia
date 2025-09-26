@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/context/cart-context';
 import { CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-export default function ThankYouPage() {
+function ThankYouStatus() {
   const { clearCart } = useCart();
   const searchParams = useSearchParams();
   const status = searchParams.get('status');
@@ -22,6 +22,22 @@ export default function ThankYouPage() {
   }, [status, clearCart]);
 
   return (
+    <>
+      {status === 'success' ? (
+        <p className="mt-6 text-lg leading-8 text-foreground/80 font-body">
+          Your payment was successful! A confirmation email with your download links will be sent to you shortly. Please check your inbox (and spam folder, just in case).
+        </p>
+      ) : (
+        <p className="mt-6 text-lg leading-8 text-foreground/80 font-body">
+          We are processing your order. If you have completed the payment, a confirmation email with your download links will be sent to you shortly. Please check your inbox (and spam folder, just in case).
+        </p>
+      )}
+    </>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
     <div className="bg-background">
       <AnimateIn>
         <section className="relative bg-accent/30 py-28 md:py-40">
@@ -31,17 +47,11 @@ export default function ThankYouPage() {
               <h1 className="font-headline text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
                 Thank You For Your Order!
               </h1>
-              {status === 'success' ? (
-                 <p className="mt-6 text-lg leading-8 text-foreground/80 font-body">
-                    Your payment was successful! A confirmation email with your download links will be sent to you shortly. Please check your inbox (and spam folder, just in case).
-                </p>
-              ) : (
-                 <p className="mt-6 text-lg leading-8 text-foreground/80 font-body">
-                    We are processing your order. If you have completed the payment, a confirmation email with your download links will be sent to you shortly. Please check your inbox (and spam folder, just in case).
-                </p>
-              )}
-               <Button asChild size="lg" className="mt-10 rounded-full">
-                  <Link href="/products">Continue Shopping</Link>
+              <Suspense fallback={<p className="mt-6 text-lg leading-8 text-foreground/80 font-body">Loading status...</p>}>
+                <ThankYouStatus />
+              </Suspense>
+              <Button asChild size="lg" className="mt-10 rounded-full">
+                <Link href="/products">Continue Shopping</Link>
               </Button>
             </div>
           </div>
