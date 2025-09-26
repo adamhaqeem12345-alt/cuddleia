@@ -54,7 +54,6 @@ export default function CheckoutPage() {
     } catch (error: any) {
       console.error("PayPal createOrder error:", error.message);
       setErrorMessage(error.message);
-      // PayPal SDK expects a rejected promise on failure
       throw new Error(error.message);
     }
   };
@@ -83,7 +82,6 @@ export default function CheckoutPage() {
         throw new Error(`Payment not completed. Status: ${capture.status}`);
       }
       
-      // Payment is successful
       clearCart();
       router.push(`/thank-you?status=success&orderID=${data.orderID}`);
 

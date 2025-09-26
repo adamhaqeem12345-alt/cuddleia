@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createOrder as createPaypalOrder } from '@/lib/paypal-api';
 import { products as allProducts } from '@/lib/products';
-import { CartItem as AppCartItem } from '@/lib/types';
 
 interface CartItem {
   id: string;

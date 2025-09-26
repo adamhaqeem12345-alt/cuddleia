@@ -58,7 +58,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
         const capture = body.resource;
         
-        // In a capture event, the order ID is in a different place
         const payPalOrderId = capture.supplementary_data?.related_ids?.order_id;
 
         if (!payPalOrderId) {
