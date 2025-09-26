@@ -1,7 +1,9 @@
+
 import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, EmailPayload } from '@/lib/email';
 
 export async function POST(request: Request) {
+  console.log("API ROUTE: /api/send-email");
   try {
     const payload = (await request.json()) as EmailPayload;
     await sendOrderConfirmationEmail(payload);

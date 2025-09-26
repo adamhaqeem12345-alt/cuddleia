@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, ProductInfo } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
@@ -42,7 +43,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
     }
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/webhook");
   try {
     const rawBody = await request.text();
