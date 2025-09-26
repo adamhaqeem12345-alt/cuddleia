@@ -1,3 +1,4 @@
+
 {
   "compilerOptions": {
     "target": "es5",
@@ -16,7 +17,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
+    "incremental": false,
     "plugins": [
       {
         "name": "next"
@@ -27,7 +28,7 @@
         "./*"
       ]
     },
-    "noEmit": true
+    "noEmit": false
   },
   "include": [
     "next-env.d.ts",
