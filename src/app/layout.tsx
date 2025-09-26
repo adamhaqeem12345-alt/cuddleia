@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Belleza, Alegreya } from "next/font/google";
 import "./globals.css";
@@ -5,7 +6,6 @@ import { cn } from "@/lib/utils";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { CartProvider } from "@/context/cart-context";
-import { FirebaseClientProvider } from "@/firebase/client-provider";
 
 const belleza = Belleza({
   subsets: ["latin"],
@@ -59,15 +59,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn("min-h-screen bg-background font-body antialiased", belleza.variable, alegreya.variable)}>
-        <FirebaseClientProvider>
-          <CartProvider>
-            <div className="relative flex min-h-dvh flex-col bg-background">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </CartProvider>
-        </FirebaseClientProvider>
+        <CartProvider>
+          <div className="relative flex min-h-dvh flex-col bg-background">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
+        </CartProvider>
       </body>
     </html>
   );

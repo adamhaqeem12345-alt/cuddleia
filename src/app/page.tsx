@@ -1,22 +1,14 @@
+
 'use client'
 import { Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { AnimateIn } from '@/components/animate-in';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/product-card';
-import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { products } from '@/lib/products';
 
 export default function Home() {
-  const firestore = useFirestore();
-  const productsCollection = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return collection(firestore, 'products');
-  }, [firestore]);
-
-  const { data: products, isLoading } = useCollection(productsCollection);
-
-  const featuredProducts = products ? products.slice(0, 3) : [];
+  const featuredProducts = products.slice(0, 3);
 
   return (
     <>
@@ -62,7 +54,6 @@ export default function Home() {
               A few of our favorite handcrafted digital goods.
             </p>
           </AnimateIn>
-          {isLoading && <div className="text-center">Loading products...</div>}
           <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {featuredProducts.map((product, i) => (
               <AnimateIn key={product.id} delay={i * 150} start="opacity-0 scale-95">

@@ -1,38 +1,24 @@
+
 'use client'
 
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { products } from '@/lib/products'
 import { useCart, getPrice } from '@/context/cart-context'
 import { Button } from '@/components/ui/button'
-import { ShoppingCart, Loader2 } from 'lucide-react'
+import { ShoppingCart } from 'lucide-react'
 import { AnimateIn } from '@/components/animate-in'
 import {
   Dialog,
   DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 
+
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
-  const firestore = useFirestore();
-  const productRef = useMemoFirebase(() => {
-    if (!firestore || !params.id) return null;
-    return doc(firestore, 'products', params.id);
-  }, [firestore, params.id]);
-
-  const { data: product, isLoading } = useDoc<Product>(productRef);
-  
+  const product = products.find((p) => p.id === params.id)
   const { addToCart, selectedCountry } = useCart()
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-16 w-16 animate-spin" />
-      </div>
-    );
-  }
 
   if (!product) {
     notFound()
