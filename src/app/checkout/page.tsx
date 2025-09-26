@@ -12,18 +12,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
-    const { cart, selectedCountry, setSelectedCountry } = useCart();
+    const { cart, selectedCountry } = useCart();
     const [customerName, setCustomerName] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
-
-    // Default to international pricing for PayPal
-    useEffect(() => {
-        setSelectedCountry('Other');
-    }, [setSelectedCountry]);
-
 
     const subtotal = cart.reduce((acc, item) => {
         const price = getPrice(item, selectedCountry);
@@ -36,7 +30,7 @@ export default function CheckoutPage() {
         setIsLoading(true);
         setError(null);
 
-        // Simulate a delay for processing
+        // Simulate a delay for processing a PayPal payment
         setTimeout(() => {
             // Redirect to thank you page on success
             // In a real app, this would be after a successful PayPal API response
