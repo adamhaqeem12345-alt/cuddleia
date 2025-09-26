@@ -1,14 +1,12 @@
-
 import { NextResponse } from 'next/server';
 import { products as allProducts } from '@/lib/products';
-import { CartItem } from '@/lib/types';
-
-const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
-const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
 
 // This function gets a PayPal access token. It is self-contained.
 async function getAccessToken() {
+    const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+
     const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
     const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
         method: 'POST',
@@ -26,10 +24,10 @@ async function getAccessToken() {
     return data.access_token;
 }
 
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/paypal/create-order");
   try {
-    const { cart } = (await request.json()) as { cart: CartItem[] };
+    const { cart } = await request.json();
 
     if (!cart || !Array.isArray(cart)) {
       return NextResponse.json({ error: 'Invalid cart data' }, { status: 400 });
@@ -57,6 +55,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid total amount for order.' }, { status: 400 });
     }
 
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
     const accessToken = await getAccessToken();
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
         method: 'POST',
@@ -92,7 +91,7 @@ export async function POST(request: Request) {
     const order = await response.json();
     return NextResponse.json(order);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("API /create-order Error:", error);
     return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 500 });
   }

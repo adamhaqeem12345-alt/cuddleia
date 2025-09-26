@@ -1,15 +1,12 @@
-
 import { NextResponse } from 'next/server';
-import { sendOrderConfirmationEmail, ProductInfo } from '@/lib/email';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
-
-const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
-const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
-const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID!;
 
 // This function gets a PayPal access token. It is self-contained.
 async function getAccessToken() {
+    const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
     const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
     const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
         method: 'POST',
@@ -27,7 +24,8 @@ async function getAccessToken() {
     return data.access_token;
 }
 
-async function getOrderDetails(orderId: string) {
+async function getOrderDetails(orderId) {
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
     const accessToken = await getAccessToken();
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
         method: 'GET',
@@ -41,7 +39,9 @@ async function getOrderDetails(orderId: string) {
     return response.json();
 }
 
-async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
+async function verifyWebhook(headers, rawBody) {
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
     const accessToken = await getAccessToken();
     const body = JSON.parse(rawBody);
 
@@ -69,7 +69,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
     return data.verification_status === 'SUCCESS';
 }
 
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/paypal/webhook received a request.");
   try {
     const rawBody = await request.text();
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         const purchaseUnit = orderDetails.purchase_units[0];
         const amount = purchaseUnit.amount;
 
-        const productsInOrder: ProductInfo[] = purchaseUnit.items.map((item: any) => {
+        const productsInOrder = purchaseUnit.items.map((item) => {
             const productDetails = allProducts.find(p => p.id === item.sku);
             return {
                 name: item.name,
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
                 price: parseFloat(item.unit_amount.value),
                 downloadUrl: productDetails?.downloadUrl || '',
             };
-        }).filter((p: ProductInfo) => p.downloadUrl);
+        }).filter((p) => p.downloadUrl);
 
         if (productsInOrder.length > 0) {
             await sendOrderConfirmationEmail({
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
     
     return NextResponse.json({ received: true });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error processing PayPal webhook:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }

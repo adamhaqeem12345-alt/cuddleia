@@ -1,18 +1,19 @@
-
 import { NextResponse } from 'next/server';
 
-const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
-const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
-
 // This is a self-contained stub function to prevent build errors.
-async function saveOrderAfterCapture(orderID: string, captureData: any) {
+// In a real application, you would replace this with your database logic.
+async function saveOrderAfterCapture(orderID, captureData) {
   console.log(`[STUB] Saving captured order ${orderID} to database.`);
+  // Example: await db.collection('orders').doc(orderID).update({ status: 'COMPLETED', captureInfo: captureData });
   return Promise.resolve();
 }
 
 // This function gets a PayPal access token. It is self-contained.
 async function getAccessToken() {
+    const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+
     const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
     const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
         method: 'POST',
@@ -30,8 +31,7 @@ async function getAccessToken() {
     return data.access_token;
 }
 
-
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/paypal/capture-order");
   try {
     const { orderID } = await request.json();
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
 
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
     const accessToken = await getAccessToken();
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderID}/capture`, {
         method: 'POST',
@@ -55,11 +56,12 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: `Failed to capture PayPal order: ${capturedData?.message}` }, { status: 500 });
     }
     
+    // Stubbed call to a database save function.
     await saveOrderAfterCapture(orderID, capturedData);
     
     return NextResponse.json(capturedData);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("API /capture-order Error:", error);
     return NextResponse.json({ error: error.message || "Failed to capture order" }, { status: 500 });
   }
