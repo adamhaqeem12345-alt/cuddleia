@@ -14,9 +14,9 @@ export default function ThankYouPage() {
   const searchParams = useSearchParams();
   const status = searchParams.get('status');
 
-  // Clear the cart once the user lands on this page
+  // Clear the cart once the user lands on this page after a successful transaction
   useEffect(() => {
-    if(status === 'success') {
+    if (status === 'success') {
       clearCart();
     }
   }, [status, clearCart]);

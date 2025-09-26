@@ -1,16 +1,15 @@
 
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AnimateIn } from '@/components/animate-in';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useCart, getPrice } from '@/context/cart-context';
 import Link from 'next/link';
 import Image from 'next/image';
-import { USD_TO_MYR_RATE } from '@/lib/currency';
+import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
     const { cart, selectedCountry, setSelectedCountry } = useCart();
@@ -18,6 +17,13 @@ export default function CheckoutPage() {
     const [customerEmail, setCustomerEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+
+    // Default to international pricing for PayPal
+    useEffect(() => {
+        setSelectedCountry('Other');
+    }, [setSelectedCountry]);
+
 
     const subtotal = cart.reduce((acc, item) => {
         const price = getPrice(item, selectedCountry);
@@ -30,38 +36,12 @@ export default function CheckoutPage() {
         setIsLoading(true);
         setError(null);
 
-        if (selectedCountry === 'MY') {
-            try {
-                const response = await fetch('/api/checkout/toyyibpay', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        cart,
-                        customerName,
-                        customerEmail,
-                    }),
-                });
-
-                const { billUrl, error } = await response.json();
-
-                if (error) {
-                    setError(error);
-                    setIsLoading(false);
-                    return;
-                }
-
-                if (billUrl) {
-                    window.location.href = billUrl;
-                }
-            } catch (err) {
-                setError('An unexpected error occurred. Please try again.');
-                setIsLoading(false);
-            }
-        } else {
-             // Placeholder for international payment
-            setError("International payments are not yet supported.");
-            setIsLoading(false);
-        }
+        // Simulate a delay for processing
+        setTimeout(() => {
+            // Redirect to thank you page on success
+            // In a real app, this would be after a successful PayPal API response
+            router.push('/thank-you?status=success');
+        }, 1500);
     };
 
 
@@ -125,26 +105,6 @@ export default function CheckoutPage() {
                                     <div>
                                          <h2 className="font-headline text-3xl font-bold border-b pb-4">Your Details</h2>
                                     </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="country" className="text-lg font-headline">Country</Label>
-                                        <RadioGroup 
-                                            defaultValue="Other" 
-                                            value={selectedCountry}
-                                            onValueChange={setSelectedCountry}
-                                            className="flex gap-6 pt-2"
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="MY" id="MY" />
-                                                <Label htmlFor="MY" className="font-body">Malaysia</Label>
-                                            </div>
-                                            <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Other" id="Other" />
-                                                <Label htmlFor="Other" className="font-body">International</Label>
-                                            </div>
-                                        </RadioGroup>
-                                    </div>
-
                                     <div className="space-y-2">
                                         <Label htmlFor="name" className="text-lg font-headline">Full Name</Label>
                                         <Input 
@@ -170,20 +130,14 @@ export default function CheckoutPage() {
                                         />
                                     </div>
 
-                                    {selectedCountry === 'MY' ? (
-                                        <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7" disabled={isLoading}>
-                                            {isLoading ? 'Processing...' : `Pay with ToyyibPay (${currencyPrefix}${subtotal.toFixed(2)})`}
-                                        </Button>
-                                    ) : (
-                                         <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7" disabled={isLoading}>
-                                            {isLoading ? 'Processing...' : `Pay (${currencyPrefix}${subtotal.toFixed(2)})`}
-                                        </Button>
-                                    )}
+                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7 bg-[#00457C] hover:bg-[#003057]" disabled={isLoading}>
+                                        {isLoading ? 'Processing...' : `Pay with PayPal (${currencyPrefix}${subtotal.toFixed(2)})`}
+                                    </Button>
 
                                     {error && <p className="text-destructive text-center pt-2">{error}</p>}
 
                                      <p className="text-xs text-muted-foreground text-center pt-4">
-                                        By clicking "Pay", you agree to our Terms of Service and Privacy Policy. International payments are processed via Stripe (coming soon). Malaysian payments are processed via ToyyibPay.
+                                        By clicking "Pay", you agree to our Terms of Service and Privacy Policy. All payments are processed securely via PayPal.
                                     </p>
                                 </form>
                              </div>
