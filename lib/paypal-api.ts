@@ -1,0 +1,109 @@
+import type { Product } from '@/lib/types';
+
+// This is a self-contained helper function to get a PayPal access token.
+export async function getAccessToken() {
+    const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+
+    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+        cache: 'no-store'
+    });
+    if (!response.ok) {
+        const errorDetails = await response.json();
+        throw new Error(`Failed to get PayPal access token: ${errorDetails.error_description}`);
+    }
+    const data = await response.json();
+    return data.access_token;
+}
+
+// Creates a PayPal order
+export async function createOrder(cart: { id: string; quantity: number }[], allProducts: Product[]) {
+    const accessToken = await getAccessToken();
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+
+    let total = 0;
+    const items = cart.map(cartItem => {
+        const product = allProducts.find(p => p.id === cartItem.id);
+        if (!product) {
+            throw new Error(`Product with ID ${cartItem.id} not found.`);
+        }
+        total += product.price * cartItem.quantity;
+        return {
+            name: product.name,
+            quantity: String(cartItem.quantity),
+            unit_amount: {
+                currency_code: 'USD',
+                value: String(product.price.toFixed(2)),
+            },
+            sku: product.id,
+        };
+    });
+
+     if (total <= 0) {
+      throw new Error('Invalid total amount for order.');
+    }
+
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            intent: 'CAPTURE',
+            purchase_units: [{
+                amount: {
+                    currency_code: 'USD',
+                    value: total.toFixed(2),
+                    breakdown: {
+                        item_total: {
+                            currency_code: 'USD',
+                            value: total.toFixed(2),
+                        }
+                    }
+                },
+                items: items,
+            }],
+        }),
+        cache: 'no-store'
+    });
+
+    const order = await response.json();
+    if (!response.ok) {
+        const errorDetail = order.details?.[0]?.description || JSON.stringify(order);
+        throw new Error(`Failed to create PayPal order: ${errorDetail}`);
+    }
+
+    return order;
+}
+
+// Captures a PayPal order
+export async function captureOrder(orderID: string) {
+    const accessToken = await getAccessToken();
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderID}/capture`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+    });
+
+    const capturedData = await response.json();
+    if (!response.ok) {
+        const errorDetail = capturedData.details?.[0]?.description || JSON.stringify(capturedData);
+        throw new Error(`Failed to capture PayPal order: ${errorDetail}`);
+    }
+
+    return capturedData;
+}

@@ -4,8 +4,6 @@ import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
-  console.log("API ROUTE: /api/send-email");
-
   // Environment Variable Check
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error("Configuration error: Email credentials are not set.");

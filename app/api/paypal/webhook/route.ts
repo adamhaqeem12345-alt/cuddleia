@@ -4,62 +4,12 @@ import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
 import { type NextRequest } from 'next/server';
+import { getAccessToken } from '@/lib/paypal-api';
 
-// This is a self-contained helper function to get a PayPal access token.
-async function getAccessToken() {
-    const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-    const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
-
-    // Defensive check for environment variables
-    if (!CLIENT_ID || !CLIENT_SECRET || !PAYPAL_API_URL) {
-        throw new Error("Missing PayPal credentials in environment variables.");
-    }
-
-    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
-    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Basic ${auth}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-        cache: 'no-store'
-    });
-
-    if (!response.ok) {
-        const errorDetails = await response.text();
-        throw new Error(`Failed to get PayPal access token: ${errorDetails}`);
-    }
-    const data = await response.json();
-    return data.access_token;
-}
-
-// Fetches order details from PayPal
-async function getOrderDetails(orderId: string) {
-    const accessToken = await getAccessToken();
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
-    console.log(`Fetching order details for ${orderId} from ${PAYPAL_API_URL}`);
-    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-        },
-        cache: 'no-store'
-    });
-
-    if (!response.ok) {
-        const errorDetails = await response.text();
-        console.error(`Failed to get order details for ${orderId}:`, errorDetails);
-        throw new Error(`Failed to retrieve order details: ${errorDetails}`);
-    }
-    return response.json();
-}
 
 // Verifies a PayPal webhook signature
 async function verifyWebhook(headers: Headers, rawBody: string) {
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
     const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
     
     if (!WEBHOOK_ID) {
@@ -100,33 +50,54 @@ async function verifyWebhook(headers: Headers, rawBody: string) {
 }
 
 
+// Fetches order details from PayPal
+async function getOrderDetails(orderId: string) {
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const accessToken = await getAccessToken();
+
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error(`Failed to get order details for ${orderId}:`, errorDetails);
+        throw new Error(`Failed to retrieve order details: ${errorDetails}`);
+    }
+    return response.json();
+}
+
+
 export async function POST(request: NextRequest) {
-  console.log("API ROUTE: /api/paypal/webhook received a request.");
   
   const requiredEnvVars = [
     'PAYPAL_API_URL', 'PAYPAL_WEBHOOK_ID', 'EMAIL_USER', 'EMAIL_PASS', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'
   ];
+
   for (const varName of requiredEnvVars) {
       if (!process.env[varName]) {
-          console.error(`Configuration error: ${varName} is not set.`);
-          return NextResponse.json({ error: `Server configuration error.` }, { status: 500 });
+          console.error(`Webhook Configuration error: ${varName} is not set.`);
+          // Return 200 OK to prevent PayPal from retrying, but log the critical error.
+          return NextResponse.json({ message: `Server configuration error: ${varName} is missing.` }, { status: 200 });
       }
   }
 
   try {
     const rawBody = await request.text();
-    // It's crucial to use the raw body for webhook verification
     const isVerified = await verifyWebhook(request.headers, rawBody);
 
     if (!isVerified) {
         console.warn('PayPal webhook verification failed. Ignoring request.');
-        // Return a 403 Forbidden status for unverified webhooks.
         return NextResponse.json({ message: 'Webhook verification failed.' }, { status: 403 });
     }
 
     const body = JSON.parse(rawBody);
     const eventType = body.event_type;
-    console.log(`Processing verified PayPal Webhook event: ${eventType}`);
 
     if (eventType === 'CHECKOUT.ORDER.APPROVED' || eventType === 'PAYMENT.CAPTURE.COMPLETED') {
         const orderId = body.resource?.id;
@@ -137,11 +108,6 @@ export async function POST(request: NextRequest) {
         }
         
         const orderDetails = await getOrderDetails(orderId);
-        
-        if (!orderDetails) {
-            console.error(`Webhook Error: Failed to retrieve details for order ${orderId}`);
-            return NextResponse.json({ message: 'Failed to get order details.' }, { status: 500 });
-        }
         
         const customerName = orderDetails.payer.name.given_name + ' ' + orderDetails.payer.name.surname;
         const customerEmail = orderDetails.payer.email_address;
@@ -166,7 +132,7 @@ export async function POST(request: NextRequest) {
                 price: parseFloat(item.unit_amount.value),
                 downloadUrl: productDetails.downloadUrl,
             };
-        }).filter((p: any) => p !== null && !!p.downloadUrl);
+        }).filter((p: any): p is { name: string; quantity: number; price: number; downloadUrl: string; } => p !== null && !!p.downloadUrl);
 
         if (productsInOrder.length > 0) {
             await sendOrderConfirmationEmail({
@@ -181,12 +147,10 @@ export async function POST(request: NextRequest) {
         }
     }
     
-    // Always return a 200 OK for webhooks you've acknowledged, even if you don't process the event type.
     return NextResponse.json({ received: true });
 
   } catch (error: any) {
-    console.error('Error processing PayPal webhook:', error);
-    // Return 500 but log the error. PayPal will retry.
-    return NextResponse.json({ error: 'Error processing webhook', details: error.message }, { status: 500 });
+    console.error('Error processing PayPal webhook:', error.message);
+    return NextResponse.json({ error: 'Error processing webhook' }, { status: 500 });
   }
 }
