@@ -1,12 +1,14 @@
 // /src/app/api/paypal/create-order/route.ts
 import { NextResponse } from 'next/server';
 
+const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
+
 async function getAccessToken() {
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
     
-    const response = await fetch(`https://api-m.paypal.com/v1/oauth2/token`, {
+    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
         method: 'POST',
         headers: {
             'Authorization': `Basic ${auth}`,
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
         const accessToken = await getAccessToken();
         const { total } = await request.json();
 
-        const response = await fetch(`https://api-m.paypal.com/v2/checkout/orders`, {
+        const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
