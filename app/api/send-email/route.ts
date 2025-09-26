@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   console.log("API ROUTE: /api/send-email");
 
   // Environment Variable Check
-  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.error("Configuration error: Email credentials are not set.");
       return NextResponse.json({ error: "Server configuration error for sending email." }, { status: 500 });
   }

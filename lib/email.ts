@@ -30,8 +30,8 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
         port: 465,
         secure: true, 
         auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD,
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
         },
     });
 
@@ -52,7 +52,7 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
     }).join('');
 
     const mailOptions = {
-        from: `"Cuddleia" <${process.env.GMAIL_USER}>`,
+        from: `"Cuddleia" <${process.env.EMAIL_USER}>`,
         to: customerEmail,
         subject: `Your Cuddleia Order Confirmation & Downloads (#${orderId})`,
         html: `

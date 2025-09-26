@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/webhook received a request.");
   
   const requiredEnvVars = [
-    'PAYPAL_API_URL', 'PAYPAL_WEBHOOK_ID', 'GMAIL_USER', 'GMAIL_APP_PASSWORD', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'
+    'PAYPAL_API_URL', 'PAYPAL_WEBHOOK_ID', 'EMAIL_USER', 'EMAIL_PASS', 'NEXT_PUBLIC_PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'
   ];
   for (const varName of requiredEnvVars) {
       if (!process.env[varName]) {

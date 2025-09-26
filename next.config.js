@@ -20,8 +20,8 @@ const nextConfig = {
     PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
     PAYPAL_EMAIL: process.env.PAYPAL_EMAIL,
     PAYPAL_WEBHOOK_ID: process.env.PAYPAL_WEBHOOK_ID,
-    GMAIL_USER: process.env.GMAIL_USER,
-    GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD,
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS,
     // Switch between 'https://api-m.sandbox.paypal.com' and 'https://api-m.paypal.com'
     PAYPAL_API_URL: process.env.PAYPAL_API_URL 
   }
