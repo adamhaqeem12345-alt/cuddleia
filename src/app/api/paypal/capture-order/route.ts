@@ -2,13 +2,13 @@
 import { NextResponse } from 'next/server';
 import { captureOrder as capturePaypalOrder } from '@/lib/paypal-api';
 
-// Stub function to prevent build errors.
-// In a real application, this would update your database.
+// STUB FUNCTION: This is a placeholder. In a real application, you would
+// write the captured order data to your database (e.g., Firestore).
 async function saveOrderAfterCapture(orderID: string, captureData: any) {
-  console.log(`[Stub] saveOrderAfterCapture called for Order ID: ${orderID}`);
-  // In a real implementation, you would write to Firestore or another database here.
-  // For example: await db.collection('orders').doc(orderID).update({ status: 'PAID', captureData });
-  return;
+  console.log(`[STUB] Saving captured order ${orderID} to database.`);
+  // Example database call:
+  // await db.collection('orders').doc(orderID).update({ status: 'PAID', captureData });
+  return Promise.resolve();
 }
 
 
@@ -23,6 +23,7 @@ export async function POST(request: Request) {
     const capturedData = await capturePaypalOrder(orderID);
     
     // Optional: save the successful capture to your database.
+    // This is useful for your own records but email is sent via webhook.
     await saveOrderAfterCapture(orderID, capturedData);
     
     return NextResponse.json(capturedData);

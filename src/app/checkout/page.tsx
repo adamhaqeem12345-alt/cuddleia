@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   }
 
   const handleCreateOrder = async () => {
+    console.log("Frontend: Calling create-order API.");
     setErrorMessage(null);
     try {
       const response = await fetch('/api/paypal/create-order', {
@@ -38,7 +39,8 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cart: cart.map(item => ({ id: item.id, quantity: item.quantity })) }),
+        // Send the entire cart context to the backend
+        body: JSON.stringify({ cart }),
       });
       const order = await response.json();
 
@@ -47,19 +49,22 @@ export default function CheckoutPage() {
       }
 
       if (order.id) {
+        console.log("Frontend: create-order API successful. Order ID:", order.id);
         return order.id;
       } else {
         console.error("Order ID is missing from create-order response:", order);
-        throw new Error('Unexpected error: Order ID is missing.');
+        throw new Error('Unexpected error from server: Order ID is missing.');
       }
     } catch (error: any) {
-      console.error("PayPal createOrder error:", error.message);
+      console.error("Frontend: PayPal createOrder error:", error.message);
       setErrorMessage(error.message);
+      // We must throw an error here to stop the PayPal flow
       throw new Error(error.message);
     }
   };
 
   const onApprove = async (data: any) => {
+    console.log("Frontend: Payment approved. Calling capture-order API for Order ID:", data.orderID);
     setIsProcessing(true);
     setErrorMessage(null);
     try {
@@ -79,21 +84,26 @@ export default function CheckoutPage() {
       const purchaseUnit = orderDetails.purchase_units?.[0] || orderDetails;
       const capture = purchaseUnit.payments?.captures?.[0];
 
+      // Verify the final status of the payment
       if (orderDetails.status !== 'COMPLETED' && capture?.status !== 'COMPLETED') {
         throw new Error(`Payment not completed. Status: ${orderDetails.status || capture?.status}`);
       }
       
+      console.log("Frontend: Payment capture successful. Clearing cart and redirecting.");
       clearCart();
       router.push(`/thank-you?status=success&orderID=${data.orderID}`);
 
     } catch (error: any) {
+      console.error("Frontend: onApprove error:", error.message);
       setErrorMessage(error.message);
-      setIsProcessing(false);
+      setIsProcessing(false); // Allow user to try again if needed
+      // Redirect to a failure page so the user knows something went wrong
       router.push(`/thank-you?status=error&orderID=${data.orderID}&message=${encodeURIComponent(error.message)}`);
     }
   };
   
   const onError = (err: any) => {
+     // This function is called by the PayPal script if it encounters an error.
      setErrorMessage("An error occurred with the PayPal payment. Please try again.");
      console.error("PayPal Buttons onError:", err);
   }

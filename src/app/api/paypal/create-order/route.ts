@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     const items = cart.map(cartItem => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
+            // This should ideally not happen if cart is managed properly
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         total += product.price * cartItem.quantity;
@@ -27,11 +28,13 @@ export async function POST(request: Request) {
                 currency_code: 'USD',
                 value: String(product.price.toFixed(2)),
             },
+            sku: product.id, // Pass product ID as SKU
         };
     });
     
+    // Prevent creating orders with zero or negative value
     if (total <= 0) {
-      return NextResponse.json({ error: 'Invalid total amount' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid total amount for order.' }, { status: 400 });
     }
     
     const order = await createPaypalOrder(total, items);

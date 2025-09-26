@@ -32,6 +32,7 @@ export async function getAccessToken() {
 }
 
 export async function createOrder(total: number, items: any[]) {
+    console.log("Creating PayPal order with total:", total);
     try {
         const accessToken = await getAccessToken();
         
@@ -62,10 +63,12 @@ export async function createOrder(total: number, items: any[]) {
 
         if (!response.ok) {
             const errorDetails = await response.text();
+            console.error(`Failed to create PayPal order:`, errorDetails);
             throw new Error(`Failed to create PayPal order: ${errorDetails}`);
         }
 
         const order = await response.json();
+        console.log("PayPal order created successfully:", order.id);
         return order;
 
     } catch (error: any) {
@@ -76,6 +79,7 @@ export async function createOrder(total: number, items: any[]) {
 
 
 export async function captureOrder(orderID: string) {
+    console.log("Capturing PayPal order:", orderID);
     try {
         const accessToken = await getAccessToken();
 
@@ -90,10 +94,12 @@ export async function captureOrder(orderID: string) {
         
         if (!response.ok) {
             const errorDetails = await response.text();
+            console.error(`Failed to capture PayPal order:`, errorDetails);
             throw new Error(`Failed to capture PayPal order: ${errorDetails}`);
         }
 
         const capturedData = await response.json();
+        console.log("PayPal order captured successfully:", capturedData.id);
         return capturedData;
 
     } catch (error: any) {
@@ -104,6 +110,7 @@ export async function captureOrder(orderID: string) {
 
 
 export async function getOrderDetails(orderId: string) {
+    console.log("Getting details for PayPal order:", orderId);
     try {
         const accessToken = await getAccessToken();
         const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
@@ -122,3 +129,4 @@ export async function getOrderDetails(orderId: string) {
         return null;
     }
 }
+

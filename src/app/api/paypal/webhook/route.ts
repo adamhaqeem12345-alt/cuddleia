@@ -35,6 +35,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
         });
         
         const data = await response.json();
+        console.log("Webhook verification status:", data.verification_status);
         return data.verification_status === 'SUCCESS';
 
     } catch (error) {
@@ -44,7 +45,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
 }
 
 export async function POST(request: Request) {
-  console.log("API ROUTE: /api/paypal/webhook");
+  console.log("API ROUTE: /api/paypal/webhook received a request.");
   try {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody);
@@ -52,7 +53,8 @@ export async function POST(request: Request) {
     const isVerified = await verifyWebhook(request.headers, rawBody);
     if (!isVerified) {
         console.warn('PayPal webhook verification failed. Ignoring request.');
-        return NextResponse.json({ error: 'Webhook verification failed' }, { status: 403 });
+        // Return 200 to prevent PayPal from resending, but do nothing.
+        return NextResponse.json({ message: 'Webhook verification failed. Request ignored.' }, { status: 200 });
     }
 
     const eventType = body.event_type;
@@ -61,6 +63,7 @@ export async function POST(request: Request) {
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
         const capture = body.resource;
         
+        // Find the Order ID from the webhook payload
         const payPalOrderId = capture.supplementary_data?.related_ids?.order_id;
 
         if (!payPalOrderId) {
@@ -68,6 +71,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ message: 'Could not find order ID, but webhook acknowledged.' },{ status: 200 });
         }
         
+        // Use the Order ID to get full order details from PayPal
         const orderDetails = await getOrderDetails(payPalOrderId);
         
         if (!orderDetails) {
@@ -82,14 +86,15 @@ export async function POST(request: Request) {
         const amount = purchaseUnit.amount;
 
         const productsInOrder: ProductInfo[] = purchaseUnit.items.map((item: any) => {
-            const productDetails = allProducts.find(p => p.name === item.name);
+            // Match item from PayPal order with product in our database using SKU
+            const productDetails = allProducts.find(p => p.id === item.sku);
             return {
                 name: item.name,
                 quantity: parseInt(item.quantity, 10),
                 price: parseFloat(item.unit_amount.value),
-                downloadUrl: productDetails?.downloadUrl || '',
+                downloadUrl: productDetails?.downloadUrl || '', // Fallback to empty string
             };
-        }).filter((p: ProductInfo) => p.downloadUrl);
+        }).filter((p: ProductInfo) => p.downloadUrl); // Only include products with a valid download URL
 
         if (productsInOrder.length > 0) {
             await sendOrderConfirmationEmail({
@@ -104,6 +109,7 @@ export async function POST(request: Request) {
         }
     }
     
+    // Always return 200 to acknowledge receipt of the webhook
     return NextResponse.json({ received: true }, { status: 200 });
 
   } catch (error: any) {
