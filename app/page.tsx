@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { products } from '@/lib/products';
@@ -23,10 +24,10 @@ export default function Home() {
         </div>
         <AnimateIn>
           <div className="relative z-10 text-center px-4">
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-gray-800 drop-shadow-lg">
+            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
               Cozy Digital Goods
             </h1>
-            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-gray-600">
+            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
               Discover thoughtfully designed digital wallpapers, planners, and Islamic booklets that bring warmth and serenity to your day.
             </p>
             <div className="mt-8 flex justify-center gap-4">
