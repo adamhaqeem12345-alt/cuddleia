@@ -65,7 +65,7 @@ export async function createOrder(total: number, items: any[]) {
         }
 
         const order = await response.json();
-        return order.id;
+        return order;
 
     } catch (error: any) {
         console.error("Error creating PayPal order:", error);

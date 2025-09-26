@@ -75,11 +75,11 @@ export default function CheckoutPage() {
          throw new Error(orderDetails.error || 'Failed to capture payment.');
       }
       
-      const purchaseUnit = orderDetails.purchase_units[0];
-      const capture = purchaseUnit.payments.captures[0];
+      const purchaseUnit = orderDetails.purchase_units?.[0] || orderDetails;
+      const capture = purchaseUnit.payments?.captures?.[0];
 
-      if (capture.status !== 'COMPLETED') {
-        throw new Error(`Payment not completed. Status: ${capture.status}`);
+      if (orderDetails.status !== 'COMPLETED' && capture?.status !== 'COMPLETED') {
+        throw new Error(`Payment not completed. Status: ${orderDetails.status || capture?.status}`);
       }
       
       clearCart();

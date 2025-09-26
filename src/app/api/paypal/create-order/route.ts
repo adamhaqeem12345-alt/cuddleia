@@ -8,7 +8,7 @@ interface CartItem {
 }
 
 export async function POST(request: Request) {
-  console.log("Received request for /api/paypal/create-order");
+  console.log("API ROUTE: /api/paypal/create-order");
   try {
     const { cart } = (await request.json()) as { cart: CartItem[] };
 
@@ -37,9 +37,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid total amount' }, { status: 400 });
     }
     
-    const orderId = await createPaypalOrder(total, items);
-    console.log("Successfully created PayPal order:", orderId);
-    return NextResponse.json({ id: orderId });
+    const order = await createPaypalOrder(total, items);
+    return NextResponse.json(order);
 
   } catch (error: any) {
     console.error("API /create-order Error:", error);

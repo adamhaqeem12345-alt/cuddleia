@@ -8,6 +8,7 @@ const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
 const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID!;
 
 async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
+    console.log("API ROUTE: Verifying webhook");
     try {
         const accessToken = await getAccessToken();
         const body = JSON.parse(rawBody);
@@ -42,7 +43,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  console.log("Received request for /api/paypal/webhook");
+  console.log("API ROUTE: /api/paypal/webhook");
   try {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody);
@@ -102,7 +103,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         }
     }
     
-    return NextResponse.json({ message: 'Webhook received successfully' }, { status: 200 });
+    return NextResponse.json({ received: true }, { status: 200 });
 
   } catch (error: any) {
     console.error('Error processing PayPal webhook:', error);

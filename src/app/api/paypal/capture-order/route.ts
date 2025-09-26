@@ -12,7 +12,7 @@ async function saveOrderAfterCapture(orderID: string, captureData: any) {
 
 
 export async function POST(request: Request) {
-  console.log("Received request for /api/paypal/capture-order");
+  console.log("API ROUTE: /api/paypal/capture-order");
   try {
     const { orderID } = await request.json();
     if (!orderID) {
@@ -20,7 +20,6 @@ export async function POST(request: Request) {
     }
 
     const capturedData = await capturePaypalOrder(orderID);
-    console.log("Successfully captured PayPal order:", orderID);
     
     // Optional: save the successful capture to your database.
     await saveOrderAfterCapture(orderID, capturedData);
