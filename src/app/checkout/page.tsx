@@ -77,7 +77,6 @@ export default function CheckoutPage() {
         try {
             if (usePayPal) {
                 // For PayPal, we redirect the user to PayPal with cart details.
-                // Fulfillment would need to be manual or via webhooks.
                 const paypalBusinessEmail = process.env.NEXT_PUBLIC_PAYPAL_BUSINESS_EMAIL;
                 const returnUrl = `${window.location.protocol}//${window.location.host}/thank-you`;
                 const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_cart&upload=1&business=${paypalBusinessEmail}&currency_code=USD&return=${encodeURIComponent(returnUrl)}`;
@@ -95,7 +94,6 @@ export default function CheckoutPage() {
 
             } else {
                 // For ToyyibPay, create a bill and redirect.
-                // The return URL will handle the "thank you" message.
                 const toyyibPaySubtotal = cart.reduce((acc, item) => acc + getPrice(item, 'MY') * item.quantity, 0);
                 const returnUrl = `${window.location.protocol}//${window.location.host}/thank-you`;
 
