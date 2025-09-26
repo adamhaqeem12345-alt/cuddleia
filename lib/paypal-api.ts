@@ -1,11 +1,17 @@
 
 import type { Product } from '@/lib/types';
+import type { OrderResponseBody, OrdersCaptureRequest, OrdersCreateRequest } from '@paypal/checkout-server-sdk/lib/orders/lib';
+
 
 // This is a self-contained helper function to get a PayPal access token.
 export async function getAccessToken() {
     const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
     const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+        throw new Error('MISSING_PAYPAL_API_CREDENTIALS');
+    }
 
     const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
     const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
@@ -17,10 +23,12 @@ export async function getAccessToken() {
         body: 'grant_type=client_credentials',
         cache: 'no-store'
     });
+
     if (!response.ok) {
         const errorDetails = await response.json();
         throw new Error(`Failed to get PayPal access token: ${errorDetails.error_description}`);
     }
+
     const data = await response.json();
     return data.access_token;
 }
@@ -57,6 +65,8 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
+             // Recommended by PayPal to prevent duplicate orders
+            'PayPal-Request-Id': `cuddleia-order-${Date.now()}`
         },
         body: JSON.stringify({
             intent: 'CAPTURE',
@@ -96,15 +106,84 @@ export async function captureOrder(orderID: string) {
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
+            // Recommended by PayPal
+            'PayPal-Request-Id': `cuddleia-capture-${orderID}-${Date.now()}`
         },
         cache: 'no-store'
     });
 
     const capturedData = await response.json();
     if (!response.ok) {
+        // This can happen if the order is already captured, which is fine.
+        if (capturedData.name === 'ORDER_ALREADY_CAPTURED') {
+            console.warn(`Order ${orderID} was already captured.`);
+            // To proceed, we need to fetch the order details to return to the caller
+             const orderDetails = await getOrderDetails(orderID);
+             return orderDetails;
+        }
         const errorDetail = capturedData.details?.[0]?.description || JSON.stringify(capturedData);
         throw new Error(`Failed to capture PayPal order: ${errorDetail}`);
     }
 
     return capturedData;
+}
+
+
+// Function to get order details, useful if an order is already captured
+export async function getOrderDetails(orderID: string) {
+    const accessToken = await getAccessToken();
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderID}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        cache: 'no-store',
+    });
+
+    const orderData = await response.json();
+     if (!response.ok) {
+        const errorDetail = orderData.details?.[0]?.description || JSON.stringify(orderData);
+        throw new Error(`Failed to get PayPal order details: ${errorDetail}`);
+    }
+
+    return orderData;
+}
+
+
+// Verifies a webhook signature
+export async function verifyWebhookSignature(req: Request): Promise<boolean> {
+    const accessToken = await getAccessToken();
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
+
+    if (!WEBHOOK_ID) {
+        throw new Error('PayPal webhook ID is not configured.');
+    }
+
+    const reqBody = await req.text(); // Read the body as raw text
+    const headers = req.headers;
+
+    const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            transmission_id: headers.get('paypal-transmission-id'),
+            transmission_time: headers.get('paypal-transmission-time'),
+            cert_url: headers.get('paypal-cert-url'),
+            auth_algo: headers.get('paypal-auth-algo'),
+            transmission_sig: headers.get('paypal-transmission-sig'),
+            webhook_id: WEBHOOK_ID,
+            webhook_event: JSON.parse(reqBody),
+        }),
+        cache: 'no-store'
+    });
+
+    const verification = await response.json();
+    return verification.verification_status === 'SUCCESS';
 }
