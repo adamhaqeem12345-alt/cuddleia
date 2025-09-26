@@ -8,14 +8,12 @@ import { Label } from '@/components/ui/label';
 import { useCart } from '@/context/cart-context';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
   const { cart, getPrice, clearCart } = useCart();
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
   const subtotal = cart.reduce((acc, item) => {
     return acc + item.price * item.quantity;
@@ -41,6 +39,7 @@ export default function CheckoutPage() {
           products: cart.map((item) => ({
             name: item.name,
             quantity: item.quantity,
+            downloadUrl: item.downloadUrl,
           })),
         }),
       });
@@ -48,16 +47,24 @@ export default function CheckoutPage() {
       if (!response.ok) {
         throw new Error('Failed to send confirmation email.');
       }
-
-      // The email has been sent. Now, redirect to PayPal.
-      // In a real-world scenario, you'd generate a dynamic PayPal payment link.
-      // For this example, we redirect to the main PayPal page.
+      
       clearCart();
-      window.location.href = 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=YOUR_PAYPAL_EMAIL&currency_code=USD&amount=' + getPrice(subtotal).raw.toFixed(2);
+
+      const paypalEmail = process.env.NEXT_PUBLIC_PAYPAL_EMAIL;
+      if (!paypalEmail) {
+        console.error("PayPal email is not configured in environment variables.");
+        // You might want to show an error to the user here
+        setIsLoading(false);
+        return;
+      }
+
+      const amount = getPrice(subtotal).raw.toFixed(2);
+      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&currency_code=USD&amount=${amount}&item_name=Cuddleia Order`;
+      
+      window.location.href = paypalUrl;
 
     } catch (error) {
       console.error('Checkout error:', error);
-      // Optionally, show an error message to the user
       setIsLoading(false);
     }
   };

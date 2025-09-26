@@ -15,6 +15,7 @@ const nextConfig = {
     NEXT_PUBLIC_URL: process.env.NODE_ENV === 'development' 
       ? 'http://localhost:3000' 
       : 'https://www.cuddleia.com',
+    NEXT_PUBLIC_PAYPAL_EMAIL: process.env.NEXT_PUBLIC_PAYPAL_EMAIL,
   }
 };
 
