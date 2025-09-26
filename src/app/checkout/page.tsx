@@ -10,7 +10,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useRouter } from 'next/navigation';
-import { createOrder, captureOrder } from '@/lib/paypal';
 
 export default function CheckoutPage() {
   const { cart, getPrice, clearCart } = useCart();
@@ -31,12 +30,25 @@ export default function CheckoutPage() {
   }
 
   const handleCreateOrder = async () => {
+    setErrorMessage(null);
     try {
-      const orderID = await createOrder(getPrice(subtotal).raw);
-      if (orderID) {
-        return orderID;
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ total: getPrice(subtotal).raw }),
+      });
+      const order = await response.json();
+
+      if (!response.ok) {
+        throw new Error(order.error || 'Failed to create PayPal order.');
+      }
+
+      if (order.id) {
+        return order.id;
       } else {
-        throw new Error('Failed to create PayPal order.');
+        throw new Error('Unexpected error: Order ID is missing.');
       }
     } catch (error: any) {
       setErrorMessage(error.message);
@@ -48,8 +60,19 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setErrorMessage(null);
     try {
-      const orderDetails = await captureOrder(data.orderID);
-
+      const response = await fetch('/api/paypal/capture-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderID: data.orderID }),
+      });
+      const orderDetails = await response.json();
+      
+      if (!response.ok || orderDetails.error) {
+         throw new Error(orderDetails.error || 'Failed to capture payment.');
+      }
+      
       if (orderDetails.status !== 'COMPLETED') {
         throw new Error('Payment not completed.');
       }

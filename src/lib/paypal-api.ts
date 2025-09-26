@@ -5,10 +5,10 @@ const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
 if (!CLIENT_ID || !CLIENT_SECRET || !PAYPAL_API_URL) {
-    throw new Error("PayPal environment variables are not set.");
+    throw new Error("PayPal environment variables are not set correctly.");
 }
 
-async function getAccessToken() {
+export async function getAccessToken() {
     const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
     
     const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
@@ -23,7 +23,7 @@ async function getAccessToken() {
 
     if (!response.ok) {
         const errorDetails = await response.text();
-        throw new Error(`Failed to get access token: ${errorDetails}`);
+        throw new Error(`Failed to get PayPal access token: ${errorDetails}`);
     }
 
     const data = await response.json();
@@ -54,7 +54,7 @@ export async function createOrder(total: number) {
 
         if (!response.ok) {
             const errorDetails = await response.text();
-            throw new Error(`Failed to create order: ${errorDetails}`);
+            throw new Error(`Failed to create PayPal order: ${errorDetails}`);
         }
 
         const order = await response.json();
@@ -82,7 +82,7 @@ export async function captureOrder(orderID: string) {
         
         if (!response.ok) {
             const errorDetails = await response.text();
-            throw new Error(`Failed to capture order: ${errorDetails}`);
+            throw new Error(`Failed to capture PayPal order: ${errorDetails}`);
         }
 
         const capturedData = await response.json();
@@ -91,5 +91,26 @@ export async function captureOrder(orderID: string) {
     } catch (error: any) {
         console.error("Error capturing PayPal order:", error);
         throw error;
+    }
+}
+
+
+export async function getOrderDetails(orderId: string) {
+    try {
+        const accessToken = await getAccessToken();
+        const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            console.error(`Failed to get order details for ${orderId}:`, await response.text());
+            return null;
+        }
+        const orderData = await response.json();
+        return orderData;
+    } catch(e) {
+        console.error("Error fetching order details:", e);
+        return null;
     }
 }

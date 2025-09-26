@@ -1,29 +1,11 @@
 import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, ProductInfo } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
+import { getAccessToken, getOrderDetails } from '@/lib/paypal-api';
+
 
 const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
-const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
 const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID!;
-
-async function getAccessToken() {
-    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
-    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
-        method: 'POST',
-        headers: { 
-            'Authorization': `Basic ${auth}`, 
-            'Content-Type': 'application/x-www-form-urlencoded' 
-        },
-        body: 'grant_type=client_credentials',
-        cache: 'no-store'
-    });
-    if (!response.ok) {
-        throw new Error('Failed to get access token');
-    }
-    const data = await response.json();
-    return data.access_token;
-}
 
 async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
     try {
@@ -57,28 +39,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
     }
 }
 
-async function getOrderDetails(orderId: string) {
-    try {
-        const accessToken = await getAccessToken();
-        const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
-            method: 'GET',
-            headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-            cache: 'no-store'
-        });
-        if (!response.ok) {
-            console.error(`Failed to get order details for ${orderId}:`, await response.text());
-            return null;
-        }
-        const orderData = await response.json();
-        return { ...orderData.purchase_units[0], payer: orderData.payer };
-    } catch(e) {
-        console.error("Error fetching order details:", e);
-        return null;
-    }
-}
-
-
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody);
@@ -94,19 +55,30 @@ export async function POST(request: Request) {
 
     if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
         const capture = body.resource;
-        const orderId = capture.id;
-        const amount = capture.amount;
-        const purchase_units = capture.supplementary_data?.related_ids?.order_id ? await getOrderDetails(capture.supplementary_data.related_ids.order_id) : null;
+        const orderId = capture.id; // This is the capture ID, not order ID
         
-        if (!purchase_units) {
-             console.error('Webhook Error: Could not retrieve order details from capture.');
+        // The order ID is in supplementary_data.related_ids.order_id for captures
+        const payPalOrderId = capture.supplementary_data?.related_ids?.order_id;
+
+        if (!payPalOrderId) {
+            console.error(`Webhook Error: Could not find PayPal Order ID for capture ${orderId}`);
+            return NextResponse.json({ message: 'Could not find order ID, but webhook acknowledged.' },{ status: 200 });
+        }
+        
+        const orderDetails = await getOrderDetails(payPalOrderId);
+        
+        if (!orderDetails) {
+             console.error(`Webhook Error: Could not retrieve order details from capture for PayPal Order ID ${payPalOrderId}.`);
              return NextResponse.json({ message: 'Could not retrieve order details, but webhook acknowledged.' },{ status: 200 });
         }
 
-        const customerName = purchase_units.payer.name.given_name + ' ' + purchase_units.payer.name.surname;
-        const customerEmail = purchase_units.payer.email_address;
+        const customerName = orderDetails.payer.name.given_name + ' ' + orderDetails.payer.name.surname;
+        const customerEmail = orderDetails.payer.email_address;
         
-        const productsInOrder: ProductInfo[] = purchase_units.items.map((item: any) => {
+        const purchaseUnit = orderDetails.purchase_units[0];
+        const amount = purchaseUnit.amount;
+
+        const productsInOrder: ProductInfo[] = purchaseUnit.items.map((item: any) => {
             const productDetails = allProducts.find(p => p.name === item.name);
             return {
                 name: item.name,
@@ -121,12 +93,12 @@ export async function POST(request: Request) {
             await sendOrderConfirmationEmail({
               customerName,
               customerEmail,
-              orderId,
+              orderId: payPalOrderId,
               total: parseFloat(amount.value),
               products: productsInOrder,
             });
         } else {
-            console.warn(`Webhook: No products with download URLs found for order ${orderId}. Email not sent.`);
+            console.warn(`Webhook: No products with download URLs found for order ${payPalOrderId}. Email not sent.`);
         }
     }
     
