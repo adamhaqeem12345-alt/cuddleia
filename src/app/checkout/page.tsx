@@ -10,7 +10,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function CheckoutPage() {
-  const { cart, getPrice, clearCart } = useCart();
+  const { cart, getPrice } = useCart();
   const [customerName, setCustomerName] = useState('');
   const [customerEmail, setCustomerEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +40,7 @@ export default function CheckoutPage() {
             name: item.name,
             quantity: item.quantity,
             downloadUrl: item.downloadUrl,
+            price: item.price,
           })),
         }),
       });
@@ -48,18 +49,18 @@ export default function CheckoutPage() {
         throw new Error('Failed to send confirmation email.');
       }
       
-      clearCart();
-
       const paypalEmail = process.env.NEXT_PUBLIC_PAYPAL_EMAIL;
       if (!paypalEmail) {
         console.error("PayPal email is not configured in environment variables.");
-        // You might want to show an error to the user here
         setIsLoading(false);
         return;
       }
 
       const amount = getPrice(subtotal).raw.toFixed(2);
-      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&currency_code=USD&amount=${amount}&item_name=Cuddleia Order`;
+      const siteUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+      const returnUrl = `${siteUrl}/thank-you?status=success`;
+      
+      const paypalUrl = `https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=${paypalEmail}&currency_code=USD&amount=${amount}&item_name=Cuddleia Order&return=${encodeURIComponent(returnUrl)}&cancel_return=${encodeURIComponent(siteUrl)}`;
       
       window.location.href = paypalUrl;
 
@@ -148,7 +149,7 @@ export default function CheckoutPage() {
                       Your Details
                     </h2>
                      <p className="text-muted-foreground mt-4 font-body">
-                        Your download links will be sent to the email address you provide below.
+                        Your download links will be sent to the email address you provide below before you are redirected to PayPal.
                     </p>
                   </div>
                   <div className="space-y-2">
