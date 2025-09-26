@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal-api';
 
@@ -10,7 +11,7 @@ async function saveOrderAfterCapture(orderID: string, captureData: any) {
 }
 
 export async function POST(request: Request) {
-  console.log("API ROUTE: /api/paypal/capture-order");
+  console.log("API ROUTE: /api/paypal/capture-order received a request.");
   try {
     const { orderID } = await request.json();
     if (!orderID) {

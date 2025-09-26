@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, EmailPayload, ProductInfo } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
@@ -44,6 +45,10 @@ async function getOrderDetails(orderId: string) {
 async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
     const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
     const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
+    if (!WEBHOOK_ID) {
+        console.warn("PAYPAL_WEBHOOK_ID is not set. Skipping webhook verification.");
+        return true; // In a real production app, you might want to fail here.
+    }
     const accessToken = await getAccessToken();
     const body = JSON.parse(rawBody);
 
@@ -57,43 +62,47 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
         webhook_event: body,
     };
 
-    const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(verificationBody),
-        cache: 'no-store',
-    });
-    
-    const data = await response.json();
-    return data.verification_status === 'SUCCESS';
+    try {
+        const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(verificationBody),
+            cache: 'no-store',
+        });
+        
+        const data = await response.json();
+        return data.verification_status === 'SUCCESS';
+    } catch (e) {
+        console.error("Error verifying webhook:", e);
+        return false;
+    }
 }
 
 
 export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/webhook received a request.");
+  const rawBody = await request.text();
   try {
-    const rawBody = await request.text();
-    const body = JSON.parse(rawBody);
-    
-    // In a production environment, you would want to enable this verification.
-    // const isVerified = await verifyWebhook(request.headers, rawBody);
-    // if (!isVerified) {
-    //     console.warn('PayPal webhook verification failed. Ignoring request.');
-    //     return NextResponse.json({ message: 'Webhook verification failed.' }, { status: 403 });
-    // }
+    const isVerified = await verifyWebhook(request.headers, rawBody);
+    if (!isVerified) {
+        console.warn('PayPal webhook verification failed. Ignoring request.');
+        return NextResponse.json({ message: 'Webhook verification failed.' }, { status: 403 });
+    }
 
+    const body = JSON.parse(rawBody);
     const eventType = body.event_type;
     console.log(`Processing verified PayPal Webhook event: ${eventType}`);
 
-    if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
-        const capture = body.resource;
-        const payPalOrderId = capture.supplementary_data?.related_ids?.order_id;
+    if (eventType === 'CHECKOUT.ORDER.APPROVED' || eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+        const resource = body.resource;
+        const payPalOrderId = resource.id || resource.supplementary_data?.related_ids?.order_id;
+
 
         if (!payPalOrderId) {
-            console.error(`Webhook Error: Could not find PayPal Order ID for capture ${capture.id}`);
+            console.error(`Webhook Error: Could not find PayPal Order ID in webhook event.`);
             return NextResponse.json({ message: 'Could not find order ID.' },{ status: 200 });
         }
         
@@ -110,7 +119,7 @@ export async function POST(request: Request) {
         const purchaseUnit = orderDetails.purchase_units[0];
         const amount = purchaseUnit.amount;
 
-        const productsInOrder: ProductInfo[] = purchaseUnit.items.map((item: any) => {
+        const productsInOrder: ProductInfo[] = (purchaseUnit.items || []).map((item: any) => {
             const productDetails = allProducts.find(p => p.id === item.sku);
             return {
                 name: item.name,
