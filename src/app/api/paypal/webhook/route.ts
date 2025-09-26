@@ -42,6 +42,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
+  console.log("Received request for /api/paypal/webhook");
   try {
     const rawBody = await request.text();
     const body = JSON.parse(rawBody);

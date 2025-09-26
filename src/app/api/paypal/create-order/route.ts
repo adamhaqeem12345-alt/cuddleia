@@ -8,6 +8,7 @@ interface CartItem {
 }
 
 export async function POST(request: Request) {
+  console.log("Received request for /api/paypal/create-order");
   try {
     const { cart } = (await request.json()) as { cart: CartItem[] };
 
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
     }
     
     const orderId = await createPaypalOrder(total, items);
+    console.log("Successfully created PayPal order:", orderId);
     return NextResponse.json({ id: orderId });
 
   } catch (error: any) {
