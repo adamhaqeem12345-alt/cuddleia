@@ -52,6 +52,7 @@ export default function CheckoutPage() {
         throw new Error('Unexpected error: Order ID is missing.');
       }
     } catch (error: any) {
+      console.error("PayPal createOrder error:", error.message);
       setErrorMessage(error.message);
       // PayPal SDK expects a rejected promise on failure
       throw new Error(error.message);
@@ -89,13 +90,13 @@ export default function CheckoutPage() {
     } catch (error: any) {
       setErrorMessage(error.message);
       setIsProcessing(false);
-      router.push(`/thank-you?status=error&orderID=${data.orderID}`);
+      router.push(`/thank-you?status=error&orderID=${data.orderID}&message=${encodeURIComponent(error.message)}`);
     }
   };
   
   const onError = (err: any) => {
      setErrorMessage("An error occurred with the PayPal payment. Please try again.");
-     console.error("PayPal Buttons Error:", err);
+     console.error("PayPal Buttons onError:", err);
   }
 
   const isFormValid = customerName !== '' && customerEmail !== '' && /^\S+@\S+\.\S+$/.test(customerEmail);

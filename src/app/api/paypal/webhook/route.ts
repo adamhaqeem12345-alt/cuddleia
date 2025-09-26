@@ -95,7 +95,7 @@ export async function POST(request: Request): Promise<NextResponse> {
               customerEmail,
               orderId: payPalOrderId,
               total: parseFloat(amount.value),
-              products: productsIn-order,
+              products: productsInOrder,
             });
         } else {
             console.warn(`Webhook: No products with download URLs found for order ${payPalOrderId}. Email not sent.`);
