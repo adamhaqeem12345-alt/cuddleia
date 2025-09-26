@@ -1,4 +1,3 @@
-
 'use client'
 import Image from "next/image";
 import { useCart } from "@/context/cart-context";
@@ -7,8 +6,6 @@ import { Input } from "@/components/ui/input";
 import { AnimateIn } from "@/components/animate-in";
 import { X, Minus, Plus } from "lucide-react";
 import Link from 'next/link';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Table,
   TableBody,
@@ -19,7 +16,7 @@ import {
 } from "@/components/ui/table"
 
 export default function CartPage() {
-    const { cart, removeFromCart, updateQuantity, getPrice, selectedCountry, setSelectedCountry } = useCart();
+    const { cart, removeFromCart, updateQuantity, getPrice } = useCart();
     
     const subtotal = cart.reduce((acc, item) => {
         return acc + item.price * item.quantity;
@@ -97,20 +94,6 @@ export default function CartPage() {
                                 <div className="flex justify-between font-body text-lg font-bold">
                                     <span>Total</span>
                                     <span>{getPrice(subtotal).formatted}</span>
-                                </div>
-                                 <div className="space-y-2">
-                                    <Label>Your location:</Label>
-                                    <RadioGroup value={selectedCountry} onValueChange={setSelectedCountry} className="flex space-x-4">
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="MY" id="my" />
-                                            <Label htmlFor="my">Malaysia</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Other" id="other" />
-                                            <Label htmlFor="other">Other</Label>
-                                        </div>
-                                    </RadioGroup>
-                                    <p className="text-xs text-muted-foreground">Select your location to see the correct currency.</p>
                                 </div>
                                 <Button size="lg" className="w-full rounded-full text-lg py-6" asChild>
                                     <Link href="/checkout">

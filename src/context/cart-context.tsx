@@ -1,9 +1,7 @@
-
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Product, CartItem } from '@/lib/types';
-import { USD_TO_MYR_RATE } from '@/lib/currency';
 
 interface CartContextType {
   cart: CartItem[];
@@ -11,8 +9,6 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
-  selectedCountry: string;
-  setSelectedCountry: (country: string) => void;
   getPrice: (price: number) => { formatted: string, raw: number };
 }
 
@@ -20,25 +16,9 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState('MY');
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-    // Logic to set default country based on user's location could be added here
-  }, []);
-
+  
   const getPrice = (price: number) => {
-    if (!isClient) {
-        // Default to MYR on server or during initial render
-        const priceMYR = price * USD_TO_MYR_RATE;
-        return { formatted: `RM${priceMYR.toFixed(2)}`, raw: priceMYR };
-    }
-    
-    if (selectedCountry === 'MY') {
-      const priceMYR = price * USD_TO_MYR_RATE;
-      return { formatted: `RM${priceMYR.toFixed(2)}`, raw: priceMYR };
-    }
+    // All prices are in USD for PayPal
     return { formatted: `$${price.toFixed(2)}`, raw: price };
   };
 
@@ -76,7 +56,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, selectedCountry, setSelectedCountry, getPrice }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getPrice }}>
       {children}
     </CartContext.Provider>
   );

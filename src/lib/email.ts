@@ -1,4 +1,3 @@
-
 import nodemailer from 'nodemailer';
 import { products as allProducts } from '@/lib/products';
 
@@ -48,7 +47,7 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
                 <h3>Order Summary</h3>
                 <div style="border: 1px solid #ddd; padding: 15px; border-radius: 8px;">
                     ${productDetails}
-                    <p style="font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px;">Total: RM${total.toFixed(2)}</p>
+                    <p style="font-size: 18px; font-weight: bold; text-align: right; margin-top: 15px;">Total: $${total.toFixed(2)}</p>
                 </div>
 
                 <p>If you have any questions, feel free to reply to this email.</p>
