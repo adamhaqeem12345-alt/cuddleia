@@ -1,3 +1,4 @@
+
 'use client'
 import Image from "next/image";
 import { useCart } from "@/context/cart-context";
@@ -16,13 +17,11 @@ import {
 } from "@/components/ui/table"
 
 export default function CartPage() {
-    const { cart, removeFromCart, updateQuantity } = useCart();
+    const { cart, removeFromCart, updateQuantity, getPrice, selectedCountry, setSelectedCountry } = useCart();
     
     const subtotal = cart.reduce((acc, item) => {
         return acc + item.price * item.quantity;
     }, 0);
-
-    const currencyPrefix = '$';
 
     return (
         <div className="bg-background min-h-[80vh]">
@@ -76,7 +75,7 @@ export default function CartPage() {
                                                         <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-right font-body font-semibold">{currencyPrefix}{(item.price * item.quantity).toFixed(2)}</TableCell>
+                                                <TableCell className="text-right font-body font-semibold">{getPrice(item.price * item.quantity).formatted}</TableCell>
                                                 <TableCell>
                                                     <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)} className="rounded-full">
                                                         <X className="h-5 w-5" />
@@ -91,11 +90,25 @@ export default function CartPage() {
                                 <h2 className="font-headline text-3xl font-bold">Summary</h2>
                                 <div className="flex justify-between font-body text-lg">
                                     <span>Subtotal</span>
-                                    <span>{currencyPrefix}{subtotal.toFixed(2)}</span>
+                                    <span>{getPrice(subtotal).formatted}</span>
                                 </div>
                                 <div className="flex justify-between font-body text-lg font-bold">
                                     <span>Total</span>
-                                    <span>{currencyPrefix}{subtotal.toFixed(2)}</span>
+                                    <span>{getPrice(subtotal).formatted}</span>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label>Your location:</Label>
+                                    <RadioGroup value={selectedCountry} onValueChange={setSelectedCountry} className="flex space-x-4">
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="MY" id="my" />
+                                            <Label htmlFor="my">Malaysia</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            <RadioGroupItem value="Other" id="other" />
+                                            <Label htmlFor="other">Other</Label>
+                                        </div>
+                                    </RadioGroup>
+                                    <p className="text-xs text-muted-foreground">Select your location to see the correct currency.</p>
                                 </div>
                                 <Button size="lg" className="w-full rounded-full text-lg py-6" asChild>
                                     <Link href="/checkout">

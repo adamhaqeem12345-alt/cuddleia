@@ -1,3 +1,4 @@
+
 'use client'
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart } from 'lucide-react';
 
 export const ProductCard = ({ product }: { product: Product }) => {
-    const { addToCart } = useCart();
-    const priceUSD = `$${product.price.toFixed(2)}`;
+    const { addToCart, getPrice } = useCart();
     
     return (
         <div className="h-full">
@@ -32,7 +32,7 @@ export const ProductCard = ({ product }: { product: Product }) => {
                         </Link>
                     </div>
                     <div className="flex items-center justify-between gap-4 pt-6">
-                        <p className="text-xl font-headline font-bold text-primary">{priceUSD}</p>
+                        <p className="text-xl font-headline font-bold text-primary">{getPrice(product.price).formatted}</p>
                         <div className="flex gap-2">
                             <Button variant="outline" size="icon" className="rounded-full h-10 w-10" asChild>
                                 <Link href={`/products/${product.id}`}>

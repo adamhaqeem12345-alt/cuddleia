@@ -10,29 +10,64 @@ import { useCart } from '@/context/cart-context';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function CheckoutPage() {
-    const { cart } = useCart();
+    const { cart, getPrice, clearCart } = useCart();
     const [customerName, setCustomerName] = useState('');
     const [customerEmail, setCustomerEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState('paypal');
     const router = useRouter();
 
     const subtotal = cart.reduce((acc, item) => {
         return acc + item.price * item.quantity;
     }, 0);
-    const currencyPrefix = '$';
 
     const handleCheckout = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (cart.length === 0) return;
+
         setIsLoading(true);
 
-        // Simulate a delay for processing a PayPal payment
-        setTimeout(() => {
-            // Redirect to thank you page on success
-            // In a real app, this would be after a successful PayPal API response
-            router.push('/thank-you?status=success');
-        }, 1500);
+        if (paymentMethod === 'toyyibpay') {
+            try {
+                const response = await fetch('/api/create-bill', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        customerName,
+                        customerEmail,
+                        total: getPrice(subtotal).raw, 
+                        products: cart.map(item => ({ name: item.name, quantity: item.quantity, price: getPrice(item.price).raw })),
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create ToyyibPay bill');
+                }
+
+                const data = await response.json();
+                
+                if (data.billUrl) {
+                    clearCart();
+                    window.location.href = data.billUrl;
+                } else {
+                    throw new Error('Bill URL not returned from API');
+                }
+            } catch (error) {
+                console.error('ToyyibPay checkout error:', error);
+                setIsLoading(false);
+            }
+        } else {
+            // Simulate PayPal flow
+             setTimeout(() => {
+                clearCart();
+                router.push('/thank-you?status=success');
+            }, 1500);
+        }
     };
 
     return (
@@ -56,7 +91,6 @@ export default function CheckoutPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-                            {/* Order Summary */}
                             <div className="bg-card p-8 rounded-2xl shadow-lg space-y-6 md:order-2">
                                 <h2 className="font-headline text-3xl font-bold border-b pb-4">Order Summary</h2>
                                 <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
@@ -71,23 +105,22 @@ export default function CheckoutPage() {
                                                     <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                                                 </div>
                                             </div>
-                                            <p className="font-body font-semibold">{currencyPrefix}{(item.price * item.quantity).toFixed(2)}</p>
+                                            <p className="font-body font-semibold">{getPrice(item.price * item.quantity).formatted}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="border-t pt-6 space-y-4">
                                      <div className="flex justify-between font-body text-lg">
                                         <span>Subtotal</span>
-                                        <span>{currencyPrefix}{subtotal.toFixed(2)}</span>
+                                        <span>{getPrice(subtotal).formatted}</span>
                                     </div>
                                     <div className="flex justify-between font-body text-xl font-bold">
                                         <span>Total</span>
-                                        <span>{currencyPrefix}{subtotal.toFixed(2)}</span>
+                                        <span>{getPrice(subtotal).formatted}</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            {/* Checkout Form */}
                              <div className="md:order-1">
                                 <form onSubmit={handleCheckout} className="bg-card p-8 rounded-2xl shadow-lg space-y-8">
                                     <div>
@@ -118,12 +151,26 @@ export default function CheckoutPage() {
                                         />
                                     </div>
 
-                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7 bg-[#00457C] hover:bg-[#003057]" disabled={isLoading}>
-                                        {isLoading ? 'Processing...' : `Pay with PayPal (${currencyPrefix}${subtotal.toFixed(2)})`}
+                                    <div>
+                                         <Label className="text-lg font-headline mb-4 block">Payment Method</Label>
+                                        <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="flex flex-col space-y-2">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="paypal" id="paypal" />
+                                                <Label htmlFor="paypal" className="text-base font-body">PayPal</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="toyyibpay" id="toyyibpay" />
+                                                <Label htmlFor="toyyibpay" className="text-base font-body">ToyyibPay (for MYR)</Label>
+                                            </div>
+                                        </RadioGroup>
+                                    </div>
+
+                                    <Button type="submit" size="lg" className="w-full rounded-full text-lg py-7" disabled={isLoading}>
+                                        {isLoading ? 'Processing...' : `Pay ${getPrice(subtotal).formatted}`}
                                     </Button>
 
                                      <p className="text-xs text-muted-foreground text-center pt-4">
-                                        By clicking "Pay", you agree to our Terms of Service and Privacy Policy. All payments are processed securely via PayPal.
+                                        By clicking "Pay", you agree to our Terms of Service and Privacy Policy. All payments are processed securely.
                                     </p>
                                 </form>
                              </div>

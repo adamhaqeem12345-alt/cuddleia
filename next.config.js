@@ -1,10 +1,6 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    httpAgentOptions: {
-      keepAlive: false,
-    },
-  },
   images: {
     remotePatterns: [
       {
