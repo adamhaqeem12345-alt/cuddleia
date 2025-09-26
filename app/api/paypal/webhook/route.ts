@@ -2,7 +2,96 @@
 import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, ProductInfo } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
-import { verifyWebhook, getOrderDetails } from '@/lib/paypal-api';
+
+// This is a self-contained helper function to get a PayPal access token.
+async function getAccessToken() {
+    const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
+
+    // Defensive check for environment variables
+    if (!CLIENT_ID || !CLIENT_SECRET || !PAYPAL_API_URL) {
+        throw new Error("Missing PayPal credentials in environment variables.");
+    }
+
+    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.text();
+        throw new Error(`Failed to get PayPal access token: ${errorDetails}`);
+    }
+    const data = await response.json();
+    return data.access_token;
+}
+
+// Fetches order details from PayPal
+async function getOrderDetails(orderId: string) {
+    const accessToken = await getAccessToken();
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
+    console.log(`Fetching order details for ${orderId} from ${PAYPAL_API_URL}`);
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error(`Failed to get order details for ${orderId}:`, errorDetails);
+        throw new Error(`Failed to retrieve order details: ${errorDetails}`);
+    }
+    return response.json();
+}
+
+// Verifies a PayPal webhook signature
+async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL as string;
+    const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID as string;
+    
+    const accessToken = await getAccessToken();
+    const body = JSON.parse(rawBody);
+
+    const verificationBody = {
+        auth_algo: headers.get('paypal-auth-algo'),
+        cert_url: headers.get('paypal-cert-url'),
+        transmission_id: headers.get('paypal-transmission-id'),
+        transmission_sig: headers.get('paypal-transmission-sig'),
+        transmission_time: headers.get('paypal-transmission-time'),
+        webhook_id: WEBHOOK_ID,
+        webhook_event: body,
+    };
+
+    const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(verificationBody),
+        cache: 'no-store',
+    });
+    
+    if (!response.ok) {
+        console.error("Webhook verification API call failed:", await response.text());
+        return false;
+    }
+
+    const data = await response.json();
+    return data.verification_status === 'SUCCESS';
+}
+
 
 export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/webhook received a request.");
