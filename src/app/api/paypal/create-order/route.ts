@@ -1,8 +1,30 @@
 
 import { NextResponse } from 'next/server';
-import { createOrder as createPaypalOrder } from '@/lib/paypal-api';
 import { products as allProducts } from '@/lib/products';
 import { CartItem } from '@/lib/types';
+
+const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
+const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
+const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
+
+// This function gets a PayPal access token. It is self-contained.
+async function getAccessToken() {
+    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+        cache: 'no-store'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to get PayPal access token: ${await response.text()}`);
+    }
+    const data = await response.json();
+    return data.access_token;
+}
 
 export async function POST(request: Request) {
   console.log("API ROUTE: /api/paypal/create-order");
@@ -17,7 +39,6 @@ export async function POST(request: Request) {
     const items = cart.map(cartItem => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
-            // This should ideally not happen if cart is managed properly
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         total += product.price * cartItem.quantity;
@@ -28,16 +49,47 @@ export async function POST(request: Request) {
                 currency_code: 'USD',
                 value: String(product.price.toFixed(2)),
             },
-            sku: product.id, // Pass product ID as SKU
+            sku: product.id,
         };
     });
-    
-    // Prevent creating orders with zero or negative value
+
     if (total <= 0) {
       return NextResponse.json({ error: 'Invalid total amount for order.' }, { status: 400 });
     }
-    
-    const order = await createPaypalOrder(total, items);
+
+    const accessToken = await getAccessToken();
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            intent: 'CAPTURE',
+            purchase_units: [{
+                amount: {
+                    currency_code: 'USD',
+                    value: total.toFixed(2),
+                    breakdown: {
+                        item_total: {
+                            currency_code: 'USD',
+                            value: total.toFixed(2),
+                        }
+                    }
+                },
+                items: items,
+            }],
+        }),
+        cache: 'no-store'
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error(`Failed to create PayPal order:`, errorDetails);
+        return NextResponse.json({ error: `Failed to create PayPal order: ${errorDetails}` }, { status: 500 });
+    }
+
+    const order = await response.json();
     return NextResponse.json(order);
 
   } catch (error: any) {

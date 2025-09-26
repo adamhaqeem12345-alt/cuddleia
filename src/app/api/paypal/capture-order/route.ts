@@ -1,14 +1,33 @@
 
 import { NextResponse } from 'next/server';
-import { captureOrder as capturePaypalOrder } from '@/lib/paypal-api';
 
-// STUB FUNCTION: This is a placeholder. In a real application, you would
-// write the captured order data to your database (e.g., Firestore).
+const PAYPAL_API_URL = process.env.PAYPAL_API_URL!;
+const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!;
+const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET!;
+
+// This is a self-contained stub function to prevent build errors.
 async function saveOrderAfterCapture(orderID: string, captureData: any) {
   console.log(`[STUB] Saving captured order ${orderID} to database.`);
-  // Example database call:
-  // await db.collection('orders').doc(orderID).update({ status: 'PAID', captureData });
   return Promise.resolve();
+}
+
+// This function gets a PayPal access token. It is self-contained.
+async function getAccessToken() {
+    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+    const response = await fetch(`${PAYPAL_API_URL}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${auth}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+        cache: 'no-store'
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to get PayPal access token: ${await response.text()}`);
+    }
+    const data = await response.json();
+    return data.access_token;
 }
 
 
@@ -20,10 +39,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Order ID is required' }, { status: 400 });
     }
 
-    const capturedData = await capturePaypalOrder(orderID);
+    const accessToken = await getAccessToken();
+    const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderID}/capture`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+    });
+
+    const capturedData = await response.json();
+    if (!response.ok) {
+        console.error(`Failed to capture PayPal order:`, capturedData);
+        return NextResponse.json({ error: `Failed to capture PayPal order: ${capturedData?.message}` }, { status: 500 });
+    }
     
-    // Optional: save the successful capture to your database.
-    // This is useful for your own records but email is sent via webhook.
     await saveOrderAfterCapture(orderID, capturedData);
     
     return NextResponse.json(capturedData);
