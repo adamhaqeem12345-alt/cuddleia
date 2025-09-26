@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 // This is a self-contained stub function to prevent build errors.
 // In a real application, you would replace this with your database logic.
-async function saveOrderAfterCapture(orderID: string, captureData: any) {
+async function saveOrderAfterCapture(orderID, captureData) {
   console.log(`[STUB] Saving captured order ${orderID} to database.`);
   // Example: await db.collection('orders').doc(orderID).update({ status: 'COMPLETED', captureInfo: captureData });
   return Promise.resolve();
@@ -40,7 +40,7 @@ async function getAccessToken() {
 }
 
 
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/paypal/capture-order");
 
   // Environment Variable Check
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     
     return NextResponse.json(capturedData);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("API /capture-order Error:", error);
     // Return a more generic error to the client, but log the detailed one.
     return NextResponse.json({ error: "Failed to capture order" }, { status: 500 });

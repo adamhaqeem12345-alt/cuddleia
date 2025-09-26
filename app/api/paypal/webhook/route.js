@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { sendOrderConfirmationEmail, ProductInfo } from '@/lib/email';
+import { sendOrderConfirmationEmail } from '@/lib/email';
 import { products as allProducts } from '@/lib/products';
 
 // This is a self-contained helper function to get a PayPal access token.
@@ -34,7 +34,7 @@ async function getAccessToken() {
 }
 
 // Fetches order details from PayPal
-async function getOrderDetails(orderId: string) {
+async function getOrderDetails(orderId) {
     const accessToken = await getAccessToken();
     const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
     console.log(`Fetching order details for ${orderId} from ${PAYPAL_API_URL}`);
@@ -56,9 +56,14 @@ async function getOrderDetails(orderId: string) {
 }
 
 // Verifies a PayPal webhook signature
-async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean> {
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL as string;
-    const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID as string;
+async function verifyWebhook(headers, rawBody) {
+    const PAYPAL_API_URL = process.env.PAYPAL_API_URL;
+    const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
+    
+    if (!WEBHOOK_ID) {
+        console.error("Configuration error: PAYPAL_WEBHOOK_ID is not set.");
+        return false;
+    }
     
     const accessToken = await getAccessToken();
     const body = JSON.parse(rawBody);
@@ -93,7 +98,7 @@ async function verifyWebhook(headers: Headers, rawBody: string): Promise<boolean
 }
 
 
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/paypal/webhook received a request.");
   
   const requiredEnvVars = [
@@ -123,7 +128,6 @@ export async function POST(request: Request) {
 
     if (eventType === 'CHECKOUT.ORDER.APPROVED' || eventType === 'PAYMENT.CAPTURE.COMPLETED') {
         const orderId = body.resource?.id;
-        const purchaseUnits = body.resource?.purchase_units;
 
         if (!orderId) {
              console.error(`Webhook Error: Could not find PayPal Order ID in resource.`);
@@ -148,7 +152,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ received: true, message: "Order has no items." });
         }
 
-        const productsInOrder: ProductInfo[] = purchaseUnit.items.map((item: any) => {
+        const productsInOrder = purchaseUnit.items.map((item) => {
             const productDetails = allProducts.find(p => p.id === item.sku);
             if (!productDetails) {
               console.warn(`Product with SKU ${item.sku} not found in local products list.`);
@@ -160,7 +164,7 @@ export async function POST(request: Request) {
                 price: parseFloat(item.unit_amount.value),
                 downloadUrl: productDetails.downloadUrl,
             };
-        }).filter((p): p is ProductInfo => p !== null && !!p.downloadUrl);
+        }).filter((p) => p !== null && !!p.downloadUrl);
 
         if (productsInOrder.length > 0) {
             await sendOrderConfirmationEmail({
@@ -178,7 +182,7 @@ export async function POST(request: Request) {
     // Always return a 200 OK for webhooks you've acknowledged, even if you don't process the event type.
     return NextResponse.json({ received: true });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error processing PayPal webhook:', error);
     // Return 500 but log the error. PayPal will retry.
     return NextResponse.json({ error: 'Error processing webhook', details: error.message }, { status: 500 });

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/send-email");
 
   // Environment Variable Check
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     await sendOrderConfirmationEmail(payload);
     return NextResponse.json({ message: 'Email sent successfully' });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('API Error sending email:', error);
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
   }

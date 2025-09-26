@@ -1,7 +1,6 @@
 
 import { NextResponse } from 'next/server';
 import { products as allProducts } from '@/lib/products';
-import type { Product } from '@/lib/types';
 
 // This is a self-contained helper function to get a PayPal access token.
 async function getAccessToken() {
@@ -33,7 +32,7 @@ async function getAccessToken() {
     return data.access_token;
 }
 
-export async function POST(request: Request) {
+export async function POST(request) {
   console.log("API ROUTE: /api/paypal/create-order");
 
   // Environment Variable Check
@@ -50,7 +49,7 @@ export async function POST(request: Request) {
     }
     
     let total = 0;
-    const items = cart.map((cartItem: { id: string, quantity: number }) => {
+    const items = cart.map((cartItem) => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
@@ -108,7 +107,7 @@ export async function POST(request: Request) {
     const order = await response.json();
     return NextResponse.json(order);
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("API /create-order Error:", error);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
   }
