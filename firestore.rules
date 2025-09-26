@@ -3,29 +3,29 @@
  *
  * Core Philosophy:
  * This ruleset enforces a strict user-ownership model for shopping carts and payments,
- * while allowing public read access to product categories and products.
+ * while allowing public read access to product and category information.
  *
  * Data Structure:
- * - /categories/{categoryId}: Stores category data. Publicly readable.
- * - /products/{productId}: Stores product data. Publicly readable.
- * - /users/{userId}/shopping_cart/{shoppingCartId}: Each user has their own shopping cart. Only the user can access their own cart.
- * - /users/{userId}/payments/{paymentId}: Stores payment history for each user. Only the user can access their own payment history.
+ * - Categories: Stored in a top-level `/categories` collection. Publicly readable.
+ * - Products: Stored in a top-level `/products` collection. Publicly readable.
+ * - Shopping Carts: Each user has a private shopping cart stored under `/users/{userId}/shopping_cart/{shoppingCartId}`.
+ * - Payments: Each user has a private payment history stored under `/users/{userId}/payments/{paymentId}`.
  *
  * Key Security Decisions:
- * - Public read access to categories and products.
- * - Strict user-ownership for shopping carts and payments.
- * - Denormalization is not explicitly needed in this data model based on the structure and relationships.
+ * - Categories and Products are publicly readable to facilitate browsing.
+ * - User-specific data (shopping carts and payments) is strictly controlled, with each user only able to access their own data.
+ * - Listing of user-specific shopping carts and payments is allowed only for the owner.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows public read access to categories.
+     * @description Allows public read access to categories. Only allows create, update, and delete by authenticated users.
      * @path /categories/{categoryId}
-     * @allow (get, list) Any user can read category data.
-     * @deny (create, update, delete) No user can create, update, or delete category data through the client.
-     * @principle Allows public read access; restricts write access.
+     * @allow (get, list)
+     * @deny (create, update, delete)
+     * @principle Allows public read access to categories for browsing.
      */
     match /categories/{categoryId} {
       allow get, list: if true;
@@ -33,11 +33,11 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows public read access to products.
+     * @description Allows public read access to products. Only allows create, update, and delete by authenticated users.
      * @path /products/{productId}
-     * @allow (get, list) Any user can read product data.
-     * @deny (create, update, delete) No user can create, update, or delete product data through the client.
-     * @principle Allows public read access; restricts write access.
+     * @allow (get, list)
+     * @deny (create, update, delete)
+     * @principle Allows public read access to products for browsing.
      */
     match /products/{productId} {
       allow get, list: if true;
@@ -45,54 +45,44 @@ service cloud.firestore {
     }
 
     /**
-     * @description Enforces user-ownership for shopping carts.
+     * @description Enforces user-ownership for shopping carts. Only the owner can create, read, update, or delete their cart.
      * @path /users/{userId}/shopping_cart/{shoppingCartId}
-     * @allow (get, list) User 'abc' can read their own shopping cart.
-     * @allow (create) User 'abc' can create a shopping cart with userId 'abc'.
-     * @allow (update) User 'abc' can update their own existing shopping cart.
-     * @allow (delete) User 'abc' can delete their own existing shopping cart.
-     * @deny (get, list) User 'def' cannot read user 'abc's shopping cart.
-     * @deny (create, update, delete) User 'def' cannot create, update, or delete user 'abc's shopping cart.
-     * @principle Enforces document ownership for writes.
+     * @allow (create, get, list, update, delete) when the user ID matches the authenticated user's ID.
+     * @deny (create, get, list, update, delete) when the user ID does not match the authenticated user's ID.
+     * @principle Enforces document ownership for writes, restricts access to a user's own shopping cart.
      */
     match /users/{userId}/shopping_cart/{shoppingCartId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
+      allow get, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
 
     /**
-     * @description Enforces user-ownership for payments.
+     * @description Enforces user-ownership for payments. Only the owner can create, read, update, or delete their payment information.
      * @path /users/{userId}/payments/{paymentId}
-     * @allow (get, list) User 'abc' can read their own payment data.
-     * @allow (create) User 'abc' can create a payment with userId 'abc'.
-     * @allow (update) User 'abc' can update their own existing payment data.
-     * @allow (delete) User 'abc' can delete their own existing payment data.
-     * @deny (get, list) User 'def' cannot read user 'abc's payment data.
-     * @deny (create, update, delete) User 'def' cannot create, update, or delete user 'abc's payment data.
-     * @principle Enforces document ownership for writes.
+     * @allow (create, get, list, update, delete) when the user ID matches the authenticated user's ID.
+     * @deny (create, get, list, update, delete) when the user ID does not match the authenticated user's ID.
+     * @principle Enforces document ownership for writes, restricts access to a user's own payment history.
      */
     match /users/{userId}/payments/{paymentId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
+      allow get, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
     }
-  }
 
-  // Helper functions
-  function isSignedIn() {
-    return request.auth != null;
-  }
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
 
-  function isOwner(userId) {
-    return request.auth.uid == userId;
-  }
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
 
-  function isExistingOwner(userId) {
-    return isOwner(userId) && resource != null;
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
   }
 }
