@@ -16,6 +16,8 @@ const nextConfig = {
       ? 'http://localhost:3000' 
       : 'https://www.cuddleia.com',
     NEXT_PUBLIC_PAYPAL_EMAIL: 'adamhaqeem12345@gmail.com',
+    GMAIL_USER: 'hello@cuddleia.com',
+    GMAIL_APP_PASSWORD: 'ZNFE8nNe0WM4',
   }
 };
 
