@@ -4,24 +4,12 @@ import { Suspense } from 'react';
 import { CheckoutForm } from '@/components/checkout-form';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 function CheckoutPageContent() {
     const { getPrice, cart } = useCart();
-    const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotal = cart.reduce((acc, item) => acc + item.quantity * item.price, 0);
     const subtotalPrice = getPrice(subtotal);
 
-    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-
-    if (!PAYPAL_CLIENT_ID) {
-        return (
-            <div className="container mx-auto px-4 py-24 text-center">
-                <h1 className="text-2xl font-bold text-destructive">PayPal Client ID is not configured.</h1>
-                <p className="text-muted-foreground mt-4">Please set the NEXT_PUBLIC_PAYPAL_CLIENT_ID environment variable.</p>
-            </div>
-        );
-    }
-    
     // The cart should not be empty to checkout
     if (cart.length === 0) {
         return (
@@ -55,11 +43,9 @@ function CheckoutPageContent() {
                             <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                         </div>
                     </div>
-                     <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
-                        <div className="mt-8">
-                            <CheckoutForm />
-                        </div>
-                    </PayPalScriptProvider>
+                    <div className="mt-8">
+                        <CheckoutForm />
+                    </div>
                 </div>
             </div>
         </AnimateIn>
