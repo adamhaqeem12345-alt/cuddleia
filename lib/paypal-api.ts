@@ -43,29 +43,58 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         
-        // With the "major rework", product.description is now guaranteed to be a clean, single-line string.
-        // No complex sanitization is needed here anymore.
+        // Sanitize all fields before sending to PayPal to prevent validation errors.
+        const cleanName = product.name.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
+        const cleanDescription = product.description.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
+        const cleanSku = product.id.substring(0, 127);
+
         return {
-            name: product.name.substring(0, 127),
-            description: product.description.substring(0, 127),
+            name: cleanName,
+            description: cleanDescription,
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
                 value: product.price.toFixed(2),
             },
-            sku: product.id.substring(0, 127),
+            sku: cleanSku,
         };
     });
 
-    const itemTotal = items.reduce((total, item) => {
+    const itemTotalValue = items.reduce((total, item) => {
         return total + parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10);
     }, 0);
+    
+    const itemTotalString = itemTotalValue.toFixed(2);
 
-    const total = itemTotal.toFixed(2);
-
-    if (itemTotal <= 0) {
+    if (itemTotalValue <= 0) {
       throw new Error('Invalid total amount for order.');
     }
+
+    const payload = {
+        intent: 'CAPTURE',
+        purchase_units: [{
+            amount: {
+                currency_code: 'USD',
+                value: itemTotalString,
+                breakdown: {
+                    item_total: {
+                        currency_code: 'USD',
+                        value: itemTotalString,
+                    }
+                }
+            },
+            items: items,
+        }],
+         application_context: {
+            brand_name: 'Cuddleia',
+            locale: 'en-US',
+            landing_page: 'GUEST_CHECKOUT',
+            shipping_preference: 'NO_SHIPPING',
+            user_action: 'PAY_NOW',
+            return_url: `${baseUrl}/checkout/success`,
+            cancel_url: `${baseUrl}/`,
+        },
+    };
 
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders`, {
         method: 'POST',
@@ -74,31 +103,7 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             'Content-Type': 'application/json',
             'PayPal-Request-Id': `cuddleia-order-${Date.now()}`
         },
-        body: JSON.stringify({
-            intent: 'CAPTURE',
-            purchase_units: [{
-                amount: {
-                    currency_code: 'USD',
-                    value: total,
-                    breakdown: {
-                        item_total: {
-                            currency_code: 'USD',
-                            value: total,
-                        }
-                    }
-                },
-                items: items,
-            }],
-             application_context: {
-                brand_name: 'Cuddleia',
-                locale: 'en-US',
-                landing_page: 'GUEST_CHECKOUT',
-                shipping_preference: 'NO_SHIPPING',
-                user_action: 'PAY_NOW',
-                return_url: `${baseUrl}/checkout/success`,
-                cancel_url: `${baseUrl}/`,
-            },
-        }),
+        body: JSON.stringify(payload),
         cache: 'no-store'
     });
 
@@ -198,3 +203,5 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
     const verification = await response.json();
     return verification.verification_status === 'SUCCESS';
 }
+
+    
