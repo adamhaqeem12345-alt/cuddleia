@@ -63,9 +63,9 @@ export function CheckoutForm() {
                 <div className="flex justify-center items-center gap-3 mt-2">
                     <Image src="https://i.postimg.cc/SNpv3vj2/paypal-logo.png" alt="PayPal" width={70} height={20} />
                     <div className="border-l h-5 bg-gray-300"></div>
-                     <Image src="https://i.postimg.cc/nrWfHj2d/visa-logo.png" alt="Visa" width={35} height={20} />
-                     <Image src="https://i.postimg.cc/9QYtLdpg/mastercard-logo.png" alt="Mastercard" width={35} height={20} />
-                     <Image src="https://i.postimg.cc/WbB4sYJc/amex-logo.png" alt="American Express" width={35} height={20} />
+                     <Image src="https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c258d5/svg/color/visa.svg" alt="Visa" width={35} height={20} />
+                     <Image src="https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c258d5/svg/color/mc.svg" alt="Mastercard" width={35} height={20} />
+                     <Image src="https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c258d5/svg/color/amex.svg" alt="American Express" width={35} height={20} />
                 </div>
             </div>
              <p className="text-xs text-muted-foreground text-center mt-4 flex items-center justify-center gap-1.5">
