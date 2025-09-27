@@ -11,7 +11,7 @@ import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useState } from 'react';
-import type { OnApproveData } from '@paypal/paypal-js';
+import type { OnApproveData, CreateOrderData } from '@paypal/paypal-js';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
@@ -19,7 +19,7 @@ export default function CartPage() {
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const createOrder = async (): Promise<string> => {
+  const createOrder = async (data: CreateOrderData): Promise<string> => {
     setError(null);
     try {
         const response = await fetch('/api/paypal/create-order', {
@@ -33,7 +33,7 @@ export default function CartPage() {
         const order = await response.json();
 
         if (!response.ok) {
-            throw new Error(order.error || 'Failed to create order.');
+            throw new Error(order.error || 'Failed to create PayPal order.');
         }
 
         if (order.id) {
@@ -44,11 +44,11 @@ export default function CartPage() {
     } catch (err: any) {
         console.error('Create Order Error:', err);
         setError(err.message);
-        throw err; // Throw to be caught by PayPal's onError
+        throw new Error(err.message); // This error is caught by PayPal's onError handler
     }
   };
 
-  const onApprove = async (data: OnApproveData) => {
+  const onApprove = async (data: OnApproveData): Promise<void> => {
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -62,18 +62,21 @@ export default function CartPage() {
         throw new Error(capturedData.error || 'Failed to capture payment.');
       }
       
+      // The webhook will handle the email.
+      // Clear the cart and redirect to the success page.
       clearCart();
       window.location.href = `/checkout/success?orderId=${capturedData.id}`;
 
     } catch (err: any) {
-      console.error("Approve Order Error:", err);
+      console.error("OnApprove Error:", err);
       setError(err.message);
+      // Let user know something went wrong capturing the order
     }
   };
   
   const onError = (err: any) => {
-      console.error("PayPal Error:", err);
-      setError('An error occurred with the PayPal transaction. Please try again.');
+      console.error("PayPal Buttons Error:", err);
+      setError('An error occurred with your payment. Please try again.');
   };
 
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
