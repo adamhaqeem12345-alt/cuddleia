@@ -20,12 +20,12 @@ const alegreya = Alegreya({
 
 export const metadata: Metadata = {
   title: 'Cuddleia | Cozy Digital Goods with Heart',
-  description: 'Discover cozy digital wallpapers, planners, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
+  description: 'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
   keywords: 'islamic digital products,ipad wallpaper,digital booklets,muslim lifestyle,cuddleia,cozy digital goods,barakah business',
   robots: 'index, follow',
   openGraph: {
     title: 'Cuddleia | Cozy Digital Goods with Heart',
-    description: 'Discover cozy digital wallpapers, planners, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
+    description: 'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
     url: 'https://www.cuddleia.com',
     siteName: 'Cuddleia',
     locale: 'en_US',
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Cuddleia | Cozy Digital Goods with Heart',
-    description: 'Discover cozy digital wallpapers, planners, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
+    description: 'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
     images: ['https://www.cuddleia.com/og-image.png'],
   },
   icons: {

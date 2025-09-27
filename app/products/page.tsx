@@ -1,10 +1,11 @@
+
 import { products } from '@/lib/products';
 import { ProductCard } from '@/components/product-card';
 import { AnimateIn } from '@/components/animate-in';
 
 export const metadata = {
   title: 'All Products | Cuddleia',
-  description: 'Browse our full collection of cozy digital wallpapers, planners, and thoughtfully designed Islamic booklets.',
+  description: 'Browse our full collection of cozy digital wallpapers and thoughtfully designed Islamic booklets.',
 };
 
 export default function ProductsPage() {

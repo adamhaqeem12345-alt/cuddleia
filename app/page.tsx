@@ -18,7 +18,7 @@ export default function Home() {
                 Where Creativity Meets Barakah
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
-                Discover cozy wallpapers, planners, and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.
+                Discover cozy wallpapers and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.
               </p>
               <div className="mt-8 flex justify-center gap-4">
                 <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
