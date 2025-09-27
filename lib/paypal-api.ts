@@ -1,3 +1,4 @@
+
 import type { CartItem } from '@/lib/types';
 import { products } from './products';
 import { sendOrderConfirmationEmail, type ProductInfo } from './email';
