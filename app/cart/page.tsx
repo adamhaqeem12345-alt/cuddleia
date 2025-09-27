@@ -17,13 +17,15 @@ export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false); // For post-payment processing
-  const [isCreatingOrder, setIsCreatingOrder] = useState(false); // For pre-payment loading
+  const [isPreparingCheckout, setIsPreparingCheckout] = useState(false);
+  const [orderID, setOrderID] = useState<string | null>(null);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const createOrder = async (data: CreateOrderData) => {
+  const handlePrepareCheckout = async () => {
     setError(null);
-    setIsCreatingOrder(true);
+    setOrderID(null);
+    setIsPreparingCheckout(true);
     try {
       const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
@@ -36,26 +38,24 @@ export default function CartPage() {
       const order = await response.json();
 
       if (!response.ok) {
-        throw new Error(order.error || 'Failed to create PayPal order.');
+        throw new Error(order.error || 'Failed to prepare checkout.');
       }
 
       if (order.id) {
-        return order.id;
+        setOrderID(order.id);
       } else {
         throw new Error('Received an invalid order ID from the server.');
       }
     } catch (err: any) {
-      console.error('Create Order Error:', err);
+      console.error('Prepare Checkout Error:', err);
       setError(err.message);
-      // Re-throw to inform PayPal an error occurred, which will show an error in the modal
-      throw err; 
     } finally {
-      setIsCreatingOrder(false);
+      setIsPreparingCheckout(false);
     }
   };
 
   const handleOnApprove = async (data: OnApproveData) => {
-    setIsProcessing(true); // Show processing state on our page
+    setIsProcessing(true); 
     setError(null);
     try {
       const response = await fetch('/api/paypal/capture-order', {
@@ -68,7 +68,6 @@ export default function CartPage() {
         throw new Error(capturedData.error || 'Failed to capture payment.');
       }
       
-      // On successful capture, the webhook will handle the email.
       clearCart();
       window.location.href = `/checkout/success?orderId=${capturedData.id}`;
 
@@ -83,13 +82,8 @@ export default function CartPage() {
   const handleOnError = (err: any) => {
       console.error("PayPal Error:", err);
       setError('An error occurred with the PayPal transaction. Please try again or contact support.');
-      setIsCreatingOrder(false); // Ensure loading state is turned off on error
-  }
-  
-  const handleOnClick = () => {
-      if (cart.length > 0) {
-        setIsCreatingOrder(true);
-      }
+      setIsPreparingCheckout(false); 
+      setIsProcessing(false);
   }
 
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -195,26 +189,46 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                {(isCreatingOrder || isProcessing) && (
-                    <div className="flex justify-center items-center text-center text-muted-foreground mb-2">
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        {isProcessing ? 'Finalizing your order...' : 'Connecting to PayPal...'}
-                    </div>
+                {isProcessing && (
+                  <div className="flex justify-center items-center text-center text-muted-foreground mb-2">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Finalizing your order...
+                  </div>
                 )}
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
 
-                <div className={ (isCreatingOrder || isProcessing) ? 'opacity-50 pointer-events-none' : ''}>
-                    <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                        <PayPalButtons 
-                            style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                            createOrder={createOrder}
-                            onApprove={handleOnApprove}
-                            onError={handleOnError}
-                            onClick={handleOnClick}
-                            disabled={isProcessing || isCreatingOrder || cart.length === 0}
-                        />
-                    </PayPalScriptProvider>
-                </div>
+                <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
+                    {orderID ? (
+                        <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
+                          <PayPalButtons
+                              key={orderID} // This is crucial
+                              style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                              createOrder={(data, actions) => {
+                                  return orderID;
+                              }}
+                              onApprove={handleOnApprove}
+                              onError={handleOnError}
+                              disabled={isProcessing}
+                          />
+                        </div>
+                    ) : (
+                      <Button 
+                        size="lg" 
+                        className="w-full" 
+                        onClick={handlePrepareCheckout}
+                        disabled={isPreparingCheckout}
+                      >
+                        {isPreparingCheckout ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Preparing Checkout...
+                          </>
+                        ) : (
+                          'Proceed to Checkout'
+                        )}
+                      </Button>
+                    )}
+                </PayPalScriptProvider>
               </div>
             </section>
           </div>
