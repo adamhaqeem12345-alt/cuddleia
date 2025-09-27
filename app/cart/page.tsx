@@ -201,9 +201,10 @@ export default function CartPage() {
                     {orderID ? (
                         <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
                           <PayPalButtons
-                              key={orderID} // This is crucial
+                              key={orderID} // This is crucial for re-rendering
                               style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
                               createOrder={(data, actions) => {
+                                  // This function now synchronously returns the pre-fetched orderID
                                   return orderID;
                               }}
                               onApprove={handleOnApprove}
@@ -237,3 +238,5 @@ export default function CartPage() {
     </AnimateIn>
   );
 }
+
+    
