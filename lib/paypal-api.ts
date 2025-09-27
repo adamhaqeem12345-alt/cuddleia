@@ -48,36 +48,32 @@ export async function createOrder(cart: CartItem[]) {
     throw new Error('Cart is empty.');
   }
 
-  let itemTotalInCents = 0;
+  let itemTotalValue = 0;
   const items = cart.map(cartItem => {
     const productDetails = products.find(p => p.id === cartItem.id);
     if (!productDetails) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
 
-    const priceInCents = Math.round(productDetails.price * 100);
-    itemTotalInCents += priceInCents * cartItem.quantity;
-
-    // Sanitize fields and enforce length limits
-    const cleanName = productDetails.name.substring(0, 127);
-    const cleanSku = productDetails.id.substring(0, 127);
+    const itemPrice = productDetails.price;
+    itemTotalValue += itemPrice * cartItem.quantity;
 
     return {
-      name: cleanName,
-      sku: cleanSku,
+      name: productDetails.name.substring(0, 127),
+      sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        value: (priceInCents / 100).toFixed(2),
+        value: itemPrice.toFixed(2),
       },
       quantity: String(cartItem.quantity),
     };
   });
   
-  if (itemTotalInCents <= 0) {
+  if (itemTotalValue <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
 
-  const totalValue = (itemTotalInCents / 100).toFixed(2);
+  const totalValue = itemTotalValue.toFixed(2);
   
   const payload = {
     intent: 'CAPTURE',
@@ -88,9 +84,9 @@ export async function createOrder(cart: CartItem[]) {
       shipping_preference: 'NO_SHIPPING', // For digital goods
       user_action: 'PAY_NOW', // Presents a "Pay Now" button to the user
       payment_method: {
-          payee_preferred: 'IMMEDIATE_PAYMENT_REQUIRED', // Informs PayPal the user should pay immediately
+          payee_preferred: 'IMMEDIATE_PAYMENT_REQUIRED',
       },
-      landing_page: 'GUEST_CHECKOUT', // Attempts to default the user to the card payment form
+      landing_page: 'GUEST_CHECKOUT',
     },
     purchase_units: [{
       amount: {
@@ -161,8 +157,7 @@ export async function captureOrder(orderId: string) {
         const total = parseFloat(orderDetails.purchase_units[0].amount.value);
         const productInfos = await getProductInfoFromOrder(orderDetails);
         
-        // We do not resend the email to avoid duplicates.
-        // await sendOrderConfirmationEmail({ customerEmail: email, customerName: name, total, orderId, products: productInfos });
+        // The email would have been sent on the initial capture. Do not resend.
         
         return { success: true, products: productInfos };
     }

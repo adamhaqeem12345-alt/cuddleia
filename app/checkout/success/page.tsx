@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -20,10 +21,11 @@ function SuccessContent() {
 
     useEffect(() => {
         const token = searchParams.get('token');
-        const payerId = searchParams.get('PayerID');
-
+        
         if (!token) {
-            router.push('/checkout');
+            // If there's no token, the user likely visited this page directly.
+            // Redirect them to a safe page.
+            router.push('/products');
             return;
         }
 

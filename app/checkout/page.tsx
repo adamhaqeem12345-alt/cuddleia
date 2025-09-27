@@ -11,7 +11,6 @@ import Link from 'next/link';
 function CheckoutPageContent() {
     const { getPrice, cart, isCartReady } = useCart();
     
-    // While cart is being loaded from localStorage, show a loading state.
     if (!isCartReady) {
         return (
             <div className="container mx-auto px-4 py-24 text-center">
@@ -21,7 +20,6 @@ function CheckoutPageContent() {
         )
     }
 
-    // The cart should not be empty to checkout
     if (cart.length === 0) {
         return (
              <div className="container mx-auto px-4 py-24 text-center">

@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal-api';
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Failed to capture payment." }, { status: 400 });
     }
 
-  } catch (error: any)
+  } catch (error: any) {
     console.error("API /capture-order Error:", error);
     return NextResponse.json(
       { error: error.message || "An unexpected error occurred." }, 

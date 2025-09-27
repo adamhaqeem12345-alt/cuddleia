@@ -1,15 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import type { CartItem } from '@/lib/types';
-
-declare global {
-  interface Window {
-    paypal: any;
-  }
-}
 
 export function CheckoutForm({ cart }: { cart: CartItem[] }) {
   const [isLoading, setIsLoading] = useState(false);
