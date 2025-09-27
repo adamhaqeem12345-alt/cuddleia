@@ -49,13 +49,13 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         
         return {
             name: product.name.substring(0, 127),
-            description: product.description.substring(0, 127),
+            description: (product.longDescription || product.description).replace(/\s+/g, ' ').substring(0, 127),
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
                 value: String(itemPrice),
             },
-            sku: product.id,
+            sku: product.id.substring(0, 127),
         };
     });
 
