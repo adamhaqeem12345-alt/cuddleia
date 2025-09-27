@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { AnimateIn } from '@/components/animate-in';
 import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
@@ -114,7 +115,7 @@ export default function AboutPage() {
               <div className="relative h-40 w-40 flex-shrink-0">
                 <Image
                   alt="Adam Haqeem"
-                  src="https://i.postimg.cc/Kc9MvNGS/Pink-Blush-Circle-Creative-Logo-Design.png"
+                  src="https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png"
                   fill
                   className="rounded-full object-cover shadow-lg"
                 />
