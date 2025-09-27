@@ -42,9 +42,14 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
+        
+        // Sanitize the description to be a single line and under 127 characters.
+        const descriptionText = (product.longDescription || product.description || '');
+        const sanitizedDescription = descriptionText.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
+
         return {
             name: product.name.substring(0, 127),
-            description: (product.longDescription || product.description).replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127),
+            description: sanitizedDescription,
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
