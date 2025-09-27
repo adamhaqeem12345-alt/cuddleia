@@ -4,18 +4,32 @@ import { Suspense } from 'react';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
 import { CheckoutForm } from '@/components/checkout-form';
+import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 function CheckoutPageContent() {
-    const { getPrice, cart } = useCart();
+    const { getPrice, cart, isCartReady } = useCart();
     const subtotal = cart.reduce((acc, item) => acc + item.quantity * item.price, 0);
     const subtotalPrice = getPrice(subtotal);
+
+    // While cart is being loaded from localStorage, show a loading state.
+    if (!isCartReady) {
+        return (
+            <div className="container mx-auto px-4 py-24 text-center">
+                 <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
+                 <p className="mt-4 text-lg text-muted-foreground">Loading Your Cart...</p>
+            </div>
+        )
+    }
 
     // The cart should not be empty to checkout
     if (cart.length === 0) {
         return (
              <div className="container mx-auto px-4 py-24 text-center">
                 <h1 className="text-2xl font-bold">Your cart is empty.</h1>
-                <p className="text-muted-foreground mt-4">Please add products to your cart before proceeding to checkout.</p>
+                <p className="text-muted-foreground mt-4">
+                    Please <Link href="/products" className="text-primary hover:underline">add some products</Link> to your cart before proceeding to checkout.
+                </p>
             </div>
         )
     }
@@ -55,7 +69,12 @@ function CheckoutPageContent() {
 
 export default function CheckoutPage() {
     return (
-        <Suspense fallback={<div className="text-center p-24">Loading...</div>}>
+        <Suspense fallback={
+            <div className="container mx-auto px-4 py-24 text-center">
+                <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
+                <p className="mt-4 text-lg text-muted-foreground">Loading Checkout...</p>
+            </div>
+        }>
             <CheckoutPageContent />
         </Suspense>
     )

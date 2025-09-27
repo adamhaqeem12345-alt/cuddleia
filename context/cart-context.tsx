@@ -16,12 +16,39 @@ interface CartContextType {
   updateQuantity: (productId:string, quantity: number) => void;
   clearCart: () => void;
   getPrice: (price: number) => Price;
+  isCartReady: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartReady, setIsCartReady] = useState(false);
+
+  useEffect(() => {
+    // This effect runs once on the client to load the cart from localStorage.
+    try {
+      const storedCart = localStorage.getItem('cuddleia-cart');
+      if (storedCart) {
+        setCart(JSON.parse(storedCart));
+      }
+    } catch (error) {
+        console.error("Failed to parse cart from localStorage", error);
+        // If parsing fails, start with an empty cart.
+        setCart([]);
+    }
+    // Mark the cart as ready to be used.
+    setIsCartReady(true);
+  }, []);
+
+  useEffect(() => {
+    // This effect runs whenever the cart changes, to save it to localStorage.
+    // We only run this if the cart is ready, to avoid overwriting the stored cart
+    // with an empty array on initial load.
+    if (isCartReady) {
+      localStorage.setItem('cuddleia-cart', JSON.stringify(cart));
+    }
+  }, [cart, isCartReady]);
   
   const getPrice = (price: number): Price => {
     const usdPrice = price;
@@ -72,7 +99,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getPrice }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getPrice, isCartReady }}>
       {children}
     </CartContext.Provider>
   );
