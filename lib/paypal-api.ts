@@ -43,22 +43,24 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         return {
-            name: product.name,
+            name: product.name.substring(0, 127), // TRUNCATE: Name must be <= 127 chars
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
-                value: product.price.toFixed(2), // Ensure two decimal places
+                value: product.price.toFixed(2),
             },
             sku: product.id,
         };
     });
-    
+
     // Calculate total from the already formatted item values to avoid floating point issues
-    const total = items.reduce((acc, item) => {
+    const totalValue = items.reduce((acc, item) => {
         return acc + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
     }, 0);
+    
+    const total = totalValue.toFixed(2);
 
-     if (total <= 0) {
+    if (totalValue <= 0) {
       throw new Error('Invalid total amount for order.');
     }
 
@@ -75,11 +77,11 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             purchase_units: [{
                 amount: {
                     currency_code: 'USD',
-                    value: total.toFixed(2),
+                    value: total,
                     breakdown: {
                         item_total: {
                             currency_code: 'USD',
-                            value: total.toFixed(2),
+                            value: total,
                         }
                     }
                 },
