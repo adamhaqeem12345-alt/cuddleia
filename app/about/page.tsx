@@ -35,8 +35,8 @@ export default function AboutPage() {
                 From a simple idea to a cozy corner of the internet.
               </h2>
               <div className="prose prose-lg mt-6 max-w-none font-body text-foreground/80 mx-auto space-y-4">
-                <p>Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.</p>
-                <p>Every product is made with love written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and shaping ideas, but every decision, design, and final touch is guided by us with heart and faith.</p>
+                <p>Cuddleia is born from a simple dream: to bring warmth, beauty, and faith into the digital spaces we inhabit daily. We are just starting on our journey to create a cozy corner of the internet where sincerity and creativity can flourish, beginning with our first collection of digital wallpapers and booklets.</p>
+                <p>We believe in honesty, so we want to be clear about how our products are made. The foundational content, like the text in our booklets, is generated with the help of AI. Then, every piece is personally and carefully designed, refined, and given its final form by hand. This combination allows us to blend technological efficiency with a heartfelt, human touch in everything we create.</p>
                 <p>Our mission is to create digital goods that uplift hearts, inspire faith, and make your screens a place of comfort and reflection.</p>
               </div>
             </div>
