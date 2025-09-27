@@ -11,44 +11,49 @@ import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useState } from 'react';
-import type { OnApproveData, CreateOrderData } from '@paypal/paypal-js';
+import type { OnApproveData, CreateOrderData, OrderRequestBody } from '@paypal/paypal-js';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const createOrder = async (data: CreateOrderData): Promise<string> => {
+  const createOrder = (data: CreateOrderData, actions: any): Promise<string> => {
     setError(null);
-    try {
-        const response = await fetch('/api/paypal/create-order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
+    console.log("Creating order...");
+    const purchase_units: OrderRequestBody['purchase_units'] = [
+      {
+        amount: {
+          value: subtotal.toFixed(2),
+          breakdown: {
+            item_total: {
+              currency_code: 'USD',
+              value: subtotal.toFixed(2),
             },
-            body: JSON.stringify({ cart }),
-        });
+          },
+        },
+        items: cart.map((item) => ({
+          name: item.name,
+          quantity: String(item.quantity),
+          unit_amount: {
+            currency_code: 'USD',
+            value: item.price.toFixed(2),
+          },
+          sku: item.id,
+        })),
+      },
+    ];
 
-        const order = await response.json();
-
-        if (!response.ok) {
-            throw new Error(order.error || 'Failed to create PayPal order.');
-        }
-
-        if (order.id) {
-            return order.id;
-        } else {
-            throw new Error('Received an invalid order ID from the server.');
-        }
-    } catch (err: any) {
-        console.error('Create Order Error:', err);
-        setError(err.message);
-        throw new Error(err.message); // This error is caught by PayPal's onError handler
-    }
+    return actions.order.create({ purchase_units });
   };
 
   const onApprove = async (data: OnApproveData): Promise<void> => {
+    setIsProcessing(true);
+    setError(null);
+    console.log("Order approved. Capturing...");
+
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -69,14 +74,14 @@ export default function CartPage() {
 
     } catch (err: any) {
       console.error("OnApprove Error:", err);
-      setError(err.message);
-      // Let user know something went wrong capturing the order
+      setError(err.message || 'An error occurred while finalizing your payment.');
+      setIsProcessing(false);
     }
   };
   
   const onError = (err: any) => {
       console.error("PayPal Buttons Error:", err);
-      setError('An error occurred with your payment. Please try again.');
+      setError('An error occurred with your payment. Please try again or contact support.');
   };
 
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -182,6 +187,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
+                {isProcessing && <div className="text-center text-muted-foreground font-medium mb-4">Finalizing your order...</div>}
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
                 
                 <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
@@ -190,6 +196,7 @@ export default function CartPage() {
                         createOrder={createOrder}
                         onApprove={onApprove}
                         onError={onError}
+                        disabled={isProcessing}
                     />
                 </PayPalScriptProvider>
               </div>
