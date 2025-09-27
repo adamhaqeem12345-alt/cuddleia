@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     try {
         // A standard API expects a JSON body with defined keys.
         const body = await req.json();
-        const cart: CartItem[] = body.cart;
+        const { cart }: { cart: CartItem[] } = body;
 
         // Validate the cart data received from the client.
         if (!cart || !Array.isArray(cart) || cart.length === 0) {
