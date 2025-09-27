@@ -1,4 +1,4 @@
-import { Heart, Mail } from 'lucide-react';
+import { Heart, Mail, Flower2 } from 'lucide-react';
 import Link from 'next/link';
 
 const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -28,11 +28,34 @@ const TelegramIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const Footer = () => {
   return (
     <footer className="w-full bg-background border-t">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center md:text-left">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+            
+          <div className="flex flex-col items-center md:items-start">
+             <Link href="/" className="transition-transform hover:scale-105">
+              <div className="flex items-center gap-2">
+                <Flower2 className="h-7 w-7 text-primary" />
+                <span className="font-headline text-2xl font-bold tracking-tight text-foreground">
+                  cuddleia
+                </span>
+              </div>
+            </Link>
+            <p className="mt-4 text-muted-foreground text-sm max-w-xs text-center md:text-left">
+                Cozy digital goods designed to bring warmth, beauty, and serenity to your digital life.
+            </p>
+          </div>
+
           <div>
-            <h3 className="font-headline text-xl font-semibold text-foreground">Community</h3>
-            <p className="mt-2 text-muted-foreground">Join our cozy corner of the internet and stay updated.</p>
+            <h3 className="font-headline text-xl font-semibold text-foreground">Quick Links</h3>
+            <ul className="mt-4 space-y-3">
+                <li><Link href="/" className="text-muted-foreground hover:text-primary transition-colors">Home</Link></li>
+                <li><Link href="/products" className="text-muted-foreground hover:text-primary transition-colors">Products</Link></li>
+                <li><Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">About</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h3 className="font-headline text-xl font-semibold text-foreground">Connect With Us</h3>
             <div className="mt-4 flex justify-center md:justify-start items-center gap-4">
                 <Link href="https://www.instagram.com/cuddleia.official" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                     <InstagramIcon className="h-6 w-6" />
@@ -47,19 +70,17 @@ const Footer = () => {
                     <span className="sr-only">Telegram</span>
                 </Link>
             </div>
-          </div>
-          <div>
-            <h3 className="font-headline text-xl font-semibold text-foreground">Contact Us</h3>
-            <p className="mt-2 text-muted-foreground">Have questions? We'd love to hear from you.</p>
-            <div className="mt-4 flex justify-center md:justify-start items-center gap-2 text-muted-foreground">
+             <div className="mt-6 flex justify-center md:justify-start items-center gap-2 text-muted-foreground">
               <Mail className="h-5 w-5" />
-              <a href="mailto:hello@cuddleia.com" className="hover:text-primary transition-colors">hello@cuddleia.com</a>
+              <a href="mailto:hello@cuddleia.com" className="hover:text-primary transition-colors text-sm">hello@cuddleia.com</a>
             </div>
           </div>
         </div>
-        <div className="mt-12 border-t pt-8">
-            <p className="flex items-center justify-center gap-2 text-center text-sm font-body text-muted-foreground">
-            Made with <Heart className="h-4 w-4 text-primary" /> by the Cuddleia team.
+        
+        <div className="mt-16 border-t pt-8 text-center text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} Cuddleia. All Rights Reserved.</p>
+            <p className="flex items-center justify-center gap-1.5 mt-2">
+                Made with <Heart className="h-4 w-4 text-primary" /> by the Cuddleia team.
             </p>
         </div>
       </div>
