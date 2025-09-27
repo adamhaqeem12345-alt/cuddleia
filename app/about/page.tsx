@@ -72,7 +72,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-headline text-xl">Made with Love</h3>
-                  <p className="mt-1 text-foreground/80">Every product is created with intention and care. From the words to the design, each detail is touched by both human heart and thoughtful creativity.</p>
+                  <p className="mt-1 text-foreground/80">Every product is created with intention and care. From the words shaped with AI to the design crafted by human hands, each detail is touched by both technology and heart.</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
