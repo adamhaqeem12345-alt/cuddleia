@@ -86,6 +86,11 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
                         <p style="font-size: 22px; font-weight: bold; color: #333; margin: 0;">Total: $${total.toFixed(2)}</p>
                     </div>
 
+                    <div style="margin-top: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 8px; font-size: 14px; color: #555;">
+                        <h4 style="margin: 0 0 10px; font-size: 16px; color: #333;">A Gentle Reminder on Usage</h4>
+                        <p style="margin: 0; line-height: 1.6;">All digital products purchased from Cuddleia are for <strong>personal use only</strong>. Please do not resell, redistribute, or share the files. We poured our hearts into these creations, and we truly appreciate your support in respecting our work.</p>
+                    </div>
+
                     <p style="font-size: 16px; color: #555; line-height: 1.6; margin-top: 30px;">
                         If you have any questions or need assistance, please don't hesitate to reply to this email. We're here to help!
                     </p>
