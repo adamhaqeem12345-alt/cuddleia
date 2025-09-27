@@ -11,12 +11,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid cart data.' }, { status: 400 });
         }
 
+        // The createOrder function now efficiently handles token and order creation
         const order = await createOrder(cart, allProducts);
         
         return NextResponse.json(order);
 
     } catch (error: any) {
         console.error('Failed to create order:', error);
+        // Ensure a clear error message is sent back to the client
         return NextResponse.json({ error: error.message || 'An unexpected error occurred.' }, { status: 500 });
     }
 }

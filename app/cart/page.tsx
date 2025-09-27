@@ -21,7 +21,7 @@ export default function CartPage() {
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const handleCreateOrder = async (data: CreateOrderData) => {
-    setIsProcessing(true);
+    // No need to set isProcessing here, PayPal handles the UI state.
     setError(null);
     try {
       const response = await fetch('/api/paypal/create-order', {
@@ -41,14 +41,15 @@ export default function CartPage() {
           throw new Error("Received an invalid order ID from the server.");
       }
     } catch (err: any) {
+      console.error("Create Order Error:", err);
       setError(err.message);
-      setIsProcessing(false);
       // Re-throw the error to be caught by PayPal's onError handler
       throw err;
     }
   };
 
   const handleOnApprove = async (data: OnApproveData) => {
+    setIsProcessing(true); // Show processing state on our page
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -68,6 +69,7 @@ export default function CartPage() {
       window.location.href = `/checkout/success?orderId=${capturedData.id}`;
 
     } catch (err: any) {
+      console.error("Approve Order Error:", err);
       setError(err.message);
       setIsProcessing(false);
     }
@@ -182,7 +184,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                {isProcessing && <div className="text-center text-muted-foreground">Processing...</div>}
+                {isProcessing && <div className="text-center text-muted-foreground">Finalizing your order...</div>}
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
                 <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
                     <PayPalButtons 
