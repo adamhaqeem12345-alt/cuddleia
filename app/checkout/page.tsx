@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense } from 'react';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import { CheckoutForm } from '@/components/checkout-form';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
@@ -41,9 +40,7 @@ function CheckoutPageContent() {
                         </div>
                     </div>
                     <div className="mt-8">
-                         <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                            <CheckoutForm />
-                        </PayPalScriptProvider>
+                        <CheckoutForm />
                     </div>
                 </div>
             </div>

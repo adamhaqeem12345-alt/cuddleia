@@ -1,4 +1,3 @@
-
 import type { Product } from '@/lib/types';
 
 // This is a self-contained helper function to get a PayPal access token.
@@ -35,6 +34,7 @@ export async function getAccessToken() {
 export async function createOrder(cart: { id: string; quantity: number }[], allProducts: Product[]) {
     const accessToken = await getAccessToken();
     const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     let total = 0;
     const items = cart.map(cartItem => {
@@ -81,6 +81,13 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
                 },
                 items: items,
             }],
+             application_context: {
+                return_url: `${baseUrl}/checkout/success`,
+                cancel_url: `${baseUrl}/cart`,
+                brand_name: 'Cuddleia',
+                shipping_preference: 'NO_SHIPPING',
+                user_action: 'PAY_NOW',
+            },
         }),
         cache: 'no-store'
     });
@@ -188,5 +195,3 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
     const verification = await response.json();
     return verification.verification_status === 'SUCCESS';
 }
-
-    
