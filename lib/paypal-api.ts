@@ -24,7 +24,7 @@ export async function getAccessToken() {
 
     if (!response.ok) {
         const errorDetails = await response.json();
-        throw new Error(`Failed to get PayPal access token: ${errorDetails.error_description}`);
+        throw new Error(`Failed to get PayPal access token: ${errorDetails.error_description || JSON.stringify(errorDetails)}`);
     }
 
     const data = await response.json();
@@ -85,13 +85,13 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         cache: 'no-store'
     });
 
-    const order = await response.json();
+    const orderData = await response.json();
     if (!response.ok) {
-        const errorDetail = order.details?.[0]?.description || JSON.stringify(order);
+        const errorDetail = orderData?.details?.[0]?.description || JSON.stringify(orderData);
         throw new Error(`Failed to create PayPal order: ${errorDetail}`);
     }
 
-    return order;
+    return orderData;
 }
 
 // Captures a PayPal order
@@ -104,7 +104,7 @@ export async function captureOrder(orderID: string) {
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            // Recommended by PayPal
+            // Recommended by PayPal for idempotency
             'PayPal-Request-Id': `cuddleia-capture-${orderID}-${Date.now()}`
         },
         cache: 'no-store'
@@ -112,8 +112,8 @@ export async function captureOrder(orderID: string) {
 
     const capturedData = await response.json();
     if (!response.ok) {
-        // This can happen if the order is already captured, which is fine.
-        if (capturedData.name === 'ORDER_ALREADY_CAPTURED') {
+        // This can happen if the order is already captured, which is fine in a webhook retry scenario.
+        if (capturedData.name === 'ORDER_ALREADY_CAPTURED' || capturedData.details?.[0]?.issue === 'ORDER_ALREADY_CAPTURED') {
             console.warn(`Order ${orderID} was already captured.`);
             // To proceed, we need to fetch the order details to return to the caller
              const orderDetails = await getOrderDetails(orderID);
@@ -146,7 +146,8 @@ export async function getOrderDetails(orderID: string) {
         const errorDetail = orderData.details?.[0]?.description || JSON.stringify(orderData);
         throw new Error(`Failed to get PayPal order details: ${errorDetail}`);
     }
-
+    // The details returned from a GET request might be slightly different.
+    // We can simulate the structure of a capture response if needed for consistency.
     return orderData;
 }
 
@@ -161,7 +162,8 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
         throw new Error('PayPal webhook ID is not configured.');
     }
 
-    const reqBody = await req.text(); // Read the body as raw text
+    // Must read the raw body as text for signature verification
+    const reqBody = await req.text(); 
     const headers = req.headers;
 
     const response = await fetch(`${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`, {
@@ -177,6 +179,7 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
             auth_algo: headers.get('paypal-auth-algo'),
             transmission_sig: headers.get('paypal-transmission-sig'),
             webhook_id: WEBHOOK_ID,
+            // The webhook_event should be the raw body of the request
             webhook_event: JSON.parse(reqBody),
         }),
         cache: 'no-store'
@@ -185,3 +188,5 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
     const verification = await response.json();
     return verification.verification_status === 'SUCCESS';
 }
+
+    

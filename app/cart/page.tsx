@@ -7,55 +7,64 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
-import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { useState } from 'react';
-import { OnApproveData, CreateOrderData } from '@paypal/paypal-js';
+import { useState, useEffect } from 'react';
+import { OnApproveData } from '@paypal/paypal-js';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [orderID, setOrderID] = useState<string | null>(null);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(true);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const handleCreateOrder = async (data: CreateOrderData) => {
-    // No need to set isProcessing here, PayPal handles the UI state.
-    setError(null);
-    try {
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cart }),
-      });
-      const order = await response.json();
-      if (!response.ok) {
-        throw new Error(order.error || 'Failed to create PayPal order.');
-      }
-      if (order.id) {
-          return order.id;
-      } else {
-          throw new Error("Received an invalid order ID from the server.");
-      }
-    } catch (err: any) {
-      console.error("Create Order Error:", err);
-      setError(err.message);
-      // Re-throw the error to be caught by PayPal's onError handler
-      throw err;
+  // Effect to create an order ID as soon as the cart has items.
+  useEffect(() => {
+    if (cart.length > 0) {
+      const createOrder = async () => {
+        setIsCreatingOrder(true);
+        setError(null);
+        try {
+          const response = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart }),
+          });
+          const order = await response.json();
+          if (!response.ok) {
+            throw new Error(order.error || 'Failed to create PayPal order.');
+          }
+          if (order.id) {
+            setOrderID(order.id);
+          } else {
+            throw new Error('Received an invalid order ID from the server.');
+          }
+        } catch (err: any) {
+          console.error('Create Order Error:', err);
+          setError(err.message);
+        } finally {
+          setIsCreatingOrder(false);
+        }
+      };
+      createOrder();
+    } else {
+        // If cart becomes empty, clear the order ID
+        setOrderID(null);
+        setIsCreatingOrder(false);
     }
-  };
+  }, [cart]); // Re-run when the cart changes
 
   const handleOnApprove = async (data: OnApproveData) => {
     setIsProcessing(true); // Show processing state on our page
+    setError(null);
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderID: data.orderID }),
       });
       const capturedData = await response.json();
@@ -64,21 +73,20 @@ export default function CartPage() {
       }
       
       // On successful capture, the webhook will handle the email.
-      // Redirect to a success page.
       clearCart();
       window.location.href = `/checkout/success?orderId=${capturedData.id}`;
 
     } catch (err: any) {
       console.error("Approve Order Error:", err);
       setError(err.message);
-      setIsProcessing(false);
+    } finally {
+        setIsProcessing(false);
     }
   };
   
   const handleOnError = (err: any) => {
       console.error("PayPal Error:", err);
       setError('An error occurred with the PayPal transaction. Please try again or contact support.');
-      setIsProcessing(false);
   }
 
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -184,17 +192,25 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                {isProcessing && <div className="text-center text-muted-foreground">Finalizing your order...</div>}
+                {isProcessing && <div className="text-center text-muted-foreground mb-2">Finalizing your order...</div>}
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
+
                 <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                    <PayPalButtons 
-                        style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                        createOrder={handleCreateOrder}
-                        onApprove={handleOnApprove}
-                        onError={handleOnError}
-                        disabled={isProcessing || cart.length === 0}
-                        className={isProcessing ? 'opacity-50 pointer-events-none' : ''}
-                    />
+                    {isCreatingOrder ? (
+                        <div className="flex justify-center items-center h-24">
+                           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        </div>
+                    ) : orderID ? (
+                        <PayPalButtons 
+                            key={orderID} // Re-render the button when the order ID changes
+                            style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                            createOrder={async () => orderID} // Pass the pre-generated orderID
+                            onApprove={handleOnApprove}
+                            onError={handleOnError}
+                            disabled={isProcessing}
+                            className={isProcessing ? 'opacity-50 pointer-events-none' : ''}
+                        />
+                    ) : null }
                 </PayPalScriptProvider>
               </div>
             </section>
@@ -204,3 +220,5 @@ export default function CartPage() {
     </AnimateIn>
   );
 }
+
+    
