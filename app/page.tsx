@@ -13,7 +13,7 @@ export default function Home() {
       <section className="relative w-full py-20 md:py-28 flex items-center justify-center">
         <div className="container mx-auto px-4">
           <AnimateIn>
-            <div className="relative z-10 text-center px-4 py-16 md:py-24 rounded-3xl bg-accent/50 shadow-lg">
+            <div className="relative z-10 text-center px-4 py-16 md:py-24 rounded-3xl bg-accent/30">
               <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
                 Cozy Digital Goods
               </h1>
