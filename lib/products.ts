@@ -5,7 +5,8 @@ export const products: Product[] = [
   {
     id: "001",
     name: "Barakah Business Blueprint",
-    description: `A beginner-friendly guide for Muslims starting a halal online business from scratch. This is a clear starting point that highlights the essentials, avoids common pitfalls, and helps you take your first steps with confidence.
+    description: "A beginner-friendly guide for Muslims starting a halal online business from scratch.",
+    longDescription: `A beginner-friendly guide for Muslims starting a halal online business from scratch. This is a clear starting point that highlights the essentials, avoids common pitfalls, and helps you take your first steps with confidence.
 
 What you'll learn:
 • Business Models: Digital products, dropshipping, or physical goods.

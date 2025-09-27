@@ -92,7 +92,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                         </div>
                         
                         <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
-                            <p>{product.description}</p>
+                            <p>{product.longDescription || product.description}</p>
                         </div>
                         
                         <div className="mt-auto pt-8 border-t">

@@ -37,36 +37,31 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
     const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
+    let itemTotal = 0;
     const items = cart.map(cartItem => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         
-        // Sanitize all fields to be sent to PayPal
-        const sanitizedName = product.name.replace(/\r?\n|\r/g, ' ').trim().substring(0, 127);
-        const sanitizedDescription = product.description.replace(/\r?\n|\r/g, ' ').trim().substring(0, 127);
+        const itemPrice = parseFloat(product.price.toFixed(2));
+        itemTotal += itemPrice * cartItem.quantity;
         
         return {
-            name: sanitizedName,
-            description: sanitizedDescription, 
+            name: product.name.substring(0, 127),
+            description: product.description.substring(0, 127),
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
-                value: product.price.toFixed(2),
+                value: String(itemPrice),
             },
             sku: product.id,
         };
     });
 
-    // Calculate total from the already formatted item values to avoid floating point issues
-    const totalValue = items.reduce((acc, item) => {
-        return acc + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
-    }, 0);
-    
-    const total = totalValue.toFixed(2);
+    const total = String(itemTotal.toFixed(2));
 
-    if (totalValue <= 0) {
+    if (itemTotal <= 0) {
       throw new Error('Invalid total amount for order.');
     }
 
@@ -209,5 +204,3 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
     const verification = await response.json();
     return verification.verification_status === 'SUCCESS';
 }
-
-    
