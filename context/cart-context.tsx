@@ -1,3 +1,4 @@
+
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -96,6 +97,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCart([]);
+    localStorage.removeItem('cuddleia-cart');
   };
 
   return (
