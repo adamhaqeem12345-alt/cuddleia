@@ -115,7 +115,7 @@ export default function AboutPage() {
               <div className="relative h-40 w-40 flex-shrink-0">
                 <Image
                   alt="Adam Haqeem"
-                  src="https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png"
+                  src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png"
                   fill
                   className="rounded-full object-cover shadow-lg"
                 />
