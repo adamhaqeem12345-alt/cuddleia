@@ -37,7 +37,7 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
     const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // Calculate total in cents to avoid floating point issues
+    // Use cents to avoid floating point issues
     let itemTotalInCents = 0;
 
     const items = cart.map(cartItem => {

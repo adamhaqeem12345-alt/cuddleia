@@ -5,7 +5,7 @@ import { products as allProducts } from '@/lib/products';
 
 export async function POST(req: Request) {
     try {
-        const cart = await req.json();
+        const { cart } = await req.json();
 
         if (!cart || !Array.isArray(cart) || cart.length === 0) {
             return NextResponse.json({ error: 'Invalid cart data.' }, { status: 400 });
