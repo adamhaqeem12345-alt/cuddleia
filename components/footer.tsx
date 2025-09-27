@@ -47,7 +47,7 @@ const Footer = () => {
 
           <div>
             <h3 className="font-headline text-xl font-semibold text-foreground">Quick Links</h3>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-4 flex items-center justify-center md:justify-start gap-6">
                 <li><Link href="/" className="text-muted-foreground hover:text-primary transition-colors">Home</Link></li>
                 <li><Link href="/products" className="text-muted-foreground hover:text-primary transition-colors">Products</Link></li>
                 <li><Link href="/about" className="text-muted-foreground hover:text-primary transition-colors">About</Link></li>
@@ -78,7 +78,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-16 border-t pt-8 text-center text-sm text-muted-foreground">
-            <p className="flex items-center justify-center gap-1.5 mt-2">
+            <p className="flex items-center justify-center gap-1.5">
                 Made with <Heart className="h-4 w-4 text-primary" /> by the Cuddleia team.
             </p>
         </div>
