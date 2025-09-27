@@ -26,7 +26,8 @@ What you'll learn:
   {
     id: "002",
     name: "iPad Wallpaper (Maroon Series)",
-    description: `A digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.”
+    description: "A digital Islamic wallpaper designed with floral art and Arabic calligraphy.",
+    longDescription: `A digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.”
 
 Key Features:
 • Design: High-resolution floral art with a powerful Islamic reminder.
@@ -52,7 +53,8 @@ Please Note:
   {
     id: "003",
     name: "iPad Wallpaper (Minimalist Series)",
-    description: `A digital Islamic wallpaper featuring a minimalist floral background, Arabic calligraphy of Allah and Muhammad ﷺ, and the gentle reminder ‘Allah Loves You.'
+    description: "A digital Islamic wallpaper featuring a minimalist floral background.",
+    longDescription: `A digital Islamic wallpaper featuring a minimalist floral background, Arabic calligraphy of Allah and Muhammad ﷺ, and the gentle reminder ‘Allah Loves You.'
 
 Key Features:
 • Design: Elegant, high-resolution minimalist design.
@@ -78,7 +80,8 @@ Please Note:
   {
     id: "004",
     name: "iPad Wallpaper (Pink series)",
-    description: `A digital iPad wallpaper featuring a beautiful pink floral background, calligraphy of Allah (SWT) and Muhammad (SAW), and a reminder of "Allah Loves you."
+    description: "A digital iPad wallpaper featuring a beautiful pink floral background.",
+    longDescription: `A digital iPad wallpaper featuring a beautiful pink floral background, calligraphy of Allah (SWT) and Muhammad (SAW), and a reminder of "Allah Loves you."
 
 Key Features:
 • Design: A warm and inviting pink floral aesthetic.
@@ -104,7 +107,8 @@ Please Note:
   {
     id: "005",
     name: "Cuddleia Test product",
-    description: `This is a test product for the Cuddleia store.
+    description: "A placeholder item for testing the purchase and delivery flow.",
+    longDescription: `This is a test product for the Cuddleia store.
     
 Key Features:
 • Use: Intended for testing the purchase and delivery flow.
