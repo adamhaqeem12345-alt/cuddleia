@@ -3,14 +3,13 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download, Loader2 } from 'lucide-react';
+import { CheckCircle, Download, Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
 
-// The logic to capture the order has been moved here.
-// When the user is redirected from PayPal, we capture the payment on this page.
+// This component handles capturing the payment after the user approves it on PayPal.
 function SuccessContent() {
     const searchParams = useSearchParams();
     const { clearCart } = useCart();
@@ -23,14 +22,16 @@ function SuccessContent() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Ensure this effect runs only once and only when we have an orderId.
         if (!orderId) {
-            setError('No order ID found in the return URL from PayPal.');
+            setError('No order ID found. Your payment cannot be confirmed.');
             setStatus('error');
             return;
         }
 
         const capturePayment = async () => {
             try {
+                // Call the backend API to capture the order.
                 const response = await fetch('/api/paypal/capture-order', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -40,6 +41,7 @@ function SuccessContent() {
                 const data = await response.json();
 
                 if (!response.ok) {
+                    // Use the error message from our API if available.
                     throw new Error(data.error || 'Failed to finalize your payment.');
                 }
                 
@@ -50,13 +52,15 @@ function SuccessContent() {
 
             } catch (err: any) {
                 console.error("Failed to capture payment:", err);
-                setError(err.message);
+                setError(err.message || 'An unknown error occurred while processing your payment.');
                 setStatus('error');
             }
         };
 
         capturePayment();
-    }, [orderId, payerId, clearCart]);
+    // Disable ESLint warning because we want this effect to run only once on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orderId]);
 
 
     if (status === 'loading') {
@@ -79,8 +83,9 @@ function SuccessContent() {
         return (
             <div className="container mx-auto px-4 py-24 text-center">
                  <AnimateIn>
-                    <h1 className="text-3xl font-bold text-destructive">Payment Failed</h1>
-                    <p className="text-muted-foreground mt-4">{error || 'An unknown error occurred.'}</p>
+                    <AlertTriangle className="mx-auto h-20 w-20 text-destructive" />
+                    <h1 className="mt-6 text-3xl font-bold text-destructive">Payment Processing Failed</h1>
+                    <p className="text-muted-foreground mt-4">{error}</p>
                     <Button asChild className="mt-8">
                         <Link href="/cart">Return to Cart</Link>
                     </Button>
@@ -140,5 +145,3 @@ export default function SuccessPage() {
         </Suspense>
     )
 }
-
-    
