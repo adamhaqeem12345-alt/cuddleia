@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { CartProvider } from '@/context/cart-context';
+import Script from 'next/script';
 
 const belleza = Belleza({
   subsets: ['latin'],
@@ -57,6 +58,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+         <Script 
+            src={`https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD&intent=capture`}
+            strategy="beforeInteractive"
+        />
+      </head>
       <body
         className={cn(
           'min-h-screen bg-background font-body antialiased',

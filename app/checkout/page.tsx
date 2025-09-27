@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { CheckoutForm } from '@/components/checkout-form';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 function CheckoutPageContent() {
     const { getPrice, cart } = useCart();
@@ -54,9 +55,11 @@ function CheckoutPageContent() {
                             <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                         </div>
                     </div>
-                    <div className="mt-8">
-                        <CheckoutForm />
-                    </div>
+                     <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
+                        <div className="mt-8">
+                            <CheckoutForm />
+                        </div>
+                    </PayPalScriptProvider>
                 </div>
             </div>
         </AnimateIn>
