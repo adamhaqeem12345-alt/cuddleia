@@ -4,7 +4,6 @@
 import { Suspense } from 'react';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
-import { CheckoutForm } from '@/components/checkout-form';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,8 +56,8 @@ function CheckoutPageContent() {
                             <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                         </div>
                     </div>
-                    <div className="mt-8">
-                       <CheckoutForm cart={cart} />
+                    <div className="mt-8 text-center bg-yellow-100/50 text-yellow-800 p-4 rounded-lg">
+                       <p className="font-medium">Checkout is currently unavailable. Please check back later.</p>
                     </div>
                 </div>
             </div>
