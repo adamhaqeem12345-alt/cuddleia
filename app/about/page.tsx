@@ -1,63 +1,133 @@
 import Image from 'next/image';
 import { AnimateIn } from '@/components/animate-in';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
 
 export const metadata = {
   title: 'About Cuddleia | Our Story',
-  description: 'Learn about the heart and soul behind Cuddleia, a passion project dedicated to creating beautiful, meaningful digital goods that blend modern aesthetics with timeless Islamic values.',
+  description: 'Cuddleia began with honesty, faith, and a dream to create something meaningful. Learn about our story, our values, and the heart behind our cozy digital goods.',
 };
 
 export default function AboutPage() {
   return (
-    <div className="bg-rose-50/50">
-      <div className="container mx-auto px-4 py-24 sm:py-32">
-        <AnimateIn>
-          <div className="mb-12">
-            <Button asChild variant="ghost">
-                <Link href="/">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Home
-                </Link>
-            </Button>
+    <div className="bg-background">
+      <AnimateIn>
+        <section className="relative overflow-hidden bg-accent/30 py-28 md:py-40">
+          <div className="container mx-auto px-4">
+            <div className="text-center">
+              <h1 className="font-headline text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
+                Our <span className="text-primary">Story</span>
+              </h1>
+              <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-foreground/80 font-body">
+                Cuddleia began with honesty, faith, and a dream to create something meaningful.
+              </p>
+            </div>
           </div>
-        </AnimateIn>
-
-        <div className="max-w-4xl mx-auto">
-          <AnimateIn>
-            <div className="relative aspect-[16/9] md:aspect-[2/1] rounded-3xl overflow-hidden shadow-2xl mb-12">
-              <Image
-                src="https://i.postimg.cc/mD3wWHgC/IMG-2917.jpg"
-                alt="Founder of Cuddleia working"
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent"></div>
+        </section>
+      </AnimateIn>
+      
+      <AnimateIn>
+        <section className="py-24 sm:py-32">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-4xl text-center">
+              <h2 className="font-headline text-4xl leading-tight text-foreground">
+                From a simple idea to a cozy corner of the internet.
+              </h2>
+              <div className="prose prose-lg mt-6 max-w-none font-body text-foreground/80 mx-auto space-y-4">
+                <p>Cuddleia began as a small dream to bring warmth, beauty, and faith into the digital spaces we use every day. What started with simple wallpapers and booklets has grown into a cozy corner of the internet where faith, creativity, and sincerity come together.</p>
+                <p>Every product is made with love written with care, designed with intention, and refined by hand. We believe in honesty, so we want you to know that part of our journey is built with the help of AI. It supports us in writing and shaping ideas, but every decision, design, and final touch is guided by us with heart and faith.</p>
+                <p>Our mission is to create digital goods that uplift hearts, inspire faith, and make your screens a place of comfort and reflection.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimateIn>
+      
+      <AnimateIn className="container mx-auto px-4 mb-24 sm:mb-32">
+        <div className="relative aspect-video w-full">
+            <Image
+                alt="Pastel floral graphics background"
+                data-ai-hint="pastel flowers"
+                src="https://i.postimg.cc/0rg91k8k/IMG-0426.png"
                 fill
-                className="object-cover"
-              />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
-          </AnimateIn>
-          
-          <AnimateIn delay={150}>
-            <h1 className="font-headline text-5xl md:text-7xl font-bold text-foreground text-center mb-6">
-              Our Story
-            </h1>
-            <div className="prose prose-lg lg:prose-xl max-w-none mx-auto text-muted-foreground font-body text-center">
-              <p>
-                Cuddleia was born from a simple passion: to create beautiful, meaningful digital goods that blend modern aesthetics with timeless Islamic values.
-              </p>
-              <p>
-                In a fast-paced world, we believe in carving out moments of peace, reflection, and beauty. Each wallpaper, planner, and booklet is more than just a digital file; it's a piece of our heart, crafted with love and a prayer that it brings you tranquility, helps you stay organized, and adds a little more barakah (blessing) to your day.
-              </p>
-              <p>
-                Our mission is to provide thoughtfully designed products that are not only aesthetically pleasing but also spiritually uplifting. We are a small, passionate team dedicated to quality, authenticity, and serving our community with integrity.
-              </p>
-              <p>
-                Thank you for being a part of our journey. We are so grateful for your support and hope our creations bring as much joy to your life as they bring to ours in making them.
-              </p>
-            </div>
-          </AnimateIn>
+                className="rounded-2xl object-cover shadow-lg"
+            />
         </div>
-      </div>
+      </AnimateIn>
+      
+      <AnimateIn>
+        <section className="bg-background py-24 sm:py-32">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-4xl text-center">
+              <h2 className="font-headline text-4xl">What We Cherish</h2>
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/80">
+                Our work is guided by these core principles.
+              </p>
+            </div>
+            <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-x-12 gap-y-12 md:grid-cols-2">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Heart />
+                </div>
+                <div>
+                  <h3 className="font-headline text-xl">Made with Love</h3>
+                  <p className="mt-1 text-foreground/80">Every product is created with intention and care. From the words to the design, each detail is touched by both human heart and thoughtful creativity.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Feather />
+                </div>
+                <div>
+                  <h3 className="font-headline text-xl">Gentle &amp; Uplifting</h3>
+                  <p className="mt-1 text-foreground/80">Our goal is to bring peace, positivity, and faith-driven encouragement into your everyday digital life.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <Sparkles />
+                </div>
+                <div>
+                  <h3 className="font-headline text-xl">Aesthetic &amp; Functional</h3>
+                  <p className="mt-1 text-foreground/80">We believe beauty and purpose belong together. Our products are designed to look inspiring while also helping you stay organized and focused.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <ShieldCheck />
+                </div>
+                <div>
+                  <h3 className="font-headline text-xl">Built on Honesty</h3>
+                  <p className="mt-1 text-foreground/80">We’re transparent about how we create. Our process combines faith, human creativity, and the support of AI in writing and ideas. Everything is refined and designed by hand, ensuring each product carries a genuine and personal touch.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimateIn>
+
+      <AnimateIn>
+        <section className="bg-accent/30 py-24 sm:py-32">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="font-headline text-4xl">Meet the Founder</h2>
+            <div className="mx-auto mt-12 flex max-w-xl flex-col items-center gap-8 sm:flex-row">
+              <div className="relative h-40 w-40 flex-shrink-0">
+                <Image
+                  alt="Adam Haqeem"
+                  src="https://i.postimg.cc/Kc9MvNGS/Pink-Blush-Circle-Creative-Logo-Design.png"
+                  fill
+                  className="rounded-full object-cover shadow-lg"
+                />
+              </div>
+              <div className="text-left">
+                <h3 className="font-headline text-2xl">Adam Haqeem</h3>
+                <p className="text-primary">Founder &amp; Creator</p>
+                <p className="mt-2 text-foreground/80">Adam Haqeem is the heart and soul behind Cuddleia. With a deep love for faith, creativity, and honesty, he pours sincerity into every digital creation. Guided by the belief that digital spaces should inspire peace and purpose, Adam uses both design and the help of AI to craft products that uplift, comfort, and remind us of what truly matters.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimateIn>
     </div>
   );
 }
