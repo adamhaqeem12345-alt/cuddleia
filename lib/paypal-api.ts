@@ -4,7 +4,7 @@ import type { Product } from '@/lib/types';
 export async function getAccessToken() {
     const CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
 
     if (!CLIENT_ID || !CLIENT_SECRET) {
         throw new Error('MISSING_PAYPAL_API_CREDENTIALS');
@@ -33,7 +33,7 @@ export async function getAccessToken() {
 // Creates a PayPal order
 export async function createOrder(cart: { id: string; quantity: number }[], allProducts: Product[]) {
     const accessToken = await getAccessToken();
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
     let total = 0;
@@ -104,7 +104,7 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
 // Captures a PayPal order
 export async function captureOrder(orderID: string) {
     const accessToken = await getAccessToken();
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderID}/capture`, {
         method: 'POST',
@@ -137,7 +137,7 @@ export async function captureOrder(orderID: string) {
 // Function to get order details, useful if an order is already captured
 export async function getOrderDetails(orderID: string) {
     const accessToken = await getAccessToken();
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
 
     const response = await fetch(`${PAYPAL_API_URL}/v2/checkout/orders/${orderID}`, {
         method: 'GET',
@@ -162,7 +162,7 @@ export async function getOrderDetails(orderID: string) {
 // Verifies a webhook signature
 export async function verifyWebhookSignature(req: Request): Promise<boolean> {
     const accessToken = await getAccessToken();
-    const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
+    const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
 
     if (!WEBHOOK_ID) {
