@@ -126,5 +126,3 @@ Key Features:
     disclaimer: 'All wallpaper designs are 100% my work.'
   },
 ];
-
-    
