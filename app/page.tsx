@@ -15,7 +15,7 @@ export default function Home() {
           <AnimateIn>
             <div className="relative z-10 text-center">
               <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-                Inspired by Faith, Designed with Heart
+                Where Creativity Meets Barakah
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
                 Discover cozy wallpapers, planners, and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.
