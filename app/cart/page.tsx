@@ -56,7 +56,7 @@ export default function CartPage() {
         setOrderID(null);
         setIsCreatingOrder(false);
     }
-  }, [cart]); // Re-run when the cart changes
+  }, [JSON.stringify(cart)]); // Re-run when the cart's content changes
 
   const handleOnApprove = async (data: OnApproveData) => {
     setIsProcessing(true); // Show processing state on our page
@@ -202,7 +202,7 @@ export default function CartPage() {
                         </div>
                     ) : orderID ? (
                         <PayPalButtons 
-                            key={orderID} // Re-render the button when the order ID changes
+                            key={orderID} // This forces the component to re-render when the order ID changes
                             style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
                             createOrder={async () => orderID} // Pass the pre-generated orderID
                             onApprove={handleOnApprove}
@@ -220,5 +220,3 @@ export default function CartPage() {
     </AnimateIn>
   );
 }
-
-    
