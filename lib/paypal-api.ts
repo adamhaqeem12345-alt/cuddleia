@@ -1,3 +1,4 @@
+
 import type { Product } from '@/lib/types';
 
 // This is a self-contained helper function to get a PayPal access token.
@@ -81,12 +82,19 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
                 },
                 items: items,
             }],
-             application_context: {
-                return_url: `${baseUrl}/checkout/success`,
-                cancel_url: `${baseUrl}/cart`,
-                brand_name: 'Cuddleia',
-                shipping_preference: 'NO_SHIPPING',
-                user_action: 'PAY_NOW',
+             payment_source: {
+                paypal: {
+                    experience_context: {
+                        payment_method_preference: 'IMMEDIATE_PAYMENT_REQUIRED',
+                        brand_name: 'Cuddleia',
+                        locale: 'en-US',
+                        landing_page: 'GUEST_CHECKOUT',
+                        shipping_preference: 'NO_SHIPPING',
+                        user_action: 'PAY_NOW',
+                        return_url: `${baseUrl}/checkout/success`,
+                        cancel_url: `${baseUrl}/`,
+                    }
+                }
             },
         }),
         cache: 'no-store'
