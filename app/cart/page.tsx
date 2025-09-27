@@ -17,42 +17,39 @@ export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false); // For post-payment processing
-  const [isPreparingCheckout, setIsPreparingCheckout] = useState(false);
-  const [orderID, setOrderID] = useState<string | null>(null);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const handlePrepareCheckout = async () => {
+  const createOrder = async (): Promise<string> => {
     setError(null);
-    setOrderID(null);
-    setIsPreparingCheckout(true);
     try {
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cart }),
-      });
+        const response = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cart }),
+        });
 
-      const order = await response.json();
+        const order = await response.json();
 
-      if (!response.ok) {
-        throw new Error(order.error || 'Failed to prepare checkout.');
-      }
+        if (!response.ok) {
+            throw new Error(order.error || 'Failed to create order.');
+        }
 
-      if (order.id) {
-        setOrderID(order.id);
-      } else {
-        throw new Error('Received an invalid order ID from the server.');
-      }
+        if (order.id) {
+            return order.id;
+        } else {
+            throw new Error('Received an invalid order ID from the server.');
+        }
     } catch (err: any) {
-      console.error('Prepare Checkout Error:', err);
-      setError(err.message);
-    } finally {
-      setIsPreparingCheckout(false);
+        console.error('Create Order Error:', err);
+        setError(err.message);
+        // Throw the error to be caught by PayPal's onError handler
+        throw err;
     }
   };
+
 
   const handleOnApprove = async (data: OnApproveData) => {
     setIsProcessing(true); 
@@ -82,7 +79,6 @@ export default function CartPage() {
   const handleOnError = (err: any) => {
       console.error("PayPal Error:", err);
       setError('An error occurred with the PayPal transaction. Please try again or contact support.');
-      setIsPreparingCheckout(false); 
       setIsProcessing(false);
   }
 
@@ -198,37 +194,15 @@ export default function CartPage() {
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
 
                 <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                    {orderID ? (
-                        <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
-                          <PayPalButtons
-                              key={orderID} // This is crucial for re-rendering
-                              style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                              createOrder={(data, actions) => {
-                                  // This function now synchronously returns the pre-fetched orderID
-                                  return orderID;
-                              }}
-                              onApprove={handleOnApprove}
-                              onError={handleOnError}
-                              disabled={isProcessing}
-                          />
-                        </div>
-                    ) : (
-                      <Button 
-                        size="lg" 
-                        className="w-full" 
-                        onClick={handlePrepareCheckout}
-                        disabled={isPreparingCheckout}
-                      >
-                        {isPreparingCheckout ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Preparing Checkout...
-                          </>
-                        ) : (
-                          'Proceed to Checkout'
-                        )}
-                      </Button>
-                    )}
+                    <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
+                      <PayPalButtons
+                          style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                          createOrder={createOrder}
+                          onApprove={handleOnApprove}
+                          onError={handleOnError}
+                          disabled={isProcessing}
+                      />
+                    </div>
                 </PayPalScriptProvider>
               </div>
             </section>
@@ -238,5 +212,3 @@ export default function CartPage() {
     </AnimateIn>
   );
 }
-
-    
