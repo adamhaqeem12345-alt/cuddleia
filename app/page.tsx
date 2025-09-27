@@ -15,10 +15,10 @@ export default function Home() {
           <AnimateIn>
             <div className="relative z-10 text-center">
               <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-                Cozy Digital Goods
+                Digital Goods, Made with Heart
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
-                Discover thoughtfully designed digital wallpapers, planners, and Islamic booklets that bring warmth and serenity to your day.
+                Discover cozy wallpapers, planners, and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.
               </p>
               <div className="mt-8 flex justify-center gap-4">
                 <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
