@@ -37,49 +37,52 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
     const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
+    // Calculate total in cents to avoid floating point issues
+    let itemTotalInCents = 0;
+
     const items = cart.map(cartItem => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         
+        // Convert product price to cents
+        const priceInCents = Math.round(product.price * 100);
+        itemTotalInCents += priceInCents * cartItem.quantity;
+        
         // Sanitize all fields before sending to PayPal to prevent validation errors.
-        const cleanName = product.name.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
-        const cleanDescription = product.description.replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
-        const cleanSku = product.id.substring(0, 127);
+        const cleanName = (product.name || '').replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
+        const cleanDescription = (product.description || '').replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
+        const cleanSku = (product.id || '').substring(0, 127);
 
         return {
             name: cleanName,
             description: cleanDescription,
-            quantity: String(cartItem.quantity),
+            sku: cleanSku,
             unit_amount: {
                 currency_code: 'USD',
-                value: product.price.toFixed(2),
+                value: (priceInCents / 100).toFixed(2), // Convert back to string format for PayPal
             },
-            sku: cleanSku,
+            quantity: String(cartItem.quantity),
         };
     });
 
-    const itemTotalValue = items.reduce((total, item) => {
-        return total + parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10);
-    }, 0);
-    
-    const itemTotalString = itemTotalValue.toFixed(2);
-
-    if (itemTotalValue <= 0) {
+    if (itemTotalInCents <= 0) {
       throw new Error('Invalid total amount for order.');
     }
+
+    const finalTotalValue = (itemTotalInCents / 100).toFixed(2);
 
     const payload = {
         intent: 'CAPTURE',
         purchase_units: [{
             amount: {
                 currency_code: 'USD',
-                value: itemTotalString,
+                value: finalTotalValue,
                 breakdown: {
                     item_total: {
                         currency_code: 'USD',
-                        value: itemTotalString,
+                        value: finalTotalValue,
                     }
                 }
             },
@@ -203,5 +206,3 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
     const verification = await response.json();
     return verification.verification_status === 'SUCCESS';
 }
-
-    
