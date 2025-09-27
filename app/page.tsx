@@ -10,28 +10,20 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden bg-gradient-to-br from-rose-50 to-rose-200 flex items-center justify-center">
-        <div className="absolute inset-0">
-          <Image
-            src="https://i.postimg.cc/tJq1n6m2/Heading.png"
-            alt="Pink flowers and petals background"
-            fill
-            className="object-cover opacity-30"
-          />
-        </div>
+      <section className="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center bg-accent/30">
         <AnimateIn>
           <div className="relative z-10 text-center px-4">
             <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
               Cozy Digital Goods
             </h1>
-            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
+            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
               Discover thoughtfully designed digital wallpapers, planners, and Islamic booklets that bring warmth and serenity to your day.
             </p>
             <div className="mt-8 flex justify-center gap-4">
               <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
                 <Link href="/products">Shop Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
+              <Button asChild size="lg" variant="outline" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105 bg-background">
                 <Link href="/about">Learn More</Link>
               </Button>
             </div>
@@ -60,7 +52,7 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section className="bg-rose-50/50 py-24">
+      <section className="bg-accent/20 py-24">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <AnimateIn>
