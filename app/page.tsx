@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative w-full bg-accent/30 py-20 md:py-28 flex items-center justify-center">
+      <section className="relative w-full bg-hero-background py-20 md:py-28 flex items-center justify-center">
         <div className="container mx-auto px-4">
           <AnimateIn>
             <div className="relative z-10 text-center">
