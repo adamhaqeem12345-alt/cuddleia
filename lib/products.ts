@@ -1,6 +1,9 @@
+
 import type { Product } from './types';
 
 // Prices are in USD
+// All 'description' fields are now single-line strings.
+// All multi-line content has been moved to 'longDescription'.
 export const products: Product[] = [
   {
     id: "001",
@@ -123,3 +126,5 @@ Key Features:
     disclaimer: 'All wallpaper designs are 100% my work.'
   },
 ];
+
+    

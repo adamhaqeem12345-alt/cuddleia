@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Lock } from 'lucide-react';
 import Image from 'next/image';
 
+// This is the rebuilt checkout form component.
+// It is responsible for initiating the checkout process.
 export function CheckoutForm() {
     const { cart } = useCart();
     const router = useRouter();
@@ -17,36 +19,46 @@ export function CheckoutForm() {
     const handleCheckout = async () => {
         setIsLoading(true);
         setError(null);
+
         try {
-            // Standard, robust request body structure.
-            const response = await fetch('/api/paypal/create-order', {
+            // 1. Create the Order
+            //    Send the cart data to our backend API route.
+            const createOrderResponse = await fetch('/api/paypal/create-order', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                // Send the cart in a standard, explicit JSON object.
                 body: JSON.stringify({ cart }),
             });
 
-            const data = await response.json();
+            const orderData = await createOrderResponse.json();
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to create PayPal order.');
+            if (!createOrderResponse.ok) {
+                // The error message from our API route will be shown to the user.
+                throw new Error(orderData.error || 'Failed to create PayPal order.');
             }
             
-            const approvalLink = data.links.find((link: { rel: string; }) => link.rel === 'approve');
+            // 2. Redirect for Approval
+            //    Find the approval link in the response from PayPal.
+            const approvalLink = orderData.links?.find((link: { rel: string; }) => link.rel === 'approve');
+            
             if (approvalLink) {
-                // Redirect user to PayPal for payment approval.
+                // Redirect the user's browser to the PayPal payment page.
+                // The user will approve the payment there.
+                // After approval, PayPal redirects the user back to the `return_url`
+                // specified in `createOrder` (i.e., `/checkout/success`).
                 router.push(approvalLink.href);
             } else {
                  throw new Error('No PayPal approval link found. Please try again.');
             }
 
         } catch (err: any) {
+            console.error("Checkout Form Error:", err);
             setError(err.message);
             setIsLoading(false);
         }
     };
-
 
     return (
         <div className="w-full">
@@ -83,3 +95,5 @@ export function CheckoutForm() {
         </div>
     );
 }
+
+    

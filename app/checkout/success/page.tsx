@@ -1,16 +1,95 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Download } from 'lucide-react';
+import { CheckCircle, Download, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { AnimateIn } from '@/components/animate-in';
+import { useCart } from '@/context/cart-context';
 
+// The logic to capture the order has been moved here.
+// When the user is redirected from PayPal, we capture the payment on this page.
 function SuccessContent() {
     const searchParams = useSearchParams();
-    const orderId = searchParams.get('orderId');
+    const { clearCart } = useCart();
+    
+    // Get order details from the URL query parameters set by PayPal.
+    const orderId = searchParams.get('token'); // PayPal uses 'token' for the Order ID in the return URL
+    const payerId = searchParams.get('PayerID'); // PayPal uses 'PayerID' for the Payer ID
 
+    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!orderId) {
+            setError('No order ID found in the return URL from PayPal.');
+            setStatus('error');
+            return;
+        }
+
+        const capturePayment = async () => {
+            try {
+                const response = await fetch('/api/paypal/capture-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderID: orderId }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to finalize your payment.');
+                }
+                
+                // Payment is successfully captured.
+                setStatus('success');
+                // Clear the shopping cart now that the purchase is complete.
+                clearCart();
+
+            } catch (err: any) {
+                console.error("Failed to capture payment:", err);
+                setError(err.message);
+                setStatus('error');
+            }
+        };
+
+        capturePayment();
+    }, [orderId, payerId, clearCart]);
+
+
+    if (status === 'loading') {
+        return (
+            <div className="container mx-auto px-4 py-24 text-center">
+                 <AnimateIn>
+                    <Loader2 className="mx-auto h-20 w-20 text-primary animate-spin" />
+                    <h1 className="mt-6 font-headline text-4xl md:text-5xl font-bold text-foreground">
+                        Finalizing Your Order...
+                    </h1>
+                    <p className="mt-4 text-lg text-muted-foreground">
+                        Please wait while we securely process your payment. Do not close this page.
+                    </p>
+                </AnimateIn>
+            </div>
+        );
+    }
+
+     if (status === 'error') {
+        return (
+            <div className="container mx-auto px-4 py-24 text-center">
+                 <AnimateIn>
+                    <h1 className="text-3xl font-bold text-destructive">Payment Failed</h1>
+                    <p className="text-muted-foreground mt-4">{error || 'An unknown error occurred.'}</p>
+                    <Button asChild className="mt-8">
+                        <Link href="/cart">Return to Cart</Link>
+                    </Button>
+                </AnimateIn>
+            </div>
+        )
+    }
+
+    // --- Success State ---
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 flex items-center justify-center">
             <AnimateIn>
@@ -49,11 +128,17 @@ function SuccessContent() {
     );
 }
 
-
 export default function SuccessPage() {
     return (
-        <Suspense fallback={<div className="text-center p-24">Loading...</div>}>
+        // Suspense is crucial for pages that use `useSearchParams`.
+        <Suspense fallback={
+             <div className="container mx-auto px-4 py-24 text-center">
+                 <Loader2 className="mx-auto h-20 w-20 text-primary animate-spin" />
+             </div>
+        }>
             <SuccessContent />
         </Suspense>
     )
 }
+
+    
