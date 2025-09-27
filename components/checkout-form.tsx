@@ -61,7 +61,7 @@ export function CheckoutForm() {
             <div className="text-center mt-4">
                 <p className="text-sm font-medium text-muted-foreground">Pay with PayPal or Card</p>
                 <div className="flex justify-center items-center gap-3 mt-2">
-                    <Image src="https://i.postimg.cc/SNpv3vj2/paypal-logo.png" alt="PayPal" width={70} height={20} />
+                    <Image src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" width={70} height={20} />
                     <div className="border-l h-5 bg-gray-300"></div>
                      <Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" width={35} height={20} />
                      <Image src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" width={35} height={20} />
