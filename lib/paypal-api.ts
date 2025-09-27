@@ -45,7 +45,7 @@ async function getAccessToken() {
 
 /**
  * Creates a PayPal order.
- * This function is completely rebuilt to ensure precision and compliance.
+ * This function is completely rebuilt from scratch to ensure precision and compliance.
  * It uses integer math for all financial calculations to prevent floating-point errors.
  */
 export async function createOrder(cart: CartItem[], allProducts: Product[]) {
@@ -68,8 +68,8 @@ export async function createOrder(cart: CartItem[], allProducts: Product[]) {
         itemTotalInCents += priceInCents * cartItem.quantity;
         
         // 2. Sanitize all string fields to be compliant with PayPal's API.
-        const cleanName = (product.name || 'Unnamed Product').replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
-        const cleanDescription = (product.description || 'No description').replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
+        const cleanName = (product.name || 'Unnamed Product').substring(0, 127);
+        const cleanDescription = (product.description || 'No description').substring(0, 127);
         const cleanSku = (product.id || `SKU-${Date.now()}`).substring(0, 127);
 
         return {
@@ -269,4 +269,3 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
         return false;
     }
 }
-
