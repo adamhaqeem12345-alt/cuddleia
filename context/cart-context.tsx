@@ -22,34 +22,32 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const getInitialCart = (): CartItem[] => {
-  // This function only runs on the client-side
-  if (typeof window === 'undefined') {
-    return [];
-  }
-  try {
-    const item = window.localStorage.getItem('cuddleia-cart');
-    return item ? JSON.parse(item) : [];
-  } catch (error) {
-    console.warn('Error reading localStorage cart', error);
-    return [];
-  }
-};
-
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>(getInitialCart());
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartReady, setIsCartReady] = useState(false);
 
-  // This effect runs once on the client to confirm cart is loaded.
+  // Load cart from localStorage on initial client-side render
   useEffect(() => {
-    setIsCartReady(true);
+    try {
+      const item = window.localStorage.getItem('cuddleia-cart');
+      if (item) {
+        setCart(JSON.parse(item));
+      }
+    } catch (error) {
+      console.warn('Error reading localStorage cart', error);
+    } finally {
+      setIsCartReady(true);
+    }
   }, []);
 
-  // This effect runs whenever the cart changes, to save it to localStorage.
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    // Only save to localStorage on the client-side
-    if (typeof window !== 'undefined' && isCartReady) {
-      window.localStorage.setItem('cuddleia-cart', JSON.stringify(cart));
+    if (isCartReady) {
+      try {
+        window.localStorage.setItem('cuddleia-cart', JSON.stringify(cart));
+      } catch (error) {
+        console.warn('Error writing to localStorage cart', error);
+      }
     }
   }, [cart, isCartReady]);
   
