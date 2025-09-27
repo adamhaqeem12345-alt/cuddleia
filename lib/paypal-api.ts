@@ -43,12 +43,11 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         
-        // Use the clean, single-line description from products.ts
-        const descriptionText = product.description || '';
-
+        // With the "major rework", product.description is now guaranteed to be a clean, single-line string.
+        // No complex sanitization is needed here anymore.
         return {
             name: product.name.substring(0, 127),
-            description: descriptionText.substring(0, 127),
+            description: product.description.substring(0, 127),
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',

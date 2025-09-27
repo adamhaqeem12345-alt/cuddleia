@@ -26,7 +26,7 @@ What you'll learn:
   {
     id: "002",
     name: "iPad Wallpaper (Maroon Series)",
-    description: "A digital Islamic wallpaper designed with floral art and Arabic calligraphy.",
+    description: "A digital Islamic wallpaper with floral art and Arabic calligraphy.",
     longDescription: `A digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.”
 
 Key Features:
