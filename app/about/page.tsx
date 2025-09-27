@@ -10,21 +10,21 @@ export const metadata = {
 export default function AboutPage() {
   return (
     <div className="bg-background">
-      <AnimateIn>
-        <section className="relative overflow-hidden bg-accent/30 py-28 md:py-40">
-          <div className="container mx-auto px-4">
-            <div className="text-center">
-              <h1 className="font-headline text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
+      {/* Hero Section */}
+      <section className="relative w-full bg-hero-background py-20 md:py-28 flex items-center justify-center">
+        <div className="container mx-auto px-4">
+          <AnimateIn>
+            <div className="relative z-10 text-center">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
                 Our <span className="text-primary">Story</span>
               </h1>
-              <p className="mt-6 max-w-2xl mx-auto text-lg leading-8 text-foreground/80 font-body">
+              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
                 Cuddleia began with honesty, faith, and a dream to create something meaningful.
               </p>
             </div>
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent"></div>
-        </section>
-      </AnimateIn>
+          </AnimateIn>
+        </div>
+      </section>
       
       <AnimateIn>
         <section className="py-24 sm:py-32">

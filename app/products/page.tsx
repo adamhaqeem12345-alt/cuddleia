@@ -12,16 +12,23 @@ export default function ProductsPage() {
 
   return (
     <div className="bg-background">
-      <div className="container mx-auto px-4 py-24 sm:py-32">
-        <AnimateIn>
-          <h1 className="text-center font-headline text-5xl md:text-7xl font-bold text-foreground mb-4">
-            All Products
-          </h1>
-          <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
-            Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
-          </p>
-        </AnimateIn>
+      {/* Hero Section */}
+      <section className="relative w-full bg-hero-background py-20 md:py-28 flex items-center justify-center">
+        <div className="container mx-auto px-4">
+          <AnimateIn>
+            <div className="relative z-10 text-center">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                All Products
+              </h1>
+              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
+                Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
+              </p>
+            </div>
+          </AnimateIn>
+        </div>
+      </section>
 
+      <div className="container mx-auto px-4 py-24 sm:py-32">
         {categories.map(category => (
             <section key={category} className="mb-20">
                 <AnimateIn>
