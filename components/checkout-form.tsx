@@ -29,7 +29,6 @@ export function CheckoutForm() {
                 throw new Error(data.error || 'Failed to create PayPal order.');
             }
             
-            // Find the approval link and redirect the user
             const approvalLink = data.links.find((link: { rel: string; }) => link.rel === 'approve');
             if (approvalLink) {
                 router.push(approvalLink.href);
@@ -69,7 +68,7 @@ export function CheckoutForm() {
                  <div className="flex justify-center items-center space-x-4">
                     <Image src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" width={100} height={26} className="h-7 w-auto" />
                     <span className="text-muted-foreground/50 text-2xl font-light">|</span>
-                    <Image src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Visa_Inc._logo.svg" alt="Visa" width={50} height={26} className="h-7 w-auto" />
+                    <Image src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" width={50} height={16} className="h-4 w-auto" />
                     <Image src="https://upload.wikimedia.org/wikipedia/commons/b/b7/MasterCard_Logo.svg" alt="Mastercard" width={42} height={26} className="h-7 w-auto" />
                     <Image src="https://upload.wikimedia.org/wikipedia/commons/f/fa/American_Express_logo_%282018%29.svg" alt="American Express" width={42} height={26} className="h-7 w-auto" />
                 </div>
