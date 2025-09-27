@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       images: [
         {
           url: product.imageUrl,
-          width: 1200,
-          height: 630,
+          width: product.imageWidth,
+          height: product.imageHeight,
           alt: product.name,
         }
       ],
@@ -72,12 +72,14 @@ export default function ProductPage({ params }: { params: { id: string } }) {
             </AnimateIn>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
                 <AnimateIn>
-                    <div className="aspect-[4/3] relative rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="w-full h-auto rounded-2xl shadow-2xl overflow-hidden">
                         <Image
                             src={product.imageUrl}
                             alt={product.name}
-                            fill
-                            className="object-cover"
+                            width={product.imageWidth}
+                            height={product.imageHeight}
+                            className="object-cover w-full h-auto"
+                            priority
                         />
                     </div>
                 </AnimateIn>
