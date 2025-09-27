@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
-import { AlertTriangle } from 'lucide-react';
+import { CheckoutForm } from '@/components/checkout-form';
 
 function CheckoutPageContent() {
     const { getPrice, cart } = useCart();
@@ -44,16 +44,7 @@ function CheckoutPageContent() {
                         </div>
                     </div>
                     <div className="mt-8">
-                        <div className="bg-destructive/10 text-destructive-foreground border-l-4 border-destructive rounded-r-lg p-4">
-                            <div className="flex">
-                                <div className="flex-shrink-0">
-                                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm font-medium">The payment gateway is currently disabled. Please check back later.</p>
-                                </div>
-                            </div>
-                        </div>
+                       <CheckoutForm cart={cart} />
                     </div>
                 </div>
             </div>
