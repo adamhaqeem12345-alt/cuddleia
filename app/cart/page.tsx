@@ -11,6 +11,7 @@ import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useState } from 'react';
+import { OnApproveData, CreateOrderData } from '@paypal/paypal-js';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
@@ -19,7 +20,7 @@ export default function CartPage() {
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const handleCreateOrder = async (data: any, actions: any) => {
+  const handleCreateOrder = async (data: CreateOrderData) => {
     setIsProcessing(true);
     setError(null);
     try {
@@ -34,15 +35,20 @@ export default function CartPage() {
       if (!response.ok) {
         throw new Error(order.error || 'Failed to create PayPal order.');
       }
-      return order.id;
+      if (order.id) {
+          return order.id;
+      } else {
+          throw new Error("Received an invalid order ID from the server.");
+      }
     } catch (err: any) {
       setError(err.message);
       setIsProcessing(false);
-      return '';
+      // Re-throw the error to be caught by PayPal's onError handler
+      throw err;
     }
   };
 
-  const handleOnApprove = async (data: any, actions: any) => {
+  const handleOnApprove = async (data: OnApproveData) => {
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -56,7 +62,8 @@ export default function CartPage() {
         throw new Error(capturedData.error || 'Failed to capture payment.');
       }
       
-      // On successful capture, redirect to a success page
+      // On successful capture, the webhook will handle the email.
+      // Redirect to a success page.
       clearCart();
       window.location.href = `/checkout/success?orderId=${capturedData.id}`;
 
@@ -67,7 +74,8 @@ export default function CartPage() {
   };
   
   const handleOnError = (err: any) => {
-      setError('An error occurred with the PayPal transaction. Please try again.');
+      console.error("PayPal Error:", err);
+      setError('An error occurred with the PayPal transaction. Please try again or contact support.');
       setIsProcessing(false);
   }
 
@@ -182,7 +190,7 @@ export default function CartPage() {
                         createOrder={handleCreateOrder}
                         onApprove={handleOnApprove}
                         onError={handleOnError}
-                        disabled={isProcessing}
+                        disabled={isProcessing || cart.length === 0}
                         className={isProcessing ? 'opacity-50 pointer-events-none' : ''}
                     />
                 </PayPalScriptProvider>

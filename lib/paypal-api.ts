@@ -1,7 +1,5 @@
 
 import type { Product } from '@/lib/types';
-import type { OrderResponseBody, OrdersCaptureRequest, OrdersCreateRequest } from '@paypal/checkout-server-sdk/lib/orders/lib';
-
 
 // This is a self-contained helper function to get a PayPal access token.
 export async function getAccessToken() {
