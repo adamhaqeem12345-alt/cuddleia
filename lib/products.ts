@@ -5,7 +5,15 @@ export const products: Product[] = [
   {
     id: "001",
     name: "Barakah Business Blueprint",
-    description: "The Barakah Business Blueprint is a beginner-friendly guidebook designed for Muslims who want to start an online business from zero while staying true to halal principles. It covers the main business models you can begin with (digital products, dropshipping, or physical goods), the best platforms to use without wasting money (Shopify, Gumroad, Etsy, Shopee, and more), and halal payment gateways like Toyyibpay, Stripe, and PayPal. You’ll also learn why having your own domain and branding builds long-term trust, how simple automation and AI tools such as n8n, Google Scripts, and Canva AI can save hours of work, and how to market effectively on TikTok, Instagram, and Pinterest. This is not a heavy textbook but a clear starting point that highlights the essentials, avoids the common pitfalls, and helps you take your first steps with confidence. Start your halal business journey today, build with integrity, earn with barakah.",
+    description: `A beginner-friendly guide for Muslims starting a halal online business from scratch. This is a clear starting point that highlights the essentials, avoids common pitfalls, and helps you take your first steps with confidence.
+
+What you'll learn:
+• Business Models: Digital products, dropshipping, or physical goods.
+• Platforms: Best platforms to use without wasting money (Shopify, Gumroad, Etsy, Shopee, and more).
+• Halal Payments: Guidance on gateways like Toyyibpay, Stripe, and PayPal.
+• Branding: Why your own domain builds long-term trust.
+• Automation & AI: How tools like n8n and Canva AI can save you hours.
+• Marketing: How to effectively market on TikTok, Instagram, and Pinterest.`,
     price: 15.00,
     imageUrl: "https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png",
     imageWidth: 1080,
@@ -17,7 +25,21 @@ export const products: Product[] = [
   {
     id: "002",
     name: "iPad Wallpaper (Maroon Series)",
-    description: "This is a digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.” ✨ It’s made for iPad A16 (2048 × 2732 pixels) and works best as a lock screen in landscape orientation with the normal clock display and no widgets. The wallpaper is high-resolution and clear, suitable for iPad Pro 12.9-inch (3rd Gen and newer), iPad Air 10.9-inch, iPad 10th Gen, iPad Mini 6 (scaled fit), and other tablets with a similar 4:3 aspect ratio. ⚠️ Please note, it’s not recommended for portrait lock screens. After purchase, you will receive a high-quality PNG file sent directly to your email. This is a digital item only (no physical shipping), and it’s for personal use only—not for resale or redistribution.",
+    description: `A digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.”
+
+Key Features:
+• Design: High-resolution floral art with a powerful Islamic reminder.
+• Resolution: 2048 × 2732 pixels, ensuring a sharp and clear image.
+• Orientation: Best for landscape lock screen with a normal clock display and no widgets.
+
+Compatibility:
+• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
+• Scaled fit for iPad Mini 6.
+
+Please Note:
+• This is a digital item only; no physical product will be shipped.
+• For personal use only—not for resale or redistribution.
+• Not recommended for portrait lock screens.`,
     price: 6.00,
     imageUrl: "https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png",
     imageWidth: 2732,
@@ -29,7 +51,21 @@ export const products: Product[] = [
   {
     id: "003",
     name: "iPad Wallpaper (Minimalist Series)",
-    description: "A digital Islamic wallpaper featuring floral background and Arabic calligraphy of Allah and Muhammad ﷺ, with the reminder ‘Allah Loves You'. ✨It’s made for iPad A16 (2048 × 2732 pixels) and works best as a lock screen in landscape orientation with the normal clock display and no widgets. The wallpaper is high-resolution and clear, suitable for iPad Pro 12.9-inch (3rd Gen and newer), iPad Air 10.9-inch, iPad 10th Gen, iPad Mini 6 (scaled fit), and other tablets with a similar 4:3 aspect ratio. ⚠️ Please note, it’s not recommended for portrait lock screens. After purchase, you will receive a high-quality PNG file sent directly to your email. This is a digital item only (no physical shipping), and it’s for personal use only—not for resale or redistribution.",
+    description: `A digital Islamic wallpaper featuring a minimalist floral background, Arabic calligraphy of Allah and Muhammad ﷺ, and the gentle reminder ‘Allah Loves You.'
+
+Key Features:
+• Design: Elegant, high-resolution minimalist design.
+• Resolution: 2048 × 2732 pixels for a crisp and clear display.
+• Orientation: Optimized for landscape lock screen use with a normal clock and no widgets.
+
+Compatibility:
+• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
+• Scaled fit for iPad Mini 6.
+
+Please Note:
+• This is a digital item only; no physical product will be shipped.
+• For personal use only—not for resale or redistribution.
+• Not recommended for portrait lock screens.`,
     price: 5.00,
     imageUrl: "https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png",
     imageWidth: 2732,
@@ -41,7 +77,21 @@ export const products: Product[] = [
   {
     id: "004",
     name: "iPad Wallpaper (Pink series)",
-    description: "A digital iPad wallpaper featuring floral background, pink background, calligraphy of Allah SWT and Muhammad SAW, and a reminder of \"Allah Loves you\" ✨ It’s made for iPad A16 (2048 × 2732 pixels) and works best as a lock screen in landscape orientation with the normal clock display and no widgets. The wallpaper is high-resolution and clear, suitable for iPad Pro 12.9-inch (3rd Gen and newer), iPad Air 10.9-inch, iPad 10th Gen, iPad Mini 6 (scaled fit), and other tablets with a similar 4:3 aspect ratio. ⚠️ Please note, it’s not recommended for portrait lock screens. After purchase, you will receive a high-quality PNG file sent directly to your email. This is a digital item only (no physical shipping), and it’s for personal use only—not for resale or redistribution.",
+    description: `A digital iPad wallpaper featuring a beautiful pink floral background, calligraphy of Allah (SWT) and Muhammad (SAW), and a reminder of "Allah Loves you."
+
+Key Features:
+• Design: A warm and inviting pink floral aesthetic.
+• Resolution: 2048 × 2732 pixels, delivering a high-quality, sharp image.
+• Orientation: Works best as a landscape lock screen with a normal clock display and no widgets.
+
+Compatibility:
+• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
+• Scaled fit for iPad Mini 6.
+
+Please Note:
+• This is a digital item only; no physical product will be shipped.
+• For personal use only—not for resale or redistribution.
+• Not recommended for portrait lock screens.`,
     price: 5.00,
     imageUrl: "https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png",
     imageWidth: 2732,
@@ -53,7 +103,12 @@ export const products: Product[] = [
   {
     id: "005",
     name: "Cuddleia Test product",
-    description: "Act as Cuddleia test product",
+    description: `This is a test product for the Cuddleia store.
+    
+Key Features:
+• Use: Intended for testing the purchase and delivery flow.
+• Price: Set to a minimal amount for transaction testing.
+• Content: A placeholder image and download link.`,
     price: 0.24,
     imageUrl: "https://i.postimg.cc/MTBtTMXR/Heading.png",
     imageWidth: 1920,
