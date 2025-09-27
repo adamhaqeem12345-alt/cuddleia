@@ -1,3 +1,4 @@
+
 import type { Product, CartItem } from '@/lib/types';
 
 // This is a self-contained helper function to get a PayPal access token.
