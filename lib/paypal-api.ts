@@ -42,10 +42,14 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
-        // Sanitize the product name: remove newlines and trim whitespace, then truncate.
+        
+        // Sanitize all fields to be sent to PayPal
         const sanitizedName = product.name.replace(/\r?\n|\r/g, ' ').trim().substring(0, 127);
+        const sanitizedDescription = product.description.replace(/\r?\n|\r/g, ' ').trim().substring(0, 127);
+        
         return {
             name: sanitizedName,
+            description: sanitizedDescription, 
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
