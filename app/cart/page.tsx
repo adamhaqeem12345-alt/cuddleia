@@ -7,16 +7,15 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
-import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
+import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import { useState } from 'react';
-import type { OnApproveData, CreateOrderData } from '@paypal/paypal-js';
+import type { OnApproveData } from '@paypal/paypal-js';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
   const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false); // For post-payment processing
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -45,22 +44,20 @@ export default function CartPage() {
     } catch (err: any) {
         console.error('Create Order Error:', err);
         setError(err.message);
-        // Throw the error to be caught by PayPal's onError handler
-        throw err;
+        throw err; // Throw to be caught by PayPal's onError
     }
   };
 
-
-  const handleOnApprove = async (data: OnApproveData) => {
-    setIsProcessing(true); 
-    setError(null);
+  const onApprove = async (data: OnApproveData) => {
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderID: data.orderID }),
       });
+      
       const capturedData = await response.json();
+
       if (!response.ok) {
         throw new Error(capturedData.error || 'Failed to capture payment.');
       }
@@ -71,16 +68,13 @@ export default function CartPage() {
     } catch (err: any) {
       console.error("Approve Order Error:", err);
       setError(err.message);
-    } finally {
-        setIsProcessing(false);
     }
   };
   
-  const handleOnError = (err: any) => {
+  const onError = (err: any) => {
       console.error("PayPal Error:", err);
-      setError('An error occurred with the PayPal transaction. Please try again or contact support.');
-      setIsProcessing(false);
-  }
+      setError('An error occurred with the PayPal transaction. Please try again.');
+  };
 
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
@@ -185,24 +179,15 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                {isProcessing && (
-                  <div className="flex justify-center items-center text-center text-muted-foreground mb-2">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Finalizing your order...
-                  </div>
-                )}
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
-
+                
                 <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                    <div className={isProcessing ? 'opacity-50 pointer-events-none' : ''}>
-                      <PayPalButtons
-                          style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                          createOrder={createOrder}
-                          onApprove={handleOnApprove}
-                          onError={handleOnError}
-                          disabled={isProcessing}
-                      />
-                    </div>
+                    <PayPalButtons
+                        style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                        createOrder={createOrder}
+                        onApprove={onApprove}
+                        onError={onError}
+                    />
                 </PayPalScriptProvider>
               </div>
             </section>
