@@ -10,9 +10,7 @@ import Link from 'next/link';
 
 function CheckoutPageContent() {
     const { getPrice, cart, isCartReady } = useCart();
-    const subtotal = cart.reduce((acc, item) => acc + item.quantity * item.price, 0);
-    const subtotalPrice = getPrice(subtotal);
-
+    
     // While cart is being loaded from localStorage, show a loading state.
     if (!isCartReady) {
         return (
@@ -34,6 +32,9 @@ function CheckoutPageContent() {
             </div>
         )
     }
+    
+    const subtotal = cart.reduce((acc, item) => acc + item.quantity * item.price, 0);
+    const subtotalPrice = getPrice(subtotal);
 
     return (
         <AnimateIn>

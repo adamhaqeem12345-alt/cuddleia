@@ -1,4 +1,3 @@
-
 'use client'
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -22,23 +21,27 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Helper function to safely get initial cart state from localStorage
+const getInitialCartState = (): CartItem[] => {
+    // This function will only run on the client
+    try {
+        const storedCart = localStorage.getItem('cuddleia-cart');
+        return storedCart ? JSON.parse(storedCart) : [];
+    } catch (error) {
+        console.error("Failed to parse cart from localStorage", error);
+        return [];
+    }
+};
+
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartReady, setIsCartReady] = useState(false);
 
   useEffect(() => {
     // This effect runs once on the client to load the cart from localStorage.
-    try {
-      const storedCart = localStorage.getItem('cuddleia-cart');
-      if (storedCart) {
-        setCart(JSON.parse(storedCart));
-      }
-    } catch (error) {
-        console.error("Failed to parse cart from localStorage", error);
-        // If parsing fails, start with an empty cart.
-        setCart([]);
-    }
-    // Mark the cart as ready to be used.
+    // It sets the initial state and marks the cart as ready.
+    setCart(getInitialCartState());
     setIsCartReady(true);
   }, []);
 
@@ -97,7 +100,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCart([]);
-    localStorage.removeItem('cuddleia-cart');
+    // Also clear from localStorage
+    if (typeof window !== 'undefined') {
+        localStorage.removeItem('cuddleia-cart');
+    }
   };
 
   return (
