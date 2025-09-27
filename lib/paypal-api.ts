@@ -37,29 +37,28 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
     const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    let itemTotal = 0;
     const items = cart.map(cartItem => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
-        
-        const itemPrice = parseFloat(product.price.toFixed(2));
-        itemTotal += itemPrice * cartItem.quantity;
-        
         return {
             name: product.name.substring(0, 127),
-            description: (product.longDescription || product.description).replace(/\s+/g, ' ').substring(0, 127),
+            description: (product.longDescription || product.description).replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127),
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
-                value: String(itemPrice),
+                value: product.price.toFixed(2),
             },
             sku: product.id.substring(0, 127),
         };
     });
 
-    const total = String(itemTotal.toFixed(2));
+    const itemTotal = items.reduce((total, item) => {
+        return total + parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10);
+    }, 0);
+
+    const total = itemTotal.toFixed(2);
 
     if (itemTotal <= 0) {
       throw new Error('Invalid total amount for order.');
@@ -70,7 +69,6 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-             // Recommended by PayPal to prevent duplicate orders
             'PayPal-Request-Id': `cuddleia-order-${Date.now()}`
         },
         body: JSON.stringify({
@@ -120,7 +118,6 @@ export async function captureOrder(orderID: string) {
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
-            // Recommended by PayPal for idempotency
             'PayPal-Request-Id': `cuddleia-capture-${orderID}-${Date.now()}`
         },
         cache: 'no-store'
@@ -128,11 +125,9 @@ export async function captureOrder(orderID: string) {
 
     const capturedData = await response.json();
     if (!response.ok) {
-        // This can happen if the order is already captured, which is fine in a webhook retry scenario.
         if (capturedData.name === 'ORDER_ALREADY_CAPTURED' || capturedData.details?.[0]?.issue === 'ORDER_ALREADY_CAPTURED') {
             console.warn(`Order ${orderID} was already captured.`);
-            // To proceed, we need to fetch the order details to return to the caller
-             const orderDetails = await getOrderDetails(orderID);
+            const orderDetails = await getOrderDetails(orderID);
              return orderDetails;
         }
         const errorDetail = capturedData.details?.[0]?.description || JSON.stringify(capturedData);
@@ -162,8 +157,6 @@ export async function getOrderDetails(orderID: string) {
         const errorDetail = orderData.details?.[0]?.description || JSON.stringify(orderData);
         throw new Error(`Failed to get PayPal order details: ${errorDetail}`);
     }
-    // The details returned from a GET request might be slightly different.
-    // We can simulate the structure of a capture response if needed for consistency.
     return orderData;
 }
 
@@ -178,7 +171,6 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
         throw new Error('PayPal webhook ID is not configured.');
     }
 
-    // Must read the raw body as text for signature verification
     const reqBody = await req.text(); 
     const headers = req.headers;
 
@@ -195,7 +187,6 @@ export async function verifyWebhookSignature(req: Request): Promise<boolean> {
             auth_algo: headers.get('paypal-auth-algo'),
             transmission_sig: headers.get('paypal-transmission-sig'),
             webhook_id: WEBHOOK_ID,
-            // The webhook_event should be the raw body of the request
             webhook_event: JSON.parse(reqBody),
         }),
         cache: 'no-store'
