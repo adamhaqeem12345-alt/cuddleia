@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Eye, ShoppingCart } from 'lucide-react';
+import { Eye, ShoppingCart, Info } from 'lucide-react';
 
 export const ProductCard = ({ product }: { product: Product }) => {
     const { addToCart, getPrice } = useCart();
@@ -27,8 +27,12 @@ export const ProductCard = ({ product }: { product: Product }) => {
                     <div className="flex-1">
                         <Link href={`/products/${product.id}`}>
                             <h3 className="font-semibold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">{product.name}</h3>
-                            <p className="text-sm font-body text-foreground/70 line-clamp-3">{product.description}</p>
+                            <p className="text-sm font-body text-foreground/70 line-clamp-3 mb-4">{product.description}</p>
                         </Link>
+                         <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
+                             <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                            <span>{product.disclaimer}</span>
+                         </div>
                     </div>
                     <div className="flex items-center justify-between gap-4 pt-6">
                         <div>

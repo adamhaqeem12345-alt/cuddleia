@@ -3,7 +3,7 @@ import { products } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, ArrowLeft } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Info } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import Link from 'next/link';
 import { AddToCartButton } from './add-to-cart-button';
@@ -91,11 +91,21 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                             <ProductPrice price={product.price} />
                         </div>
                         
-                        <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap">
+                        <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
                             <p>{product.description}</p>
                         </div>
-
-                        <div className="mt-auto pt-8">
+                        
+                        <div className="mt-auto pt-8 border-t">
+                             <div className="bg-primary/10 text-primary-foreground border-l-4 border-primary rounded-r-lg p-4 mb-8">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <Info className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-sm font-medium">{product.disclaimer}</p>
+                                    </div>
+                                </div>
+                            </div>
                            <AddToCartButton product={product} />
                         </div>
                     </div>

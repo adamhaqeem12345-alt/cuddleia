@@ -12,6 +12,7 @@ export const products: Product[] = [
     imageHeight: 1080,
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    disclaimer: 'All content is AI-generated and all designs are created by me.'
   },
   {
     id: "002",
@@ -23,6 +24,7 @@ export const products: Product[] = [
     imageHeight: 2048,
     category: 'Wallpapers',
     downloadUrl: 'https://drive.google.com/file/d/1OyatP86tevbHRiazIMEsal09fcFOMSZl/view?usp=drivesdk',
+    disclaimer: 'All wallpaper designs are 100% my work.'
   },
   {
     id: "003",
@@ -34,6 +36,7 @@ export const products: Product[] = [
     imageHeight: 2048,
     category: 'Wallpapers',
     downloadUrl: 'https://drive.google.com/file/d/17I5xYCRP4wItUYWtGJfWSyusxCoI3FAY/view?usp=drivesdk',
+    disclaimer: 'All wallpaper designs are 100% my work.'
   },
   {
     id: "004",
@@ -45,6 +48,7 @@ export const products: Product[] = [
     imageHeight: 2048,
     category: 'Wallpapers',
     downloadUrl: 'https://drive.google.com/file/d/1LTR13t8qBa3js0n01cQq8197tGRDAnTw/view?usp=drivesdk',
+    disclaimer: 'All wallpaper designs are 100% my work.'
   },
   {
     id: "005",
@@ -56,5 +60,6 @@ export const products: Product[] = [
     imageHeight: 1080,
     category: 'Wallpapers',
     downloadUrl: 'https://drive.google.com/file/d/1Kf9NdBI6T7rAow-D5Pf4F_5--Em5cjr0/view?usp=drivesdk',
+    disclaimer: 'All wallpaper designs are 100% my work.'
   },
 ];

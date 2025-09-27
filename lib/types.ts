@@ -8,6 +8,7 @@ export interface Product {
     imageHeight: number;
     category: string;
     downloadUrl: string;
+    disclaimer: string;
 }
 
 export interface CartItem extends Product {
