@@ -1,15 +1,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { products } from '@/lib/products';
-import { ProductCard } from '@/components/product-card';
 import { AnimateIn } from '@/components/animate-in';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import { FeaturedProducts } from '@/components/featured-products';
 
 export default function Home() {
-  const featuredProducts = products.slice(0, 3);
-
   return (
     <>
       {/* Hero Section */}
@@ -53,13 +50,7 @@ export default function Home() {
               Handpicked for you. Get started on your journey of beauty and reflection with our most popular digital goods.
             </p>
           </AnimateIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-            {featuredProducts.map((product, index) => (
-              <AnimateIn key={product.id} delay={index * 150}>
-                <ProductCard product={product} />
-              </AnimateIn>
-            ))}
-          </div>
+          <FeaturedProducts />
           <div className="mt-20 text-center">
             <Button asChild size="lg" variant="secondary" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
               <Link href="/products">View All Products</Link>
