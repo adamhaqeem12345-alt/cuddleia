@@ -69,12 +69,10 @@ export async function createOrder(cart: CartItem[], allProducts: Product[]) {
         
         // 2. Sanitize all string fields to be compliant with PayPal's API.
         const cleanName = (product.name || 'Unnamed Product').substring(0, 127);
-        const cleanDescription = (product.description || 'No description').substring(0, 127);
         const cleanSku = (product.id || `SKU-${Date.now()}`).substring(0, 127);
 
         return {
             name: cleanName,
-            description: cleanDescription,
             sku: cleanSku,
             unit_amount: {
                 currency_code: 'USD',
