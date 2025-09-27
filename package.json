@@ -1,4 +1,3 @@
-
 {
   "name": "cuddleia-nextjs",
   "version": "0.1.0",
@@ -19,7 +18,6 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.408.0",
     "next": "14.2.5",
-    "nodemailer": "^6.9.8",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.4.0",
@@ -27,7 +25,6 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/nodemailer": "^6.4.14",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
