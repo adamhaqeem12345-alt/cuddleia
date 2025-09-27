@@ -19,6 +19,16 @@ function CheckoutPageContent() {
             </div>
         );
     }
+    
+    // The cart should not be empty to checkout
+    if (cart.length === 0) {
+        return (
+             <div className="container mx-auto px-4 py-24 text-center">
+                <h1 className="text-2xl font-bold">Your cart is empty.</h1>
+                <p className="text-muted-foreground mt-4">Please add products to your cart before proceeding to checkout.</p>
+            </div>
+        )
+    }
 
     return (
         <AnimateIn>
