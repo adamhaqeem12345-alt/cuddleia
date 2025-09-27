@@ -16,11 +16,14 @@ import type { OnApproveData, CreateOrderData } from '@paypal/paypal-js';
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
   const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // For post-payment processing
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false); // For pre-payment loading
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   const createOrder = async (data: CreateOrderData) => {
+    setError(null);
+    setIsCreatingOrder(true);
     try {
       const response = await fetch('/api/paypal/create-order', {
         method: 'POST',
@@ -44,7 +47,10 @@ export default function CartPage() {
     } catch (err: any) {
       console.error('Create Order Error:', err);
       setError(err.message);
-      throw err; // Re-throw to inform PayPal an error occurred
+      // Re-throw to inform PayPal an error occurred, which will show an error in the modal
+      throw err; 
+    } finally {
+      setIsCreatingOrder(false);
     }
   };
 
@@ -77,6 +83,13 @@ export default function CartPage() {
   const handleOnError = (err: any) => {
       console.error("PayPal Error:", err);
       setError('An error occurred with the PayPal transaction. Please try again or contact support.');
+      setIsCreatingOrder(false); // Ensure loading state is turned off on error
+  }
+  
+  const handleOnClick = () => {
+      if (cart.length > 0) {
+        setIsCreatingOrder(true);
+      }
   }
 
   const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -182,19 +195,26 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                {isProcessing && <div className="flex justify-center items-center text-center text-muted-foreground mb-2"><Loader2 className="mr-2 h-4 w-4 animate-spin" />Finalizing your order...</div>}
+                {(isCreatingOrder || isProcessing) && (
+                    <div className="flex justify-center items-center text-center text-muted-foreground mb-2">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {isProcessing ? 'Finalizing your order...' : 'Connecting to PayPal...'}
+                    </div>
+                )}
                 {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
 
-                <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                    <PayPalButtons 
-                        style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                        createOrder={createOrder}
-                        onApprove={handleOnApprove}
-                        onError={handleOnError}
-                        disabled={isProcessing || cart.length === 0}
-                        className={isProcessing ? 'opacity-50 pointer-events-none' : ''}
-                    />
-                </PayPalScriptProvider>
+                <div className={ (isCreatingOrder || isProcessing) ? 'opacity-50 pointer-events-none' : ''}>
+                    <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
+                        <PayPalButtons 
+                            style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                            createOrder={createOrder}
+                            onApprove={handleOnApprove}
+                            onError={handleOnError}
+                            onClick={handleOnClick}
+                            disabled={isProcessing || isCreatingOrder || cart.length === 0}
+                        />
+                    </PayPalScriptProvider>
+                </div>
               </div>
             </section>
           </div>
