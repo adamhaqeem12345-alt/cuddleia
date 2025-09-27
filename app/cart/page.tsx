@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCart } from '@/context/cart-context';
@@ -9,91 +8,17 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import { useState } from 'react';
-import type { OnApproveData, CreateOrderData, OrderRequestBody } from '@paypal/paypal-js';
+import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, getPrice, clearCart } = useCart();
-  const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const { cart, removeFromCart, updateQuantity, getPrice } = useCart();
+  const router = useRouter();
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-  const createOrder = (data: CreateOrderData, actions: any): Promise<string> => {
-    setError(null);
-    console.log("Creating order...");
-    const purchase_units: OrderRequestBody['purchase_units'] = [
-      {
-        amount: {
-          value: subtotal.toFixed(2),
-          breakdown: {
-            item_total: {
-              currency_code: 'USD',
-              value: subtotal.toFixed(2),
-            },
-          },
-        },
-        items: cart.map((item) => ({
-          name: item.name,
-          quantity: String(item.quantity),
-          unit_amount: {
-            currency_code: 'USD',
-            value: item.price.toFixed(2),
-          },
-          sku: item.id,
-        })),
-      },
-    ];
-
-    return actions.order.create({ purchase_units });
+  const handleCheckout = () => {
+    router.push('/checkout');
   };
-
-  const onApprove = async (data: OnApproveData): Promise<void> => {
-    setIsProcessing(true);
-    setError(null);
-    console.log("Order approved. Capturing...");
-
-    try {
-      const response = await fetch('/api/paypal/capture-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderID: data.orderID }),
-      });
-      
-      const capturedData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(capturedData.error || 'Failed to capture payment.');
-      }
-      
-      // The webhook will handle the email.
-      // Clear the cart and redirect to the success page.
-      clearCart();
-      window.location.href = `/checkout/success?orderId=${capturedData.id}`;
-
-    } catch (err: any) {
-      console.error("OnApprove Error:", err);
-      setError(err.message || 'An error occurred while finalizing your payment.');
-      setIsProcessing(false);
-    }
-  };
-  
-  const onError = (err: any) => {
-      console.error("PayPal Buttons Error:", err);
-      setError('An error occurred with your payment. Please try again or contact support.');
-  };
-
-  const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-
-  if (!PAYPAL_CLIENT_ID) {
-    return (
-        <div className="container mx-auto px-4 py-24 text-center">
-            <h1 className="text-2xl font-bold text-destructive">PayPal Client ID is not configured.</h1>
-            <p className="text-muted-foreground mt-4">Please set the NEXT_PUBLIC_PAYPAL_CLIENT_ID environment variable.</p>
-        </div>
-    );
-  }
 
   return (
     <AnimateIn>
@@ -187,18 +112,9 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                {isProcessing && <div className="text-center text-muted-foreground font-medium mb-4">Finalizing your order...</div>}
-                {error && <div className="text-center text-destructive font-medium mb-4">{error}</div>}
-                
-                <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: 'USD', intent: 'capture' }}>
-                    <PayPalButtons
-                        style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                        createOrder={createOrder}
-                        onApprove={onApprove}
-                        onError={onError}
-                        disabled={isProcessing}
-                    />
-                </PayPalScriptProvider>
+                <Button onClick={handleCheckout} className="w-full" size="lg">
+                    Proceed to Checkout
+                </Button>
               </div>
             </section>
           </div>
