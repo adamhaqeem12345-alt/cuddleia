@@ -60,7 +60,7 @@ export default function Home() {
             <AnimateIn>
               <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
                  <Image
-                    src="https://i.postimg.cc/mD3wWHgC/IMG-2917.jpg"
+                    src="https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png"
                     alt="Founder of Cuddleia"
                     fill
                     className="object-cover"
