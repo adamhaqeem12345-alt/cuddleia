@@ -10,10 +10,8 @@ const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
 )
 
 const TiktokIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M21 8.25v7.5a4.25 4.25 0 0 1-4.25 4.25H8.25a4.25 4.25 0 0 1-4.25-4.25V8.25a4.25 4.25 0 0 1 4.25-4.25h7.5A4.25 4.25 0 0 1 21 8.25Z"></path>
-        <path d="M12 15.75a3.75 3.75 0 0 0 3.75-3.75V4h-3.75v11.75Z"></path>
-        <path d="M12 8.25H8.25"></path>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" {...props}>
+      <path d="M16.6 5.82a2.47 2.47 0 0 1-1.1.84 3.28 3.28 0 0 1-1.07.21v5.67a3.86 3.86 0 1 1-3.86-3.86 3.8 3.8 0 0 1 1.63.35.39.39 0 0 0 .5-.3V5.5a.39.39 0 0 0-.27-.38 7.07 7.07 0 0 0-5.14 7.49 7.07 7.07 0 0 0 7.18 6.78 7.07 7.07 0 0 0 7.07-7.07V9.45a6.56 6.56 0 0 0-2.9-.84Z"/>
     </svg>
 )
 
