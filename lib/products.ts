@@ -117,7 +117,7 @@ Key Features:
 • Use: Intended for testing the purchase and delivery flow.
 • Price: Set to a minimal amount for transaction testing.
 • Content: A placeholder image and download link.`,
-    price: 0.24,
+    price: 0.25,
     imageUrl: "https://i.postimg.cc/MTBtTMXR/Heading.png",
     imageWidth: 1920,
     imageHeight: 1080,
