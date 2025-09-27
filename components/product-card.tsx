@@ -31,7 +31,10 @@ export const ProductCard = ({ product }: { product: Product }) => {
                         </Link>
                     </div>
                     <div className="flex items-center justify-between gap-4 pt-6">
-                        <p className="text-xl font-headline font-bold text-primary">{getPrice(product.price).formatted}</p>
+                        <div>
+                             <p className="text-xl font-headline font-bold text-primary">{getPrice(product.price).usd.formatted}</p>
+                             <p className="text-xs text-muted-foreground">(Approx. {getPrice(product.price).myr.formatted})</p>
+                        </div>
                         <div className="flex gap-2">
                             <Button variant="outline" size="icon" className="rounded-full h-10 w-10" asChild>
                                 <Link href={`/products/${product.id}`}>

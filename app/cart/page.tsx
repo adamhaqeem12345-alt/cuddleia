@@ -15,6 +15,7 @@ export default function CartPage() {
   const router = useRouter();
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotalPrice = getPrice(subtotal);
 
   const handleCheckout = () => {
     router.push('/checkout');
@@ -63,7 +64,7 @@ export default function CartPage() {
                         <Link href={`/products/${item.id}`} className="hover:text-primary transition-colors">
                           {item.name}
                         </Link>
-                        <p className="text-sm text-muted-foreground">{getPrice(item.price).formatted}</p>
+                        <p className="text-sm text-muted-foreground">{getPrice(item.price).usd.formatted}</p>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center justify-center gap-2">
@@ -72,7 +73,7 @@ export default function CartPage() {
                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-semibold">{getPrice(item.price * item.quantity).formatted}</TableCell>
+                      <TableCell className="text-right font-semibold">{getPrice(item.price * item.quantity).usd.formatted}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                           <X className="h-5 w-5" />
@@ -85,7 +86,7 @@ export default function CartPage() {
                 <TableFooter>
                     <TableRow>
                         <TableCell colSpan={3} className="text-left font-bold text-lg">Subtotal</TableCell>
-                        <TableCell colSpan={2} className="text-right font-bold text-lg">{getPrice(subtotal).formatted}</TableCell>
+                        <TableCell colSpan={2} className="text-right font-bold text-lg">{subtotalPrice.usd.formatted}</TableCell>
                     </TableRow>
                 </TableFooter>
               </Table>
@@ -104,11 +105,15 @@ export default function CartPage() {
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-muted-foreground">Subtotal</p>
-                  <p className="text-sm font-medium text-foreground">{getPrice(subtotal).formatted}</p>
+                  <p className="text-sm font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
+                </div>
+                 <div className="flex items-center justify-between">
+                  <p className="text-sm text-muted-foreground">Approx. MYR</p>
+                  <p className="text-sm font-medium text-muted-foreground">{subtotalPrice.myr.formatted}</p>
                 </div>
                 <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <p className="text-base font-medium text-foreground">Order total</p>
-                  <p className="text-base font-medium text-foreground">{getPrice(subtotal).formatted}</p>
+                  <p className="text-base font-medium text-foreground">Order total (in USD)</p>
+                  <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                 </div>
               </div>
               <div className="mt-6">

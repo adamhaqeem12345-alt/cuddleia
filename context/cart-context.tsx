@@ -2,14 +2,20 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import type { Product, CartItem } from '@/lib/types';
+import { USD_TO_MYR_RATE } from '@/lib/currency';
+
+interface Price {
+    usd: { formatted: string; raw: number };
+    myr: { formatted: string; raw: number };
+}
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  updateQuantity: (productId:string, quantity: number) => void;
   clearCart: () => void;
-  getPrice: (price: number) => { formatted: string, raw: number };
+  getPrice: (price: number) => Price;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -17,9 +23,19 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   
-  const getPrice = (price: number) => {
-    // All prices are in USD for PayPal
-    return { formatted: `$${price.toFixed(2)}`, raw: price };
+  const getPrice = (price: number): Price => {
+    const usdPrice = price;
+    const myrPrice = price * USD_TO_MYR_RATE;
+    return {
+        usd: {
+            formatted: `$${usdPrice.toFixed(2)} USD`,
+            raw: usdPrice
+        },
+        myr: {
+            formatted: `RM${myrPrice.toFixed(2)}`,
+            raw: myrPrice
+        }
+    };
   };
 
   const addToCart = (product: Product) => {

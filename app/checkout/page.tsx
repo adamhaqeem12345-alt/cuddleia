@@ -8,6 +8,7 @@ import { useCart } from '@/context/cart-context';
 function CheckoutPageContent() {
     const { getPrice, cart } = useCart();
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotalPrice = getPrice(subtotal);
 
     const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
@@ -41,12 +42,16 @@ function CheckoutPageContent() {
                     <h2 className="text-lg font-medium text-foreground">Order summary</h2>
                     <div className="mt-6 space-y-4">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">Subtotal</p>
-                            <p className="text-sm font-medium text-foreground">{getPrice(subtotal).formatted}</p>
+                            <p className="text-sm text-muted-foreground">Subtotal (USD)</p>
+                            <p className="text-sm font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">Approx. MYR</p>
+                          <p className="text-sm font-medium text-muted-foreground">{subtotalPrice.myr.formatted}</p>
                         </div>
                         <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                            <p className="text-base font-medium text-foreground">Order total</p>
-                            <p className="text-base font-medium text-foreground">{getPrice(subtotal).formatted}</p>
+                            <p className="text-base font-medium text-foreground">Final Order Total</p>
+                            <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                         </div>
                     </div>
                     <div className="mt-8">

@@ -7,6 +7,7 @@ import { ShoppingCart, ArrowLeft } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import Link from 'next/link';
 import { AddToCartButton } from './add-to-cart-button';
+import { ProductPrice } from '@/components/product-price';
 
 
 // Generate static paths for all products
@@ -84,7 +85,9 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <AnimateIn delay={150}>
                     <div className="flex flex-col h-full">
                         <h1 className="font-headline text-4xl lg:text-5xl font-bold text-foreground mb-4">{product.name}</h1>
-                        <p className="font-headline text-3xl font-bold text-primary mb-6">${product.price.toFixed(2)}</p>
+                        <div className="mb-6">
+                            <ProductPrice price={product.price} />
+                        </div>
                         
                         <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap">
                             <p>{product.description}</p>
