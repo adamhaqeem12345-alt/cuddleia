@@ -78,7 +78,6 @@ const Footer = () => {
         </div>
         
         <div className="mt-16 border-t pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Cuddleia. All Rights Reserved.</p>
             <p className="flex items-center justify-center gap-1.5 mt-2">
                 Made with <Heart className="h-4 w-4 text-primary" /> by the Cuddleia team.
             </p>
