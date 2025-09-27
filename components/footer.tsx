@@ -1,29 +1,6 @@
 import { Heart, Mail, Flower2 } from 'lucide-react';
 import Link from 'next/link';
 
-const InstagramIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
-        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-        <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
-    </svg>
-)
-
-const TiktokIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M16.5 5.5a4.5 4.5 0 1 1-4.5 4.5V17a3 3 0 1 0-3-3" />
-    </svg>
-)
-
-
-const TelegramIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="m22 2-7 20-4-9-9-4Z" />
-    <path d="m22 2-11 11" />
-  </svg>
-)
-
-
 const Footer = () => {
   return (
     <footer className="w-full bg-background border-t">
@@ -57,16 +34,13 @@ const Footer = () => {
             <h3 className="font-headline text-xl font-semibold text-foreground">Connect With Us</h3>
             <div className="mt-4 flex justify-center md:justify-start items-center gap-4">
                 <Link href="https://www.instagram.com/cuddleia.official" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                    <InstagramIcon className="h-6 w-6" />
-                    <span className="sr-only">Instagram</span>
+                    Instagram
                 </Link>
                 <Link href="https://www.tiktok.com/@cuddleia" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                    <TiktokIcon className="h-6 w-6" />
-                    <span className="sr-only">TikTok</span>
+                    TikTok
                 </Link>
                  <Link href="https://t.me/+Tt1wP2OgPBE1NjU1" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                    <TelegramIcon className="h-6 w-6" />
-                    <span className="sr-only">Telegram</span>
+                    Telegram
                 </Link>
             </div>
              <div className="mt-6 flex justify-center md:justify-start items-center gap-2 text-muted-foreground">
