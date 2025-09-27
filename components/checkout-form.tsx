@@ -17,23 +17,27 @@ export function CheckoutForm() {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await fetch('/api/paypal/create-order', {
+            // Standard, robust request body structure.
+            const response = await fetch('/api/paypal/create-order', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                },
                 body: JSON.stringify({ cart }),
             });
 
-            const data = await res.json();
+            const data = await response.json();
 
-            if (!res.ok) {
+            if (!response.ok) {
                 throw new Error(data.error || 'Failed to create PayPal order.');
             }
             
             const approvalLink = data.links.find((link: { rel: string; }) => link.rel === 'approve');
             if (approvalLink) {
+                // Redirect user to PayPal for payment approval.
                 router.push(approvalLink.href);
             } else {
-                 throw new Error('No approval link found in PayPal response.');
+                 throw new Error('No PayPal approval link found. Please try again.');
             }
 
         } catch (err: any) {

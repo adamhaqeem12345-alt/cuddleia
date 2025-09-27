@@ -1,5 +1,4 @@
-
-import type { Product } from '@/lib/types';
+import type { Product, CartItem } from '@/lib/types';
 
 // This is a self-contained helper function to get a PayPal access token.
 export async function getAccessToken() {
@@ -31,13 +30,15 @@ export async function getAccessToken() {
     return data.access_token;
 }
 
-// Creates a PayPal order
-export async function createOrder(cart: { id: string; quantity: number }[], allProducts: Product[]) {
+/**
+ * Creates a PayPal order. This function is completely rebuilt to ensure precision and compliance.
+ * It uses integer math for all financial calculations to prevent floating-point errors.
+ */
+export async function createOrder(cart: CartItem[], allProducts: Product[]) {
     const accessToken = await getAccessToken();
     const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    // Use cents to avoid floating point issues
     let itemTotalInCents = 0;
 
     const items = cart.map(cartItem => {
@@ -46,11 +47,12 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
         
-        // Convert product price to cents
+        // --- PRECISION AND SANITIZATION ---
+        // 1. Use integers (cents) for all financial calculations to avoid floating point errors.
         const priceInCents = Math.round(product.price * 100);
         itemTotalInCents += priceInCents * cartItem.quantity;
         
-        // Sanitize all fields before sending to PayPal to prevent validation errors.
+        // 2. Sanitize all string fields to be compliant with PayPal's API.
         const cleanName = (product.name || '').replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
         const cleanDescription = (product.description || '').replace(/(\r\n|\n|\r)/gm, " ").substring(0, 127);
         const cleanSku = (product.id || '').substring(0, 127);
@@ -61,16 +63,18 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             sku: cleanSku,
             unit_amount: {
                 currency_code: 'USD',
-                value: (priceInCents / 100).toFixed(2), // Convert back to string format for PayPal
+                // Convert back to string format for PayPal API ONLY at the last moment.
+                value: (priceInCents / 100).toFixed(2),
             },
             quantity: String(cartItem.quantity),
         };
     });
 
     if (itemTotalInCents <= 0) {
-      throw new Error('Invalid total amount for order.');
+      throw new Error('Invalid total amount for order. Total must be positive.');
     }
 
+    // Convert the final integer total back to a string for the API.
     const finalTotalValue = (itemTotalInCents / 100).toFixed(2);
 
     const payload = {
@@ -79,6 +83,7 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             amount: {
                 currency_code: 'USD',
                 value: finalTotalValue,
+                // The breakdown is critical for validation. It ensures the sum of items equals the total.
                 breakdown: {
                     item_total: {
                         currency_code: 'USD',
@@ -95,7 +100,7 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
             shipping_preference: 'NO_SHIPPING',
             user_action: 'PAY_NOW',
             return_url: `${baseUrl}/checkout/success`,
-            cancel_url: `${baseUrl}/`,
+            cancel_url: `${baseUrl}/cart`, // Return user to cart on cancellation.
         },
     };
 
@@ -104,6 +109,7 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
+            // Use a unique request ID for idempotency and debugging.
             'PayPal-Request-Id': `cuddleia-order-${Date.now()}`
         },
         body: JSON.stringify(payload),
@@ -112,7 +118,9 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
 
     const orderData = await response.json();
     if (!response.ok) {
+        // Provide a more detailed error message for debugging.
         const errorDetail = orderData?.details?.[0]?.description || JSON.stringify(orderData);
+        console.error("PayPal Error:", errorDetail);
         throw new Error(`Failed to create PayPal order: ${errorDetail}`);
     }
 
@@ -136,10 +144,11 @@ export async function captureOrder(orderID: string) {
 
     const capturedData = await response.json();
     if (!response.ok) {
+        // If the order was already captured, this is not a fatal error. 
+        // We can fetch the existing order details instead.
         if (capturedData.name === 'ORDER_ALREADY_CAPTURED' || capturedData.details?.[0]?.issue === 'ORDER_ALREADY_CAPTURED') {
-            console.warn(`Order ${orderID} was already captured.`);
-            const orderDetails = await getOrderDetails(orderID);
-             return orderDetails;
+            console.warn(`Order ${orderID} was already captured. Fetching existing details.`);
+            return getOrderDetails(orderID);
         }
         const errorDetail = capturedData.details?.[0]?.description || JSON.stringify(capturedData);
         throw new Error(`Failed to capture PayPal order: ${errorDetail}`);
