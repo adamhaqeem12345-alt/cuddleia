@@ -37,23 +37,26 @@ export async function createOrder(cart: { id: string; quantity: number }[], allP
     const PAYPAL_API_URL = (process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com').replace(/\/$/, '');
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    let total = 0;
     const items = cart.map(cartItem => {
         const product = allProducts.find(p => p.id === cartItem.id);
         if (!product) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
-        total += product.price * cartItem.quantity;
         return {
             name: product.name,
             quantity: String(cartItem.quantity),
             unit_amount: {
                 currency_code: 'USD',
-                value: String(product.price.toFixed(2)),
+                value: product.price.toFixed(2), // Ensure two decimal places
             },
             sku: product.id,
         };
     });
+    
+    // Calculate total from the already formatted item values to avoid floating point issues
+    const total = items.reduce((acc, item) => {
+        return acc + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
+    }, 0);
 
      if (total <= 0) {
       throw new Error('Invalid total amount for order.');
