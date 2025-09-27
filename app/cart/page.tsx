@@ -204,7 +204,17 @@ export default function CartPage() {
                         <PayPalButtons 
                             key={orderID} // This forces the component to re-render when the order ID changes
                             style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                            createOrder={async () => orderID} // Pass the pre-generated orderID
+                            createOrder={(data, actions) => {
+                                return actions.order.create({
+                                  purchase_units: [
+                                    {
+                                      amount: {
+                                        value: subtotal.toFixed(2),
+                                      },
+                                    },
+                                  ],
+                                });
+                            }}
                             onApprove={handleOnApprove}
                             onError={handleOnError}
                             disabled={isProcessing}
@@ -220,3 +230,5 @@ export default function CartPage() {
     </AnimateIn>
   );
 }
+
+    
