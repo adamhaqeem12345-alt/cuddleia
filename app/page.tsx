@@ -10,25 +10,27 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative h-[60vh] md:h-[70vh] w-full flex items-center justify-center bg-accent/30">
-        <AnimateIn>
-          <div className="relative z-10 text-center px-4">
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-              Cozy Digital Goods
-            </h1>
-            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
-              Discover thoughtfully designed digital wallpapers, planners, and Islamic booklets that bring warmth and serenity to your day.
-            </p>
-            <div className="mt-8 flex justify-center gap-4">
-              <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
-                <Link href="/products">Shop Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105 bg-background">
-                <Link href="/about">Learn More</Link>
-              </Button>
+      <section className="relative w-full py-20 md:py-28 flex items-center justify-center">
+        <div className="container mx-auto px-4">
+          <AnimateIn>
+            <div className="relative z-10 text-center px-4 py-16 md:py-24 rounded-3xl bg-accent/50 shadow-lg">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                Cozy Digital Goods
+              </h1>
+              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
+                Discover thoughtfully designed digital wallpapers, planners, and Islamic booklets that bring warmth and serenity to your day.
+              </p>
+              <div className="mt-8 flex justify-center gap-4">
+                <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
+                  <Link href="/products">Shop Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105 bg-background/70">
+                  <Link href="/about">Learn More</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-        </AnimateIn>
+          </AnimateIn>
+        </div>
       </section>
 
       {/* Featured Products Section */}
