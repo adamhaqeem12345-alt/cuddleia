@@ -123,7 +123,7 @@ export default function AboutPage() {
               <div className="text-left">
                 <h3 className="font-headline text-2xl">Adam Haqeem</h3>
                 <p className="text-primary">Founder &amp; Creator</p>
-                <p className="mt-2 text-foreground/80">Adam Haqeem is the heart and soul behind Cuddleia. With a deep love for faith, creativity, and honesty, he pours sincerity into every digital creation. Guided by the belief that digital spaces should inspire peace and purpose, Adam uses both design and the help of AI to craft products that uplift, comfort, and remind us of what truly matters.</p>
+                <p className="mt-2 text-foreground/80">Adam Haqeem is the heart and soul behind Cuddleia. With a deep love for faith, creativity, and honesty, he pours sincerity into every digital creation. Guided by the belief that digital spaces should inspire peace and purpose, Adam masterfully blends AI-generated content with his own heartfelt design to craft products that uplift, comfort, and remind us of what truly matters.</p>
               </div>
             </div>
           </div>
