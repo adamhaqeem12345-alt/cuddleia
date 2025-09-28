@@ -8,7 +8,7 @@ import { AnimateIn } from '@/components/animate-in';
 import { Loader2, AlertTriangle, Lock, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PayPalProvider } from '@/context/paypal-provider';
+import { PayPalProvider } from '@/src/context/paypal-provider';
 
 export default function CheckoutPage() {
     const { cart, getPrice, isCartReady } = useCart();
@@ -49,6 +49,7 @@ export default function CheckoutPage() {
     }
 
     const createOrderHandler = async () => {
+        console.log("PayPalButtons: createOrder triggered. Calling API...");
         setError(null);
         try {
             const res = await fetch("/api/paypal/create-order", {
@@ -57,18 +58,23 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ cartItems: cart }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || "Failed to create order.");
-            console.log("Create Order Response:", data);
+            if (!res.ok) {
+                console.error("PayPalButtons: createOrder API call failed.", data);
+                throw new Error(data.details || data.error || "Failed to create order.");
+            }
+            console.log("PayPalButtons: createOrder API call successful. Order ID:", data.id);
             return data.id;
         } catch (err: any) {
-            console.error("Create Order Error:", err);
+            console.error("PayPalButtons: createOrder handler threw an error.", err);
             setError(err.message);
-            throw err;
+            throw err; // Re-throw to inform PayPal an error occurred
         }
     };
 
     const onApproveHandler = async (data: any) => {
+        console.log("PayPalButtons: onApprove triggered. Capturing order...", data);
         setLoading(true);
+        setError(null);
         try {
             const res = await fetch(`/api/paypal/capture-order`, {
                 method: "POST",
@@ -76,24 +82,26 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ orderID: data.orderID })
             });
             const details = await res.json();
-            console.log("onApprove Capture Response:", details);
+            console.log("PayPalButtons: onApprove capture API response:", details);
 
             if (res.ok && details.status === "COMPLETED") {
+                console.log("PayPalButtons: onApprove success! Redirecting to thank you page.");
                 // Redirect to a thank you page on successful capture
                 window.location.href = `/thank-you?token=${details.id}`;
             } else {
-                throw new Error(details.error || "Payment could not be completed.");
+                 console.error("PayPalButtons: onApprove capture was not completed.", details);
+                throw new Error(details.details || details.error || "Payment could not be completed.");
             }
         } catch (err: any) {
-            console.error("Approve Order Error:", err);
+            console.error("PayPalButtons: onApprove handler threw an error.", err);
             setError(err.message);
             setLoading(false);
         }
     };
     
     const onErrorHandler = (err: any) => {
-        console.error("PayPal Buttons onError:", err);
-        setError("An unexpected error occurred with PayPal. Please check the console and try again.");
+        console.error("PayPalButtons: An onError event was caught.", err);
+        setError("An unexpected error occurred with PayPal. Please try again or contact support.");
     };
 
     return (
@@ -130,10 +138,15 @@ export default function CheckoutPage() {
                     )}
                     
                     {error && (
-                        <div className="bg-destructive/10 text-destructive-foreground border-l-4 border-destructive rounded-r-lg p-4 text-center">
-                            <h3 className="font-bold">Payment Error</h3>
-                            <p className="text-sm">{error}</p>
-                            <Button variant="link" onClick={() => setError(null)} className="mt-2 text-destructive-foreground underline">Try Again</Button>
+                        <div className="bg-destructive/20 text-destructive-foreground border border-destructive/50 rounded-lg p-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                                <AlertTriangle className="h-5 w-5" />
+                                <h3 className="font-bold">Payment Error</h3>
+                            </div>
+                            <p className="text-sm mt-2">{error}</p>
+                            <Button variant="link" onClick={() => window.location.reload()} className="mt-2 text-destructive-foreground underline">
+                                Please try again.
+                            </Button>
                         </div>
                     )}
 

@@ -82,6 +82,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }
   };
 
   try {
+    console.log("Creating PayPal order with payload:", JSON.stringify(payload, null, 2));
     const response = await axios.post(
       `${PAYPAL_API_URL}/v2/checkout/orders`,
       payload,
@@ -117,6 +118,7 @@ export async function captureOrder(orderId: string): Promise<any> {
   const accessToken = await getPayPalAccessToken();
 
   try {
+    console.log(`Capturing PayPal order: ${orderId}`);
     const response = await axios.post(
       `${PAYPAL_API_URL}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
       null,
@@ -133,7 +135,7 @@ export async function captureOrder(orderId: string): Promise<any> {
     return response.data;
   } catch (error: any) {
     const errorMessage = error.response ? JSON.stringify(error.response.data) : error.message;
-    console.error("Error capturing PayPal order:", errorMessage);
+    console.error(`Error capturing PayPal order ${orderId}:`, errorMessage);
     throw new Error(`Could not capture PayPal order. Details: ${errorMessage}`);
   }
 }
@@ -162,6 +164,8 @@ export async function verifyWebhook(headers: Headers, body: any): Promise<boolea
         webhook_id: webhookId,
         webhook_event: body,
     };
+
+    console.log("Verifying PayPal webhook with payload:", JSON.stringify(verificationPayload, null, 2));
     
     const response = await axios.post(
       `${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`,
@@ -173,6 +177,8 @@ export async function verifyWebhook(headers: Headers, body: any): Promise<boolea
         },
       }
     );
+
+    console.log("PayPal webhook verification response:", JSON.stringify(response.data, null, 2));
 
     return response.data.verification_status === 'SUCCESS';
   } catch (error: any) {

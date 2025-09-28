@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal-api';
 
@@ -9,12 +10,10 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing orderID" }, { status: 400 });
         }
 
-        console.log(`Attempting to capture PayPal order: ${orderID}`);
+        console.log(`API route /api/paypal/capture-order received orderID ${orderID}, calling captureOrder helper.`);
         const capturedData = await captureOrder(orderID);
         
-        // The captureOrder function in paypal-api.ts already logs the full response.
-        // We can add a high-level log here for route-specific context.
-        console.log(`Successfully captured order ${orderID}. Status: ${capturedData.status}`);
+        console.log(`API route /api/paypal/capture-order successful for order ${orderID}. Status: ${capturedData.status}`);
 
         // Return the full capture data to the client
         return NextResponse.json(capturedData);

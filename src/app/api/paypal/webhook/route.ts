@@ -7,6 +7,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const headers = req.headers;
     
+    console.log("Received PayPal webhook. Verifying...");
     const isVerified = await verifyWebhook(headers, body);
 
     if (!isVerified) {
@@ -15,7 +16,8 @@ export async function POST(req: Request) {
     }
 
     const eventType = body.event_type;
-    console.log(`Received verified webhook event: ${eventType}`);
+    console.log(`Received and verified webhook event: ${eventType}`);
+    console.log("Webhook body:", JSON.stringify(body, null, 2));
 
     if (eventType === 'CHECKOUT.ORDER.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
        const orderData = body.resource;

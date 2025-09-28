@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { createOrder } from '@/lib/paypal-api';
 import type { CartItem } from '@/lib/types';
@@ -7,21 +8,23 @@ export async function POST(req: Request) {
     const { cartItems } = (await req.json()) as { cartItems: CartItem[] };
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+      console.error("Create-order API Error: Cart is empty or invalid.");
       return NextResponse.json(
         { error: 'Cart is empty or invalid' },
         { status: 400 }
       );
     }
 
-    // The createOrder function now logs the full response internally
+    console.log("API route /api/paypal/create-order received cart, calling createOrder helper.");
     const orderData = await createOrder(cartItems);
 
-    // It returns only the ID, as requested
+    console.log("API route /api/paypal/create-order successful, returning order ID:", orderData.id);
     return NextResponse.json(orderData);
+
   } catch (err: any) {
-    console.error('PayPal API /create-order error:', err.message, err.stack);
+    console.error('PayPal API /create-order route error:', err);
     return NextResponse.json(
-      { error: err.message || 'An unexpected error occurred.' },
+      { error: 'Failed to create PayPal order.', details: err.message || 'An unexpected error occurred.' },
       { status: 500 }
     );
   }
