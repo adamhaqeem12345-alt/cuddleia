@@ -8,19 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
-import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, isCartReady } = useCart();
-  const router = useRouter();
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const subtotalPrice = getPrice(subtotal);
-
-  const handleCheckout = () => {
-    // Temporarily redirect to the success page as the checkout is being reworked.
-    router.push('/checkout/success');
-  };
   
   if (!isCartReady) {
     return (
@@ -127,8 +120,8 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                <Button onClick={handleCheckout} className="w-full" size="lg">
-                    Proceed to Checkout
+                <Button asChild className="w-full" size="lg">
+                    <Link href="/checkout">Proceed to Checkout</Link>
                 </Button>
               </div>
             </section>
