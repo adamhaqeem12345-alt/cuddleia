@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -44,6 +45,7 @@ export function PayPalButtonsComponent() {
         throw new Error(order.error || "Failed to create order.");
       }
 
+      // The create-order route now returns { id: "ORDER_ID" }
       return order.id;
     } catch (error) {
       console.error("Error creating PayPal order:", error);
@@ -69,10 +71,8 @@ export function PayPalButtonsComponent() {
         throw new Error(orderDetails.error || "Failed to capture order.");
       }
       
-      // The `return_url` in the paypal-api will handle the redirect.
-      // This logic will execute before the redirect happens.
       console.log('Order captured successfully:', orderDetails);
-      // Redirect to thank you page. PayPal should also handle this via return_url.
+      // Redirect to thank you page. PayPal's return_url also handles this, but this is a reliable fallback.
       router.push(`/thank-you?token=${data.orderID}&PayerID=${data.payerID}`);
 
     } catch (error) {
