@@ -56,15 +56,16 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
 
-    const shortenedName = await summarizeProductName(productDetails.name);
+    // Shorten name if it exceeds PayPal's limit, otherwise use original
+    const finalName = await summarizeProductName(productDetails.name);
     
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
-      name: shortenedName.substring(0, 127),
-      sku: productDetails.id.substring(0, 127),
+      name: finalName,
+      sku: productDetails.id.substring(0, 127), // Also ensure SKU is within limits
       unit_amount: {
         currency_code: 'USD',
         value: (unitPriceInCents / 100).toFixed(2),

@@ -36,9 +36,6 @@ const summarizeProductNameFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async (input) => {
-    if (input.productName.length <= 127) {
-      return input.productName;
-    }
     const { output } = await prompt(input);
     // Fallback to simple truncation if AI fails or returns an empty response
     return output || input.productName.substring(0, 127);
