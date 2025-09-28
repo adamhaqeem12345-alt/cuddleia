@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -142,7 +141,7 @@ export default function CheckoutPage() {
                                     </div>
                                 )}
 
-                                {(isProcessing) && (
+                                {isProcessing && (
                                      <div className="text-center">
                                         <Loader2 className="mx-auto h-8 w-8 text-primary animate-spin" />
                                         <p className="mt-2 text-muted-foreground">Processing Payment...</p>
