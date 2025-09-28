@@ -6,7 +6,7 @@ import type { Product } from './types';
 // All multi-line content has been moved to 'longDescription'.
 export const products: Product[] = [
   {
-    id: "booklet-barakah-business-blueprint",
+    id: "001",
     name: "Barakah Business Blueprint",
     description: "A beginner-friendly guide for Muslims starting a halal online business from scratch.",
     longDescription: `A beginner-friendly guide for Muslims starting a halal online business from scratch. This is a clear starting point that highlights the essentials, avoids common pitfalls, and helps you take your first steps with confidence.
@@ -27,7 +27,7 @@ What you'll learn:
     disclaimer: 'All content is AI-generated and all designs are created by me.'
   },
   {
-    id: "wallpaper-ipad-maroon-series",
+    id: "002",
     name: "iPad Wallpaper (Maroon Series)",
     description: "A digital Islamic wallpaper with floral art and Arabic calligraphy.",
     longDescription: `A digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.”
@@ -54,7 +54,7 @@ Please Note:
     disclaimer: 'All wallpaper designs are 100% my work.'
   },
   {
-    id: "wallpaper-ipad-minimalist-series",
+    id: "003",
     name: "iPad Wallpaper (Minimalist Series)",
     description: "A digital Islamic wallpaper featuring a minimalist floral background.",
     longDescription: `A digital Islamic wallpaper featuring a minimalist floral background, Arabic calligraphy of Allah and Muhammad ﷺ, and the gentle reminder ‘Allah Loves You.'
@@ -81,7 +81,7 @@ Please Note:
     disclaimer: 'All wallpaper designs are 100% my work.'
   },
   {
-    id: "wallpaper-ipad-pink-series",
+    id: "004",
     name: "iPad Wallpaper (Pink series)",
     description: "A digital iPad wallpaper featuring a beautiful pink floral background.",
     longDescription: `A digital iPad wallpaper featuring a beautiful pink floral background, calligraphy of Allah (SWT) and Muhammad (SAW), and a reminder of "Allah Loves you."
@@ -108,7 +108,7 @@ Please Note:
     disclaimer: 'All wallpaper designs are 100% my work.'
   },
   {
-    id: "test-product-placeholder-005",
+    id: "005",
     name: "Cuddleia Test product",
     description: "A placeholder item for testing the purchase and delivery flow.",
     longDescription: `This is a test product for the Cuddleia store.
