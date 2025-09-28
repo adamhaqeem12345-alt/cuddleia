@@ -39,7 +39,7 @@ export async function createOrder(cart: CartItemFromClient[]): Promise<{ id: str
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     // Use integer math (cents) to avoid floating point errors
-    let totalInCents = 0;
+    let itemTotalInCents = 0;
 
     const itemsPayload = cart.map((cartItem) => {
         const productDetails = products.find((p) => p.id === cartItem.id);
@@ -48,13 +48,10 @@ export async function createOrder(cart: CartItemFromClient[]): Promise<{ id: str
         }
         
         // Add to total
-        totalInCents += productDetails.price * cartItem.quantity;
-
-        // PayPal requires a simple string with no special characters for the name.
-        const cleanedName = productDetails.name.replace(/[^a-zA-Z0-9 ]/g, ' ').substring(0, 127);
+        itemTotalInCents += productDetails.price * cartItem.quantity;
 
         return {
-            name: cleanedName,
+            name: productDetails.name.substring(0, 127),
             sku: productDetails.id.substring(0, 127),
             unit_amount: {
                 currency_code: 'USD',
@@ -65,17 +62,20 @@ export async function createOrder(cart: CartItemFromClient[]): Promise<{ id: str
         };
     });
     
-    // Convert total from cents to a string with two decimal places
-    const totalValue = (totalInCents / 100).toFixed(2);
+    // Convert total from cents to a string with two decimal places. This is the authoritative total.
+    const finalTotalValue = (itemTotalInCents / 100).toFixed(2);
     
     const payload = {
         intent: 'CAPTURE',
         purchase_units: [{
             amount: {
                 currency_code: 'USD',
-                value: totalValue, // This is the final total
+                value: finalTotalValue, // This is the final total
                 breakdown: {
-                    item_total: { currency_code: 'USD', value: totalValue }, // This MUST match the final total
+                    item_total: { 
+                        currency_code: 'USD', 
+                        value: finalTotalValue // This MUST exactly match the final total
+                    },
                 },
             },
             items: itemsPayload,
@@ -146,6 +146,7 @@ export async function captureOrder(orderId: string): Promise<any> {
         const purchasedItems = purchaseUnit.items.map((item: any) => {
             const product = products.find(p => p.id === item.sku);
             if (!product) {
+                // This case should ideally not happen if createOrder is working correctly
                 return { name: item.name, quantity: parseInt(item.quantity), downloadUrl: '', price: parseFloat(item.unit_amount.value) };
             }
             return {
@@ -156,6 +157,8 @@ export async function captureOrder(orderId: string): Promise<any> {
             };
         });
 
+        // The email sending is important, but we won't let it block the success response.
+        // We'll log an error if it fails, but the user will still see the success page.
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -163,7 +166,7 @@ export async function captureOrder(orderId: string): Promise<any> {
             orderId: data.id,
             products: purchasedItems,
         }).catch(err => {
-            console.error("Failed to send confirmation email:", err);
+            console.error("Critical Error: Failed to send confirmation email after successful payment:", err);
         });
         
         return { 
@@ -175,5 +178,5 @@ export async function captureOrder(orderId: string): Promise<any> {
     }
 
     // If status is not COMPLETED for some reason
-    return data;
+    throw new Error(`Payment status was not 'COMPLETED'. Status: ${data.status}`);
 }
