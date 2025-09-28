@@ -48,32 +48,33 @@ export async function createOrder(cart: CartItem[]) {
     throw new Error('Cart is empty.');
   }
 
-  let itemTotalValue = 0;
+  let itemTotalValueInCents = 0;
   const items = cart.map(cartItem => {
     const productDetails = products.find(p => p.id === cartItem.id);
     if (!productDetails) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
-
-    const itemPrice = productDetails.price;
-    itemTotalValue += itemPrice * cartItem.quantity;
+    
+    // Use cents for calculation to avoid floating point issues
+    const itemPriceInCents = Math.round(productDetails.price * 100);
+    itemTotalValueInCents += itemPriceInCents * cartItem.quantity;
 
     return {
       name: productDetails.name.substring(0, 127),
       sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        value: itemPrice.toFixed(2),
+        value: (itemPriceInCents / 100).toFixed(2),
       },
       quantity: String(cartItem.quantity),
     };
   });
   
-  if (itemTotalValue <= 0) {
+  if (itemTotalValueInCents <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
 
-  const totalValue = itemTotalValue.toFixed(2);
+  const totalValue = (itemTotalValueInCents / 100).toFixed(2);
   
   const payload = {
     intent: 'CAPTURE',
