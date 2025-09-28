@@ -47,14 +47,12 @@ export default function CheckoutPage() {
         )
     }
 
-    // This function now runs entirely on the client
     const createOrder = (data: CreateOrderData, actions: any) => {
         console.log("CLIENT-SIDE: createOrder triggered. Creating order payload...");
         setError(null);
 
-        // Calculate the total value from the cart.
         const totalValue = (cart.reduce((acc, item) => acc + item.price * item.quantity, 0) / 100).toFixed(2);
-        
+
         if (parseFloat(totalValue) <= 0) {
             setError("Cannot create an order with a total value of zero.");
             return Promise.reject(new Error("Cannot create an order with a total value of zero."));
@@ -62,14 +60,36 @@ export default function CheckoutPage() {
 
         console.log(`CLIENT-SIDE: Calculated total value: $${totalValue}`);
         
-        // Directly create the order with the PayPal SDK
-        return actions.order.create({
-            purchase_units: [{
-                amount: {
-                    value: totalValue,
-                    currency_code: 'USD'
+        // Construct the item list for PayPal
+        const purchaseItems = cart.map(item => ({
+            name: item.name,
+            unit_amount: {
+                currency_code: 'USD',
+                value: (item.price / 100).toFixed(2)
+            },
+            quantity: item.quantity.toString(),
+            sku: item.id, // Pass product ID as SKU for backend fulfillment
+            category: 'DIGITAL_GOODS'
+        }));
+        
+        const purchase_units = [{
+            amount: {
+                currency_code: 'USD',
+                value: totalValue,
+                breakdown: {
+                    item_total: {
+                        currency_code: 'USD',
+                        value: totalValue
+                    }
                 }
-            }],
+            },
+            items: purchaseItems
+        }];
+        
+        console.log("CLIENT-SIDE: Full order payload:", JSON.stringify({ purchase_units }, null, 2));
+
+        return actions.order.create({
+            purchase_units,
             application_context: {
                 brand_name: "Cuddleia",
                 shipping_preference: "NO_SHIPPING"
@@ -85,7 +105,6 @@ export default function CheckoutPage() {
             const details = await actions.order.capture();
             console.log("CHECKOUT PAGE: onApprove capture successful. Full details:", details);
             
-            // Call server to record the transaction and send emails.
             const res = await fetch(`/api/paypal/capture-order`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
