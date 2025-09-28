@@ -44,10 +44,31 @@ async function getPayPalAccessToken(): Promise<string> {
 export async function createOrder(cartItems: CartItem[]): Promise<any> {
   const accessToken = await getPayPalAccessToken();
 
-  const totalValue = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  
-  // Format totalValue to a string with two decimal places
+  // 1. Validate and sanitize items before they are used
+  const validItems = cartItems.filter(item => 
+    item &&
+    typeof item.name === 'string' && item.name.trim() !== '' &&
+    typeof item.price === 'number' && item.price > 0 &&
+    typeof item.quantity === 'number' && item.quantity >= 1
+  );
+
+  if (validItems.length !== cartItems.length) {
+      console.warn("Some items were filtered from the cart due to invalid data.", { originalCount: cartItems.length, validCount: validItems.length });
+  }
+
+  if (validItems.length === 0) {
+      throw new Error("Cart is empty or contains only invalid items.");
+  }
+
+  // 2. Calculate total value from validated items
+  const totalValue = validItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const totalValueInDollars = (totalValue / 100).toFixed(2);
+
+  // 3. Check for zero-value total
+  if (parseFloat(totalValueInDollars) <= 0) {
+      throw new Error("Cannot create an order with a total value of zero.");
+  }
+
 
   const payload = {
     intent: "CAPTURE",
@@ -56,18 +77,11 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
         amount: {
           currency_code: "USD",
           value: totalValueInDollars,
-          breakdown: {
-            item_total: {
-              currency_code: "USD",
-              value: totalValueInDollars,
-            }
-          }
         },
-        items: cartItems.map((item) => ({
+        items: validItems.map((item) => ({
             name: item.name.substring(0, 127),
             unit_amount: {
                 currency_code: "USD",
-                // Format unit_amount to a string with two decimal places
                 value: (item.price / 100).toFixed(2),
             },
             quantity: String(item.quantity),
@@ -83,7 +97,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
   };
 
   try {
-    console.log("Creating PayPal order with payload:", JSON.stringify(payload, null, 2));
+    console.log("Attempting to create PayPal order with payload:", JSON.stringify(payload, null, 2));
     const response = await axios.post(
       `${PAYPAL_API_URL}/v2/checkout/orders`,
       payload,
