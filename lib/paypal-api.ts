@@ -3,10 +3,10 @@ import type { CartItem } from '@/lib/types';
 import { products } from './products';
 import { sendOrderConfirmationEmail, type ProductInfo } from './email';
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API } = process.env;
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL } = process.env;
 
-if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API) {
-  throw new Error("Missing PayPal API credentials in .env file");
+if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SITE_URL) {
+  throw new Error("Missing required PayPal or site URL environment variables in .env file");
 }
 
 /**
@@ -40,8 +40,8 @@ async function getAccessToken(): Promise<string> {
  */
 export async function createOrder(cart: CartItem[]) {
   const accessToken = await getAccessToken();
-  const returnUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/checkout/success`;
-  const cancelUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/cart`;
+  const returnUrl = `${NEXT_PUBLIC_SITE_URL}/checkout/success`;
+  const cancelUrl = `${NEXT_PUBLIC_SITE_URL}/cart`;
 
   // --- Data Sanitization and Validation ---
   if (!cart || cart.length === 0) {
@@ -77,15 +77,13 @@ export async function createOrder(cart: CartItem[]) {
   
   const payload = {
     intent: 'CAPTURE',
-    // Configuration to streamline guest checkout (pay with card)
+    // Configuration to streamline guest checkout and define return URLs
     application_context: {
       return_url: returnUrl,
       cancel_url: cancelUrl,
       shipping_preference: 'NO_SHIPPING', // For digital goods
       user_action: 'PAY_NOW', // Presents a "Pay Now" button to the user
-      payment_method: {
-          payee_preferred: 'IMMEDIATE_PAYMENT_REQUIRED',
-      },
+      brand_name: 'Cuddleia',
       landing_page: 'GUEST_CHECKOUT',
     },
     purchase_units: [{
