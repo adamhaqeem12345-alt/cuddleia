@@ -11,12 +11,6 @@ const nextConfig = {
             },
             {
                 protocol: 'https',
-                hostname: 'www.paypalobjects.com',
-                port: '',
-                pathname: '/**',
-            },
-            {
-                protocol: 'https',
                 hostname: 'i.ibb.co',
                 port: '',
                 pathname: '/**',

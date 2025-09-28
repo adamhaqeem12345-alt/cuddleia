@@ -4,9 +4,8 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
-import { Loader2, Lock, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
 function CheckoutPageContent() {
     const { getPrice, cart, isCartReady } = useCart();
@@ -74,15 +73,9 @@ function CheckoutPageContent() {
 
 
                     <p className="text-center text-xs text-muted-foreground mb-6 max-w-sm mx-auto">
-                        You'll be redirected to a secure gateway to complete your payment using your PayPal account or any major credit/debit card.
+                        Our store is currently in testing mode for demonstration purposes. This is a non-functional checkout.
                     </p>
                     
-                    <div className="mt-6">
-                        <Button className="w-full rounded-full font-bold" size="lg" disabled>
-                            <Lock className="mr-2 h-4 w-4" />
-                            Proceed to Secure Payment
-                        </Button>
-                    </div>
                 </div>
             </div>
         </AnimateIn>
