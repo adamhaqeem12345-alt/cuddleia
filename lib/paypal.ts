@@ -2,7 +2,7 @@ import type { CartItem } from './types';
 
 const CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const PAYPAL_API_BASE = process.env.PAYPAL_API_BASE || 'https://api-m.paypal.com'; // Live PayPal API
+const PAYPAL_API_BASE = 'https://api-m.paypal.com'; // Live PayPal API
 
 /**
  * Generates an OAuth 2.0 access token for authenticating with PayPal's API.
