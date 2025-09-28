@@ -1,4 +1,3 @@
-
 import type { Metadata } from 'next';
 import { Belleza, Alegreya } from 'next/font/google';
 import '@/app/globals.css';
