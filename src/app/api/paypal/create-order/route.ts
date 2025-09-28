@@ -1,52 +1,24 @@
 
 import { NextResponse } from 'next/server';
-
-async function getAccessToken() {
-  const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
-  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-      throw new Error("PayPal credentials are not set in environment variables.");
-  }
-
-  const auth = Buffer.from(
-    PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET
-  ).toString("base64");
-
-  const response = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: "grant_type=client_credentials"
-  });
-
-  if (!response.ok) {
-      const errorBody = await response.text();
-      console.error("Failed to get PayPal access token:", errorBody);
-      throw new Error("Failed to authenticate with PayPal.");
-  }
-
-  const data = await response.json();
-  return data.access_token;
-}
+import { getPayPalAccessToken } from '@/lib/paypal-api';
+import type { CartItem } from '@/lib/types';
 
 export async function POST(req: Request) {
   try {
-    const accessToken = await getAccessToken();
+    const accessToken = await getPayPalAccessToken();
     const { cartItems } = await req.json();
 
-    if (!cartItems || cartItems.length === 0) {
-      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+      return NextResponse.json({ error: "Cart is empty or invalid" }, { status: 400 });
     }
 
-    const totalValue = cartItems.reduce((acc: number, item: any) => {
-        return acc + item.price * item.quantity;
+    const totalValue = cartItems.reduce((acc: number, item: CartItem) => {
+        return acc + (item.price * item.quantity);
     }, 0);
 
     const totalValueInDollars = (totalValue / 100).toFixed(2);
 
-
-    const order = {
+    const orderPayload = {
       intent: "CAPTURE",
       purchase_units: [
         {
@@ -60,14 +32,14 @@ export async function POST(req: Request) {
                 }
             }
           },
-          items: cartItems.map((item: any) => ({
+          items: cartItems.map((item: CartItem) => ({
               name: item.name.substring(0, 127),
               unit_amount: {
                   currency_code: "USD",
                   value: (item.price / 100).toFixed(2),
               },
               quantity: String(item.quantity),
-              sku: item.id.substring(0, 50)
+              sku: item.id.substring(0, 127)
           }))
         }
       ],
@@ -75,28 +47,28 @@ export async function POST(req: Request) {
         brand_name: "Cuddleia",
         user_action: "PAY_NOW",
         shipping_preference: "NO_SHIPPING",
-        return_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/thank-you` : 'http://localhost:3000/thank-you',
-        cancel_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/cart` : 'http://localhost:3000/cart',
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/thank-you`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/cart`,
       }
     };
 
-    const response = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
+    const response = await fetch(`${process.env.PAYPAL_API}/v2/checkout/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`
       },
-      body: JSON.stringify(order)
+      body: JSON.stringify(orderPayload)
     });
 
     const data = await response.json();
     
-    // Detailed log of PayPal's response
     console.log("Full PayPal create-order response:", JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       console.error("PayPal create order failed:", data);
-      throw new Error(data.message || "Failed to create PayPal order.");
+      const errorMessage = data?.details?.[0]?.description || data.message || "Failed to create PayPal order.";
+      throw new Error(errorMessage);
     }
     
     if (!data.id) {
@@ -104,11 +76,10 @@ export async function POST(req: Request) {
        throw new Error("PayPal response did not include an order ID.");
     }
 
-    // Return only the order ID as required by the PayPal SDK
     return NextResponse.json({ id: data.id });
 
   } catch (err: any) {
     console.error("PayPal API /create-order error:", err.message);
-    return NextResponse.json({ error: err.message || "Something went wrong" }, { status: 500 });
+    return NextResponse.json({ error: err.message || "An unexpected error occurred." }, { status: 500 });
   }
 }

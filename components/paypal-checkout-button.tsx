@@ -4,7 +4,6 @@
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useCart } from '@/context/cart-context';
 
-
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
 export function PayPalButtonsComponent() {
@@ -54,11 +53,9 @@ export function PayPalButtonsComponent() {
                     
                     const details = await res.json();
                     
-                    // Detailed log of capture response on the client-side
                     console.log("Full capture response on client:", JSON.stringify(details, null, 2));
                     
                     if (res.ok && details.status === "COMPLETED") {
-                        // Redirect on success, passing PayPal token for confirmation
                         window.location.href = `/thank-you?token=${data.orderID}&PayerID=${data.payerID}`;
                     } else {
                          throw new Error(details.error || "Payment could not be completed.");

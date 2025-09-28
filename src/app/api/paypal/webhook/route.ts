@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { verifyWebhook } from '@/lib/paypal-api';
 
@@ -19,7 +20,10 @@ export async function POST(req: Request) {
     if (eventType === 'CHECKOUT.ORDER.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
        const orderData = body.resource;
        const payerEmail = orderData.payer.email_address;
-       console.log(`Processing webhook for completed order from ${payerEmail}`);
+       const payerName = orderData.payer.name.given_name;
+       console.log(`Processing webhook for completed order ${orderData.id} from ${payerName} <${payerEmail}>.`);
+       // TODO: Fulfill the order (e.g., send digital goods via email, update database).
+       // Example: await sendEmailWithDownloadLinks(orderData);
     }
 
     return NextResponse.json({ status: "success" });

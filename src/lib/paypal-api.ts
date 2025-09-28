@@ -1,13 +1,11 @@
 
 'use server';
 
-import type { ProductInfo } from '@/types/index';
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API_URL } = process.env;
+const PAYPAL_API = PAYPAL_API_URL || 'https://api-m.paypal.com';
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API } = process.env;
-
-if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API) {
-  // Instead of throwing, log a warning. The route will handle the error gracefully.
-  console.warn("PayPal environment variables are not fully set. PayPal functionality will be disabled.");
+if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+  console.warn("PayPal environment variables (PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET) are not fully set. PayPal functionality will be disabled.");
 }
 
 /**
@@ -15,7 +13,7 @@ if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API) {
  * This function is exported so it can be used by any server-side module.
  */
 export async function getPayPalAccessToken(): Promise<string> {
-  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API) {
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
     throw new Error("PayPal environment variables are not configured.");
   }
   
@@ -29,7 +27,7 @@ export async function getPayPalAccessToken(): Promise<string> {
         Authorization: `Basic ${auth}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      cache: 'no-store' // Ensure we always get a fresh token if needed, though PayPal's expires_in is long.
+      cache: 'no-store'
     });
 
     if (!response.ok) {
@@ -66,7 +64,8 @@ export async function captureOrder(orderId: string): Promise<any> {
     const jsonResponse = await response.json();
     if (!response.ok) {
        console.error(`PayPal capture order failed with status ${response.status}:`, jsonResponse);
-       throw new Error(jsonResponse?.message || `Failed to capture PayPal order.`);
+       const errorMessage = jsonResponse?.details?.[0]?.description || jsonResponse.message || "Failed to capture PayPal order."
+       throw new Error(errorMessage);
     }
 
     return jsonResponse;
