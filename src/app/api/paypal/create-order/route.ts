@@ -4,19 +4,20 @@ import { getPayPalAccessToken } from '@/lib/paypal-api';
 import type { CartItem } from '@/lib/types';
 
 /**
- * Converts a number to a string with exactly two decimal places.
- * e.g., 1500 -> "15.00", 25 -> "0.25"
+ * Converts a number in cents to a string with exactly two decimal places.
+ * e.g., 1500 -> "15.00"
  */
 function toTwoDecimalString(priceInCents: number): string {
   return (priceInCents / 100).toFixed(2);
 }
 
 /**
- * Strips invalid characters from a string to be used in PayPal descriptions.
+ * Strips invalid characters from a string for use in PayPal fields.
+ * PayPal has limitations on character sets and length.
  */
-function sanitizeString(str: string): string {
-    // Removes emojis and other non-standard characters.
-    return str.replace(/[^\w\s.,-]/g, '').slice(0, 127);
+function sanitizeString(str: string, maxLength: number): string {
+    // Removes non-alphanumeric, non-space, and basic punctuation characters.
+    return str.replace(/[^\w\s.,-]/g, '').slice(0, maxLength);
 }
 
 
@@ -36,11 +37,11 @@ export async function POST(req: Request) {
     const items = cartItems.map((item) => {
         const unitAmount = toTwoDecimalString(item.price); // Convert cents to "?.??" string
         return {
-            name: sanitizeString(item.name),
-            description: sanitizeString(item.description).slice(0, 127),
+            name: sanitizeString(item.name, 127),
+            description: sanitizeString(item.description, 127),
             unit_amount: { currency_code: currency, value: unitAmount },
             quantity: String(item.quantity), // Quantity must be a string
-            sku: sanitizeString(item.id).slice(0, 127),
+            sku: sanitizeString(item.id, 127),
         };
     });
 
@@ -89,14 +90,15 @@ export async function POST(req: Request) {
     const jsonResponse = await response.json();
     if (!response.ok) {
        console.error(`PayPal create order failed with status ${response.status}:`, jsonResponse);
-       throw new Error(jsonResponse?.message || `Failed to create PayPal order.`);
+       const errorMessage = jsonResponse?.details?.[0]?.description || jsonResponse?.message || `Failed to create PayPal order.`;
+       throw new Error(errorMessage);
     }
 
-    // Return only the valid PayPal order ID
+    // Return only the valid PayPal order ID, which is what the frontend SDK needs.
     return NextResponse.json({ id: jsonResponse.id });
 
   } catch (err: any) {
-    console.error("create-order error:", err);
+    console.error("create-order error:", err.message);
     return NextResponse.json({ error: err.message || "Create order failed" }, { status: 500 });
   }
 }
