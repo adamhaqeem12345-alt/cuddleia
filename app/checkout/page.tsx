@@ -59,8 +59,6 @@ export default function CheckoutPage() {
             
             const data = await res.json();
             
-            console.log("CHECKOUT PAGE: Response from /api/paypal/create-order:", data);
-
             if (res.ok && data.id) {
                 console.log("CHECKOUT PAGE: createOrder API call successful. Order ID:", data.id);
                 return data.id;
@@ -90,12 +88,10 @@ export default function CheckoutPage() {
             });
             const details = await res.json();
             
-            // Log the full capture details
             console.log("CHECKOUT PAGE: onApprove capture API response:", details);
 
             if (res.ok && details.status === "COMPLETED") {
                 console.log("CHECKOUT PAGE: onApprove success! Redirecting to thank you page.");
-                // Redirect to a thank you page on successful capture, passing the PayPal Order ID as a token
                 window.location.href = `/thank-you?token=${details.id}`;
             } else {
                 const errorMessage = details.details || details.error || "Payment could not be completed.";
@@ -110,9 +106,8 @@ export default function CheckoutPage() {
     };
     
     const onErrorHandler = (err: any) => {
-        // This handler catches errors from the PayPal SDK itself (e.g., pop-up failed to open)
         console.error("CHECKOUT PAGE: PayPalButtons onErrorHandler was triggered.", JSON.stringify(err, null, 2));
-        setError("An unexpected error occurred with the PayPal button. Please try refreshing the page.");
+        setError("An unexpected error occurred with the PayPal button. Please try refreshing the page or contact support if the problem persists.");
     };
 
     return (
