@@ -4,8 +4,7 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 
 function CheckoutPageContent() {
     const { getPrice, cart, isCartReady } = useCart();
