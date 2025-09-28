@@ -8,7 +8,6 @@ import { AnimateIn } from '@/components/animate-in';
 import { Loader2, AlertTriangle, Lock, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PayPalProvider } from '@/context/paypal-provider';
 
 export default function CheckoutPage() {
     const { cart, getPrice, isCartReady } = useCart();
@@ -124,7 +123,6 @@ export default function CheckoutPage() {
     };
 
     return (
-      <PayPalProvider>
         <AnimateIn>
             <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24">
                  <h1 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -195,6 +193,5 @@ export default function CheckoutPage() {
                 </div>
             </div>
         </AnimateIn>
-      </PayPalProvider>
     );
 }
