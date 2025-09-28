@@ -62,12 +62,9 @@ export async function createOrder(cart: CartItem[]) {
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
-    
-    // Summarize product name if it's too long
-    const finalName = await summarizeProductName(productDetails.name);
 
     return {
-      name: finalName,
+      name: `Cuddleia Digital Product`, // Simplified Name
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
