@@ -1,5 +1,5 @@
 
-import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 export interface ProductInfo {
     name: string;
@@ -16,6 +16,21 @@ export interface EmailPayload {
     products: ProductInfo[];
 }
 
+// Nodemailer is now an ES module, so we need to use dynamic import in CommonJS environments.
+async function getTransporter(): Promise<Transporter> {
+    const nodemailer = await import('nodemailer');
+    return nodemailer.createTransport({
+        host: 'smtp.zoho.com',
+        port: 465,
+        secure: true, 
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+}
+
+
 export async function sendOrderConfirmationEmail(payload: EmailPayload) {
     const { customerName, customerEmail, total, orderId, products } = payload;
     
@@ -26,15 +41,7 @@ export async function sendOrderConfirmationEmail(payload: EmailPayload) {
         return;
     }
     
-    const transporter = nodemailer.createTransport({
-        host: 'smtp.zoho.com',
-        port: 465,
-        secure: true, 
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+    const transporter = await getTransporter();
 
     const productDetails = products.map(p => {
         return `
