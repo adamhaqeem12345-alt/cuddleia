@@ -1,3 +1,4 @@
+
 /**
  * @file This file contains the core logic for interacting with the PayPal v2 Orders API.
  * It includes functions for creating an order, capturing an order, and generating an access token.
@@ -12,7 +13,9 @@ interface CartItemFromClient {
 }
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
-const PAYPAL_API = process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com';
+const PAYPAL_API = process.env.NODE_ENV === 'production' 
+  ? 'https://api-m.paypal.com' 
+  : 'https://api-m.sandbox.paypal.com';
 
 if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
     throw new Error("PayPal client ID or secret is not configured in environment variables.");
@@ -160,8 +163,6 @@ export async function captureOrder(orderId: string): Promise<any> {
 
         // The email sending is important, but we won't let it block the success response.
         // We'll log an error if it fails, but the user will still see the success page.
-        // Disabling this for now to isolate the payment error
-        /*
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -171,7 +172,6 @@ export async function captureOrder(orderId: string): Promise<any> {
         }).catch(err => {
             console.error("Critical Error: Failed to send confirmation email after successful payment:", err);
         });
-        */
         
         return { 
             orderId: data.id,
