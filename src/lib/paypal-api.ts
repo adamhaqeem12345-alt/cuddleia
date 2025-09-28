@@ -7,16 +7,13 @@ import type { CartItem } from './types';
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 const PAYPAL_API_URL = 'https://api-m.sandbox.paypal.com';
 
-if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-  console.warn("PayPal environment variables (PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET) are not fully set. PayPal functionality will be disabled.");
-}
-
 /**
  * Fetches a PayPal access token.
  */
 async function getPayPalAccessToken(): Promise<string> {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-    throw new Error("PayPal client ID or secret is not configured.");
+    console.error("FATAL: PayPal client ID or secret is not configured in environment variables.");
+    throw new Error("Server is not configured for PayPal payments.");
   }
   
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64");
@@ -61,12 +58,6 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
         amount: {
           currency_code: "USD",
           value: totalValueInDollars,
-          breakdown: {
-              item_total: {
-                  currency_code: "USD",
-                  value: totalValueInDollars
-              }
-          }
         },
         items: cartItems.map((item) => ({
             name: item.name.substring(0, 127), // PayPal API has a 127 char limit for item name

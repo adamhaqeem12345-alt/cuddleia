@@ -65,12 +65,12 @@ export default function CheckoutPage() {
             } else {
                 const errorDetails = data.details || data.error || "Unknown error from server.";
                 console.error("CHECKOUT PAGE: createOrder API call failed.", errorDetails);
-                setError(`Failed to create transaction: ${errorDetails}`);
-                throw new Error(errorDetails);
+                // This specific error message is now critical for diagnosis
+                throw new Error(`Failed to create transaction: ${errorDetails}`);
             }
         } catch (err: any) {
             console.error("CHECKOUT PAGE: CATCH BLOCK in createOrderHandler.", err);
-            setError(`Failed to create transaction: ${err.message}`);
+            setError(err.message); // Display the specific error from the catch block
             // This throw is important for PayPal to know the order creation failed and to show its own error UI.
             throw err; 
         }
@@ -106,8 +106,10 @@ export default function CheckoutPage() {
     };
     
     const onErrorHandler = (err: any) => {
+        // This handler will now receive more specific errors thrown from createOrderHandler
         console.error("CHECKOUT PAGE: PayPalButtons onErrorHandler was triggered.", JSON.stringify(err, null, 2));
-        setError("An unexpected error occurred with the PayPal button. Please try refreshing the page or contact support if the problem persists.");
+        const message = err.message || "An unexpected error occurred with the PayPal button. Please try refreshing the page or contact support if the problem persists.";
+        setError(message);
     };
 
     return (
