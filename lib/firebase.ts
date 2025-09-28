@@ -12,8 +12,9 @@ const firebaseConfig = {
   databaseURL: "https://studio-5450973740-67f46-default-rtdb.firebaseio.com",
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Initialize Firebase for server-side use
+// A simple initialization is sufficient and safer for server environments.
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 export { app, db };
