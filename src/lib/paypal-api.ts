@@ -1,6 +1,9 @@
 
 'use server';
 
+import axios from 'axios';
+import type { CartItem } from './types';
+
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API_URL } = process.env;
 const PAYPAL_API = PAYPAL_API_URL || 'https://api-m.paypal.com';
 
@@ -10,9 +13,8 @@ if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
 
 /**
  * Fetches a PayPal access token.
- * This function is exported so it can be used by any server-side module.
  */
-export async function getPayPalAccessToken(): Promise<string> {
+async function getPayPalAccessToken(): Promise<string> {
   if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
     throw new Error("PayPal environment variables are not configured.");
   }
@@ -20,27 +22,90 @@ export async function getPayPalAccessToken(): Promise<string> {
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64");
   
   try {
-    const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
-      method: "POST",
-      body: "grant_type=client_credentials",
-      headers: {
-        Authorization: `Basic ${auth}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      cache: 'no-store'
-    });
+    const response = await axios.post(
+      `${PAYPAL_API}/v1/oauth2/token`,
+      "grant_type=client_credentials",
+      {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+    return response.data.access_token;
+  } catch (error: any) {
+    console.error("Error fetching PayPal access token:", error.response ? error.response.data : error.message);
+    throw new Error("Could not fetch PayPal access token.");
+  }
+}
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error("Failed to get PayPal access token response:", errorBody);
-      throw new Error(`Failed to get PayPal access token: ${response.statusText}`);
+/**
+ * Creates a PayPal order for the given cart items.
+ * @param cartItems The items in the user's shopping cart.
+ */
+export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }> {
+  const accessToken = await getPayPalAccessToken();
+
+  const totalValue = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const totalValueInDollars = (totalValue / 100).toFixed(2);
+
+  const payload = {
+    intent: "CAPTURE",
+    purchase_units: [
+      {
+        amount: {
+          currency_code: "USD",
+          value: totalValueInDollars,
+          breakdown: {
+              item_total: {
+                  currency_code: "USD",
+                  value: totalValueInDollars
+              }
+          }
+        },
+        items: cartItems.map((item) => ({
+            name: item.name.substring(0, 127),
+            unit_amount: {
+                currency_code: "USD",
+                value: (item.price / 100).toFixed(2),
+            },
+            quantity: String(item.quantity),
+            sku: item.id.substring(0, 127)
+        }))
+      }
+    ],
+    application_context: {
+        brand_name: "Cuddleia",
+        user_action: "PAY_NOW",
+        shipping_preference: "NO_SHIPPING",
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/thank-you`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/cart`,
     }
+  };
 
-    const data = await response.json();
-    return data.access_token;
-  } catch (error) {
-    console.error("Error fetching PayPal access token:", error);
-    throw error;
+  try {
+    const response = await axios.post(
+      `${PAYPAL_API}/v2/checkout/orders`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    
+    console.log("Full PayPal create-order response:", JSON.stringify(response.data, null, 2));
+
+    if (!response.data.id) {
+       console.error("PayPal create-order response missing 'id':", response.data);
+       throw new Error("PayPal response did not include an order ID.");
+    }
+    
+    return { id: response.data.id };
+  } catch (error: any) {
+    console.error("Error creating PayPal order:", error.response ? error.response.data : error.message);
+    throw new Error("Could not create PayPal order.");
   }
 }
 
@@ -53,28 +118,25 @@ export async function captureOrder(orderId: string): Promise<any> {
   const accessToken = await getPayPalAccessToken();
 
   try {
-    const response = await fetch(`${PAYPAL_API}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const response = await axios.post(
+      `${PAYPAL_API}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+      null,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-    const jsonResponse = await response.json();
-    if (!response.ok) {
-       console.error(`PayPal capture order failed with status ${response.status}:`, jsonResponse);
-       const errorMessage = jsonResponse?.details?.[0]?.description || jsonResponse.message || "Failed to capture PayPal order."
-       throw new Error(errorMessage);
-    }
-
-    return jsonResponse;
-  } catch (error) {
-    console.error("Error capturing PayPal order:", error);
+    console.log("Full PayPal capture-order response:", JSON.stringify(response.data, null, 2));
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("Error capturing PayPal order:", error.response ? error.response.data : error.message);
     throw new Error("Could not capture PayPal order.");
   }
 }
-
 
 /**
  * Verifies a webhook signature from PayPal.
@@ -101,24 +163,20 @@ export async function verifyWebhook(headers: Headers, body: any): Promise<boolea
         webhook_event: body,
     };
     
-    const response = await fetch(`${PAYPAL_API}/v1/notifications/verify-webhook-signature`, {
-        method: 'POST',
+    const response = await axios.post(
+      `${PAYPAL_API}/v1/notifications/verify-webhook-signature`,
+      verificationPayload,
+      {
         headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(verificationPayload),
-    });
+      }
+    );
 
-    if (!response.ok) {
-        console.error("Webhook verification request failed:", response.status, await response.text());
-        return false;
-    }
-    
-    const verificationStatus = await response.json();
-    return verificationStatus.verification_status === 'SUCCESS';
-  } catch (error) {
-    console.error("Error verifying PayPal webhook:", error);
+    return response.data.verification_status === 'SUCCESS';
+  } catch (error: any) {
+    console.error("Error verifying PayPal webhook:", error.response ? error.response.data : error.message);
     return false;
   }
 }
