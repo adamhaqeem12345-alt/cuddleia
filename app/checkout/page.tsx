@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -11,25 +12,24 @@ import { Button } from '@/components/ui/button';
 
 
 export default function CheckoutPage() {
-    const { cart, getPrice, isCartReady } = useCart();
+    const { cart, getPrice, isCartReady, clearCart } = useCart();
     const router = useRouter();
-    const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-    const [errorMessage, setErrorMessage] = useState('An unexpected error occurred. Please try again.');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const { usd: subtotalUSD, myr: subtotalMYR } = getPrice(subtotal);
 
     useEffect(() => {
-        if (isCartReady) {
-            if (cart.length === 0) {
-                router.replace('/products');
-            } else {
-                setStatus('ready');
-            }
+        // If the cart is ready and it's empty, redirect the user away from checkout.
+        if (isCartReady && cart.length === 0) {
+            router.replace('/products');
         }
     }, [cart.length, isCartReady, router]);
 
     const createOrder = async (): Promise<string> => {
+        setIsProcessing(true);
+        setErrorMessage(null);
         try {
             const response = await fetch('/api/paypal/create-order', {
                 method: 'POST',
@@ -44,13 +44,13 @@ export default function CheckoutPage() {
         } catch (error) {
             const msg = error instanceof Error ? error.message : 'An unknown error occurred creating the order.';
             setErrorMessage(msg);
-            setStatus('error');
-            console.error('Create Order Error:', error);
+            setIsProcessing(false);
             throw new Error(msg); // Throw to stop the PayPal flow
         }
     };
     
     const onApprove = async (data: OnApproveData): Promise<void> => {
+        setIsProcessing(true);
         try {
             const response = await fetch('/api/paypal/capture-order', {
                 method: 'POST',
@@ -63,26 +63,25 @@ export default function CheckoutPage() {
             if (!response.ok) {
                 throw new Error(capturedData.error || 'Failed to capture payment.');
             }
-
-            // Redirect to a success page, passing the order ID for verification
+            
+            clearCart(); // Clear cart after successful payment
             router.push(`/checkout/success?token=${data.orderID}&PayerID=${data.payerID}`);
 
         } catch (error) {
-             const msg = error instanceof Error ? error.message : 'An unknown error occurred capturing the payment.';
+            const msg = error instanceof Error ? error.message : 'An unknown error occurred capturing the payment.';
             setErrorMessage(msg);
-            setStatus('error');
-            console.error('Capture Order Error:', error);
-            // The PayPalButtons component will automatically handle showing an error to the user in the popup.
+            setIsProcessing(false);
         }
     };
 
     const onError = (err: any) => {
         console.error("PayPal Buttons Error:", err);
-        setErrorMessage("An error occurred with the PayPal payment. Please try again.");
-        setStatus('error');
+        setErrorMessage("An error occurred with the PayPal payment. Please try again or contact support.");
+        setIsProcessing(false);
     };
 
-    if (!isCartReady || status === 'loading') {
+    // Show a loading spinner while the cart is being loaded from localStorage
+    if (!isCartReady) {
         return (
             <div className="container mx-auto px-4 py-24 text-center">
                 <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
@@ -136,26 +135,30 @@ export default function CheckoutPage() {
                             <div className="bg-white p-8 rounded-2xl shadow-lg border flex flex-col justify-center">
                                 <h2 className="font-headline text-2xl font-semibold mb-6 text-center">Payment Method</h2>
                                 
-                                {status === 'error' && (
+                                {errorMessage && (
                                     <div className="text-center p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 mb-6">
                                         <AlertTriangle className="inline-block h-5 w-5 mr-2" />
                                         <p className="inline-block align-middle font-semibold text-sm">{errorMessage}</p>
                                     </div>
                                 )}
 
-                                {status === 'ready' ? (
+                                {(isProcessing) && (
+                                     <div className="text-center">
+                                        <Loader2 className="mx-auto h-8 w-8 text-primary animate-spin" />
+                                        <p className="mt-2 text-muted-foreground">Processing Payment...</p>
+                                     </div>
+                                )}
+
+                                <div style={{ display: isProcessing ? 'none' : 'block' }}>
                                     <PayPalButtons
                                         style={{ layout: "vertical", label: "pay" }}
                                         createOrder={createOrder}
                                         onApprove={onApprove}
                                         onError={onError}
+                                        disabled={isProcessing}
                                     />
-                                ) : (
-                                     <div className="text-center">
-                                        <Loader2 className="mx-auto h-8 w-8 text-primary animate-spin" />
-                                        <p className="mt-2 text-muted-foreground">Initializing Payment...</p>
-                                     </div>
-                                )}
+                                </div>
+
                                 <p className="text-center text-xs text-muted-foreground mt-4">
                                     Payments are securely processed by PayPal. You can use your PayPal account or a debit/credit card.
                                 </p>
