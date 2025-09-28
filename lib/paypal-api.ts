@@ -1,7 +1,7 @@
-
 import type { CartItem } from '@/lib/types';
 import { products } from './products';
 import { sendOrderConfirmationEmail, type ProductInfo } from './email';
+import { summarizeProductName } from '@/ai/flows/summarize-product-name';
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL, EMAIL_USER, EMAIL_PASS, PAYPAL_WEBHOOK_ID } = process.env;
 
@@ -49,28 +49,28 @@ export async function createOrder(cart: CartItem[]) {
 
   let itemTotalInCents = 0;
 
-  const items = cart.map(cartItem => {
+  const items = await Promise.all(cart.map(async (cartItem) => {
     const productDetails = products.find(p => p.id === cartItem.id);
     if (!productDetails) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
+
+    const shortenedName = await summarizeProductName(productDetails.name);
     
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
-      name: productDetails.name.substring(0, 127),
+      name: shortenedName.substring(0, 127),
       sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        // CRITICAL: Must be a string with 2 decimal places
         value: (unitPriceInCents / 100).toFixed(2),
       },
-      // CRITICAL: Must be a string
       quantity: String(cartItem.quantity),
     };
-  });
+  }));
   
   // Convert total cents to a string with 2 decimal places
   const totalValue = (itemTotalInCents / 100).toFixed(2);
@@ -218,4 +218,3 @@ async function getProductInfoFromOrder(orderData: any): Promise<ProductInfo[]> {
         };
     });
 }
-
