@@ -64,7 +64,7 @@ export async function createOrder(cart: CartItem[]) {
       sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        value: productDetails.price.toFixed(2), // Ensure this is a string with 2 decimal places
+        value: productDetails.price.toFixed(2), // CRITICAL: Ensure this is a string with 2 decimal places
       },
       quantity: String(cartItem.quantity),
     };
