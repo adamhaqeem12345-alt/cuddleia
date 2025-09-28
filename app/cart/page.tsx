@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2, Lock, CreditCard, AlertTriangle } from 'lucide-react';
+import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
+import { PayPalCheckout } from '@/components/paypal-checkout';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, isCartReady } = useCart();
@@ -120,15 +121,7 @@ export default function CartPage() {
                         </div>
                      </div>
                      <div className="mt-8">
-                        <div className="bg-destructive/10 text-destructive-foreground p-4 rounded-lg text-center">
-                          <div className="flex items-center justify-center">
-                            <AlertTriangle className="h-5 w-5 mr-2 text-destructive"/>
-                            <h3 className="font-bold text-destructive">Checkout Unavailable</h3>
-                          </div>
-                          <p className="text-sm mt-2">
-                            Our payment system is currently offline. We apologize for the inconvenience.
-                          </p>
-                        </div>
+                        <PayPalCheckout />
                      </div>
                 </div>
             </div>
