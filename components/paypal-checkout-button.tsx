@@ -2,10 +2,13 @@
 'use client';
 
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { useCart } from '@/context/cart-context';
+
 
 const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
 export function PayPalButtonsComponent() {
+    const { cart } = useCart();
 
   if (!PAYPAL_CLIENT_ID) {
     console.error("PayPal Client ID is not configured. Checkout will not be available.");
@@ -17,7 +20,11 @@ export function PayPalButtonsComponent() {
         <PayPalButtons
         style={{ layout: "vertical" }}
         createOrder={async () => {
-            const res = await fetch("/api/paypal/create-order", { method: "POST" });
+            const res = await fetch("/api/paypal/create-order", {
+                 method: "POST",
+                 headers: { "Content-Type": "application/json" },
+                 body: JSON.stringify({ cartItems: cart }), // Pass cart items to backend
+            });
             const data = await res.json();
             return data.id; // 🔑 this must be only the string order ID
         }}
@@ -28,10 +35,14 @@ export function PayPalButtonsComponent() {
             body: JSON.stringify({ orderID: data.orderID })
             });
             const details = await res.json();
-            // This is where you would handle the post-purchase flow,
-            // like redirecting to a thank you page.
-            // For now, we'll just alert.
-            alert("Transaction completed by " + details.payer.name.given_name);
+            
+            if (details.status === "COMPLETED") {
+                // Redirect on success, passing PayPal token for confirmation
+                window.location.href = `/thank-you?token=${data.orderID}&PayerID=${data.payerID}`;
+            } else {
+                alert("Payment could not be completed.");
+                console.error(details);
+            }
         }}
         />
     </PayPalScriptProvider>

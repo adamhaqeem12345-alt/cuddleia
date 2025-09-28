@@ -33,17 +33,18 @@ async function getAccessToken() {
 export async function POST(req: Request) {
   try {
     const accessToken = await getAccessToken();
-    const { cartItems } = await req.json(); // cartItems from the frontend
+    const { cartItems } = await req.json();
 
     if (!cartItems || cartItems.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // Calculate the total value from cart items
+    // Calculate the total value from cart items, ensuring no floating point errors
     const totalValue = cartItems.reduce((acc: number, item: any) => {
-        // item.price is in cents, convert to dollars for calculation
-        return acc + (item.price / 100) * item.quantity;
-    }, 0).toFixed(2);
+        return acc + item.price * item.quantity;
+    }, 0);
+
+    const totalValueInDollars = (totalValue / 100).toFixed(2);
 
 
     const order = {
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
         {
           amount: {
             currency_code: "USD",
-            value: totalValue
+            value: totalValueInDollars
           }
         }
       ],
@@ -80,7 +81,6 @@ export async function POST(req: Request) {
       throw new Error(data.message || "Failed to create PayPal order.");
     }
     
-    // Return only the order ID to the frontend
     return NextResponse.json({ id: data.id });
 
   } catch (err: any) {
