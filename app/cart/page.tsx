@@ -39,8 +39,8 @@ export default function CartPage() {
             </Button>
           </div>
         ) : (
-          <div className="mt-12 lg:grid lg:grid-cols-12 lg:items-start lg:gap-x-12 xl:gap-x-16">
-            <section className="lg:col-span-7">
+          <div className="mt-12">
+            <section>
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -93,36 +93,17 @@ export default function CartPage() {
                     </TableRow>
                 </TableFooter>
               </Table>
-               <div className="mt-8">
+               <div className="mt-8 flex justify-between items-center">
                 <Button asChild variant="ghost">
                     <Link href="/products">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Continue Shopping
                     </Link>
                 </Button>
-              </div>
-            </section>
-
-            <section className="lg:col-span-5 mt-16 rounded-lg bg-gray-50/50 px-4 py-6 sm:p-6 lg:mt-0 lg:p-8 border shadow-sm">
-              <h2 className="text-lg font-medium text-foreground">Order summary</h2>
-              <div className="mt-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">Subtotal</p>
-                  <p className="text-sm font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
+                <div className='text-right text-sm text-muted-foreground'>
+                    <p>Checkout is currently disabled.</p>
+                    <p>(Approx. {subtotalPrice.myr.formatted})</p>
                 </div>
-                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">Approx. MYR</p>
-                  <p className="text-sm font-medium text-muted-foreground">{subtotalPrice.myr.formatted}</p>
-                </div>
-                <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                  <p className="text-base font-medium text-foreground">Order total (in USD)</p>
-                  <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
-                </div>
-              </div>
-               <div className="mt-6">
-                <Button className="w-full" size="lg" disabled>
-                    Checkout is Currently Disabled
-                </Button>
               </div>
             </section>
           </div>
