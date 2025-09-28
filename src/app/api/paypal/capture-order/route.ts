@@ -19,17 +19,12 @@ export async function POST(req: Request) {
         
         // Fulfill the order only if the capture is fully completed.
         if (capturedData.status === 'COMPLETED') {
-            console.log(`CAPTURE-ORDER: Order ${orderID} is COMPLETED. Fulfilling order...`);
+            console.log(`CAPTURE-ORDER: Order ${orderID} is COMPLETED. Awaiting fulfillment...`);
             
-            // Call the centralized fulfillment function.
-            // This will handle sending the email with download links.
-            // We'll run this and not wait for it to complete before responding to the client,
-            // but we will catch any immediate errors.
-            fulfillOrder(capturedData).catch(err => {
-                // This logs the fulfillment error on the server but doesn't block the client response.
-                // The webhook will act as a failsafe.
-                console.error(`CAPTURE-ORDER: Post-capture fulfillment failed for order ${orderID}. This will be retried by the webhook. Error:`, err);
-            });
+            // Await the fulfillment process to complete before responding to the client.
+            // This ensures the order is marked as processed in the database, preventing
+            // a race condition with the webhook.
+            await fulfillOrder(capturedData);
 
         } else {
              console.warn(`CAPTURE-ORDER: Order ${orderID} status is '${capturedData.status}', not 'COMPLETED'. Order will not be fulfilled immediately.`);
@@ -41,6 +36,8 @@ export async function POST(req: Request) {
     } catch (err: any) {
         console.error("CAPTURE-ORDER API CATCH BLOCK: An unexpected error occurred.", err);
         const errorMessage = err.message || "An unexpected error occurred during capture.";
-        return NextResponse.json({ error: "Failed to capture PayPal order.", details: errorMessage }, { status: 500 });
+        // Ensure the fulfillment error is included in the response if it's relevant
+        const errorDetails = err.message.includes("fulfillment") ? err.message : errorMessage;
+        return NextResponse.json({ error: "Failed to capture or fulfill PayPal order.", details: errorDetails }, { status: 500 });
     }
 }
