@@ -1,106 +1,99 @@
 
 import { NextResponse } from 'next/server';
-import { getPayPalAccessToken } from '@/lib/paypal-api';
-import type { CartItem } from '@/lib/types';
 
-/**
- * Converts a number in cents to a string with exactly two decimal places.
- * e.g., 1500 -> "15.00"
- */
-function toTwoDecimalString(priceInCents: number): string {
-  return (priceInCents / 100).toFixed(2);
+async function getAccessToken() {
+  const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+      throw new Error("PayPal credentials are not set in environment variables.");
+  }
+
+  const auth = Buffer.from(
+    PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET
+  ).toString("base64");
+
+  const response = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "grant_type=client_credentials"
+  });
+
+  if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Failed to get PayPal access token:", errorBody);
+      throw new Error("Failed to authenticate with PayPal.");
+  }
+
+  const data = await response.json();
+  return data.access_token;
 }
-
-/**
- * Strips invalid characters from a string for use in PayPal fields.
- * PayPal has limitations on character sets and length.
- */
-function sanitizeString(str: string, maxLength: number): string {
-    // Removes non-alphanumeric, non-space, and basic punctuation characters.
-    // Also removes emojis by checking for a wide range of unicode characters.
-    return str.replace(/[^\w\s.,-]|[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').slice(0, maxLength);
-}
-
 
 export async function POST(req: Request) {
   try {
-    const { cartItems } = (await req.json()) as { cartItems: CartItem[] };
+    const accessToken = await getAccessToken();
 
-    if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
-      console.error("Create order failed: Cart is empty or invalid.");
-      return NextResponse.json({ error: "Cart is empty or invalid." }, { status: 400 });
-    }
-
-    const accessToken = await getPayPalAccessToken();
-    const currency = "USD"; // Valid ISO 4217 currency code
-
-    // Calculate totals using integer math with cents to avoid floating-point errors
-    const itemTotalCents = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-    const itemTotalValue = toTwoDecimalString(itemTotalCents);
-
-    // Map cart items to PayPal's required format
-    const items = cartItems.map((item) => ({
-        name: sanitizeString(item.name, 127),
-        description: sanitizeString(item.description, 127),
-        unit_amount: { 
-            currency_code: currency, 
-            value: toTwoDecimalString(item.price) 
-        },
-        quantity: String(item.quantity),
-        sku: sanitizeString(item.id, 127),
-    }));
-
-    const payload = {
+    const order = {
       intent: "CAPTURE",
       purchase_units: [
         {
-          reference_id: `CUDDLEIA-ORDER-${Date.now()}`,
-          description: "Cuddleia Digital Product Purchase",
+          reference_id: "PUHF",
+          description: "Cuddleia Digital Product",
           amount: {
-            currency_code: currency,
-            value: itemTotalValue, // Total must match breakdown
+            currency_code: "USD",
+            value: "25.00",
             breakdown: {
               item_total: {
-                currency_code: currency,
-                value: itemTotalValue
+                currency_code: "USD",
+                value: "25.00"
               }
             }
           },
-          items: items,
+          items: [
+            {
+              name: "Cuddleia Cozy Digital Pack",
+              description: "Instant digital download",
+              unit_amount: {
+                currency_code: "USD",
+                value: "25.00"
+              },
+              quantity: "1"
+            }
+          ]
         }
       ],
       application_context: {
         brand_name: "Cuddleia",
         landing_page: "NO_PREFERENCE",
-        shipping_preference: "NO_SHIPPING", // Essential for digital goods
+        shipping_preference: "NO_SHIPPING",
         user_action: "PAY_NOW",
         return_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/thank-you` : 'http://localhost:3000/thank-you',
         cancel_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/cart` : 'http://localhost:3000/cart',
       }
     };
-    
-    const PAYPAL_API = process.env.PAYPAL_API || "https://api-m.paypal.com";
-    const response = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(payload),
+
+    const response = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(order)
     });
 
-    const jsonResponse = await response.json();
-    if (!response.ok) {
-       console.error(`PayPal create order failed with status ${response.status}:`, jsonResponse);
-       const errorMessage = jsonResponse?.details?.[0]?.description || jsonResponse?.message || `Failed to create PayPal order.`;
-       throw new Error(errorMessage);
-    }
+    const data = await response.json();
 
-    // Return only the valid PayPal order ID, which is what the frontend SDK needs.
-    return NextResponse.json({ id: jsonResponse.id });
+    if (!response.ok) {
+      console.error("PayPal create order failed:", data);
+      throw new Error(data.message || "Failed to create PayPal order.");
+    }
+    
+    // The PayPal button component on the frontend expects an object with an 'id' property.
+    return NextResponse.json({ id: data.id });
 
   } catch (err: any) {
-    console.error("create-order error:", err.message);
-    return NextResponse.json({ error: err.message || "Create order failed" }, { status: 500 });
+    console.error("PayPal error:", err);
+    return NextResponse.json({ error: err.message || "Something went wrong" }, { status: 500 });
   }
 }
