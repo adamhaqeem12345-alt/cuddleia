@@ -3,9 +3,9 @@ import type { CartItem } from '@/lib/types';
 import { products } from './products';
 import { sendOrderConfirmationEmail, type ProductInfo } from './email';
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL, EMAIL_USER, EMAIL_PASS } = process.env;
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL, EMAIL_USER, EMAIL_PASS, PAYPAL_WEBHOOK_ID } = process.env;
 
-if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SITE_URL || !EMAIL_USER || !EMAIL_PASS) {
+if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SITE_URL || !EMAIL_USER || !EMAIL_PASS || !PAYPAL_WEBHOOK_ID) {
   throw new Error("Missing required PayPal, site URL, or email environment variables in .env file");
 }
 
