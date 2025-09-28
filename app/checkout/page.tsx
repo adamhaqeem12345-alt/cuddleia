@@ -65,7 +65,7 @@ function CheckoutPageContent() {
                     <div className="my-8 border-t"></div>
 
                     <div className="flex justify-center items-center space-x-3 mb-4">
-                        <Image src="https://i.postimg.cc/d1jSPwG8/paypal.png" alt="PayPal" width={75} height={20} className="h-auto" />
+                        <Image src="https://i.postimg.cc/d1jSPwG7/paypal.png" alt="PayPal" width={75} height={20} className="h-auto" />
                         <div className="border-l h-6"></div>
                         <div className="flex items-center space-x-2">
                              <Image src="https://i.postimg.cc/mD41P5M5/visa.png" alt="Visa" width={40} height={25} className="h-auto" />
