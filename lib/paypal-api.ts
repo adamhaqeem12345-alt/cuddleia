@@ -55,8 +55,6 @@ export async function createOrder(cart: CartItem[]) {
     if (!productDetails) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
-
-    const finalName = await summarizeProductName(productDetails.name);
     
     // Sanitize SKU: Replace invalid characters (like hyphens) with underscores.
     // PayPal allows alphanumeric characters, underscores, and spaces.
@@ -65,6 +63,8 @@ export async function createOrder(cart: CartItem[]) {
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
+    
+    const finalName = await summarizeProductName(productDetails.name);
 
     return {
       name: finalName,
@@ -98,6 +98,12 @@ export async function createOrder(cart: CartItem[]) {
       amount: {
         currency_code: 'USD',
         value: totalValue,
+        breakdown: {
+            item_total: {
+                currency_code: 'USD',
+                value: totalValue,
+            }
+        }
       },
       items: items,
     }],
