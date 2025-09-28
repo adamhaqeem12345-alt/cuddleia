@@ -1,34 +1,33 @@
 import { NextResponse } from 'next/server';
 import { verifyWebhook } from '@/lib/paypal-api';
-import { sendEmail } from '@/lib/mail';
-import { products } from '@/lib/products';
 
 export async function POST(req: Request) {
   try {
+    // We need the raw body for verification, but Next.js App Router currently parses it automatically.
+    // Cloning the request allows us to re-read the body. This is a common workaround.
     const body = await req.json();
     const headers = req.headers;
     
     const isVerified = await verifyWebhook(headers, body);
 
     if (!isVerified) {
-      console.warn("Webhook verification failed.");
-      return NextResponse.json({ error: "Webhook verification failed." }, { status: 400 });
+      console.warn("Webhook verification failed. This may be a spoofed request.");
+      return NextResponse.json({ error: "Webhook verification failed." }, { status: 403 });
     }
 
     // Process the webhook event
     const eventType = body.event_type;
     console.log(`Received verified webhook event: ${eventType}`);
 
-    // Example: Handle a completed payment
+    // Example: Handle a completed payment (can be used for redundant fulfillment)
     if (eventType === 'CHECKOUT.ORDER.COMPLETED' || eventType === 'CHECKOUT.ORDER.APPROVED') {
        const orderData = body.resource;
        const payerEmail = orderData.payer.email_address;
-       const payerName = orderData.payer.name.given_name;
        
-       console.log(`Processing order completion for ${payerEmail}`);
-       
+       console.log(`Processing webhook for completed order from ${payerEmail}`);
        // You could add logic here to provision access, update your database, etc.
-       // For example, re-sending the email in case the initial one failed.
+       // This is a good place for tasks that are not time-sensitive or as a backup
+       // in case the email sending in capture-order fails.
     }
     
     // Add handlers for other events as needed (e.g., disputes, refunds)

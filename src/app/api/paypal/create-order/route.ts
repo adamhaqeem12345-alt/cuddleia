@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { createOrder } from '@/lib/paypal-api';
-import { ProductInfo } from '@/types/index';
+import type { ProductInfo } from '@/types/index';
 
 export async function POST(req: Request) {
   try {
     const { cartItems } = (await req.json()) as { cartItems: ProductInfo[] };
 
     if (!cartItems || cartItems.length === 0) {
+      console.error("Create order failed: Cart is empty.");
       return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
     }
 

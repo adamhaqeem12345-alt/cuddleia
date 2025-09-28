@@ -8,6 +8,7 @@ export async function POST(req: Request) {
     const { orderID } = await req.json();
 
     if (!orderID) {
+      console.error("Capture order failed: Order ID is required.");
       return NextResponse.json({ error: "Order ID is required." }, { status: 400 });
     }
 
@@ -22,22 +23,29 @@ export async function POST(req: Request) {
         const purchasedItems = captureData.purchase_units[0].items;
         let downloadLinksHtml = '';
 
-        for (const item of purchasedItems) {
-            const product = products.find(p => p.name === item.name);
-            if (product) {
-                downloadLinksHtml += `<li><a href="${product.downloadUrl}">${product.name}</a></li>`;
+        if (purchasedItems && purchasedItems.length > 0) {
+            for (const item of purchasedItems) {
+                // Find product by SKU, which we set to product.id during order creation
+                const product = products.find(p => p.id === item.sku);
+                if (product && product.downloadUrl) {
+                    downloadLinksHtml += `<li><strong>${product.name}</strong>: <a href="${product.downloadUrl}">Download Here</a></li>`;
+                } else {
+                    downloadLinksHtml += `<li><strong>${item.name}</strong>: Download link not found.</li>`;
+                }
             }
         }
         
         const emailHtml = `
-            <h1>Thank You for Your Order, ${payerName}!</h1>
-            <p>Your payment has been successfully processed.</p>
-            <p>You can download your purchased digital goods here:</p>
-            <ul>
-                ${downloadLinksHtml}
-            </ul>
-            <p>If you have any questions, please contact us at hello@cuddleia.com.</p>
-            <p>With love,<br>The Cuddleia Team</p>
+            <div style="font-family: sans-serif; line-height: 1.6;">
+                <h2>Thank You for Your Order, ${payerName}!</h2>
+                <p>Your payment has been successfully processed. We're so excited to share our creations with you.</p>
+                <p>You can download your purchased digital goods here:</p>
+                <ul style="list-style-type: none; padding-left: 0;">
+                    ${downloadLinksHtml || '<li>No downloadable items found. Please contact support.</li>'}
+                </ul>
+                <p>If you have any questions, please reply to this email or contact us at ${process.env.EMAIL_FROM}.</p>
+                <p>With love,<br>The Cuddleia Team</p>
+            </div>
         `;
 
         try {
@@ -47,8 +55,8 @@ export async function POST(req: Request) {
                 html: emailHtml,
             });
         } catch (emailError) {
+             // Do not fail the entire request, just log the error. The payment is already processed.
              console.error("Payment was successful, but failed to send confirmation email:", emailError);
-            // Don't fail the entire request, just log the error. The payment is already processed.
         }
     }
 

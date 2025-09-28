@@ -6,6 +6,7 @@ export async function POST(req: Request) {
     const { to, subject, html } = await req.json();
 
     if (!to || !subject || !html) {
+      console.error("Send email failed: Missing required fields (to, subject, html).");
       return NextResponse.json({ error: "Missing required fields: to, subject, html" }, { status: 400 });
     }
 
