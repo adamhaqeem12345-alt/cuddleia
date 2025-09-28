@@ -39,7 +39,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // Calculate the total value from cart items, ensuring no floating point errors
     const totalValue = cartItems.reduce((acc: number, item: any) => {
         return acc + item.price * item.quantity;
     }, 0);
@@ -91,18 +90,25 @@ export async function POST(req: Request) {
     });
 
     const data = await response.json();
+    
+    // Detailed log of PayPal's response
+    console.log("Full PayPal create-order response:", JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       console.error("PayPal create order failed:", data);
       throw new Error(data.message || "Failed to create PayPal order.");
     }
     
+    if (!data.id) {
+       console.error("PayPal create-order response missing 'id':", data);
+       throw new Error("PayPal response did not include an order ID.");
+    }
+
+    // Return only the order ID as required by the PayPal SDK
     return NextResponse.json({ id: data.id });
 
   } catch (err: any) {
-    console.error("PayPal error:", err);
+    console.error("PayPal API /create-order error:", err.message);
     return NextResponse.json({ error: err.message || "Something went wrong" }, { status: 500 });
   }
 }
-
-

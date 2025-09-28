@@ -11,7 +11,7 @@ export function PayPalButtonsComponent() {
     const { cart } = useCart();
 
   if (!PAYPAL_CLIENT_ID) {
-    console.error("PayPal Client ID is not configured. Checkout will not be available.");
+    console.error("PayPal Client ID is not configured. Checkout will not be available. Make sure NEXT_PUBLIC_PAYPAL_CLIENT_ID is set in your environment.");
     return <div className="text-center text-red-500 font-semibold">Checkout is currently unavailable.</div>;
   }
   
@@ -20,18 +20,29 @@ export function PayPalButtonsComponent() {
         <PayPalButtons
             style={{ layout: "vertical" }}
             createOrder={async () => {
-                const res = await fetch("/api/paypal/create-order", {
-                     method: "POST",
-                     headers: { "Content-Type": "application/json" },
-                     body: JSON.stringify({ cartItems: cart }),
-                });
-                const data = await res.json();
-                if (!res.ok) {
-                    console.error("Failed to create order:", data);
-                    alert("There was an error creating your order. Please try again.");
-                    return Promise.reject(new Error("Failed to create order"));
+                try {
+                    const res = await fetch("/api/paypal/create-order", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ cartItems: cart }),
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (!res.ok) {
+                        throw new Error(data.error || "Failed to create order");
+                    }
+
+                    if (!data.id) {
+                         throw new Error("Received invalid data from create-order API");
+                    }
+
+                    return data.id;
+                } catch (error) {
+                    console.error("PayPal createOrder error:", error);
+                    alert(`Could not initiate PayPal Checkout. \n\nDetails: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    return Promise.reject(error);
                 }
-                return data.id;
             }}
             onApprove={async (data) => {
                 try {
@@ -40,7 +51,11 @@ export function PayPalButtonsComponent() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ orderID: data.orderID })
                     });
+                    
                     const details = await res.json();
+                    
+                    // Detailed log of capture response on the client-side
+                    console.log("Full capture response on client:", JSON.stringify(details, null, 2));
                     
                     if (res.ok && details.status === "COMPLETED") {
                         // Redirect on success, passing PayPal token for confirmation
@@ -50,7 +65,7 @@ export function PayPalButtonsComponent() {
                     }
                 } catch (error) {
                     console.error("onApprove error:", error);
-                    alert(`An error occurred during payment. Please try again or contact support. Details: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                    alert(`An error occurred during payment. Please try again or contact support. \n\nDetails: ${error instanceof Error ? error.message : 'Unknown error'}`);
                 }
             }}
             onError={(err) => {

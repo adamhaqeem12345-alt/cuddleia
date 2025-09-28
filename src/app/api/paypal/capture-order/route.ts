@@ -52,19 +52,20 @@ export async function POST(req: Request) {
         );
 
         const data = await response.json();
+        
+        // Detailed log of the full capture response from PayPal
+        console.log("Full PayPal capture-order response:", JSON.stringify(data, null, 2));
 
-        if (data.status === "COMPLETED") {
-            // In a real application, you would add logic here to fulfill the order,
-            // such as sending a confirmation email with download links.
-            // For now, we just return the successful capture data.
-            return NextResponse.json(data);
-        } else {
+        if (!response.ok) {
             console.error("PayPal capture failed:", data);
-            return NextResponse.json({ error: "Capture failed", details: data }, { status: 400 });
+            return NextResponse.json({ error: "Capture failed", details: data }, { status: response.status });
         }
+        
+        // Return the full successful capture data to the frontend
+        return NextResponse.json(data);
 
     } catch (err: any) {
-        console.error("capture-order error:", err);
+        console.error("PayPal API /capture-order error:", err.message);
         return NextResponse.json({ error: err.message || "Capture order failed" }, { status: 500 });
     }
 }
