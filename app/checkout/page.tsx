@@ -4,14 +4,17 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertTriangle, CreditCard, Landmark } from 'lucide-react';
 import Link from 'next/link';
 
+type PaymentMethod = 'fpx' | 'card';
+
 export default function CheckoutPage() {
-    const { cart, getPrice, isCartReady, clearCart } = useCart();
+    const { cart, getPrice, isCartReady } = useCart();
     const router = useRouter();
     const [status, setStatus] = useState<'ready' | 'loading' | 'processing' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('An unexpected error occurred. Please try again.');
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('fpx');
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const { usd: subtotalUSD, myr: subtotalMYR } = getPrice(subtotal);
@@ -26,42 +29,14 @@ export default function CheckoutPage() {
         }
     }, [cart.length, isCartReady, router]);
     
-    const handlePayWithPayPal = async () => {
+    const handlePayment = async () => {
         setStatus('processing');
-        try {
-            // Send only the ID and quantity to the server. The server will look up price and name.
-            const cartForApi = cart.map(item => ({
-                id: item.id,
-                quantity: item.quantity,
-            }));
-
-            const res = await fetch('/api/paypal/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart: cartForApi }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                console.error('Server error response:', data);
-                throw new Error(data.error || 'Failed to create PayPal order.');
-            }
-
-            if (data.approveUrl) {
-                // Redirect user to PayPal for approval
-                window.location.href = data.approveUrl;
-            } else {
-                throw new Error('Could not retrieve PayPal approval URL.');
-            }
-
-        } catch (error) {
-            console.error('Checkout Error:', error);
-            setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred during checkout.');
+        // Placeholder for new payment logic
+        setTimeout(() => {
+            setErrorMessage('Payment gateway not implemented yet.');
             setStatus('error');
-        }
+        }, 2000);
     };
-
 
     if (!isCartReady || status === 'loading') {
         return (
@@ -78,7 +53,7 @@ export default function CheckoutPage() {
                 <div className="max-w-4xl mx-auto">
                      <div className="text-center mb-12">
                         <h1 className="font-headline text-5xl font-bold text-foreground">Checkout</h1>
-                        <p className="mt-2 text-muted-foreground text-lg">Please review your order and proceed to payment.</p>
+                        <p className="mt-2 text-muted-foreground text-lg">Please review your order and select your payment method.</p>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -116,20 +91,35 @@ export default function CheckoutPage() {
                         <div className="bg-white p-8 rounded-2xl shadow-lg border flex flex-col justify-center">
                             <h2 className="font-headline text-2xl font-semibold mb-6">Payment Method</h2>
                             
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <Button
+                                    variant={selectedPaymentMethod === 'fpx' ? 'default' : 'outline'}
+                                    onClick={() => setSelectedPaymentMethod('fpx')}
+                                    className="h-20 flex flex-col gap-2"
+                                >
+                                    <Landmark className="h-6 w-6" />
+                                    <span>FPX (Malaysia)</span>
+                                </Button>
+                                <Button
+                                    variant={selectedPaymentMethod === 'card' ? 'default' : 'outline'}
+                                    onClick={() => setSelectedPaymentMethod('card')}
+                                    className="h-20 flex flex-col gap-2"
+                                >
+                                    <CreditCard className="h-6 w-6" />
+                                    <span>Card (International)</span>
+                                </Button>
+                            </div>
+
                             {status === 'error' && (
-                                <div className="text-center p-6 rounded-lg bg-red-50 text-red-700 border border-red-200 mb-6">
-                                    <AlertTriangle className="mx-auto h-10 w-10 text-red-500" />
-                                    <p className="mt-4 font-semibold text-lg">Payment Error</p>
+                                <div className="text-center p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 mb-6">
+                                    <AlertTriangle className="mx-auto h-8 w-8 text-red-500" />
+                                    <p className="mt-2 font-semibold">Payment Error</p>
                                     <p className="text-sm mt-1">{errorMessage}</p>
                                 </div>
                             )}
                             
-                            <div className="text-center text-muted-foreground text-sm mb-4">
-                                <p>You will be redirected to PayPal to complete your purchase securely.</p>
-                            </div>
-
                             <Button 
-                                onClick={handlePayWithPayPal}
+                                onClick={handlePayment}
                                 disabled={status === 'processing'}
                                 size="lg" 
                                 className="w-full font-bold shadow-lg transition-transform hover:scale-105"
@@ -140,7 +130,7 @@ export default function CheckoutPage() {
                                         Processing...
                                     </>
                                 ) : (
-                                    'Pay with PayPal'
+                                    `Proceed with ${selectedPaymentMethod === 'fpx' ? 'FPX' : 'Card'}`
                                 )}
                             </Button>
                         </div>

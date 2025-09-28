@@ -19,48 +19,34 @@ interface OrderDetails {
 
 function SuccessContent() {
     const searchParams = useSearchParams();
-    const router = useRouter();
     const { clearCart } = useCart();
     
-    const [status, setStatus] = useState<Status>('verifying');
+    const [status, setStatus] = useState<Status>('invalid');
     const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
     const [errorMessage, setErrorMessage] = useState('An unknown error occurred.');
 
-    const token = searchParams.get('token'); // PayPal Order ID
+    const payment_status = searchParams.get('status'); 
     
     useEffect(() => {
-        if (!token) {
-            setStatus('invalid');
-            return;
+        if (payment_status === 'success') {
+            setStatus('success');
+            // In a real scenario, you'd fetch order details from your server
+            // using a session ID or order ID from the query parameters.
+            setOrderDetails({
+                orderId: 'temp-123',
+                customerName: 'Valued Customer',
+                total: '$0.00',
+                products: [],
+            });
+            clearCart();
+        } else if (payment_status === 'error') {
+            setStatus('error');
+            setErrorMessage('The payment was canceled or failed.');
+        } else {
+             setStatus('invalid');
+             setErrorMessage('The payment confirmation link is invalid or has expired.');
         }
-
-        async function verifyOrder() {
-            try {
-                const res = await fetch('/api/paypal/capture-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId: token }),
-                });
-
-                const data = await res.json();
-
-                if (!res.ok) {
-                    throw new Error(data.error || 'Failed to verify payment.');
-                }
-                
-                setOrderDetails(data);
-                setStatus('success');
-                clearCart(); // Clear the cart only on successful verification
-
-            } catch (error) {
-                console.error('Verification Error:', error);
-                setErrorMessage(error instanceof Error ? error.message : 'An unknown error occurred during verification.');
-                setStatus('error');
-            }
-        }
-
-        verifyOrder();
-    }, [token, clearCart]);
+    }, [payment_status, clearCart]);
 
 
     if (status === 'verifying') {
@@ -82,10 +68,10 @@ function SuccessContent() {
              <AnimateIn className="w-full max-w-3xl text-center">
                 <AlertTriangle className="mx-auto h-20 w-20 text-destructive" />
                 <h1 className="mt-6 font-headline text-4xl md:text-5xl font-bold text-foreground">
-                    Invalid Order Link
+                    Invalid Link
                 </h1>
                 <p className="mt-4 text-lg text-muted-foreground">
-                    The link is missing the required payment token. If you completed a purchase, please check your email for confirmation.
+                    {errorMessage}
                 </p>
                 <div className="mt-10">
                     <Button asChild size="lg" className="rounded-full font-bold">
@@ -101,10 +87,10 @@ function SuccessContent() {
             <AnimateIn className="w-full max-w-3xl text-center">
                 <AlertTriangle className="mx-auto h-20 w-20 text-destructive" />
                 <h1 className="mt-6 font-headline text-4xl md:text-5xl font-bold text-foreground">
-                    Payment Verification Failed
+                    Payment Failed
                 </h1>
                 <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
-                    {errorMessage} If you believe you were charged, please contact us with your PayPal transaction ID.
+                    {errorMessage} Please try again from your cart.
                 </p>
                 <div className="mt-10">
                     <Button asChild size="lg" className="rounded-full font-bold">
@@ -115,6 +101,7 @@ function SuccessContent() {
         );
     }
 
+    // A generic success page until the new gateways are integrated
     return (
         <AnimateIn className="w-full max-w-3xl text-center">
             <CheckCircle className="mx-auto h-20 w-20 text-green-500" />
@@ -122,20 +109,8 @@ function SuccessContent() {
                 Thank You, {orderDetails?.customerName}!
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
-                Your order (#{orderDetails?.orderId}) is complete. Your download links have been sent to your email and are also available below.
+                Your order (#{orderDetails?.orderId}) is complete. Your download links will be sent to your email shortly.
             </p>
-
-            <div className="mt-8 text-left bg-gray-50/80 border rounded-xl p-6 space-y-4">
-                <h2 className="text-xl font-headline font-semibold border-b pb-3">Your Digital Products</h2>
-                {orderDetails?.products.map((product, index) => (
-                     <div key={index} className="flex justify-between items-center">
-                        <p className="font-semibold">{product.name}</p>
-                        <Button asChild size="sm">
-                            <a href={product.downloadUrl} target="_blank" rel="noopener noreferrer">Download</a>
-                        </Button>
-                    </div>
-                ))}
-            </div>
             
              <div className="mt-10">
                 <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
