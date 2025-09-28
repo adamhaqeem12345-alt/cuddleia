@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Suspense } from 'react';
@@ -64,12 +65,12 @@ function CheckoutPageContent() {
                     <div className="my-8 border-t"></div>
 
                     <div className="flex justify-center items-center space-x-3 mb-4">
-                        <Image src="https://i.ibb.co/X8X3b9Y/paypal.png" alt="PayPal" width={75} height={20} className="h-auto" />
+                        <Image src="https://i.postimg.cc/d1jSPwG8/paypal.png" alt="PayPal" width={75} height={20} className="h-auto" />
                         <div className="border-l h-6"></div>
                         <div className="flex items-center space-x-2">
-                             <Image src="https://i.ibb.co/qWpB3YJ/visa.png" alt="Visa" width={40} height={25} className="h-auto" />
-                             <Image src="https://i.ibb.co/M8qqs2c/mastercard.png" alt="Mastercard" width={40} height={25} className="h-auto" />
-                             <Image src="https://i.ibb.co/qphGz8x/amex.png" alt="American Express" width={40} height={25} className="h-auto" />
+                             <Image src="https://i.postimg.cc/mD41P5M5/visa.png" alt="Visa" width={40} height={25} className="h-auto" />
+                             <Image src="https://i.postimg.cc/Xv9n3S11/mastercard.png" alt="Mastercard" width={40} height={25} className="h-auto" />
+                             <Image src="https://i.postimg.cc/sfB43c3V/amex.png" alt="American Express" width={40} height={25} className="h-auto" />
                         </div>
                     </div>
 
