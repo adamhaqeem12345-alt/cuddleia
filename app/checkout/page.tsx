@@ -31,10 +31,16 @@ export default function CheckoutPage() {
         setStatus('processing');
         setErrorMessage('');
         try {
+            // Send only the essential cart information to the backend
+            const minimalCart = cart.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+            }));
+
             const res = await fetch('/api/paypal/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart }),
+                body: JSON.stringify({ cart: minimalCart }),
             });
             const order = await res.json();
             if (!res.ok) {

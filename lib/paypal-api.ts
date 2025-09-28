@@ -9,6 +9,11 @@ if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SI
   throw new Error("Missing required PayPal, site URL, or email environment variables in .env file");
 }
 
+export interface MinimalCartItem {
+  id: string;
+  quantity: number;
+}
+
 /**
  * Fetches an access token from the PayPal API.
  * The token is required for all subsequent API calls.
@@ -37,9 +42,9 @@ async function getAccessToken(): Promise<string> {
 
 /**
  * Creates a PayPal order.
- * @param cart - The user's shopping cart.
+ * @param cart - The user's shopping cart, containing only product ID and quantity.
  */
-export async function createOrder(cart: CartItem[]) {
+export async function createOrder(cart: MinimalCartItem[]) {
   const accessToken = await getAccessToken();
   const returnUrl = `${NEXT_PUBLIC_SITE_URL}/checkout/success`;
   const cancelUrl = `${NEXT_PUBLIC_SITE_URL}/cart`;

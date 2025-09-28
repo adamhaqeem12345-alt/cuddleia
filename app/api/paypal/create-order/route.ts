@@ -1,11 +1,10 @@
 
 import { NextResponse } from 'next/server';
-import { createOrder } from '@/lib/paypal-api';
-import type { CartItem } from '@/lib/types';
+import { createOrder, type MinimalCartItem } from '@/lib/paypal-api';
 
 export async function POST(request: Request) {
   try {
-    const { cart }: { cart: CartItem[] } = await request.json();
+    const { cart }: { cart: MinimalCartItem[] } = await request.json();
 
     if (!cart || !Array.isArray(cart) || cart.length === 0) {
       return NextResponse.json({ error: "Invalid cart data provided." }, { status: 400 });
