@@ -26,6 +26,7 @@ async function getAccessToken(): Promise<string> {
 
   if (!response.ok) {
     const errorBody = await response.text();
+    console.error("Failed to get access token:", errorBody);
     throw new Error(`Failed to get access token: ${errorBody}`);
   }
 
@@ -56,7 +57,7 @@ export async function createOrder(cart: CartItem[]) {
     }
     
     // Aggressively sanitize SKU: Allow only alphanumeric, underscores, and dashes.
-    const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 127);
+    const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 127);
     
     // Aggressively sanitize Name: Remove any characters that aren't letters, numbers, or spaces.
     const sanitizedName = productDetails.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().substring(0, 127);
@@ -204,7 +205,7 @@ async function getProductInfoFromOrder(orderData: any): Promise<ProductInfo[]> {
     const items = orderData.purchase_units[0].items;
     return items.map((item: any) => {
         // Find product by comparing sanitized SKU
-        const product = products.find(p => p.id.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 127) === item.sku);
+        const product = products.find(p => p.id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 127) === item.sku);
         if (!product) {
             // This should not happen if our data is consistent
             console.warn(`Product with SKU ${item.sku} not found in local products list.`);
