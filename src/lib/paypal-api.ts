@@ -48,7 +48,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
   const validItems = cartItems.filter(item => 
     item &&
     typeof item.name === 'string' && item.name.trim() !== '' &&
-    typeof item.price === 'number' && item.price > 0 &&
+    typeof item.price === 'number' && item.price >= 0 && // Allow 0 for now, total check will handle it
     typeof item.quantity === 'number' && item.quantity >= 1
   );
 
@@ -61,14 +61,13 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
   }
 
   // 2. Calculate total value from validated items
-  const totalValue = validItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const totalValueInDollars = (totalValue / 100).toFixed(2);
+  const totalValueInCents = validItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const totalValueInDollars = (totalValueInCents / 100).toFixed(2); // String with 2 decimal places
 
   // 3. Check for zero-value total
   if (parseFloat(totalValueInDollars) <= 0) {
       throw new Error("Cannot create an order with a total value of zero.");
   }
-
 
   const payload = {
     intent: "CAPTURE",
@@ -76,13 +75,19 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
       {
         amount: {
           currency_code: "USD",
-          value: totalValueInDollars,
+          value: totalValueInDollars, // Correctly formatted string
+          breakdown: {
+            item_total: {
+              currency_code: "USD",
+              value: totalValueInDollars // Correctly formatted string
+            }
+          }
         },
         items: validItems.map((item) => ({
             name: item.name.substring(0, 127),
             unit_amount: {
                 currency_code: "USD",
-                value: (item.price / 100).toFixed(2),
+                value: (item.price / 100).toFixed(2), // Correctly formatted string
             },
             quantity: String(item.quantity),
             sku: item.id.substring(0, 127)
