@@ -56,8 +56,11 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
 
-    // Shorten name if it exceeds PayPal's limit, otherwise use original
     const finalName = await summarizeProductName(productDetails.name);
+    
+    // Sanitize SKU: Replace invalid characters (like hyphens) with underscores.
+    // PayPal allows alphanumeric characters, underscores, and spaces.
+    const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_ ]/g, '_').substring(0, 127);
     
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
@@ -65,7 +68,7 @@ export async function createOrder(cart: CartItem[]) {
 
     return {
       name: finalName,
-      sku: productDetails.id.substring(0, 127), // Also ensure SKU is within limits
+      sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
         value: (unitPriceInCents / 100).toFixed(2),
@@ -201,7 +204,8 @@ export async function captureOrder(orderId: string) {
 async function getProductInfoFromOrder(orderData: any): Promise<ProductInfo[]> {
     const items = orderData.purchase_units[0].items;
     return items.map((item: any) => {
-        const product = products.find(p => p.id === item.sku);
+        // Find product by comparing sanitized SKU
+        const product = products.find(p => p.id.replace(/[^a-zA-Z0-9_ ]/g, '_').substring(0, 127) === item.sku);
         if (!product) {
             // This should not happen if our data is consistent
             console.warn(`Product with SKU ${item.sku} not found in local products list.`);
