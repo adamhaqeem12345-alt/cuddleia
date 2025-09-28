@@ -5,7 +5,7 @@ import '@/app/globals.css';
 import { cn } from '@/lib/utils';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { Providers } from '@/app/providers';
+import { CartProvider } from '@/context/cart-context';
 
 const belleza = Belleza({
   subsets: ['latin'],
@@ -66,13 +66,13 @@ export default function RootLayout({
           alegreya.variable
         )}
       >
-        <Providers>
+        <CartProvider>
             <div className="relative flex min-h-dvh flex-col bg-background">
               <Header />
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
-        </Providers>
+        </CartProvider>
       </body>
     </html>
   );
