@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2, Lock, CreditCard } from 'lucide-react';
+import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2, Lock, CreditCard, AlertTriangle } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 
 export default function CartPage() {
@@ -120,17 +120,16 @@ export default function CartPage() {
                         </div>
                      </div>
                      <div className="mt-8">
-                        <p className="text-center text-xs text-muted-foreground mb-4">All prices in USD. (Approx. {subtotalPrice.myr.formatted})</p>
-                        <Button asChild size="lg" className="w-full rounded-full font-bold shadow-lg transition-transform hover:scale-105">
-                            <Link href="/checkout">
-                                Proceed to Checkout <CreditCard className="ml-2 h-5 w-5" />
-                            </Link>
-                        </Button>
+                        <div className="bg-destructive/10 text-destructive-foreground p-4 rounded-lg text-center">
+                          <div className="flex items-center justify-center">
+                            <AlertTriangle className="h-5 w-5 mr-2 text-destructive"/>
+                            <h3 className="font-bold text-destructive">Checkout Unavailable</h3>
+                          </div>
+                          <p className="text-sm mt-2">
+                            Our payment system is currently offline. We apologize for the inconvenience.
+                          </p>
+                        </div>
                      </div>
-                      <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                        <Lock className="h-4 w-4" />
-                        <span>Secure checkout by PayPal</span>
-                    </div>
                 </div>
             </div>
 
