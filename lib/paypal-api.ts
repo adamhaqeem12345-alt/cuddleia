@@ -55,7 +55,7 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
     
-    // Use cents for calculation to avoid floating point issues
+    // Use cents for all calculations to avoid floating point issues
     const itemPriceInCents = Math.round(productDetails.price * 100);
     itemTotalValueInCents += itemPriceInCents * cartItem.quantity;
 
@@ -70,11 +70,11 @@ export async function createOrder(cart: CartItem[]) {
     };
   });
   
+  const totalValue = (itemTotalValueInCents / 100).toFixed(2);
+  
   if (itemTotalValueInCents <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
-
-  const totalValue = (itemTotalValueInCents / 100).toFixed(2);
   
   const payload = {
     intent: 'CAPTURE',
