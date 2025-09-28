@@ -1,70 +1,70 @@
+
 import { NextResponse } from 'next/server';
-import { captureOrder } from '@/lib/paypal-api';
-import { sendEmail } from '@/lib/mail';
-import { products } from '@/lib/products';
+
+async function getAccessToken() {
+  const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+      throw new Error("PayPal credentials are not set in environment variables.");
+  }
+  
+  const auth = Buffer.from(
+    PAYPAL_CLIENT_ID + ":" + PAYPAL_CLIENT_SECRET
+  ).toString("base64");
+
+  const response = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: "grant_type=client_credentials"
+  });
+
+  if (!response.ok) {
+      const errorBody = await response.text();
+      console.error("Failed to get PayPal access token:", errorBody);
+      throw new Error("Failed to authenticate with PayPal.");
+  }
+
+  const data = await response.json();
+  return data.access_token;
+}
+
 
 export async function POST(req: Request) {
-  try {
-    const { orderID } = await req.json();
+    try {
+        const { orderID } = await req.json();
+        if (!orderID) {
+            return NextResponse.json({ error: "Missing orderID" }, { status: 400 });
+        }
 
-    if (!orderID) {
-      console.error("Capture order failed: Order ID is required.");
-      return NextResponse.json({ error: "Order ID is required." }, { status: 400 });
-    }
+        const accessToken = await getAccessToken();
 
-    const captureData = await captureOrder(orderID);
-    
-    // Check if the payment was successfully completed
-    if (captureData.status === 'COMPLETED') {
-        const payerEmail = captureData.payer.email_address;
-        const payerName = captureData.payer.name.given_name;
-
-        // Extract purchased items from the captured order details
-        const purchasedItems = captureData.purchase_units[0].items;
-        let downloadLinksHtml = '';
-
-        if (purchasedItems && purchasedItems.length > 0) {
-            for (const item of purchasedItems) {
-                // Find the corresponding product in our database to get the download URL
-                const product = products.find(p => p.id === item.sku);
-                if (product && product.downloadUrl) {
-                    downloadLinksHtml += `<li><strong>${product.name}</strong>: <a href="${product.downloadUrl}" style="color: #F4B4C9; text-decoration: none;">Download Here</a></li>`;
-                } else {
-                    downloadLinksHtml += `<li><strong>${item.name}</strong>: Download link could not be found. Please contact support.</li>`;
+        const response = await fetch(
+            `https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`
                 }
             }
-        }
-        
-        const emailHtml = `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-                <h2 style="color: #D0B4F4;">Thank You for Your Order, ${payerName}!</h2>
-                <p>Your payment has been successfully processed. We're so excited to share our creations with you.</p>
-                <p>You can download your purchased digital goods using the links below:</p>
-                <ul style="list-style-type: none; padding-left: 0; margin-top: 20px; margin-bottom: 20px;">
-                    ${downloadLinksHtml || '<li>No downloadable items were found in your order. Please contact support if this is an error.</li>'}
-                </ul>
-                <p>If you have any questions or need assistance, please reply to this email or contact us at <a href="mailto:hello@cuddleia.com" style="color: #F4B4C9;">hello@cuddleia.com</a>.</p>
-                <p>With love,<br><strong>The Cuddleia Team</strong></p>
-            </div>
-        `;
+        );
 
-        try {
-            await sendEmail({
-                to: payerEmail,
-                subject: 'Your Cuddleia Order Confirmation & Downloads',
-                html: emailHtml,
-            });
-        } catch (emailError) {
-             // Log the error, but don't fail the request since the payment was successful.
-             console.error("Payment was successful, but the confirmation email failed to send:", emailError);
+        const data = await response.json();
+
+        if (data.status === "COMPLETED") {
+            // In a real application, you would add logic here to fulfill the order,
+            // such as sending a confirmation email with download links.
+            // For now, we just return the successful capture data.
+            return NextResponse.json(data);
+        } else {
+            console.error("PayPal capture failed:", data);
+            return NextResponse.json({ error: "Capture failed", details: data }, { status: 400 });
         }
+
+    } catch (err: any) {
+        console.error("capture-order error:", err);
+        return NextResponse.json({ error: err.message || "Capture order failed" }, { status: 500 });
     }
-
-    // Return the full capture result to the frontend
-    return NextResponse.json(captureData);
-
-  } catch (err: any) {
-    console.error("capture-order error:", err);
-    return NextResponse.json({ error: err.message || "Capture order failed" }, { status: 500 });
-  }
 }
