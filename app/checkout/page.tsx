@@ -1,13 +1,14 @@
 'use client';
 
 import { Suspense } from 'react';
-import Image from 'next/image';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
 import { Loader2, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { CheckoutForm } from '@/components/checkout-form';
+import Image from 'next/image';
+
 
 function CheckoutPageContent() {
     const { getPrice, cart, isCartReady } = useCart();
@@ -63,13 +64,20 @@ function CheckoutPageContent() {
                     
                     <div className="my-8 border-t"></div>
 
-                    <div className="flex justify-center items-center space-x-3 mb-4 h-[40px]">
-                        <Image src="https://i.postimg.cc/qR4Tch1g/paypal.png" alt="PayPal" width={100} height={25} className="h-[25px] w-auto" />
-                        <div className="border-l h-6"></div>
+                    <div className="flex justify-center items-center space-x-4 mb-4">
+                        <div className="border rounded-md px-3 py-2 flex items-center justify-center h-[40px] w-[100px]">
+                           <Image src="https://i.postimg.cc/NMyyV4S4/paypal.png" alt="PayPal" width={80} height={20} className="object-contain" />
+                        </div>
                         <div className="flex items-center space-x-2">
-                             <Image src="https://i.postimg.cc/VvP2yBfs/visa.png" alt="Visa" width={50} height={16} className="h-[16px] w-auto" />
-                             <Image src="https://i.postimg.cc/Xv1pC8pS/mastercard.png" alt="Mastercard" width={40} height={25} className="h-[25px] w-auto" />
-                             <Image src="https://i.postimg.cc/sfFx1R2m/amex.png" alt="Amex" width={40} height={40} className="h-[40px] w-auto" />
+                            <div className="border rounded-md p-1.5 flex items-center justify-center h-[40px] w-[50px]">
+                                <Image src="https://i.postimg.cc/mg2m3Dsf/visa.png" alt="Visa" width={40} height={25} className="object-contain" />
+                            </div>
+                            <div className="border rounded-md p-1.5 flex items-center justify-center h-[40px] w-[50px]">
+                                <Image src="https://i.postimg.cc/RhX3Y2Xp/mastercard.png" alt="Mastercard" width={40} height={25} className="object-contain" />
+                            </div>
+                            <div className="border rounded-md p-1.5 flex items-center justify-center h-[40px] w-[50px]">
+                               <Image src="https://i.postimg.cc/tJ0BvX8n/amex.png" alt="American Express" width={40} height={25} className="object-contain" />
+                            </div>
                         </div>
                     </div>
 
