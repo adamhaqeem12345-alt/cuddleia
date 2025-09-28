@@ -60,7 +60,6 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
 
-        // Use the actual product name and ID, simply truncated. No complex regex.
         const itemName = productDetails.name.substring(0, 127);
         const itemSku = productDetails.id.substring(0, 127);
 
@@ -184,6 +183,8 @@ export async function captureOrder(orderId: string): Promise<any> {
         });
 
         // Send confirmation email asynchronously. Don't block the response.
+        // DIAGNOSTIC STEP: Comment out the email sending to isolate the issue.
+        /*
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -194,6 +195,7 @@ export async function captureOrder(orderId: string): Promise<any> {
             console.error("Failed to send confirmation email:", err);
             // Don't throw an error here, as the payment itself was successful.
         });
+        */
         
         return { 
             orderId: data.id,
