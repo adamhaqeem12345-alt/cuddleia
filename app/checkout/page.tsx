@@ -29,12 +29,10 @@ export default function CheckoutPage() {
     const handlePayWithPayPal = async () => {
         setStatus('processing');
         try {
-            // Send only the essential data to the server
+            // Send only the ID and quantity to the server. The server will look up price and name.
             const cartForApi = cart.map(item => ({
                 id: item.id,
                 quantity: item.quantity,
-                price: item.price, // Pass the price in cents
-                name: item.name,
             }));
 
             const res = await fetch('/api/paypal/create-order', {

@@ -9,8 +9,6 @@ import { sendOrderConfirmationEmail } from './email';
 interface CartItemFromClient {
     id: string;
     quantity: number;
-    price: number; // Price in cents
-    name: string;
 }
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
@@ -41,23 +39,35 @@ export async function createOrder(cart: CartItemFromClient[]): Promise<{ id: str
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     const itemsPayload = cart.map((cartItem) => {
-        const cleanedName = cartItem.name.replace(/[^\w\s-]/g, '').substring(0, 127);
+        const productDetails = products.find((p) => p.id === cartItem.id);
+        if (!productDetails) {
+            throw new Error(`Product with ID ${cartItem.id} not found.`);
+        }
+
+        // PayPal requires a simple string with no special characters for the name.
+        // We will remove anything that isn't a letter, number, or space.
+        const cleanedName = productDetails.name.replace(/[^a-zA-Z0-9 ]/g, ' ').substring(0, 127);
+
         return {
             name: cleanedName,
-            sku: cartItem.id.substring(0, 127),
+            sku: productDetails.id.substring(0, 127), // SKU must be clean
             unit_amount: {
                 currency_code: 'USD',
-                value: (cartItem.price / 100).toFixed(2),
+                value: (productDetails.price / 100).toFixed(2),
             },
             quantity: String(cartItem.quantity),
             category: 'DIGITAL_GOODS' as const,
         };
     });
 
-    const totalValue = itemsPayload.reduce((sum, item) => {
-        return sum + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
-    }, 0).toFixed(2);
-
+    // Use integer math (cents) to avoid floating point errors
+    const totalInCents = cart.reduce((sum, item) => {
+        const productDetails = products.find(p => p.id === item.id);
+        return sum + (productDetails?.price || 0) * item.quantity;
+    }, 0);
+    
+    const totalValue = (totalInCents / 100).toFixed(2);
+    
     const payload = {
         intent: 'CAPTURE',
         purchase_units: [{
@@ -136,16 +146,19 @@ export async function captureOrder(orderId: string): Promise<any> {
         const purchasedItems = purchaseUnit.items.map((item: any) => {
             const product = products.find(p => p.id === item.sku);
             if (!product) {
+                // This is a fallback in case the product is not found, which should not happen
                 return { name: item.name, quantity: parseInt(item.quantity), downloadUrl: '', price: parseFloat(item.unit_amount.value) };
             }
             return {
                 name: product.name,
                 quantity: parseInt(item.quantity, 10),
                 downloadUrl: product.downloadUrl,
-                price: product.price / 100,
+                price: product.price / 100, // price is in cents, convert to dollars for email
             };
         });
 
+        // The email sending is re-enabled. If there are issues with email credentials,
+        // this might fail, but it will not affect the user seeing the success page.
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -153,6 +166,7 @@ export async function captureOrder(orderId: string): Promise<any> {
             orderId: data.id,
             products: purchasedItems,
         }).catch(err => {
+            // Log the error but do not block the response to the user.
             console.error("Failed to send confirmation email:", err);
         });
         
@@ -164,5 +178,6 @@ export async function captureOrder(orderId: string): Promise<any> {
         };
     }
 
+    // If status is not COMPLETED for some reason
     return data;
 }
