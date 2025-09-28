@@ -97,6 +97,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCart([]);
+     try {
+        window.localStorage.removeItem('cuddleia-cart');
+      } catch (error) {
+        console.warn('Error clearing localStorage cart', error);
+      }
   };
 
   return (
