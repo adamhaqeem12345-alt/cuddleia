@@ -1,11 +1,10 @@
-
 'use server';
 
 import axios from 'axios';
 import type { CartItem } from './types';
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API_URL } = process.env;
-const PAYPAL_API = PAYPAL_API_URL || 'https://api-m.paypal.com';
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
+const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.paypal.com';
 
 if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
   console.warn("PayPal environment variables (PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET) are not fully set. PayPal functionality will be disabled.");
@@ -23,7 +22,7 @@ async function getPayPalAccessToken(): Promise<string> {
   
   try {
     const response = await axios.post(
-      `${PAYPAL_API}/v1/oauth2/token`,
+      `${PAYPAL_API_URL}/v1/oauth2/token`,
       "grant_type=client_credentials",
       {
         headers: {
@@ -78,14 +77,12 @@ export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }
         brand_name: "Cuddleia",
         user_action: "PAY_NOW",
         shipping_preference: "NO_SHIPPING",
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/thank-you`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/cart`,
     }
   };
 
   try {
     const response = await axios.post(
-      `${PAYPAL_API}/v2/checkout/orders`,
+      `${PAYPAL_API_URL}/v2/checkout/orders`,
       payload,
       {
         headers: {
@@ -120,7 +117,7 @@ export async function captureOrder(orderId: string): Promise<any> {
 
   try {
     const response = await axios.post(
-      `${PAYPAL_API}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+      `${PAYPAL_API_URL}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
       null,
       {
         headers: {
@@ -166,7 +163,7 @@ export async function verifyWebhook(headers: Headers, body: any): Promise<boolea
     };
     
     const response = await axios.post(
-      `${PAYPAL_API}/v1/notifications/verify-webhook-signature`,
+      `${PAYPAL_API_URL}/v1/notifications/verify-webhook-signature`,
       verificationPayload,
       {
         headers: {

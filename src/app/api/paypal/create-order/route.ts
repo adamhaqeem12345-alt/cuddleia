@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { createOrder } from '@/lib/paypal-api';
 import type { CartItem } from '@/lib/types';
