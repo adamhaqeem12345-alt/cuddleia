@@ -72,6 +72,8 @@ export function PayPalButtonsComponent() {
       // The `return_url` in the paypal-api will handle the redirect.
       // This logic will execute before the redirect happens.
       console.log('Order captured successfully:', orderDetails);
+      // Redirect to thank you page. PayPal should also handle this via return_url.
+      router.push(`/thank-you?token=${data.orderID}&PayerID=${data.payerID}`);
 
     } catch (error) {
       console.error("Error capturing PayPal order:", error);
