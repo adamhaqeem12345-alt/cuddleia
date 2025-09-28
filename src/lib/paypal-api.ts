@@ -60,13 +60,13 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
           value: totalValueInDollars,
         },
         items: cartItems.map((item) => ({
-            name: item.name.substring(0, 127), // PayPal API has a 127 char limit for item name
+            name: item.name.substring(0, 127),
             unit_amount: {
                 currency_code: "USD",
                 value: (item.price / 100).toFixed(2),
             },
             quantity: String(item.quantity),
-            sku: item.id.substring(0, 127) // PayPal API has a 127 char limit for SKU
+            sku: item.id.substring(0, 127)
         }))
       }
     ],
@@ -91,7 +91,6 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
       }
     );
     
-    // Log the full successful response from PayPal
     console.log("Full PayPal create-order response:", JSON.stringify(response.data, null, 2));
 
     if (!response.data.id) {
@@ -103,6 +102,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
   } catch (error: any) {
     const errorMessage = error.response ? JSON.stringify(error.response.data, null, 2) : error.message;
     console.error("Error creating PayPal order:", errorMessage);
+    // CRITICAL: Re-throw as a new Error so the message is propagated.
     throw new Error(`Could not create PayPal order. Details: ${errorMessage}`);
   }
 }

@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     console.log("CREATE-ORDER: Calling createOrder helper with cart items:", cartItems);
     const orderData = await createOrder(cartItems);
     
-    // This log is crucial for debugging PayPal's raw response.
     console.log("CREATE-ORDER: Full response from PayPal createOrder API:", JSON.stringify(orderData, null, 2));
 
     if (orderData && orderData.id) {
@@ -27,7 +26,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ id: orderData.id });
     } else {
         console.error("CREATE-ORDER API ERROR: PayPal response did not include an order ID.");
-        // Return a structured error response
         return NextResponse.json(
             { error: "PayPal response did not include an order ID." },
             { status: 500 }
@@ -36,7 +34,7 @@ export async function POST(req: Request) {
 
   } catch (err: any) {
     console.error('CREATE-ORDER API CATCH BLOCK: An unexpected error occurred.', err);
-    // Ensure a consistent error response structure from the catch block
+    // Ensure err.message exists and is a string.
     const errorMessage = err.message || 'An unexpected error occurred.';
     return NextResponse.json(
       { error: 'Failed to create PayPal order.', details: errorMessage },
