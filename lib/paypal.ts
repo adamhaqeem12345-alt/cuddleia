@@ -86,6 +86,7 @@ export async function createOrder(cart: CartItemFromClient[]): Promise<{ id: str
             brand_name: 'Cuddleia',
             shipping_preference: 'NO_SHIPPING',
             user_action: 'PAY_NOW',
+            landing_page: 'BILLING', // This encourages the card payment form
         },
     };
 
@@ -159,6 +160,8 @@ export async function captureOrder(orderId: string): Promise<any> {
 
         // The email sending is important, but we won't let it block the success response.
         // We'll log an error if it fails, but the user will still see the success page.
+        // Disabling this for now to isolate the payment error
+        /*
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -168,6 +171,7 @@ export async function captureOrder(orderId: string): Promise<any> {
         }).catch(err => {
             console.error("Critical Error: Failed to send confirmation email after successful payment:", err);
         });
+        */
         
         return { 
             orderId: data.id,
