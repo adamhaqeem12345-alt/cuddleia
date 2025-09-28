@@ -39,12 +39,17 @@ const summarizeProductNameFlow = ai.defineFlow(
       return input.productName;
     }
     const { output } = await prompt(input);
-    return output || input.productName.substring(0, 127); // Fallback to truncation
+    // Fallback to simple truncation if AI fails or returns an empty response
+    return output || input.productName.substring(0, 127);
   }
 );
 
 export async function summarizeProductName(
   productName: string
 ): Promise<string> {
+  // Ensure we only call the flow if necessary
+  if (productName.length <= 127) {
+    return productName;
+  }
   return await summarizeProductNameFlow({ productName });
 }
