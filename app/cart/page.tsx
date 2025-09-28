@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/context/cart-context';
@@ -6,12 +7,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
-import { X, ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, getPrice } = useCart();
+  const { cart, removeFromCart, updateQuantity, getPrice, isCartReady } = useCart();
   const router = useRouter();
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -20,6 +21,15 @@ export default function CartPage() {
   const handleCheckout = () => {
     router.push('/checkout');
   };
+  
+  if (!isCartReady) {
+    return (
+        <div className="container mx-auto px-4 py-24 text-center">
+             <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
+             <p className="mt-4 text-lg text-muted-foreground">Loading Your Cart...</p>
+        </div>
+    )
+  }
 
   return (
     <AnimateIn>
@@ -78,7 +88,7 @@ export default function CartPage() {
                         <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                           <X className="h-5 w-5" />
                           <span className="sr-only">Remove</span>
-                        </Button>
+                        </Button>                      
                       </TableCell>
                     </TableRow>
                   ))}
