@@ -56,8 +56,7 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
     
-    // Sanitize SKU: Replace invalid characters (like hyphens) with underscores.
-    // PayPal allows alphanumeric characters, underscores, and spaces.
+    // Sanitize SKU: Replace invalid characters. PayPal allows alphanumeric characters, underscores, and spaces.
     const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_ ]/g, '_').substring(0, 127);
     
     // Perform calculations in cents to avoid floating point issues
@@ -92,7 +91,6 @@ export async function createOrder(cart: CartItem[]) {
       shipping_preference: 'NO_SHIPPING',
       user_action: 'PAY_NOW',
       brand_name: 'Cuddleia',
-      landing_page: 'GUEST_CHECKOUT',
     },
     purchase_units: [{
       amount: {
