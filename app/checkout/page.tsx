@@ -2,10 +2,12 @@
 'use client';
 
 import { Suspense } from 'react';
+import Image from 'next/image';
 import { AnimateIn } from '@/components/animate-in';
 import { useCart } from '@/context/cart-context';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 function CheckoutPageContent() {
     const { getPrice, cart, isCartReady } = useCart();
@@ -14,7 +16,7 @@ function CheckoutPageContent() {
         return (
             <div className="container mx-auto px-4 py-24 text-center">
                  <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
-                 <p className="mt-4 text-lg text-muted-foreground">Loading Your Cart...</p>
+                 <p className="mt-4 text-lg text-muted-foreground">Loading Your Order...</p>
             </div>
         )
     }
@@ -36,28 +38,41 @@ function CheckoutPageContent() {
     return (
         <AnimateIn>
             <div className="container mx-auto px-4 py-16 sm:py-24 max-w-2xl">
-                <h1 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-12">
-                    Complete Your Purchase
-                </h1>
-                
-                <div className="bg-gray-50/50 p-8 rounded-2xl border shadow-sm">
-                    <h2 className="text-lg font-medium text-foreground">Order summary</h2>
-                    <div className="mt-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-muted-foreground">Subtotal (USD)</p>
-                            <p className="text-sm font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
+                <div className="bg-card p-8 rounded-2xl border shadow-lg">
+                    <h1 className="text-2xl font-headline font-semibold text-foreground mb-6">
+                        Order summary
+                    </h1>
+                    
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between text-muted-foreground">
+                            <p>Subtotal (USD)</p>
+                            <p className="font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground">Approx. MYR</p>
-                          <p className="text-sm font-medium text-muted-foreground">{subtotalPrice.myr.formatted}</p>
+                        <div className="flex items-center justify-between text-muted-foreground">
+                            <p>Approx. MYR</p>
+                            <p>{subtotalPrice.myr.formatted}</p>
                         </div>
-                        <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-                            <p className="text-base font-medium text-foreground">Final Order Total</p>
-                            <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
+                        <div className="flex items-center justify-between border-t border-gray-200 pt-4 mt-4 font-bold text-lg">
+                            <p className="text-foreground">Final Order Total</p>
+                            <p className="text-foreground">{subtotalPrice.usd.formatted}</p>
                         </div>
                     </div>
-                    <div className="mt-8 text-center bg-yellow-100/50 text-yellow-800 p-4 rounded-lg">
-                       <p className="font-medium">Checkout is currently unavailable. Please check back later.</p>
+                    
+                    <div className="my-8 border-t"></div>
+
+                    <div className="flex justify-center items-center space-x-4 mb-4">
+                        <Image src="https://www.paypalobjects.com/webstatic/mktg/logo-center/PP_Acceptance_Marks_for_LogoCenter_266x142.png" alt="PayPal" width={100} height={60} />
+                    </div>
+
+                    <p className="text-center text-xs text-muted-foreground mb-6 max-w-sm mx-auto">
+                        You'll be redirected to PayPal's secure gateway to complete your payment using your PayPal account or any major credit/debit card.
+                    </p>
+                    
+                    <div className="mt-6">
+                        <Button className="w-full rounded-full font-bold" size="lg">
+                            <Lock className="mr-2 h-4 w-4" />
+                            Proceed to Secure Payment
+                        </Button>
                     </div>
                 </div>
             </div>
