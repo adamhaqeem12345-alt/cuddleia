@@ -11,7 +11,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Cart is empty or invalid" }, { status: 400 });
     }
 
+    // The createOrder function from the library already returns { id: string }
     const orderData = await createOrder(cartItems);
+
+    console.log("PayPal create-order successful. Returning Order ID:", orderData.id);
 
     return NextResponse.json(orderData);
 

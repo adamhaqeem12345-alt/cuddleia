@@ -60,6 +60,55 @@ export default function CheckoutPage() {
         )
     }
 
+    const createOrderHandler = async () => {
+        setError(null);
+        try {
+            const res = await fetch("/api/paypal/create-order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ cartItems: cart }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || "Failed to create order.");
+            console.log("createOrder response:", data);
+            return data.id;
+        } catch (err: any) {
+            console.error("Create Order Error:", err);
+            setError(err.message);
+            throw err; // Thrown error is caught by PayPalButtons' internal error handling
+        }
+    };
+
+    const onApproveHandler = async (data: any) => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/paypal/capture-order`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderID: data.orderID })
+            });
+            const details = await res.json();
+            console.log("onApprove capture response:", details);
+
+            if (res.ok && details.status === "COMPLETED") {
+                // Redirect to thank you page on successful capture.
+                window.location.href = `/thank-you?token=${data.orderID}`;
+            } else {
+                // Handle failed capture (e.g., card declined)
+                throw new Error(details.error || "Payment could not be completed.");
+            }
+        } catch (err: any) {
+            console.error("Approve Order Error:", err);
+            setError(err.message);
+            setLoading(false); // Stop loading so user can try again
+        }
+    };
+    
+    const onErrorHandler = (err: any) => {
+        console.error("PayPal Buttons onError:", err);
+        setError("An unexpected error occurred with PayPal. Please check the console and try again.");
+    };
+
     return (
         <AnimateIn>
             <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24">
@@ -105,92 +154,16 @@ export default function CheckoutPage() {
                             <PayPalButtons
                                 style={{ layout: "vertical" }}
                                 fundingSource={FUNDING.PAYPAL}
-                                createOrder={async () => {
-                                    setError(null);
-                                    try {
-                                        const res = await fetch("/api/paypal/create-order", {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ cartItems: cart }),
-                                        });
-                                        const data = await res.json();
-                                        if (!res.ok) throw new Error(data.error || "Failed to create order.");
-                                        return data.id;
-                                    } catch (err: any) {
-                                        console.error("Create Order Error:", err);
-                                        setError(err.message);
-                                        throw err;
-                                    }
-                                }}
-                                onApprove={async (data) => {
-                                    setLoading(true);
-                                    try {
-                                        const res = await fetch(`/api/paypal/capture-order`, {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ orderID: data.orderID })
-                                        });
-                                        const details = await res.json();
-                                        if (res.ok && details.status === "COMPLETED") {
-                                            window.location.href = `/thank-you?token=${data.orderID}`;
-                                        } else {
-                                            throw new Error(details.error || "Payment could not be completed.");
-                                        }
-                                    } catch (err: any) {
-                                        console.error("Approve Order Error:", err);
-                                        setError(err.message);
-                                        setLoading(false);
-                                    }
-                                }}
-                                onError={(err) => {
-                                    console.error("PayPal Buttons onError:", err);
-                                    setError("An unexpected error occurred with PayPal. Please try again.");
-                                }}
+                                createOrder={createOrderHandler}
+                                onApprove={onApproveHandler}
+                                onError={onErrorHandler}
                             />
                             <PayPalButtons
                                 style={{ layout: "vertical" }}
                                 fundingSource={FUNDING.CARD}
-                                createOrder={async () => {
-                                    setError(null);
-                                    try {
-                                        const res = await fetch("/api/paypal/create-order", {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ cartItems: cart }),
-                                        });
-                                        const data = await res.json();
-                                        if (!res.ok) throw new Error(data.error || "Failed to create order.");
-                                        return data.id;
-                                    } catch (err: any) {
-                                        console.error("Create Order Error:", err);
-                                        setError(err.message);
-                                        throw err;
-                                    }
-                                }}
-                                onApprove={async (data) => {
-                                    setLoading(true);
-                                    try {
-                                        const res = await fetch(`/api/paypal/capture-order`, {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ orderID: data.orderID })
-                                        });
-                                        const details = await res.json();
-                                        if (res.ok && details.status === "COMPLETED") {
-                                            window.location.href = `/thank-you?token=${data.orderID}`;
-                                        } else {
-                                            throw new Error(details.error || "Payment could not be completed.");
-                                        }
-                                    } catch (err: any) {
-                                        console.error("Approve Order Error:", err);
-                                        setError(err.message);
-                                        setLoading(false);
-                                    }
-                                }}
-                                onError={(err) => {
-                                    console.error("PayPal Buttons onError:", err);
-                                    setError("An unexpected error occurred with PayPal. Please try again or use a different payment method.");
-                                }}
+                                createOrder={createOrderHandler}
+                                onApprove={onApproveHandler}
+                                onError={onErrorHandler}
                             />
                         </PayPalScriptProvider>
                     )}

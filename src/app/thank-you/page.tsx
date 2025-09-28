@@ -13,6 +13,7 @@ export default function ThankYouPage() {
   const { clearCart } = useCart();
   const searchParams = useSearchParams();
 
+  // The 'token' is the PayPal Order ID, confirming a transaction was processed.
   const token = searchParams.get('token');
 
   useEffect(() => {
@@ -21,6 +22,7 @@ export default function ThankYouPage() {
     if (token) {
       clearCart();
     }
+    // The dependency array ensures this effect runs only when these values change.
   }, [token, clearCart]);
 
   return (
@@ -35,6 +37,9 @@ export default function ThankYouPage() {
             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
               Your order has been successfully processed. A confirmation email with your download links has been sent to your PayPal email address. Please check your inbox (and spam folder, just in case).
             </p>
+             <div className="mt-4 text-sm text-muted-foreground">
+                <p>Order ID: {token}</p>
+            </div>
           </>
         ) : (
           <>

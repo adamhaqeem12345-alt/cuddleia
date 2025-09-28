@@ -14,13 +14,16 @@ export async function POST(req: Request) {
         console.log("Full PayPal capture-order response:", JSON.stringify(capturedData, null, 2));
 
         if (capturedData.status !== 'COMPLETED') {
-            throw new Error(`Capture status was not COMPLETED: ${capturedData.status}`);
+             console.warn(`PayPal capture status for order ${orderID} was not 'COMPLETED'. Status: ${capturedData.status}`);
         }
         
+        // Return the full captured data object as requested.
+        // The frontend can then decide what to do based on the status.
         return NextResponse.json(capturedData);
 
     } catch (err: any) {
-        console.error("PayPal API /capture-order error:", err.message);
-        return NextResponse.json({ error: err.message || "Capture order failed" }, { status: 500 });
+        console.error("PayPal API /capture-order error:", err);
+        const errorMessage = err instanceof Error ? err.message : "Capture order failed";
+        return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 }
