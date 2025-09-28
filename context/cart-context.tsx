@@ -16,7 +16,7 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId:string, quantity: number) => void;
   clearCart: () => void;
-  getPrice: (price: number) => Price;
+  getPrice: (priceInCents: number) => Price;
   isCartReady: boolean;
 }
 
@@ -51,9 +51,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cart, isCartReady]);
   
-  const getPrice = (price: number): Price => {
-    const usdPrice = price;
-    const myrPrice = price * USD_TO_MYR_RATE;
+  const getPrice = (priceInCents: number): Price => {
+    const usdPrice = priceInCents / 100;
+    const myrPrice = usdPrice * USD_TO_MYR_RATE;
     return {
         usd: {
             formatted: `$${usdPrice.toFixed(2)} USD`,

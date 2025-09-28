@@ -1,7 +1,7 @@
 
 import type { Product } from './types';
 
-// Prices are in USD
+// Prices are in USD cents (e.g., 1500 = $15.00)
 // All 'description' fields are now single-line strings.
 // All multi-line content has been moved to 'longDescription'.
 export const products: Product[] = [
@@ -18,7 +18,7 @@ What you'll learn:
 • Branding: Why your own domain builds long-term trust.
 • Automation & AI: How tools like n8n and Canva AI can save you hours.
 • Marketing: How to effectively market on TikTok, Instagram, and Pinterest.`,
-    price: 15.00,
+    price: 1500,
     imageUrl: "https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png",
     imageWidth: 1080,
     imageHeight: 1080,
@@ -45,7 +45,7 @@ Please Note:
 • This is a digital item only; no physical product will be shipped.
 • For personal use only—not for resale or redistribution.
 • Not recommended for portrait lock screens.`,
-    price: 6.00,
+    price: 600,
     imageUrl: "https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png",
     imageWidth: 2732,
     imageHeight: 2048,
@@ -72,7 +72,7 @@ Please Note:
 • This is a digital item only; no physical product will be shipped.
 • For personal use only—not for resale or redistribution.
 • Not recommended for portrait lock screens.`,
-    price: 5.00,
+    price: 500,
     imageUrl: "https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png",
     imageWidth: 2732,
     imageHeight: 2048,
@@ -99,7 +99,7 @@ Please Note:
 • This is a digital item only; no physical product will be shipped.
 • For personal use only—not for resale or redistribution.
 • Not recommended for portrait lock screens.`,
-    price: 5.00,
+    price: 500,
     imageUrl: "https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png",
     imageWidth: 2732,
     imageHeight: 2048,
@@ -117,7 +117,7 @@ Key Features:
 • Use: Intended for testing the purchase and delivery flow.
 • Price: Set to a minimal amount for transaction testing.
 • Content: A placeholder image and download link.`,
-    price: 0.25,
+    price: 25,
     imageUrl: "https://i.postimg.cc/MTBtTMXR/Heading.png",
     imageWidth: 1920,
     imageHeight: 1080,

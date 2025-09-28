@@ -5,7 +5,7 @@ export interface ProductInfo {
     name: string;
     quantity: number;
     downloadUrl: string;
-    price: number;
+    price: number; // Price is now in dollars (e.g., 15.00)
 }
 
 export interface EmailPayload {

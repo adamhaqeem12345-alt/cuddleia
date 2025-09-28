@@ -3,7 +3,7 @@ export interface Product {
     name: string;
     description: string;
     longDescription?: string; // Optional long description for product pages
-    price: number; // Price in USD
+    price: number; // Price in USD cents (e.g., 1500 = $15.00)
     imageUrl: string;
     imageWidth: number;
     imageHeight: number;
