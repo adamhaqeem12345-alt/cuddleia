@@ -98,12 +98,6 @@ export async function createOrder(cart: CartItem[]) {
       amount: {
         currency_code: 'USD',
         value: totalValue,
-        breakdown: {
-          item_total: {
-            currency_code: 'USD',
-            value: totalValue,
-          },
-        },
       },
       items: items,
     }],
