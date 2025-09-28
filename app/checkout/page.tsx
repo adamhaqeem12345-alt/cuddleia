@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -32,8 +33,13 @@ export default function CheckoutPage() {
     const handlePayment = async () => {
         setStatus('processing');
         // Placeholder for new payment logic
+        // This will be replaced with calls to ToyyibPay or LemonSqueezy
         setTimeout(() => {
-            setErrorMessage('Payment gateway not implemented yet.');
+            if (selectedPaymentMethod === 'fpx') {
+                setErrorMessage('ToyyibPay integration is not implemented yet.');
+            } else {
+                setErrorMessage('Card payment gateway is not implemented yet.');
+            }
             setStatus('error');
         }, 2000);
     };
@@ -96,6 +102,7 @@ export default function CheckoutPage() {
                                     variant={selectedPaymentMethod === 'fpx' ? 'default' : 'outline'}
                                     onClick={() => setSelectedPaymentMethod('fpx')}
                                     className="h-20 flex flex-col gap-2"
+                                    disabled={status === 'processing'}
                                 >
                                     <Landmark className="h-6 w-6" />
                                     <span>FPX (Malaysia)</span>
@@ -104,6 +111,7 @@ export default function CheckoutPage() {
                                     variant={selectedPaymentMethod === 'card' ? 'default' : 'outline'}
                                     onClick={() => setSelectedPaymentMethod('card')}
                                     className="h-20 flex flex-col gap-2"
+                                    disabled={status === 'processing'}
                                 >
                                     <CreditCard className="h-6 w-6" />
                                     <span>Card (International)</span>
@@ -136,7 +144,7 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                      <div className="mt-12 text-center">
-                        <Button asChild variant="ghost">
+                        <Button asChild variant="ghost" disabled={status === 'processing'}>
                             <Link href="/cart">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Return to Cart
