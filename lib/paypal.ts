@@ -59,13 +59,13 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
         if (!productDetails) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
-
-        const itemName = productDetails.name.substring(0, 127);
-        const itemSku = productDetails.id.substring(0, 127);
+        
+        // PayPal requires item names to be simple strings. This removes special characters.
+        const cleanedName = productDetails.name.replace(/[^\w\s-]/g, '').substring(0, 127);
 
         return {
-            name: itemName,
-            sku: itemSku,
+            name: cleanedName,
+            sku: productDetails.id.substring(0, 127),
             unit_amount: {
                 currency_code: 'USD',
                 value: (productDetails.price / 100).toFixed(2),
@@ -183,8 +183,6 @@ export async function captureOrder(orderId: string): Promise<any> {
         });
 
         // Send confirmation email asynchronously. Don't block the response.
-        // DIAGNOSTIC STEP: Comment out the email sending to isolate the issue.
-        /*
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -195,7 +193,6 @@ export async function captureOrder(orderId: string): Promise<any> {
             console.error("Failed to send confirmation email:", err);
             // Don't throw an error here, as the payment itself was successful.
         });
-        */
         
         return { 
             orderId: data.id,
