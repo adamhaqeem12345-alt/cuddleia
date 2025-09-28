@@ -1,10 +1,11 @@
+
 'use server';
 
 import axios from 'axios';
 import type { CartItem } from './types';
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
-const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.paypal.com';
+const PAYPAL_API_URL = process.env.PAYPAL_API_URL || 'https://api-m.sandbox.paypal.com';
 
 if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
   console.warn("PayPal environment variables (PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET) are not fully set. PayPal functionality will be disabled.");
