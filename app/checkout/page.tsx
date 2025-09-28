@@ -63,8 +63,15 @@ function CheckoutPageContent() {
                     <div className="my-8 border-t"></div>
 
                     <div className="flex justify-center items-center space-x-3 mb-6">
-                        <Image src="https://www.paypalobjects.com/webstatic/mktg/logo-center/PP_Acceptance_Marks_for_LogoCenter_266x142.png" alt="PayPal and major credit cards acceptance mark" width={266} height={142} className="h-auto w-48"/>
+                        <Image src="https://i.ibb.co/X8X3b9Y/paypal.png" alt="PayPal" width={100} height={25} className="h-auto" />
+                        <div className="border-l h-6"></div>
+                        <div className="flex items-center space-x-2">
+                             <Image src="https://i.ibb.co/qWpB3YJ/visa.png" alt="Visa" width={50} height={25} className="h-auto" />
+                             <Image src="https://i.ibb.co/M8qqs2c/mastercard.png" alt="Mastercard" width={50} height={25} className="h-auto" />
+                             <Image src="https://i.ibb.co/qphGz8x/amex.png" alt="American Express" width={50} height={25} className="h-auto" />
+                        </div>
                     </div>
+
 
                     <p className="text-center text-xs text-muted-foreground mb-6 max-w-sm mx-auto">
                         You'll be redirected to a secure gateway to complete your payment using your PayPal account or any major credit/debit card.
