@@ -7,11 +7,12 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { PayPalButtons, OnApproveData, OnApproveActions } from '@paypal/react-paypal-js';
 
 export default function CheckoutPage() {
     const { cart, getPrice, isCartReady } = useCart();
     const router = useRouter();
-    const [status, setStatus] = useState<'ready' | 'loading' | 'processing' | 'error'>('loading');
+    const [status, setStatus] = useState<'ready' | 'loading' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState('An unexpected error occurred. Please try again.');
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -27,34 +28,47 @@ export default function CheckoutPage() {
         }
     }, [cart.length, isCartReady, router]);
 
-    const handlePayment = async () => {
-        setStatus('processing');
-        setErrorMessage('');
-
+    const createOrder = async (): Promise<string> => {
         try {
-            // 1. Create a PayPal order on the server
-            const createOrderResponse = await fetch('/api/paypal/create-order', {
+            const response = await fetch('/api/paypal/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ cart: cart.map(({ id, quantity }) => ({ id, quantity })) }),
             });
-
-            const orderData = await createOrderResponse.json();
-
-            if (!createOrderResponse.ok) {
-                throw new Error(orderData.error || 'Failed to create PayPal order.');
+            const orderData = await response.json();
+            if (!response.ok) {
+                throw new Error(orderData.error || 'Failed to create order.');
             }
-            
-            // 2. Redirect the user to PayPal to approve the payment
-            if (orderData.approveUrl) {
-                window.location.href = orderData.approveUrl;
-            } else {
-                 throw new Error('Could not retrieve PayPal approval URL.');
-            }
-
+            return orderData.id;
         } catch (error) {
-            console.error('Payment Error:', error);
+            console.error('Create Order Error:', error);
             const msg = error instanceof Error ? error.message : 'An unknown error occurred.';
+            setErrorMessage(msg);
+            setStatus('error');
+            return Promise.reject(error);
+        }
+    };
+    
+    const onApprove = async (data: OnApproveData, actions: OnApproveActions): Promise<void> => {
+        try {
+            // The capture is handled client-side by the PayPal script and confirmed on the server.
+            const response = await fetch('/api/paypal/capture-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: data.orderID }),
+            });
+
+            const capturedData = await response.json();
+
+            if (!response.ok) {
+                 throw new Error(capturedData.error || 'Failed to capture order.');
+            }
+            // Redirect to a success page, passing the orderID
+            router.push(`/checkout/success?token=${data.orderID}&PayerID=${data.payerID}`);
+            
+        } catch (error) {
+            console.error('On Approve Error:', error);
+            const msg = error instanceof Error ? error.message : 'An unknown error occurred while finalizing payment.';
             setErrorMessage(msg);
             setStatus('error');
         }
@@ -113,38 +127,30 @@ export default function CheckoutPage() {
                         <div className="bg-white p-8 rounded-2xl shadow-lg border flex flex-col justify-center">
                             <h2 className="font-headline text-2xl font-semibold mb-6">Payment Method</h2>
                             
-                            <div className='p-4 border rounded-lg bg-gray-50/70'>
-                                <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.png" alt="PayPal" className="h-10 mx-auto" />
-                                <p className="text-center text-sm text-muted-foreground mt-2">You will be redirected to PayPal to complete your payment securely.</p>
-                            </div>
-
-                            {status === 'error' && (
-                                <div className="text-center p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 my-6">
+                             {status === 'error' && (
+                                <div className="text-center p-4 rounded-lg bg-red-50 text-red-700 border border-red-200 mb-6">
                                     <AlertTriangle className="mx-auto h-8 w-8 text-red-500" />
                                     <p className="mt-2 font-semibold">Payment Error</p>
                                     <p className="text-sm mt-1">{errorMessage}</p>
                                 </div>
                             )}
-                            
-                            <Button 
-                                onClick={handlePayment}
-                                disabled={status === 'processing'}
-                                size="lg" 
-                                className="w-full font-bold shadow-lg transition-transform hover:scale-105 mt-6"
-                            >
-                                {status === 'processing' ? (
-                                    <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : (
-                                    `Proceed with PayPal`
-                                )}
-                            </Button>
+
+                            {status === 'ready' && (
+                                <PayPalButtons
+                                    style={{ layout: "vertical", label: "pay" }}
+                                    createOrder={createOrder}
+                                    onApprove={onApprove}
+                                    onError={(err) => {
+                                        console.error("PayPal Buttons Error:", err);
+                                        setErrorMessage("An error occurred with the PayPal gateway. Please try again.");
+                                        setStatus('error');
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
                      <div className="mt-12 text-center">
-                        <Button asChild variant="ghost" disabled={status === 'processing'}>
+                        <Button asChild variant="ghost">
                             <Link href="/cart">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 Return to Cart
