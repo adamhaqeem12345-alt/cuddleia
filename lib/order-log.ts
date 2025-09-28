@@ -1,4 +1,3 @@
-
 /**
  * @fileoverview In-memory order log to prevent duplicate processing.
  *
