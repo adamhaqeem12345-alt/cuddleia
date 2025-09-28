@@ -3,11 +3,16 @@ import { products } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, ArrowLeft, Info } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
 import Link from 'next/link';
 import { AddToCartButton } from './add-to-cart-button';
 import { ProductPrice } from '@/components/product-price';
+
+// Define the expected props structure for this page
+type Props = {
+  params: { id: string };
+};
 
 // Generate static paths for all products
 export async function generateStaticParams() {
@@ -17,7 +22,7 @@ export async function generateStaticParams() {
 }
 
 // Generate metadata for each product page
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({ params }: Props) {
   const product = products.find((p) => p.id === params.id);
   if (!product) {
     return {
@@ -49,7 +54,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
 }
 
 
-export default function ProductPage({ params }: { params: { id: string } }) {
+export default function ProductPage({ params }: Props) {
   const product = products.find((p) => p.id === params.id);
 
   if (!product) {
