@@ -2,7 +2,7 @@
 'use server';
 
 import axios from 'axios';
-import type { CartItem } from './types';
+import type { CartItem } from '@/lib/types';
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 const PAYPAL_API_URL = 'https://api-m.sandbox.paypal.com';
