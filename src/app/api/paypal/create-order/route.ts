@@ -53,13 +53,29 @@ export async function POST(req: Request) {
         {
           amount: {
             currency_code: "USD",
-            value: totalValueInDollars
-          }
+            value: totalValueInDollars,
+            breakdown: {
+                item_total: {
+                    currency_code: "USD",
+                    value: totalValueInDollars
+                }
+            }
+          },
+          items: cartItems.map((item: any) => ({
+              name: item.name.substring(0, 127),
+              unit_amount: {
+                  currency_code: "USD",
+                  value: (item.price / 100).toFixed(2),
+              },
+              quantity: String(item.quantity),
+              sku: item.id.substring(0, 50)
+          }))
         }
       ],
       application_context: {
         brand_name: "Cuddleia",
         user_action: "PAY_NOW",
+        shipping_preference: "NO_SHIPPING",
         return_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/thank-you` : 'http://localhost:3000/thank-you',
         cancel_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/cart` : 'http://localhost:3000/cart',
       }
@@ -88,4 +104,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message || "Something went wrong" }, { status: 500 });
   }
 }
+
 

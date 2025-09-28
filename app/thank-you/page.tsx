@@ -13,17 +13,15 @@ export default function ThankYouPage() {
   const { clearCart } = useCart();
   const searchParams = useSearchParams();
 
+  const token = searchParams.get('token');
+
   useEffect(() => {
     // Clear the cart only once when the component mounts
     // and a PayPal token is present in the URL, indicating a successful payment.
-    const token = searchParams.get('token');
-    const payerId = searchParams.get('PayerID');
-    if (token && payerId) {
+    if (token) {
       clearCart();
     }
-  }, [clearCart, searchParams]);
-
-  const token = searchParams.get('token');
+  }, [token, clearCart]);
 
   return (
     <AnimateIn>
