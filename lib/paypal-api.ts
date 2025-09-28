@@ -47,7 +47,7 @@ export async function createOrder(cart: CartItem[]) {
     throw new Error('Cart is empty.');
   }
 
-  let itemTotalValueInCents = 0;
+  let itemTotalValue = 0;
 
   const items = cart.map(cartItem => {
     const productDetails = products.find(p => p.id === cartItem.id);
@@ -55,24 +55,22 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
     
-    // Use cents for all calculations to avoid floating point issues
-    const itemPriceInCents = Math.round(productDetails.price * 100);
-    itemTotalValueInCents += itemPriceInCents * cartItem.quantity;
+    itemTotalValue += productDetails.price * cartItem.quantity;
 
     return {
       name: productDetails.name.substring(0, 127),
       sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        value: productDetails.price.toFixed(2), // CRITICAL: Ensure this is a string with 2 decimal places
+        value: productDetails.price.toFixed(2), // CRITICAL: Must be a string with 2 decimal places
       },
-      quantity: String(cartItem.quantity),
+      quantity: String(cartItem.quantity), // CRITICAL: Must be a string
     };
   });
   
-  const totalValue = (itemTotalValueInCents / 100).toFixed(2);
+  const totalValue = itemTotalValue.toFixed(2);
   
-  if (itemTotalValueInCents <= 0) {
+  if (itemTotalValue <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
   
