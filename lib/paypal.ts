@@ -66,7 +66,7 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
         itemTotalInCents += unitPriceInCents * cartItem.quantity;
         
         // Sanitize name and SKU to meet PayPal's API constraints.
-        const sanitizedName = productDetails.name.substring(0, 127);
+        const sanitizedName = productDetails.name.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 127);
         const sanitizedSku = productDetails.id.substring(0, 127);
 
         return {
