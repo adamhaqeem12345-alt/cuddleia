@@ -47,7 +47,7 @@ export async function createOrder(cart: CartItem[]) {
     throw new Error('Cart is empty.');
   }
 
-  let itemTotalValue = 0;
+  let itemTotalInCents = 0;
 
   const items = cart.map(cartItem => {
     const productDetails = products.find(p => p.id === cartItem.id);
@@ -55,22 +55,27 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
     
-    itemTotalValue += productDetails.price * cartItem.quantity;
+    // Perform calculations in cents to avoid floating point issues
+    const unitPriceInCents = Math.round(productDetails.price * 100);
+    itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
       name: productDetails.name.substring(0, 127),
       sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        value: productDetails.price.toFixed(2), // CRITICAL: Must be a string with 2 decimal places
+        // CRITICAL: Must be a string with 2 decimal places
+        value: (unitPriceInCents / 100).toFixed(2),
       },
-      quantity: String(cartItem.quantity), // CRITICAL: Must be a string
+      // CRITICAL: Must be a string
+      quantity: String(cartItem.quantity),
     };
   });
   
-  const totalValue = itemTotalValue.toFixed(2);
+  // Convert total cents to a string with 2 decimal places
+  const totalValue = (itemTotalInCents / 100).toFixed(2);
   
-  if (itemTotalValue <= 0) {
+  if (itemTotalInCents <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
   
