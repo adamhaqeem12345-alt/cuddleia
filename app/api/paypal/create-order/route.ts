@@ -9,6 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Cart data is missing.' }, { status: 400 });
     }
 
+    // The 'cart' received here now contains id, quantity, price, and name
     const { id, approveUrl } = await createOrder(cart);
     return NextResponse.json({ id, approveUrl });
 

@@ -6,12 +6,13 @@
 import { products } from './products';
 import { sendOrderConfirmationEmail } from './email';
 
-interface CartItem {
+interface CartItemFromClient {
     id: string;
     quantity: number;
+    price: number; // Price in cents
+    name: string;
 }
 
-// Ensure environment variables are loaded and typed.
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } = process.env;
 const PAYPAL_API = process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com';
 
@@ -19,70 +20,43 @@ if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
     throw new Error("PayPal client ID or secret is not configured in environment variables.");
 }
 
-/**
- * Generates a PayPal API access token.
- * @returns {Promise<string>} The access token.
- */
 async function getAccessToken(): Promise<string> {
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
-
     const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
         method: 'POST',
-        headers: {
-            'Authorization': `Basic ${auth}`,
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
         body: 'grant_type=client_credentials',
     });
-
     const data = await response.json();
-    if (!response.ok) {
-        throw new Error(`Failed to get access token: ${data.error_description || 'Unknown error'}`);
-    }
+    if (!response.ok) throw new Error(`Failed to get access token: ${data.error_description || 'Unknown error'}`);
     return data.access_token;
 }
 
-
-/**
- * Creates a PayPal order based on the items in the cart.
- * The server looks up product details from a secure source (`lib/products.ts`).
- * @param {CartItem[]} cart - A simplified cart containing only product IDs and quantities.
- * @returns {Promise<{id: string, approveUrl: string}>} The order ID and the URL for user approval.
- */
-export async function createOrder(cart: CartItem[]): Promise<{ id: string; approveUrl: string }> {
+export async function createOrder(cart: CartItemFromClient[]): Promise<{ id: string; approveUrl: string }> {
     if (!cart || cart.length === 0) {
         throw new Error('Cart is empty.');
     }
 
-    const itemsPayload = cart.map((cartItem) => {
-        const productDetails = products.find(p => p.id === cartItem.id);
-        if (!productDetails) {
-            throw new Error(`Product with ID ${cartItem.id} not found.`);
-        }
-        
-        // PayPal requires item names to be simple strings. This removes special characters.
-        const cleanedName = productDetails.name.replace(/[^\w\s-]/g, '').substring(0, 127);
+    const accessToken = await getAccessToken();
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
+    const itemsPayload = cart.map((cartItem) => {
+        const cleanedName = cartItem.name.replace(/[^\w\s-]/g, '').substring(0, 127);
         return {
             name: cleanedName,
-            sku: productDetails.id.substring(0, 127),
+            sku: cartItem.id.substring(0, 127),
             unit_amount: {
                 currency_code: 'USD',
-                value: (productDetails.price / 100).toFixed(2),
+                value: (cartItem.price / 100).toFixed(2),
             },
             quantity: String(cartItem.quantity),
             category: 'DIGITAL_GOODS' as const,
         };
     });
 
-    // Calculate the total by reducing the items array to prevent floating point issues.
     const totalValue = itemsPayload.reduce((sum, item) => {
         return sum + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
     }, 0).toFixed(2);
-    
-
-    const accessToken = await getAccessToken();
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
     const payload = {
         intent: 'CAPTURE',
@@ -91,10 +65,7 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
                 currency_code: 'USD',
                 value: totalValue,
                 breakdown: {
-                    item_total: {
-                        currency_code: 'USD',
-                        value: totalValue,
-                    },
+                    item_total: { currency_code: 'USD', value: totalValue },
                 },
             },
             items: itemsPayload,
@@ -135,11 +106,6 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
     return { id: data.id, approveUrl };
 }
 
-/**
- * Captures a payment for a given PayPal order ID.
- * @param {string} orderId The PayPal order ID.
- * @returns {Promise<any>} The captured order details.
- */
 export async function captureOrder(orderId: string): Promise<any> {
     const accessToken = await getAccessToken();
 
@@ -161,7 +127,6 @@ export async function captureOrder(orderId: string): Promise<any> {
         throw new Error(errorMessage);
     }
 
-    // --- Post-Payment Logic ---
     if (data.status === 'COMPLETED') {
         const purchaseUnit = data.purchase_units[0];
         const total = parseFloat(purchaseUnit.payments.captures[0].amount.value);
@@ -171,18 +136,16 @@ export async function captureOrder(orderId: string): Promise<any> {
         const purchasedItems = purchaseUnit.items.map((item: any) => {
             const product = products.find(p => p.id === item.sku);
             if (!product) {
-                // This should not happen if createOrder was successful.
                 return { name: item.name, quantity: parseInt(item.quantity), downloadUrl: '', price: parseFloat(item.unit_amount.value) };
             }
             return {
                 name: product.name,
                 quantity: parseInt(item.quantity, 10),
                 downloadUrl: product.downloadUrl,
-                price: product.price / 100, // convert cents to dollars
+                price: product.price / 100,
             };
         });
 
-        // Send confirmation email asynchronously. Don't block the response.
         sendOrderConfirmationEmail({
             customerName,
             customerEmail,
@@ -191,7 +154,6 @@ export async function captureOrder(orderId: string): Promise<any> {
             products: purchasedItems,
         }).catch(err => {
             console.error("Failed to send confirmation email:", err);
-            // Don't throw an error here, as the payment itself was successful.
         });
         
         return { 

@@ -30,15 +30,17 @@ export default function CheckoutPage() {
         setStatus('processing');
         try {
             // Send only the essential data to the server
-            const minimalCart = cart.map(item => ({
+            const cartForApi = cart.map(item => ({
                 id: item.id,
                 quantity: item.quantity,
+                price: item.price, // Pass the price in cents
+                name: item.name,
             }));
 
             const res = await fetch('/api/paypal/create-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart: minimalCart }),
+                body: JSON.stringify({ cart: cartForApi }),
             });
 
             const data = await res.json();
