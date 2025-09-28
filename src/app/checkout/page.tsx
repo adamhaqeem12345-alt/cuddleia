@@ -8,7 +8,6 @@ import { AnimateIn } from '@/components/animate-in';
 import { Loader2, AlertTriangle, Lock, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PayPalProvider } from '@/context/paypal-provider';
 
 export default function CheckoutPage() {
     const { cart, getPrice, isCartReady } = useCart();
@@ -49,7 +48,7 @@ export default function CheckoutPage() {
     }
 
     const createOrderHandler = async () => {
-        console.log("PayPalButtons: createOrder triggered. Calling API...");
+        console.log("CHECKOUT PAGE: createOrderHandler triggered. Calling API...");
         setError(null);
         try {
             const res = await fetch("/api/paypal/create-order", {
@@ -59,28 +58,36 @@ export default function CheckoutPage() {
             });
             
             const data = await res.json();
-            console.log("Response from /api/paypal/create-order:", data);
+            
+            // Extensive logging for debugging
+            console.log("CHECKOUT PAGE: Response from /api/paypal/create-order:", data);
 
-            if (!res.ok || !data.id) {
-                console.error("PayPalButtons: createOrder API call failed or did not return an ID.", data);
-                // Make the error visible to the user
-                alert('Failed to create PayPal order, see console for details.');
-                throw new Error(data.details || data.error || "Failed to create order.");
+            if (!res.ok) {
+                // If response is not ok, log the detailed error from the API
+                const errorDetails = data.details || data.error || "Unknown error from server.";
+                console.error("CHECKOUT PAGE: createOrder API call failed.", errorDetails);
+                throw new Error(errorDetails);
+            }
+
+            if (!data.id) {
+                console.error("CHECKOUT PAGE: createOrder API response did not contain an 'id'.");
+                alert('Failed to create PayPal order. The server did not return an order ID. Please check the console.');
+                throw new Error("Failed to create order: No ID returned.");
             }
             
-            console.log("PayPalButtons: createOrder API call successful. Order ID:", data.id);
+            console.log("CHECKOUT PAGE: createOrder API call successful. Order ID:", data.id);
             return data.id;
         } catch (err: any) {
-            console.error("PayPalButtons: createOrder handler threw an error.", err);
-            setError(err.message);
-            // This throw is important for PayPal to know the order creation failed.
+            console.error("CHECKOUT PAGE: CATCH BLOCK in createOrderHandler.", err);
+            setError(`Failed to create transaction: ${err.message}`);
+            // This throw is important for PayPal to know the order creation failed and to show its own error UI.
             throw err; 
         }
     };
 
     const onApproveHandler = async (data: any) => {
-        console.log("PayPalButtons: onApprove triggered. Capturing order...", data);
-        setLoading(true);
+        console.log("CHECKOUT PAGE: onApproveHandler triggered. Capturing order...", data);
+        setLoading(true); // Show a loading spinner
         setError(null);
         try {
             const res = await fetch(`/api/paypal/capture-order`, {
@@ -89,31 +96,33 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ orderID: data.orderID })
             });
             const details = await res.json();
-            console.log("PayPalButtons: onApprove capture API response:", details);
+            
+            // Log the full capture details
+            console.log("CHECKOUT PAGE: onApprove capture API response:", details);
 
             if (res.ok && details.status === "COMPLETED") {
-                console.log("PayPalButtons: onApprove success! Redirecting to thank you page.");
-                // Redirect to a thank you page on successful capture
+                console.log("CHECKOUT PAGE: onApprove success! Redirecting to thank you page.");
+                // Redirect to a thank you page on successful capture, passing the PayPal Order ID as a token
                 window.location.href = `/thank-you?token=${details.id}`;
             } else {
-                 console.error("PayPalButtons: onApprove capture was not completed.", details);
-                throw new Error(details.details || details.error || "Payment could not be completed.");
+                const errorMessage = details.details || details.error || "Payment could not be completed.";
+                console.error("CHECKOUT PAGE: onApprove capture was not completed.", errorMessage);
+                throw new Error(errorMessage);
             }
         } catch (err: any) {
-            console.error("PayPalButtons: onApprove handler threw an error.", err);
-            setError(err.message);
-            setLoading(false); // Keep loading state if redirect fails
+            console.error("CHECKOUT PAGE: CATCH BLOCK in onApproveHandler.", err);
+            setError(`Payment failed: ${err.message}`);
+            setLoading(false); // Stop loading so the user can see the error
         }
     };
     
     const onErrorHandler = (err: any) => {
-        // This err object can be complex, stringifying it can help in debugging.
-        console.error("PayPalButtons: An onError event was caught.", JSON.stringify(err, null, 2));
-        setError("An unexpected error occurred with PayPal. Please try refreshing the page or contact support if the problem persists.");
+        // This handler catches errors from the PayPal SDK itself (e.g., pop-up failed to open)
+        console.error("CHECKOUT PAGE: PayPalButtons onErrorHandler was triggered.", JSON.stringify(err, null, 2));
+        setError("An unexpected error occurred with the PayPal button. Please try refreshing the page.");
     };
 
     return (
-      <PayPalProvider>
         <AnimateIn>
             <div className="container mx-auto max-w-2xl px-4 py-16 sm:py-24">
                  <h1 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -147,20 +156,20 @@ export default function CheckoutPage() {
                     )}
                     
                     {error && (
-                        <div className="bg-destructive/10 text-destructive-foreground border border-destructive/20 rounded-lg p-4 text-center">
+                        <div className="bg-destructive/10 text-destructive-foreground border border-destructive/20 rounded-lg p-4 text-center my-4">
                             <div className="flex items-center justify-center gap-2">
                                 <AlertTriangle className="h-5 w-5 text-destructive" />
                                 <h3 className="font-bold text-destructive">Payment Error</h3>
                             </div>
                             <p className="text-sm mt-2">{error}</p>
                             <Button variant="link" onClick={() => window.location.reload()} className="mt-2 text-destructive-foreground underline">
-                                Please try again.
+                                Please try refreshing the page.
                             </Button>
                         </div>
                     )}
 
-                    {!loading && !error && (
-                         <>
+                    {!loading && (
+                         <div style={{ display: error ? 'none' : 'block' }}>
                             <p className="text-center text-xs text-muted-foreground mb-4">Choose your preferred payment method:</p>
                             <PayPalButtons
                                 style={{ layout: "vertical", label: "pay" }}
@@ -168,7 +177,7 @@ export default function CheckoutPage() {
                                 onApprove={onApproveHandler}
                                 onError={onErrorHandler}
                             />
-                        </>
+                        </div>
                     )}
                 </div>
                  <div className="mt-8 text-center">
@@ -184,8 +193,5 @@ export default function CheckoutPage() {
                 </div>
             </div>
         </AnimateIn>
-      </PayPalProvider>
     );
 }
-
-    

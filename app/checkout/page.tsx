@@ -8,7 +8,7 @@ import { AnimateIn } from '@/components/animate-in';
 import { Loader2, AlertTriangle, Lock, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { PayPalProvider } from '@/src/context/paypal-provider';
+import { PayPalProvider } from '@/context/paypal-provider';
 
 export default function CheckoutPage() {
     const { cart, getPrice, isCartReady } = useCart();
