@@ -12,6 +12,8 @@ if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SI
 export interface MinimalCartItem {
   id: string;
   quantity: number;
+  price: number; // price in cents
+  name: string;
 }
 
 /**
@@ -42,7 +44,7 @@ async function getAccessToken(): Promise<string> {
 
 /**
  * Creates a PayPal order.
- * @param cart - The user's shopping cart, containing only product ID and quantity.
+ * @param cart - The user's shopping cart, containing product ID, quantity, price, and name.
  */
 export async function createOrder(cart: MinimalCartItem[]) {
   const accessToken = await getAccessToken();
@@ -53,36 +55,30 @@ export async function createOrder(cart: MinimalCartItem[]) {
     throw new Error('Cart is empty.');
   }
 
+  let itemTotalInCents = 0;
+
   const items = cart.map((cartItem) => {
-    const productDetails = products.find(p => p.id === cartItem.id);
-    if (!productDetails) {
-      throw new Error(`Product with ID ${cartItem.id} not found.`);
-    }
-    
     // Sanitize name and SKU to be safe for PayPal
-    const sanitizedName = productDetails.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().substring(0, 127);
-    const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 127);
+    const sanitizedName = cartItem.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().substring(0, 127);
+    const sanitizedSku = cartItem.id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 127);
+    const unitPriceInCents = cartItem.price;
+    itemTotalInCents += unitPriceInCents * cartItem.quantity;
     
     return {
       name: sanitizedName,
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
-        value: (productDetails.price / 100).toFixed(2),
+        value: (unitPriceInCents / 100).toFixed(2),
       },
       quantity: String(cartItem.quantity),
       category: 'DIGITAL_GOODS' as const,
     };
   });
   
-  // Calculate total from the items array to ensure perfect match
-  const itemTotalValue = items.reduce((total, item) => {
-    return total + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
-  }, 0);
+  const totalValue = (itemTotalInCents / 100).toFixed(2);
 
-  const totalValueString = itemTotalValue.toFixed(2);
-
-  if (itemTotalValue <= 0) {
+  if (itemTotalInCents <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
   
@@ -98,11 +94,11 @@ export async function createOrder(cart: MinimalCartItem[]) {
     purchase_units: [{
       amount: {
         currency_code: 'USD',
-        value: totalValueString,
+        value: totalValue,
         breakdown: {
             item_total: {
                 currency_code: 'USD',
-                value: totalValueString,
+                value: totalValue,
             }
         }
       },

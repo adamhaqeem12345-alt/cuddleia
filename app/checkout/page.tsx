@@ -31,10 +31,12 @@ export default function CheckoutPage() {
         setStatus('processing');
         setErrorMessage('');
         try {
-            // Send only the essential cart information to the backend
+            // Send the essential cart information including price to the backend
             const minimalCart = cart.map(item => ({
                 id: item.id,
                 quantity: item.quantity,
+                price: item.price, // price in cents
+                name: item.name
             }));
 
             const res = await fetch('/api/paypal/create-order', {
