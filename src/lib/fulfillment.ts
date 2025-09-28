@@ -2,21 +2,16 @@
 
 import { products } from '@/lib/products';
 import { sendEmail } from '@/lib/mail';
+import { hasOrderBeenProcessed, markOrderAsProcessed } from '@/lib/order-log';
 
 // This function constructs a basic HTML email body.
 const createEmailHtml = (orderData: any): string => {
-    // Note: The items are not directly in the webhook resource.
-    // This is a simplification. A real app would need to look up the order details
-    // or have the items passed in. For now, we assume this is handled.
-    // We will simulate finding the purchased items from the order.
     const purchaseItems: { name: string, downloadUrl: string }[] = orderData.purchase_units?.[0]?.items?.map((item: { sku: string; }) => {
         const product = products.find(p => p.id === item.sku);
         return product ? { name: product.name, downloadUrl: product.downloadUrl } : null;
     }).filter(Boolean) || [];
 
     if (purchaseItems.length === 0) {
-        // Fallback for when item details are not in the order payload. This is NOT ideal.
-        // A more robust solution would be to look up the transaction details.
         console.warn(`Could not determine specific items for order ${orderData.id}. Sending a generic confirmation.`);
         return `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -55,34 +50,40 @@ const createEmailHtml = (orderData: any): string => {
 };
 
 /**
- * Fulfills an order by sending a confirmation and download email.
+ * Fulfills an order by sending a confirmation and download email,
+ * ensuring the order is only processed once.
  * @param orderData The PayPal order data object.
  */
 export async function fulfillOrder(orderData: any): Promise<void> {
-    const recipientEmail = orderData.payer?.email_address;
-
-    if (!recipientEmail) {
-        console.error(`FULFILLMENT ERROR: Cannot send email. Payer email is missing for order ${orderData.id}.`);
+    const orderId = orderData.id;
+    
+    if (await hasOrderBeenProcessed(orderId)) {
+        console.log(`FULFILLMENT: Order ${orderId} has already been processed. Skipping.`);
         return;
     }
 
-    // A more advanced implementation would first check a database to see if this order
-    // has already been fulfilled to avoid sending duplicate emails.
-    // For now, we accept the risk of a potential duplicate email in the rare case of a failure.
-
-    console.log(`FULFILLMENT: Preparing to send email for order ${orderData.id} to ${recipientEmail}.`);
+    const recipientEmail = orderData.payer?.email_address;
+    if (!recipientEmail) {
+        console.error(`FULFILLMENT ERROR: Cannot send email. Payer email is missing for order ${orderId}.`);
+        return;
+    }
+    
+    console.log(`FULFILLMENT: Processing order ${orderId} for ${recipientEmail}.`);
     
     try {
         const emailHtml = createEmailHtml(orderData);
         await sendEmail({
             to: recipientEmail,
-            subject: `Your Cuddleia Order & Download Links (${orderData.id})`,
+            subject: `Your Cuddleia Order & Download Links (${orderId})`,
             html: emailHtml,
         });
-        console.log(`FULFILLMENT: Successfully sent download email for order ${orderData.id}.`);
+
+        // Mark the order as processed ONLY after the email is successfully sent.
+        await markOrderAsProcessed(orderId);
+        
+        console.log(`FULFILLMENT: Successfully sent download email and marked order ${orderId} as processed.`);
     } catch (emailError) {
-        console.error(`FULFILLMENT ERROR: Failed to send email for order ${orderData.id}.`, emailError);
-        // In a real-world scenario, you would have a monitoring system to alert you to this failure.
-        throw new Error(`Failed to send fulfillment email for order ${orderData.id}`);
+        console.error(`FULFILLMENT ERROR: Failed to send email for order ${orderId}. The order will not be marked as processed and can be retried.`, emailError);
+        throw new Error(`Failed to send fulfillment email for order ${orderId}`);
     }
 }
