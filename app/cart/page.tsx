@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCart } from '@/context/cart-context';
@@ -19,7 +18,8 @@ export default function CartPage() {
   const subtotalPrice = getPrice(subtotal);
 
   const handleCheckout = () => {
-    router.push('/checkout');
+    // Temporarily redirect to the success page as the checkout is being reworked.
+    router.push('/checkout/success');
   };
   
   if (!isCartReady) {
