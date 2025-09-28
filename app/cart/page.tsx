@@ -120,8 +120,8 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="mt-6">
-                <Button asChild className="w-full" size="lg">
-                    <Link href="/checkout">Proceed to Checkout</Link>
+                <Button className="w-full" size="lg" disabled>
+                    Checkout is Currently Unavailable
                 </Button>
               </div>
             </section>
