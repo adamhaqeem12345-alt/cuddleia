@@ -16,7 +16,6 @@ export default function CheckoutPage() {
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const subtotalPrice = getPrice(subtotal);
-    const totalValue = (subtotal / 100).toFixed(2); // The total value as a string with two decimals
 
     if (!isCartReady) {
         return (
@@ -48,9 +47,22 @@ export default function CheckoutPage() {
         )
     }
 
+    // This function now runs entirely on the client
     const createOrder = (data: CreateOrderData, actions: any) => {
-        console.log("CHECKOUT PAGE: createOrder triggered. Creating order on client-side.");
+        console.log("CLIENT-SIDE: createOrder triggered. Creating order payload...");
         setError(null);
+
+        // Calculate the total value from the cart.
+        const totalValue = (cart.reduce((acc, item) => acc + item.price * item.quantity, 0) / 100).toFixed(2);
+        
+        if (parseFloat(totalValue) <= 0) {
+            setError("Cannot create an order with a total value of zero.");
+            return Promise.reject(new Error("Cannot create an order with a total value of zero."));
+        }
+
+        console.log(`CLIENT-SIDE: Calculated total value: $${totalValue}`);
+        
+        // Directly create the order with the PayPal SDK
         return actions.order.create({
             purchase_units: [{
                 amount: {
@@ -70,29 +82,29 @@ export default function CheckoutPage() {
         setLoading(true);
         setError(null);
         try {
-            // This captures the funds from the transaction.
             const details = await actions.order.capture();
             console.log("CHECKOUT PAGE: onApprove capture successful. Full details:", details);
             
-            // Now, we can optionally call our server to record the transaction and send emails.
+            // Call server to record the transaction and send emails.
             const res = await fetch(`/api/paypal/capture-order`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderID: data.orderID })
             });
-            const serverResponse = await res.json();
-             console.log("CHECKOUT PAGE: Server capture response:", serverResponse);
-
-            if (res.ok) {
-                console.log("CHECKOUT PAGE: onApprove success! Redirecting to thank you page.");
-                window.location.href = `/thank-you?token=${data.orderID}`;
-            } else {
+            
+            if (!res.ok) {
+                 const serverResponse = await res.json();
                  const errorMessage = serverResponse.details || serverResponse.error || "Payment was approved, but server failed to finalize order.";
                  throw new Error(errorMessage);
             }
+
+            console.log("CHECKOUT PAGE: onApprove success! Redirecting to thank you page.");
+            window.location.href = `/thank-you?token=${data.orderID}`;
+
         } catch (err: any) {
             console.error("CHECKOUT PAGE: CATCH BLOCK in onApprove.", err);
-            setError(`Payment failed or could not be finalized: ${err.message}`);
+            const message = err.message || "Payment failed or could not be finalized.";
+            setError(message);
             setLoading(false);
         }
     };
@@ -157,7 +169,7 @@ export default function CheckoutPage() {
                                 createOrder={createOrder}
                                 onApprove={onApprove}
                                 onError={onError}
-                                forceReRender={[cart]} // Re-render buttons if cart changes
+                                forceReRender={[cart, getPrice]} // Re-render if cart or total value changes
                             />
                         </div>
                     )}
