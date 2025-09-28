@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, Lock } from 'lucide-react';
 import type { CartItem } from '@/lib/types';
 
 export function CheckoutForm({ cart }: { cart: CartItem[] }) {
@@ -57,8 +56,12 @@ export function CheckoutForm({ cart }: { cart: CartItem[] }) {
       <Button 
         onClick={handlePayment} 
         disabled={isLoading} 
-        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold" 
+        className="w-full flex items-center justify-center gap-2 font-bold rounded-lg text-base" 
         size="lg"
+        style={{
+            paddingTop: '20px',
+            paddingBottom: '20px',
+        }}
       >
         {isLoading ? (
           <>
@@ -66,10 +69,12 @@ export function CheckoutForm({ cart }: { cart: CartItem[] }) {
             Processing...
           </>
         ) : (
-          'Pay with PayPal'
+          <>
+            <Lock className="h-4 w-4" />
+            Proceed to Secure Payment
+          </>
         )}
       </Button>
-      <p className="text-xs text-center mt-2 text-muted-foreground">You will be redirected to PayPal to complete your purchase securely.</p>
     </div>
   );
 }
