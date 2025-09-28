@@ -101,7 +101,8 @@ export async function verifyWebhook(headers: Headers, body: any): Promise<boolea
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(verificationPayload)
+        body: JSON.stringify(verificationPayload),
+        cache: 'no-store'
     });
 
     if (!response.ok) {

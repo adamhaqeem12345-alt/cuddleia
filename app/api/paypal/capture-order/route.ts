@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal-api';
 import { fulfillOrder } from '@/lib/fulfillment';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     console.log("API ROUTE: /api/paypal/capture-order received a POST request.");
     try {
