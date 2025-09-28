@@ -45,7 +45,7 @@ async function getPayPalAccessToken(): Promise<string> {
  * Creates a PayPal order for the given cart items.
  * @param cartItems The items in the user's shopping cart.
  */
-export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }> {
+export async function createOrder(cartItems: CartItem[]): Promise<any> {
   console.log("createOrder helper function invoked with cartItems:", cartItems);
   const accessToken = await getPayPalAccessToken();
 
@@ -100,6 +100,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }
       }
     );
     
+    // Log the full successful response from PayPal
     console.log("Full PayPal create-order response:", JSON.stringify(response.data, null, 2));
 
     if (!response.data.id) {
@@ -107,7 +108,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }
        throw new Error("PayPal response did not include an order ID.");
     }
     
-    return { id: response.data.id };
+    return response.data;
   } catch (error: any) {
     const errorMessage = error.response ? JSON.stringify(error.response.data, null, 2) : error.message;
     console.error("Error creating PayPal order:", errorMessage);

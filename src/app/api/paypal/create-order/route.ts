@@ -18,19 +18,18 @@ export async function POST(req: Request) {
 
     console.log("Calling createOrder helper with cart items:", cartItems);
     const orderData = await createOrder(cartItems);
-
-    // Log the full response from PayPal but only return the ID to the client
-    console.log("Full PayPal create-order response:", orderData);
     
     if (orderData && orderData.id) {
         console.log("API route /api/paypal/create-order successful, returning order ID:", orderData.id);
         return NextResponse.json({ id: orderData.id });
     } else {
+        console.error("API route /api/paypal/create-order error: PayPal response did not include an order ID.");
         throw new Error("PayPal response did not include an order ID.");
     }
 
   } catch (err: any) {
     console.error('PayPal API /create-order route error:', err);
+    // Ensure a consistent error response structure
     const errorMessage = err.message || 'An unexpected error occurred.';
     return NextResponse.json(
       { error: 'Failed to create PayPal order.', details: errorMessage },
