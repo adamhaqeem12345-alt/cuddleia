@@ -33,8 +33,9 @@ async function getPayPalAccessToken(): Promise<string> {
     console.log("Successfully fetched PayPal access token.");
     return response.data.access_token;
   } catch (error: any) {
-    console.error("Error fetching PayPal access token:", error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
-    throw new Error("Could not fetch PayPal access token.");
+    const errorMessage = error.response ? JSON.stringify(error.response.data, null, 2) : error.message;
+    console.error("Error fetching PayPal access token:", errorMessage);
+    throw new Error(`Could not fetch PayPal access token. Details: ${errorMessage}`);
   }
 }
 
@@ -93,7 +94,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
     
     console.log("Full PayPal create-order response:", JSON.stringify(response.data, null, 2));
 
-    if (!response.data.id) {
+    if (!response.data || !response.data.id) {
        console.error("PayPal create-order response missing 'id':", response.data);
        throw new Error("PayPal response did not include an order ID.");
     }
@@ -120,7 +121,7 @@ export async function captureOrder(orderId: string): Promise<any> {
     console.log(`Sending capture request to PayPal for order: ${orderId}`);
     const response = await axios.post(
       `${PAYPAL_API_URL}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
-      null,
+      null, // No body needed for capture
       {
         headers: {
           "Content-Type": "application/json",
@@ -184,7 +185,8 @@ export async function verifyWebhook(headers: Headers, body: any): Promise<boolea
 
     return verificationStatus === 'SUCCESS';
   } catch (error: any) {
-    console.error("Error verifying PayPal webhook:", error.response ? JSON.stringify(error.response.data, null, 2) : error.message);
+    const errorMessage = error.response ? JSON.stringify(error.response.data, null, 2) : error.message;
+    console.error("Error verifying PayPal webhook:", errorMessage);
     return false;
   }
 }
