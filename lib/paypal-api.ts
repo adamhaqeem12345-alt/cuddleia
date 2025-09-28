@@ -58,12 +58,12 @@ export async function createOrder(cart: CartItem[]) {
     // Sanitize SKU: Replace invalid characters. PayPal allows alphanumeric, underscores, and spaces.
     const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_ -]/g, '_').substring(0, 127);
     
-    // productDetails.price is now in cents, so it's an integer.
+    // productDetails.price is in cents, so it's an integer.
     const unitPriceInCents = productDetails.price;
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
-      name: "Cuddleia Digital Product",
+      name: "Cuddleia Digital Product", // Use a generic, compliant name
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
