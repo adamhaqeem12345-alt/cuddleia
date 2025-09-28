@@ -1,13 +1,22 @@
 
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Belleza, Alegreya } from 'next/font/google';
 import '@/app/globals.css';
 import { cn } from '@/lib/utils';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import { CartProvider } from '@/context/cart-context';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const belleza = Belleza({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-belleza',
+});
+
+const alegreya = Alegreya({
+  subsets: ['latin'],
+  variable: '--font-alegreya',
+});
 
 export const metadata: Metadata = {
   title: 'Cuddleia | Cozy Digital Goods with Heart',
@@ -53,7 +62,8 @@ export default function RootLayout({
       <body
         className={cn(
           'min-h-screen bg-background font-sans antialiased',
-          inter.variable
+          belleza.variable,
+          alegreya.variable
         )}
       >
         <CartProvider>

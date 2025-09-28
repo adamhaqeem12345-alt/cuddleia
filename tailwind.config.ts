@@ -73,9 +73,9 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "sans-serif"],
-        headline: ["var(--font-sans)", "sans-serif"],
-        body: ["var(--font-sans)", "serif"],
+        sans: ["var(--font-alegreya)", "sans-serif"],
+        headline: ["var(--font-belleza)", "sans-serif"],
+        body: ["var(--font-alegreya)", "serif"],
       }
     },
   },
