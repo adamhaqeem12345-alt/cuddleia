@@ -2,7 +2,6 @@
 import type { CartItem } from '@/lib/types';
 import { products } from './products';
 import { sendOrderConfirmationEmail, type ProductInfo } from './email';
-import { summarizeProductName } from '@/ai/flows/summarize-product-name';
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL, EMAIL_USER, EMAIL_PASS, PAYPAL_WEBHOOK_ID } = process.env;
 
@@ -64,7 +63,7 @@ export async function createOrder(cart: CartItem[]) {
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
-      name: `Cuddleia Digital Product`, // Simplified Name
+      name: 'Cuddleia Digital Product', // Simplified static name
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
@@ -75,12 +74,12 @@ export async function createOrder(cart: CartItem[]) {
     };
   }));
   
-  // Convert total cents to a string with 2 decimal places
-  const totalValue = (itemTotalInCents / 100).toFixed(2);
-  
   if (itemTotalInCents <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
+  
+  // Convert total cents to a string with 2 decimal places
+  const totalValue = (itemTotalInCents / 100).toFixed(2);
   
   const payload = {
     intent: 'CAPTURE',
