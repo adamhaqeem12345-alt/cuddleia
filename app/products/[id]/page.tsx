@@ -1,4 +1,5 @@
 
+import type { Metadata, ResolvingMetadata } from 'next';
 import { products } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -8,7 +9,6 @@ import { AnimateIn } from '@/components/animate-in';
 import Link from 'next/link';
 import { AddToCartButton } from './add-to-cart-button';
 import { ProductPrice } from '@/components/product-price';
-import type { Metadata, ResolvingMetadata } from 'next';
 
 type Props = {
   params: { id: string };
