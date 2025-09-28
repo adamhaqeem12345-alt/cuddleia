@@ -64,12 +64,12 @@ function CheckoutPageContent() {
                     <div className="my-8 border-t"></div>
 
                     <div className="flex justify-center items-center space-x-3 mb-4">
-                        <Image src="https://i.ibb.co/XzV3Zq3/paypal.png" alt="PayPal" width={75} height={20} className="h-auto" unoptimized />
+                        <Image src="https://i.postimg.cc/qR4Tch1g/paypal.png" alt="PayPal" width={75} height={20} className="h-auto" unoptimized />
                         <div className="border-l h-6"></div>
                         <div className="flex items-center space-x-2">
-                             <Image src="https://i.ibb.co/qjfB1jS/visa.png" alt="Visa" width={40} height={25} className="h-auto" unoptimized />
-                             <Image src="https://i.ibb.co/2NFn0M0/mastercard.png" alt="Mastercard" width={40} height={25} className="h-auto" unoptimized />
-                             <Image src="https://i.ibb.co/xS2sWcF/amex.png" alt="American Express" width={40} height={25} className="h-auto" unoptimized />
+                             <Image src="https://i.postimg.cc/mD41P5M5/visa.png" alt="Visa" width={40} height={25} className="h-auto" unoptimized />
+                             <Image src="https://i.postimg.cc/D0B3f24z/mastercard.png" alt="Mastercard" width={40} height={25} className="h-auto" unoptimized />
+                             <Image src="https://i.postimg.cc/sXw0sY2p/amex.png" alt="American Express" width={40} height={25} className="h-auto" unoptimized />
                         </div>
                     </div>
 
