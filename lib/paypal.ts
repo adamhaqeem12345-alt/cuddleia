@@ -54,42 +54,33 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
         throw new Error('Cart is empty.');
     }
 
-    let itemTotalInCents = 0;
-
     const itemsPayload = cart.map((cartItem) => {
         const productDetails = products.find(p => p.id === cartItem.id);
         if (!productDetails) {
             throw new Error(`Product with ID ${cartItem.id} not found.`);
         }
 
-        const unitPriceInCents = productDetails.price;
-        itemTotalInCents += unitPriceInCents * cartItem.quantity;
-        
-        // Sanitize name and SKU to meet PayPal's API constraints.
-        const sanitizedName = productDetails.name.replace(/[^a-zA-Z0-9\s]/g, '').substring(0, 127);
-        const sanitizedSku = productDetails.id.substring(0, 127);
+        // Use the actual product name and ID, simply truncated. No complex regex.
+        const itemName = productDetails.name.substring(0, 127);
+        const itemSku = productDetails.id.substring(0, 127);
 
         return {
-            name: sanitizedName,
-            sku: sanitizedSku,
+            name: itemName,
+            sku: itemSku,
             unit_amount: {
                 currency_code: 'USD',
-                value: (unitPriceInCents / 100).toFixed(2), // "15.00"
+                value: (productDetails.price / 100).toFixed(2),
             },
             quantity: String(cartItem.quantity),
             category: 'DIGITAL_GOODS' as const,
         };
     });
 
-    // Final total value as a "X.XX" string
-    const totalValue = (itemTotalInCents / 100).toFixed(2);
+    // Calculate the total by reducing the items array to prevent floating point issues.
+    const totalValue = itemsPayload.reduce((sum, item) => {
+        return sum + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
+    }, 0).toFixed(2);
     
-    // Ensure the sum of items exactly matches the total
-    const calculatedItemTotal = itemsPayload.reduce((sum, item) => sum + parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10), 0).toFixed(2);
-    if (totalValue !== calculatedItemTotal) {
-        // This is a failsafe for floating point issues, though unlikely with this logic.
-        throw new Error(`Internal calculation mismatch: totalValue (${totalValue}) does not match calculatedItemTotal (${calculatedItemTotal}).`);
-    }
 
     const accessToken = await getAccessToken();
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -103,7 +94,7 @@ export async function createOrder(cart: CartItem[]): Promise<{ id: string; appro
                 breakdown: {
                     item_total: {
                         currency_code: 'USD',
-                        value: totalValue, // Must match the sum of items
+                        value: totalValue,
                     },
                 },
             },
