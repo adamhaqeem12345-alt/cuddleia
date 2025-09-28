@@ -99,51 +99,59 @@ export function PayPalCheckout() {
                     },
 
                     // Call your server to set up the transaction
-                    createOrder: async (data: CreateOrderData, actions: CreateOrderActions) => {
-                        try {
-                            const res = await fetch('/api/paypal/create-order', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ cart }),
-                            });
-                            const order = await res.json();
+                    createOrder: (data: CreateOrderData, actions: CreateOrderActions) => {
+                        return fetch('/api/paypal/create-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ cart }),
+                        })
+                        .then(res => {
+                            if (!res.ok) {
+                                return res.json().then(err => { throw new Error(err.error || 'Could not create order.') });
+                            }
+                            return res.json();
+                        })
+                        .then(order => {
                             if (order.id) {
                                 return order.id;
                             } else {
-                                const errorText = order.error || 'Could not create order.';
-                                setError(errorText);
-                                throw new Error(errorText);
+                                throw new Error('Could not retrieve order ID.');
                             }
-                        } catch (err: any) {
+                        })
+                        .catch(err => {
                              setError(err.message || 'An error occurred while creating the order.');
                              throw err;
-                        }
+                        });
                     },
 
                     // Call your server to finalize the transaction
-                    onApprove: async (data: OnApproveData, actions: OnApproveActions) => {
+                    onApprove: (data: OnApproveData, actions: OnApproveActions) => {
                          setIsProcessing(true);
                          setError(null);
-                        try {
-                            const res = await fetch('/api/paypal/capture-order', {
+                         return fetch('/api/paypal/capture-order', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ orderID: data.orderID }),
+                            })
+                            .then(res => {
+                                if (!res.ok) {
+                                    return res.json().then(err => { throw new Error(err.error || 'Payment failed or was not completed.') });
+                                }
+                                return res.json();
+                            })
+                            .then(details => {
+                                if (details.status === 'COMPLETED') {
+                                    router.push(`/thank-you?token=${data.orderID}`);
+                                } else {
+                                    throw new Error('Payment not completed.');
+                                }
+                            })
+                            .catch(err => {
+                                setError(err.message || 'An error occurred while capturing the order.');
+                            })
+                            .finally(() => {
+                                setIsProcessing(false);
                             });
-
-                            const details = await res.json();
-
-                            if (res.ok && details.status === 'COMPLETED') {
-                                router.push(`/thank-you?token=${data.orderID}`);
-                            } else {
-                                const errorText = details.error || 'Payment failed or was not completed.';
-                                setError(errorText);
-                            }
-                        } catch (err: any) {
-                             setError(err.message || 'An error occurred while capturing the order.');
-                        } finally {
-                             setIsProcessing(false);
-                        }
                     },
                     
                     onError: (err: any) => {
