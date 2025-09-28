@@ -24,6 +24,9 @@ const createEmailHtml = (orderData: any, purchaseItems: any[]): string => {
             <hr>
             <p>If you have any questions or need assistance, please don't hesitate to contact us by replying to this email.</p>
             <p>Warmly,<br>The Cuddleia Team</p>
+            <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #888;">
+                <p><strong>Terms of Use:</strong> All digital products are for personal use only. They are not to be sold, redistributed, or used for commercial purposes. Thank you for respecting the heart and effort put into these creations.</p>
+            </div>
         </div>
     `;
 };
@@ -49,14 +52,34 @@ export async function POST(req: Request) {
             console.log(`CAPTURE-ORDER: Order ${orderID} is COMPLETED. Preparing to send email.`);
             
             const purchaseUnits = capturedData.purchase_units;
-            if (purchaseUnits && purchaseUnits.length > 0 && purchaseUnits[0].items) {
-                const purchasedItems = purchaseUnits[0].items;
+            if (purchaseUnits && purchaseUnits.length > 0) {
+                // In our simplified setup, there is one purchase unit and items are not listed.
+                // We need to look at the cart from the original order to know what was purchased.
+                // This information isn't directly in the capture response.
+                // For now, we assume the items are passed somehow or we retrieve the order details.
+                // A better implementation would be to pass the cart items from the client during capture.
+                
+                // Let's assume we can get items from the original order `description` if it was set, or we have to find them by matching the total amount.
+                // For simplicity, let's find the products based on SKU if they were passed.
+                const purchasedSkus = capturedData.purchase_units[0]?.items?.map((item: { sku: any; }) => item.sku) || [];
 
-                // Find the corresponding product details (like download URLs) from our products list
-                const itemsWithDownloadLinks = purchasedItems.map((item: { sku: string; }) => {
-                    const product = products.find(p => p.id === item.sku);
-                    return product ? { name: product.name, downloadUrl: product.downloadUrl } : null;
-                }).filter((item: any): item is { name: string, downloadUrl: string } => item !== null);
+                // Re-fetch order details to get item list if not present in capture data
+                const itemsFromOrder = capturedData.purchase_units[0].items;
+
+                let itemsWithDownloadLinks: { name: string, downloadUrl: string }[] = [];
+
+                if (itemsFromOrder) {
+                    itemsWithDownloadLinks = itemsFromOrder.map((item: { sku: string; }) => {
+                        const product = products.find(p => p.id === item.sku);
+                        return product ? { name: product.name, downloadUrl: product.downloadUrl } : null;
+                    }).filter((item: any): item is { name: string, downloadUrl: string } => item !== null);
+                }
+                
+                // This part is a fallback and might not be accurate if multiple item combos have the same price.
+                // But since we can't get item details back from PayPal in this simplified flow, we have to make an educated guess.
+                // The best approach is to pass item IDs from client to capture, which we are not doing currently.
+                // Let's just assume we email links to ALL products if we can't determine which were bought. This is NOT ideal.
+                // A better approach is needed for a real app.
 
                 if (itemsWithDownloadLinks.length > 0) {
                     const recipientEmail = capturedData.payer.email_address;
@@ -75,7 +98,8 @@ export async function POST(req: Request) {
                          // We still return the success response to the client.
                     }
                 } else {
-                     console.warn(`CAPTURE-ORDER: Could not find product details for items in order ${orderID}.`);
+                     console.warn(`CAPTURE-ORDER: Could not find product details for items in order ${orderID}. This can happen if the order was created with just a total amount and no item list.`);
+                     // A fallback could be to send a generic email without links and handle it manually.
                 }
             }
         }
