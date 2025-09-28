@@ -49,7 +49,7 @@ export async function createOrder(cart: CartItem[]) {
 
   let itemTotalInCents = 0;
 
-  const items = await Promise.all(cart.map(async (cartItem) => {
+  const items = cart.map((cartItem) => {
     const productDetails = products.find(p => p.id === cartItem.id);
     if (!productDetails) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
@@ -72,7 +72,7 @@ export async function createOrder(cart: CartItem[]) {
       quantity: String(cartItem.quantity),
       category: 'DIGITAL_GOODS' as const,
     };
-  }));
+  });
   
   if (itemTotalInCents <= 0) {
     throw new Error('Order total must be greater than zero.');
@@ -220,4 +220,3 @@ async function getProductInfoFromOrder(orderData: any): Promise<ProductInfo[]> {
         };
     });
 }
-
