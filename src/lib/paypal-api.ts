@@ -38,60 +38,42 @@ async function getPayPalAccessToken(): Promise<string> {
 }
 
 /**
- * Creates a PayPal order for the given cart items, strictly adhering to v2 schema.
+ * Creates a PayPal order for the given cart items.
+ * This version sends only the total amount, not a detailed item list, to maximize compatibility.
  * @param cartItems The items in the user's shopping cart.
  */
 export async function createOrder(cartItems: CartItem[]): Promise<any> {
   const accessToken = await getPayPalAccessToken();
 
-  // 1. Validate and sanitize items before they are used
-  const validItems = cartItems.filter(item => 
-    item &&
-    typeof item.name === 'string' && item.name.trim() !== '' &&
-    typeof item.price === 'number' && item.price >= 0 && // Allow 0 for now, total check will handle it
-    typeof item.quantity === 'number' && item.quantity >= 1
-  );
-
-  if (validItems.length !== cartItems.length) {
-      console.warn("Some items were filtered from the cart due to invalid data.", { originalCount: cartItems.length, validCount: validItems.length });
+  if (!cartItems || cartItems.length === 0) {
+    throw new Error("Cannot create order with an empty cart.");
   }
 
-  if (validItems.length === 0) {
-      throw new Error("Cart is empty or contains only invalid items.");
-  }
+  // Calculate total value from cart items
+  const totalValueInCents = cartItems.reduce((acc, item) => {
+    // Ensure price and quantity are valid numbers before calculation
+    const price = typeof item.price === 'number' ? item.price : 0;
+    const quantity = typeof item.quantity === 'number' ? item.quantity : 0;
+    return acc + (price * quantity);
+  }, 0);
 
-  // 2. Calculate total value from validated items
-  const totalValueInCents = validItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const totalValueInDollars = (totalValueInCents / 100).toFixed(2); // String with 2 decimal places
+  // Format as a string with two decimal places
+  const totalValueInDollars = (totalValueInCents / 100).toFixed(2);
 
-  // 3. Check for zero-value total
+  // Check for zero-value total
   if (parseFloat(totalValueInDollars) <= 0) {
       throw new Error("Cannot create an order with a total value of zero.");
   }
 
+  // Simplified payload: send only the total amount.
   const payload = {
     intent: "CAPTURE",
     purchase_units: [
       {
         amount: {
           currency_code: "USD",
-          value: totalValueInDollars, // Correctly formatted string
-          breakdown: {
-            item_total: {
-              currency_code: "USD",
-              value: totalValueInDollars // Correctly formatted string
-            }
-          }
-        },
-        items: validItems.map((item) => ({
-            name: item.name.substring(0, 127),
-            unit_amount: {
-                currency_code: "USD",
-                value: (item.price / 100).toFixed(2), // Correctly formatted string
-            },
-            quantity: String(item.quantity),
-            sku: item.id.substring(0, 127)
-        }))
+          value: totalValueInDollars, // e.g., "31.00"
+        }
       }
     ],
     application_context: {
@@ -102,7 +84,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
   };
 
   try {
-    console.log("Attempting to create PayPal order with payload:", JSON.stringify(payload, null, 2));
+    console.log("Attempting to create PayPal order with simplified payload:", JSON.stringify(payload, null, 2));
     const response = await axios.post(
       `${PAYPAL_API_URL}/v2/checkout/orders`,
       payload,
@@ -110,7 +92,7 @@ export async function createOrder(cartItems: CartItem[]): Promise<any> {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
-          "PayPal-Request-Id": `cuddleia-order-${Date.now()}`
+          "PayPal-Request-Id": `cuddleia-order-total-${Date.now()}`
         },
       }
     );
