@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -81,7 +80,7 @@ export function PayPalCheckout() {
     }, [PAYPAL_CLIENT_ID]);
 
     useEffect(() => {
-        if (scriptLoaded && paypalRef.current) {
+        if (scriptLoaded && paypalRef.current && paypalRef.current.childElementCount === 0) {
             if (!PAYPAL_CLIENT_ID) {
                 setError("PayPal environment variables are not set.");
                 return;
@@ -89,7 +88,6 @@ export function PayPalCheckout() {
 
             try {
                 (window as any).paypal.Buttons({
-                    // Style the buttons
                      style: {
                         layout: 'vertical',
                         color: 'gold',
@@ -97,34 +95,21 @@ export function PayPalCheckout() {
                         label: 'paypal',
                         height: 55,
                     },
-
-                    // Call your server to set up the transaction
                     createOrder: (data: CreateOrderData, actions: CreateOrderActions) => {
-                        return fetch('/api/paypal/create-order', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ cart }),
-                        })
-                        .then(res => {
-                            if (!res.ok) {
-                                return res.json().then(err => { throw new Error(err.error || 'Could not create order.') });
+                        const totalValue = cart.reduce((acc, item) => acc + (item.price / 100) * item.quantity, 0).toFixed(2);
+                        
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: totalValue,
+                                    currency_code: 'USD'
+                                }
+                            }],
+                            application_context: {
+                                shipping_preference: 'NO_SHIPPING'
                             }
-                            return res.json();
-                        })
-                        .then(order => {
-                            if (order.id) {
-                                return order.id;
-                            } else {
-                                throw new Error('Could not retrieve order ID.');
-                            }
-                        })
-                        .catch(err => {
-                             setError(err.message || 'An error occurred while creating the order.');
-                             throw err;
                         });
                     },
-
-                    // Call your server to finalize the transaction
                     onApprove: (data: OnApproveData, actions: OnApproveActions) => {
                          setIsProcessing(true);
                          setError(null);
@@ -153,20 +138,13 @@ export function PayPalCheckout() {
                                 setIsProcessing(false);
                             });
                     },
-                    
                     onError: (err: any) => {
                         console.error('PayPal Buttons onError:', err);
-                        // Check for specific cancellation signals if the SDK provides them
-                        // For now, we show a generic error but don't prevent retries.
                         setError("An error occurred with the PayPal transaction. Please try again.");
                     },
-
                     onCancel: (data: any) => {
                         console.log('PayPal payment cancelled:', data);
-                        // User cancelled the payment. No error state needed.
-                        // The user can simply click the button again.
                     }
-
                 }).render(paypalRef.current);
             } catch (err: any) {
                  setError("Failed to render PayPal buttons. Please try refreshing the page.");
@@ -213,11 +191,10 @@ export function PayPalCheckout() {
         );
     }
 
-
     return (
         <div>
             {!scriptLoaded && !error && (
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center h-[55px]">
                     <Loader2 className="h-8 w-8 text-primary animate-spin" />
                     <p className="ml-2 font-semibold">Loading payment options...</p>
                 </div>
