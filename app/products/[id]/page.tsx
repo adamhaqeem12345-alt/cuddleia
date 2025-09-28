@@ -8,10 +8,17 @@ import { AnimateIn } from '@/components/animate-in';
 import Link from 'next/link';
 import { AddToCartButton } from './add-to-cart-button';
 import { ProductPrice } from '@/components/product-price';
+import type { Metadata, ResolvingMetadata } from 'next';
 
 type Props = {
   params: { id: string };
 };
+
+type PageProps = {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
 
 // Generate static paths for all products
 export async function generateStaticParams() {
@@ -21,7 +28,7 @@ export async function generateStaticParams() {
 }
 
 // Generate metadata for each product page
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props, parent: ResolvingMetadata): Promise<Metadata> {
   const product = products.find((p) => p.id === params.id);
   if (!product) {
     return {
@@ -53,7 +60,7 @@ export async function generateMetadata({ params }: Props) {
 }
 
 
-export default function ProductPage({ params }: Props) {
+export default function ProductPage({ params }: PageProps) {
   const product = products.find((p) => p.id === params.id);
 
   if (!product) {
