@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -36,9 +37,17 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ cart }),
             });
             const order = await res.json();
-            if (!res.ok || !order.approveUrl) {
+            if (!res.ok) {
+                // Log the full error response from the server for better debugging
+                console.error('Server error response:', order);
                 throw new Error(order.error || 'Failed to create PayPal order.');
             }
+
+            if (!order.approveUrl) {
+                console.error('No approveUrl in success response:', order);
+                throw new Error('Could not retrieve PayPal approval URL.');
+            }
+
             // Redirect user to PayPal
             window.location.href = order.approveUrl;
         } catch (error: any) {

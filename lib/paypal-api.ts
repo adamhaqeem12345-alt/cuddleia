@@ -48,42 +48,38 @@ export async function createOrder(cart: CartItem[]) {
     throw new Error('Cart is empty.');
   }
 
-  let itemTotalInCents = 0;
-
   const items = cart.map((cartItem) => {
     const productDetails = products.find(p => p.id === cartItem.id);
     if (!productDetails) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
     
-    // Aggressively sanitize SKU: Allow only alphanumeric, underscores, and dashes.
+    // Sanitize name and SKU to be safe for PayPal
+    const sanitizedName = productDetails.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().substring(0, 127);
     const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 127);
     
-    // Aggressively sanitize Name: Remove any characters that aren't letters, numbers, or spaces.
-    const sanitizedName = productDetails.name.replace(/[^a-zA-Z0-9 ]/g, '').trim().substring(0, 127);
-    
-    // productDetails.price is in cents, so it's an integer.
-    const unitPriceInCents = productDetails.price;
-    itemTotalInCents += unitPriceInCents * cartItem.quantity;
-
     return {
       name: sanitizedName,
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
-        value: (unitPriceInCents / 100).toFixed(2), // Convert cents to dollars string for PayPal
+        value: (productDetails.price / 100).toFixed(2),
       },
       quantity: String(cartItem.quantity),
       category: 'DIGITAL_GOODS' as const,
     };
   });
   
-  if (itemTotalInCents <= 0) {
+  // Calculate total from the items array to ensure perfect match
+  const itemTotalValue = items.reduce((total, item) => {
+    return total + (parseFloat(item.unit_amount.value) * parseInt(item.quantity, 10));
+  }, 0);
+
+  const totalValueString = itemTotalValue.toFixed(2);
+
+  if (itemTotalValue <= 0) {
     throw new Error('Order total must be greater than zero.');
   }
-  
-  // Convert total cents to a string with 2 decimal places
-  const totalValue = (itemTotalInCents / 100).toFixed(2);
   
   const payload = {
     intent: 'CAPTURE',
@@ -97,11 +93,11 @@ export async function createOrder(cart: CartItem[]) {
     purchase_units: [{
       amount: {
         currency_code: 'USD',
-        value: totalValue,
+        value: totalValueString,
         breakdown: {
             item_total: {
                 currency_code: 'USD',
-                value: totalValue,
+                value: totalValueString,
             }
         }
       },
@@ -121,7 +117,7 @@ export async function createOrder(cart: CartItem[]) {
 
   if (!response.ok) {
     const errorBody = await response.json();
-    console.error("PayPal API Error:", JSON.stringify(errorBody, null, 2));
+    console.error("PayPal API Error creating order:", JSON.stringify(errorBody, null, 2));
     const issue = errorBody.details?.[0]?.description || 'An unknown error occurred with PayPal.';
     throw new Error(`PayPal rejected the order. Details: ${issue}`);
   }
