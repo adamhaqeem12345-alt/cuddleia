@@ -6,26 +6,28 @@ export async function POST(req: Request) {
   try {
     const { cartItems } = (await req.json()) as { cartItems: CartItem[] };
 
-    if (!cartItems || cartItems.length === 0) {
-      console.error("Create order failed: Cart is empty.");
-      return NextResponse.json({ error: "Cart is empty." }, { status: 400 });
+    if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+      console.error("Create order failed: Cart is empty or invalid.");
+      return NextResponse.json({ error: "Cart is empty or invalid." }, { status: 400 });
     }
 
-    // Convert CartItem[] to ProductInfo[] for the API
+    // The createOrder function now expects an array of ProductInfo (id, name, price, quantity)
+    // The price is in cents.
     const productInfoItems = cartItems.map(item => ({
         id: item.id,
         name: item.name,
-        price: item.price,
+        price: item.price, // price is already in cents from our products library
         quantity: item.quantity,
     }));
 
     const order = await createOrder(productInfoItems);
 
+    // Return the full PayPal response to the frontend.
+    // It contains the order ID and the approval link.
     return NextResponse.json(order);
 
-  } catch (error) {
-    console.error("Error in create-order route:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
-    return NextResponse.json({ error: "Failed to create order.", details: errorMessage }, { status: 500 });
+  } catch (err: any) {
+    console.error("create-order error:", err);
+    return NextResponse.json({ error: err.message || "Create order failed" }, { status: 500 });
   }
 }
