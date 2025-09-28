@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useCart } from '@/context/cart-context';
-import { PayPalButtons } from "@paypal/react-paypal-js";
+import { PayPalButtons, OnApproveData, CreateOrderData } from "@paypal/react-paypal-js";
 import { AnimateIn } from '@/components/animate-in';
 import { Loader2, AlertTriangle, Lock, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
@@ -16,6 +16,7 @@ export default function CheckoutPage() {
 
     const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
     const subtotalPrice = getPrice(subtotal);
+    const totalValue = (subtotal / 100).toFixed(2); // The total value as a string with two decimals
 
     if (!isCartReady) {
         return (
@@ -47,68 +48,58 @@ export default function CheckoutPage() {
         )
     }
 
-    const createOrderHandler = async (): Promise<string> => {
-        console.log("CHECKOUT PAGE: createOrderHandler triggered. Calling API...");
+    const createOrder = (data: CreateOrderData, actions: any) => {
+        console.log("CHECKOUT PAGE: createOrder triggered. Creating order on client-side.");
         setError(null);
-        try {
-            const res = await fetch("/api/paypal/create-order", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ cartItems: cart }),
-            });
-            
-            const data = await res.json();
-            
-            if (res.ok && data.id) {
-                console.log("CHECKOUT PAGE: createOrder API call successful. Order ID:", data.id);
-                return data.id;
-            } else {
-                const errorDetails = data.details || data.error || "Unknown error from server.";
-                console.error("CHECKOUT PAGE: createOrder API call failed.", errorDetails);
-                // THIS IS CRITICAL: Throw a new Error with a message.
-                throw new Error(`Failed to create transaction: ${errorDetails}`);
+        return actions.order.create({
+            purchase_units: [{
+                amount: {
+                    value: totalValue,
+                    currency_code: 'USD'
+                }
+            }],
+            application_context: {
+                brand_name: "Cuddleia",
+                shipping_preference: "NO_SHIPPING"
             }
-        } catch (err: any) {
-            console.error("CHECKOUT PAGE: CATCH BLOCK in createOrderHandler.", err);
-            // Set the error for the UI and then re-throw for PayPal.
-            setError(err.message); 
-            throw err; 
-        }
+        });
     };
 
-    const onApproveHandler = async (data: any): Promise<void> => {
-        console.log("CHECKOUT PAGE: onApproveHandler triggered. Capturing order...", data);
-        setLoading(true); // Show a loading spinner
+    const onApprove = async (data: OnApproveData, actions: any) => {
+        console.log("CHECKOUT PAGE: onApprove triggered. Capturing order...", data);
+        setLoading(true);
         setError(null);
         try {
+            // This captures the funds from the transaction.
+            const details = await actions.order.capture();
+            console.log("CHECKOUT PAGE: onApprove capture successful. Full details:", details);
+            
+            // Now, we can optionally call our server to record the transaction and send emails.
             const res = await fetch(`/api/paypal/capture-order`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ orderID: data.orderID })
             });
-            const details = await res.json();
-            
-            console.log("CHECKOUT PAGE: onApprove capture API response:", details);
+            const serverResponse = await res.json();
+             console.log("CHECKOUT PAGE: Server capture response:", serverResponse);
 
-            if (res.ok && details.status === "COMPLETED") {
+            if (res.ok) {
                 console.log("CHECKOUT PAGE: onApprove success! Redirecting to thank you page.");
-                window.location.href = `/thank-you?token=${details.id}`;
+                window.location.href = `/thank-you?token=${data.orderID}`;
             } else {
-                const errorMessage = details.details || details.error || "Payment could not be completed.";
-                console.error("CHECKOUT PAGE: onApprove capture was not completed.", errorMessage);
-                throw new Error(errorMessage);
+                 const errorMessage = serverResponse.details || serverResponse.error || "Payment was approved, but server failed to finalize order.";
+                 throw new Error(errorMessage);
             }
         } catch (err: any) {
-            console.error("CHECKOUT PAGE: CATCH BLOCK in onApproveHandler.", err);
-            setError(`Payment failed: ${err.message}`);
-            setLoading(false); // Stop loading so the user can see the error
+            console.error("CHECKOUT PAGE: CATCH BLOCK in onApprove.", err);
+            setError(`Payment failed or could not be finalized: ${err.message}`);
+            setLoading(false);
         }
     };
     
-    const onErrorHandler = (err: any) => {
-        // This handler will now receive more specific errors thrown from createOrderHandler
-        console.error("CHECKOUT PAGE: PayPalButtons onErrorHandler was triggered.", JSON.stringify(err, null, 2));
-        const message = err.message || "An unexpected error occurred with the PayPal button. Please try refreshing the page or contact support if the problem persists.";
+    const onError = (err: any) => {
+        console.error("CHECKOUT PAGE: PayPalButtons onError was triggered.", err);
+        const message = err.message || "An unexpected error occurred with PayPal. Please try refreshing the page.";
         setError(message);
     };
 
@@ -163,9 +154,10 @@ export default function CheckoutPage() {
                             <p className="text-center text-xs text-muted-foreground mb-4">Choose your preferred payment method:</p>
                             <PayPalButtons
                                 style={{ layout: "vertical", label: "pay" }}
-                                createOrder={createOrderHandler}
-                                onApprove={onApproveHandler}
-                                onError={onErrorHandler}
+                                createOrder={createOrder}
+                                onApprove={onApprove}
+                                onError={onError}
+                                forceReRender={[cart]} // Re-render buttons if cart changes
                             />
                         </div>
                     )}
