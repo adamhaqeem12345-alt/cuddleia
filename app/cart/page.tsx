@@ -119,9 +119,9 @@ export default function CartPage() {
                   <p className="text-base font-medium text-foreground">{subtotalPrice.usd.formatted}</p>
                 </div>
               </div>
-              <div className="mt-6">
-                <Button asChild className="w-full" size="lg">
-                    <Link href="/checkout">Proceed to Checkout</Link>
+               <div className="mt-6">
+                <Button className="w-full" size="lg" disabled>
+                    Checkout is Currently Disabled
                 </Button>
               </div>
             </section>
