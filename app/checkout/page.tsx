@@ -60,7 +60,6 @@ export default function CheckoutPage() {
 
         console.log(`CLIENT-SIDE: Calculated total value: $${totalValue}`);
         
-        // Construct the item list for PayPal
         const purchaseItems = cart.map(item => ({
             name: item.name,
             unit_amount: {
@@ -68,7 +67,7 @@ export default function CheckoutPage() {
                 value: (item.price / 100).toFixed(2)
             },
             quantity: item.quantity.toString(),
-            sku: item.id, // Pass product ID as SKU for backend fulfillment
+            sku: item.id,
             category: 'DIGITAL_GOODS'
         }));
         
@@ -128,8 +127,25 @@ export default function CheckoutPage() {
         }
     };
     
+    const onCancel = () => {
+        console.log("CHECKOUT PAGE: User cancelled the payment flow.");
+        // We don't set an error here because this is a normal user action.
+        // The user can simply click the PayPal button again if they wish.
+    };
+
     const onError = (err: any) => {
         console.error("CHECKOUT PAGE: PayPalButtons onError was triggered.", err);
+
+        // PayPal's SDK sometimes throws an error when the popup is closed.
+        // We check for a specific string to avoid showing an error message on user cancellation.
+        // This is a common pattern for handling the PayPal SDK's behavior.
+        const isCancellation = err && err.message && err.message.includes('Window closed');
+        
+        if (isCancellation) {
+            console.warn("CHECKOUT PAGE: Payment window was closed by the user. Treating as cancellation.");
+            return; // Do not set an error state for cancellations
+        }
+
         const message = err.message || "An unexpected error occurred with PayPal. Please try refreshing the page.";
         setError(message);
     };
@@ -188,6 +204,7 @@ export default function CheckoutPage() {
                                 createOrder={createOrder}
                                 onApprove={onApprove}
                                 onError={onError}
+                                onCancel={onCancel}
                                 forceReRender={[cart, getPrice]} // Re-render if cart or total value changes
                             />
                         </div>
