@@ -24,10 +24,7 @@ function CheckoutPageContent() {
              <div className="container mx-auto px-4 py-24 text-center">
                 <h1 className="text-2xl font-bold">Your cart is empty.</h1>
                  <p className="text-muted-foreground mt-4">
-                    <Link href="/products" className="text-primary hover:underline flex items-center justify-center">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Add some products to your cart
-                    </Link>
+                    Please add products to your cart before proceeding to checkout.
                 </p>
             </div>
         )
