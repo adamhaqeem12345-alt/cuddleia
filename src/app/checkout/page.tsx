@@ -59,11 +59,16 @@ export default function CheckoutPage() {
             });
             
             const data = await res.json();
+            console.log("Response from /api/paypal/create-order:", data);
 
-            if (!res.ok) {
-                console.error("PayPalButtons: createOrder API call failed.", data);
+
+            if (!res.ok || !data.id) {
+                console.error("PayPalButtons: createOrder API call failed or did not return an ID.", data);
+                // Make the error visible to the user
+                alert('Failed to create PayPal order, see console for details.');
                 throw new Error(data.details || data.error || "Failed to create order.");
             }
+            
             console.log("PayPalButtons: createOrder API call successful. Order ID:", data.id);
             return data.id;
         } catch (err: any) {
@@ -183,4 +188,3 @@ export default function CheckoutPage() {
       </PayPalProvider>
     );
 }
-
