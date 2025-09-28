@@ -56,13 +56,14 @@ export async function createOrder(cart: CartItem[]) {
       throw new Error(`Product with ID ${cartItem.id} not found.`);
     }
     
-    // Sanitize SKU: Replace invalid characters. PayPal allows alphanumeric characters, underscores, and spaces.
+    // Sanitize SKU: Replace invalid characters. PayPal allows alphanumeric, underscores, and spaces.
     const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_ ]/g, '_').substring(0, 127);
     
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
     
+    // Summarize product name if it's too long
     const finalName = await summarizeProductName(productDetails.name);
 
     return {
@@ -73,6 +74,7 @@ export async function createOrder(cart: CartItem[]) {
         value: (unitPriceInCents / 100).toFixed(2),
       },
       quantity: String(cartItem.quantity),
+      category: 'DIGITAL_GOODS' as const,
     };
   }));
   
