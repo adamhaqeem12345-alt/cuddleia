@@ -33,40 +33,31 @@ async function getAccessToken() {
 export async function POST(req: Request) {
   try {
     const accessToken = await getAccessToken();
+    const { cartItems } = await req.json(); // cartItems from the frontend
+
+    if (!cartItems || cartItems.length === 0) {
+      return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    }
+
+    // Calculate the total value from cart items
+    const totalValue = cartItems.reduce((acc: number, item: any) => {
+        // item.price is in cents, convert to dollars for calculation
+        return acc + (item.price / 100) * item.quantity;
+    }, 0).toFixed(2);
+
 
     const order = {
       intent: "CAPTURE",
       purchase_units: [
         {
-          reference_id: "PUHF",
-          description: "Cuddleia Digital Product",
           amount: {
             currency_code: "USD",
-            value: "25.00",
-            breakdown: {
-              item_total: {
-                currency_code: "USD",
-                value: "25.00"
-              }
-            }
-          },
-          items: [
-            {
-              name: "Cuddleia Cozy Digital Pack",
-              description: "Instant digital download",
-              unit_amount: {
-                currency_code: "USD",
-                value: "25.00"
-              },
-              quantity: "1"
-            }
-          ]
+            value: totalValue
+          }
         }
       ],
       application_context: {
         brand_name: "Cuddleia",
-        landing_page: "NO_PREFERENCE",
-        shipping_preference: "NO_SHIPPING",
         user_action: "PAY_NOW",
         return_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/thank-you` : 'http://localhost:3000/thank-you',
         cancel_url: process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/cart` : 'http://localhost:3000/cart',
@@ -89,7 +80,7 @@ export async function POST(req: Request) {
       throw new Error(data.message || "Failed to create PayPal order.");
     }
     
-    // The PayPal button component on the frontend expects an object with an 'id' property.
+    // Return only the order ID to the frontend
     return NextResponse.json({ id: data.id });
 
   } catch (err: any) {
@@ -97,3 +88,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message || "Something went wrong" }, { status: 500 });
   }
 }
+
