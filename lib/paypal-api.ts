@@ -43,7 +43,6 @@ export async function createOrder(cart: CartItem[]) {
   const returnUrl = `${NEXT_PUBLIC_SITE_URL}/checkout/success`;
   const cancelUrl = `${NEXT_PUBLIC_SITE_URL}/cart`;
 
-  // --- Data Sanitization and Validation ---
   if (!cart || cart.length === 0) {
     throw new Error('Cart is empty.');
   }
@@ -78,12 +77,11 @@ export async function createOrder(cart: CartItem[]) {
   
   const payload = {
     intent: 'CAPTURE',
-    // Configuration to streamline guest checkout and define return URLs
     application_context: {
-      return_url: returnUrl,
+      return_url: `${returnUrl}?orderId={CHECKOUT_ORDER_ID}`,
       cancel_url: cancelUrl,
-      shipping_preference: 'NO_SHIPPING', // For digital goods
-      user_action: 'PAY_NOW', // Presents a "Pay Now" button to the user
+      shipping_preference: 'NO_SHIPPING',
+      user_action: 'PAY_NOW',
       brand_name: 'Cuddleia',
       landing_page: 'GUEST_CHECKOUT',
     },
@@ -143,6 +141,7 @@ export async function captureOrder(orderId: string) {
             'Authorization': `Bearer ${accessToken}`,
         }
     });
+
     if (!orderDetailsResponse.ok) {
         throw new Error('Failed to fetch order details.');
     }
@@ -151,13 +150,8 @@ export async function captureOrder(orderId: string) {
     // If already captured, process and return success without re-capturing
     if (orderDetails.status === 'COMPLETED') {
         console.log(`Order ${orderId} was already completed. Processing as success.`);
-        const email = orderDetails.payer.email_address;
-        const name = `${orderDetails.payer.name.given_name} ${orderDetails.payer.name.surname}`;
-        const total = parseFloat(orderDetails.purchase_units[0].amount.value);
         const productInfos = await getProductInfoFromOrder(orderDetails);
-        
         // The email would have been sent on the initial capture. Do not resend.
-        
         return { success: true, products: productInfos };
     }
 
@@ -183,7 +177,7 @@ export async function captureOrder(orderId: string) {
     if (capturedData.status === 'COMPLETED') {
         const email = capturedData.payer.email_address;
         const name = `${capturedData.payer.name.given_name} ${capturedData.payer.name.surname}`;
-        const total = parseFloat(capturedData.purchase_units[0].amount.value);
+        const total = parseFloat(capturedData.purchase_units[0].payments.captures[0].amount.value);
         const productInfos = await getProductInfoFromOrder(capturedData);
         
         await sendOrderConfirmationEmail({ customerEmail: email, customerName: name, total, orderId, products: productInfos });
