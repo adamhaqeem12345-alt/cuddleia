@@ -8,19 +8,6 @@
     ],
     "frameworksBackend": {
       "region": "us-central1"
-    },
-    "rewrites": [
-      {
-        "source": "/api/**",
-        "run": {
-          "serviceId": "server",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    }
   }
 }
