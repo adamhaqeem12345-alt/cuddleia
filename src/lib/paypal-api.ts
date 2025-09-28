@@ -104,8 +104,9 @@ export async function createOrder(cartItems: CartItem[]): Promise<{ id: string }
     
     return { id: response.data.id };
   } catch (error: any) {
-    console.error("Error creating PayPal order:", error.response ? error.response.data : error.message);
-    throw new Error("Could not create PayPal order.");
+    const errorMessage = error.response ? JSON.stringify(error.response.data) : error.message;
+    console.error("Error creating PayPal order:", errorMessage);
+    throw new Error(`Could not create PayPal order. Details: ${errorMessage}`);
   }
 }
 
@@ -133,8 +134,9 @@ export async function captureOrder(orderId: string): Promise<any> {
     
     return response.data;
   } catch (error: any) {
-    console.error("Error capturing PayPal order:", error.response ? error.response.data : error.message);
-    throw new Error("Could not capture PayPal order.");
+    const errorMessage = error.response ? JSON.stringify(error.response.data) : error.message;
+    console.error("Error capturing PayPal order:", errorMessage);
+    throw new Error(`Could not capture PayPal order. Details: ${errorMessage}`);
   }
 }
 

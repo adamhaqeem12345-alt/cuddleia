@@ -17,8 +17,6 @@ export async function POST(req: Request) {
              console.warn(`PayPal capture status for order ${orderID} was not 'COMPLETED'. Status: ${capturedData.status}`);
         }
         
-        // Return the full captured data object as requested.
-        // The frontend can then decide what to do based on the status.
         return NextResponse.json(capturedData);
 
     } catch (err: any) {

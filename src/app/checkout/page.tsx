@@ -75,7 +75,7 @@ export default function CheckoutPage() {
         } catch (err: any) {
             console.error("Create Order Error:", err);
             setError(err.message);
-            throw err; // Thrown error is caught by PayPalButtons' internal error handling
+            throw err;
         }
     };
 
@@ -91,16 +91,14 @@ export default function CheckoutPage() {
             console.log("onApprove capture response:", details);
 
             if (res.ok && details.status === "COMPLETED") {
-                // Redirect to thank you page on successful capture.
                 window.location.href = `/thank-you?token=${data.orderID}`;
             } else {
-                // Handle failed capture (e.g., card declined)
                 throw new Error(details.error || "Payment could not be completed.");
             }
         } catch (err: any) {
             console.error("Approve Order Error:", err);
             setError(err.message);
-            setLoading(false); // Stop loading so user can try again
+            setLoading(false);
         }
     };
     
