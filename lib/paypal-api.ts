@@ -3,10 +3,10 @@ import type { CartItem } from '@/lib/types';
 import { products } from './products';
 import { sendOrderConfirmationEmail, type ProductInfo } from './email';
 
-const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL } = process.env;
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_API, NEXT_PUBLIC_SITE_URL, EMAIL_USER, EMAIL_PASS } = process.env;
 
-if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SITE_URL) {
-  throw new Error("Missing required PayPal or site URL environment variables in .env file");
+if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API || !NEXT_PUBLIC_SITE_URL || !EMAIL_USER || !EMAIL_PASS) {
+  throw new Error("Missing required PayPal, site URL, or email environment variables in .env file");
 }
 
 /**
@@ -48,6 +48,7 @@ export async function createOrder(cart: CartItem[]) {
   }
 
   let itemTotalValueInCents = 0;
+
   const items = cart.map(cartItem => {
     const productDetails = products.find(p => p.id === cartItem.id);
     if (!productDetails) {
@@ -63,7 +64,7 @@ export async function createOrder(cart: CartItem[]) {
       sku: productDetails.id.substring(0, 127),
       unit_amount: {
         currency_code: 'USD',
-        value: (itemPriceInCents / 100).toFixed(2),
+        value: (itemPriceInCents / 100).toFixed(2), // Format as string with 2 decimal places
       },
       quantity: String(cartItem.quantity),
     };
