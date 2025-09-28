@@ -7,9 +7,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2, Lock } from 'lucide-react';
+import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2, Lock, CreditCard } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
-import { PayPalButtonsComponent } from '@/components/paypal-checkout-button';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, isCartReady } = useCart();
@@ -122,11 +121,15 @@ export default function CartPage() {
                      </div>
                      <div className="mt-8">
                         <p className="text-center text-xs text-muted-foreground mb-4">All prices in USD. (Approx. {subtotalPrice.myr.formatted})</p>
-                        <PayPalButtonsComponent />
+                        <Button asChild size="lg" className="w-full rounded-full font-bold shadow-lg transition-transform hover:scale-105">
+                            <Link href="/checkout">
+                                Proceed to Checkout <CreditCard className="ml-2 h-5 w-5" />
+                            </Link>
+                        </Button>
                      </div>
                       <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
                         <Lock className="h-4 w-4" />
-                        <span>Secure payments by PayPal</span>
+                        <span>Secure checkout by PayPal</span>
                     </div>
                 </div>
             </div>
