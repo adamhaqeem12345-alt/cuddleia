@@ -69,7 +69,7 @@ function CheckoutPageContent() {
                         <div className="flex items-center space-x-2">
                              <Image src="https://i.postimg.cc/mD41P5M5/visa.png" alt="Visa" width={40} height={25} className="h-auto" />
                              <Image src="https://i.postimg.cc/P5gBXRg9/mastercard.png" alt="Mastercard" width={40} height={25} className="h-auto" />
-                             <Image src="https://i.postimg.cc/B6K067X1/amex.png" alt="American Express" width={40} height={25} className="h-auto" />
+                             <Image src="https://i.ibb.co/2g3f9p5/amex.png" alt="American Express" width={40} height={25} className="h-auto" />
                         </div>
                     </div>
 
