@@ -59,24 +59,17 @@ export default function CheckoutPage() {
             
             const data = await res.json();
             
-            // Extensive logging for debugging
             console.log("CHECKOUT PAGE: Response from /api/paypal/create-order:", data);
 
-            if (!res.ok) {
-                // If response is not ok, log the detailed error from the API
+            if (res.ok && data.id) {
+                console.log("CHECKOUT PAGE: createOrder API call successful. Order ID:", data.id);
+                return data.id;
+            } else {
                 const errorDetails = data.details || data.error || "Unknown error from server.";
                 console.error("CHECKOUT PAGE: createOrder API call failed.", errorDetails);
+                setError(`Failed to create transaction: ${errorDetails}`);
                 throw new Error(errorDetails);
             }
-
-            if (!data.id) {
-                console.error("CHECKOUT PAGE: createOrder API response did not contain an 'id'.");
-                alert('Failed to create PayPal order. The server did not return an order ID. Please check the console.');
-                throw new Error("Failed to create order: No ID returned.");
-            }
-            
-            console.log("CHECKOUT PAGE: createOrder API call successful. Order ID:", data.id);
-            return data.id;
         } catch (err: any) {
             console.error("CHECKOUT PAGE: CATCH BLOCK in createOrderHandler.", err);
             setError(`Failed to create transaction: ${err.message}`);
