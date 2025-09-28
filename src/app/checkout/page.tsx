@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -69,7 +70,7 @@ export default function CheckoutPage() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to create order.");
-            console.log("createOrder response:", data);
+            console.log("Create Order Response:", data);
             return data.id;
         } catch (err: any) {
             console.error("Create Order Error:", err);
@@ -87,10 +88,11 @@ export default function CheckoutPage() {
                 body: JSON.stringify({ orderID: data.orderID })
             });
             const details = await res.json();
-            console.log("onApprove capture response:", details);
+            console.log("onApprove Capture Response:", details);
 
             if (res.ok && details.status === "COMPLETED") {
-                window.location.href = `/thank-you?token=${data.orderID}`;
+                // Redirect to a thank you page on successful capture
+                window.location.href = `/thank-you?token=${details.id}`;
             } else {
                 throw new Error(details.error || "Payment could not be completed.");
             }
