@@ -4,6 +4,7 @@ import { createOrder } from '@/lib/paypal-api';
 import type { CartItem } from '@/lib/types';
 
 export async function POST(req: Request) {
+  console.log("API Route: /api/paypal/create-order received a POST request.");
   try {
     const { cartItems } = (await req.json()) as { cartItems: CartItem[] };
 
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("API route /api/paypal/create-order received cart, calling createOrder helper.");
+    console.log("Calling createOrder helper with cart items:", cartItems);
     const orderData = await createOrder(cartItems);
 
     console.log("API route /api/paypal/create-order successful, returning order ID:", orderData.id);
@@ -23,8 +24,10 @@ export async function POST(req: Request) {
 
   } catch (err: any) {
     console.error('PayPal API /create-order route error:', err);
+    // Ensure we return a JSON response even on failure
+    const errorMessage = err.message || 'An unexpected error occurred.';
     return NextResponse.json(
-      { error: 'Failed to create PayPal order.', details: err.message || 'An unexpected error occurred.' },
+      { error: 'Failed to create PayPal order.', details: errorMessage },
       { status: 500 }
     );
   }

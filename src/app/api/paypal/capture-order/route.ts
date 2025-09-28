@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal-api';
 
 export async function POST(req: Request) {
+    console.log("API Route: /api/paypal/capture-order received a POST request.");
     try {
         const { orderID } = await req.json();
         if (!orderID) {
@@ -10,11 +11,11 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing orderID" }, { status: 400 });
         }
 
-        console.log(`API route /api/paypal/capture-order received orderID ${orderID}, calling captureOrder helper.`);
+        console.log(`Calling captureOrder helper for orderID: ${orderID}`);
         const capturedData = await captureOrder(orderID);
         
-        console.log(`API route /api/paypal/capture-order successful for order ${orderID}. Status: ${capturedData.status}`);
-
+        console.log(`Successfully captured order ${orderID}. Status: ${capturedData.status}`);
+        
         // Return the full capture data to the client
         return NextResponse.json(capturedData);
 
