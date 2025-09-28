@@ -63,7 +63,7 @@ export async function createOrder(cart: CartItem[]) {
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
-      name: 'Cuddleia Digital Product', // Simplified static name
+      name: 'Digital Product',
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
