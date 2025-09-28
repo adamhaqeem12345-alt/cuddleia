@@ -19,34 +19,53 @@ interface OrderDetails {
 
 function SuccessContent() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const { clearCart } = useCart();
     
-    const [status, setStatus] = useState<Status>('invalid');
+    const [status, setStatus] = useState<Status>('verifying');
     const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
     const [errorMessage, setErrorMessage] = useState('An unknown error occurred.');
 
-    const payment_status = searchParams.get('status'); 
+    const orderId = searchParams.get('token'); // PayPal provides the order ID as 'token'
+    const payerId = searchParams.get('PayerID'); // This is also present on return
     
     useEffect(() => {
-        if (payment_status === 'success') {
-            setStatus('success');
-            // In a real scenario, you'd fetch order details from your server
-            // using a session ID or order ID from the query parameters.
-            setOrderDetails({
-                orderId: 'temp-123',
-                customerName: 'Valued Customer',
-                total: '$0.00',
-                products: [],
-            });
-            clearCart();
-        } else if (payment_status === 'error') {
-            setStatus('error');
-            setErrorMessage('The payment was canceled or failed.');
-        } else {
-             setStatus('invalid');
-             setErrorMessage('The payment confirmation link is invalid or has expired.');
+        // Only proceed if we have the necessary parameters from PayPal's redirect
+        if (!orderId || !payerId) {
+            setStatus('invalid');
+            setErrorMessage('The payment confirmation link is invalid or has expired.');
+            return;
         }
-    }, [payment_status, clearCart]);
+
+        async function verifyPayment() {
+            try {
+                const response = await fetch('/api/paypal/capture-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Failed to verify payment.');
+                }
+                
+                setOrderDetails(data);
+                setStatus('success');
+                clearCart(); // Clear the cart only after successful verification
+
+            } catch (error) {
+                console.error("Verification Error:", error);
+                const msg = error instanceof Error ? error.message : "An unknown error occurred during verification.";
+                setErrorMessage(msg);
+                setStatus('error');
+            }
+        }
+
+        verifyPayment();
+
+    }, [orderId, payerId, clearCart, router]);
 
 
     if (status === 'verifying') {
@@ -109,8 +128,24 @@ function SuccessContent() {
                 Thank You, {orderDetails?.customerName}!
             </h1>
             <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
-                Your order (#{orderDetails?.orderId}) is complete. Your download links will be sent to your email shortly.
+                Your order (#{orderDetails?.orderId}) is complete. Your download links have been sent to your email and are also available below.
             </p>
+
+            {orderDetails && orderDetails.products.length > 0 && (
+                 <div className="mt-8 text-left max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md border">
+                    <h3 className="font-headline text-xl mb-4 font-semibold">Your Downloads</h3>
+                    <ul className="space-y-3">
+                        {orderDetails.products.map((product, index) => (
+                           <li key={index} className="flex items-center justify-between">
+                               <span>{product.name}</span>
+                               <Button asChild size="sm">
+                                   <a href={product.downloadUrl} target="_blank" rel="noopener noreferrer">Download</a>
+                               </Button>
+                           </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
             
              <div className="mt-10">
                 <Button asChild size="lg" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
@@ -126,7 +161,14 @@ function SuccessContent() {
 export default function SuccessPage() {
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 flex items-center justify-center min-h-[60vh]">
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={
+                 <AnimateIn className="w-full max-w-3xl text-center">
+                    <Loader2 className="mx-auto h-20 w-20 text-primary animate-spin" />
+                    <h1 className="mt-6 font-headline text-4xl md:text-5xl font-bold text-foreground">
+                        Loading...
+                    </h1>
+                </AnimateIn>
+            }>
                 <SuccessContent />
             </Suspense>
         </div>
