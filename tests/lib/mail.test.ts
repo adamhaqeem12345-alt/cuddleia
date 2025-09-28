@@ -13,9 +13,8 @@ jest.mock('nodemailer');
 describe('Mail Library', () => {
   beforeEach(() => {
     sendMailMock.mockClear();
-    process.env.ZOHO_SMTP_USER = 'test@zoho.com';
-    process.env.ZOHO_SMTP_PASS = 'password';
-    process.env.EMAIL_FROM = 'from@cuddleia.com';
+    process.env.ZOHO_MAIL_USER = 'test@zoho.com';
+    process.env.ZOHO_MAIL_PASS = 'password';
   });
   
   test('sendEmail function should be defined', () => {
@@ -31,12 +30,12 @@ describe('Mail Library', () => {
       to: options.to,
       subject: options.subject,
       html: options.html,
-      from: `"Cuddleia" <${process.env.EMAIL_FROM}>`
+      from: `"Cuddleia" <${process.env.ZOHO_MAIL_USER}>`
     }));
   });
 
   test('sendEmail should throw an error if credentials are not set', async () => {
-    delete process.env.ZOHO_SMTP_USER;
+    delete process.env.ZOHO_MAIL_USER;
     const options = { to: 'recipient@example.com', subject: 'Test', html: '<p>Hi</p>' };
     
     await expect(sendEmail(options)).rejects.toThrow("Email service is not configured.");

@@ -8,7 +8,6 @@ if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET || !PAYPAL_API) {
   throw new Error("PayPal environment variables are not fully set.");
 }
 
-// Function to get a PayPal access token
 async function getPayPalAccessToken(): Promise<string> {
   const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64");
   
@@ -25,7 +24,7 @@ async function getPayPalAccessToken(): Promise<string> {
     if (!response.ok) {
       const errorBody = await response.text();
       console.error("Failed to get PayPal access token response:", errorBody);
-      throw new Error(`Failed to get PayPal access token: ${response.status}`);
+      throw new Error(`Failed to get PayPal access token: ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -36,18 +35,13 @@ async function getPayPalAccessToken(): Promise<string> {
   }
 }
 
-/**
- * Creates a PayPal order.
- * @param {ProductInfo[]} cartItems - The items in the shopping cart.
- * @returns {Promise<any>} The created order data from PayPal.
- */
 export async function createOrder(cartItems: ProductInfo[]): Promise<any> {
   const accessToken = await getPayPalAccessToken();
   const returnUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/thank-you` : 'http://localhost:3000/thank-you';
   const cancelUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/cart` : 'http://localhost:3000/cart';
 
   const itemTotal = cartItems.reduce((sum, item) => sum + (item.price / 100) * item.quantity, 0);
-  const totalValue = itemTotal; // Assuming no tax or shipping for digital goods
+  const totalValue = itemTotal;
 
   const orderPayload = {
     intent: "CAPTURE",
@@ -63,7 +57,7 @@ export async function createOrder(cartItems: ProductInfo[]): Promise<any> {
           },
         },
         items: cartItems.map(item => ({
-          name: item.name.substring(0, 127), // PayPal item name has a 127 char limit
+          name: item.name.substring(0, 127),
           unit_amount: { currency_code: "USD", value: (item.price / 100).toFixed(2) },
           quantity: item.quantity.toString(),
           sku: item.id
@@ -92,7 +86,7 @@ export async function createOrder(cartItems: ProductInfo[]): Promise<any> {
     if (!response.ok) {
        const errorBody = await response.text();
        console.error(`Failed to create PayPal order response:`, errorBody);
-       throw new Error(`Failed to create PayPal order: ${response.status}`);
+       throw new Error(`Failed to create PayPal order: ${response.statusText}`);
     }
 
     return await response.json();
@@ -102,11 +96,6 @@ export async function createOrder(cartItems: ProductInfo[]): Promise<any> {
   }
 }
 
-/**
- * Captures a PayPal order.
- * @param {string} orderId - The ID of the order to capture.
- * @returns {Promise<any>} The captured order data.
- */
 export async function captureOrder(orderId: string): Promise<any> {
   const accessToken = await getPayPalAccessToken();
 
@@ -122,7 +111,7 @@ export async function captureOrder(orderId: string): Promise<any> {
      if (!response.ok) {
        const errorBody = await response.text();
        console.error(`Failed to capture PayPal order response:`, errorBody);
-       throw new Error(`Failed to capture PayPal order: ${response.status}`);
+       throw new Error(`Failed to capture PayPal order: ${response.statusText}`);
     }
 
     return await response.json();
@@ -132,12 +121,6 @@ export async function captureOrder(orderId: string): Promise<any> {
   }
 }
 
-/**
- * Verifies a PayPal webhook signature.
- * @param {Headers} headers - The request headers.
- * @param {any} body - The raw request body.
- * @returns {Promise<boolean>} - True if the signature is valid, false otherwise.
- */
 export async function verifyWebhook(headers: Headers, body: any): Promise<boolean> {
   if (!PAYPAL_WEBHOOK_ID) {
     console.error("PAYPAL_WEBHOOK_ID is not set. Cannot verify webhook.");

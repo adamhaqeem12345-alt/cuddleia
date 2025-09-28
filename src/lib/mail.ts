@@ -2,19 +2,19 @@
 
 import nodemailer from 'nodemailer';
 
-const { ZOHO_SMTP_USER, ZOHO_SMTP_PASS, EMAIL_FROM } = process.env;
+const { ZOHO_MAIL_USER, ZOHO_MAIL_PASS } = process.env;
 
-if (!ZOHO_SMTP_USER || !ZOHO_SMTP_PASS || !EMAIL_FROM) {
+if (!ZOHO_MAIL_USER || !ZOHO_MAIL_PASS) {
   console.warn("Zoho Mail environment variables are not fully set. Email sending will be disabled.");
 }
 
 const transporter = nodemailer.createTransport({
   host: "smtp.zoho.com",
   port: 465,
-  secure: true, // true for 465
+  secure: true, 
   auth: {
-    user: ZOHO_SMTP_USER,
-    pass: ZOHO_SMTP_PASS, // Use App Password
+    user: ZOHO_MAIL_USER,
+    pass: ZOHO_MAIL_PASS,
   },
 });
 
@@ -24,19 +24,14 @@ interface EmailOptions {
   html: string;
 }
 
-/**
- * Sends an email using Zoho Mail SMTP.
- * @param {EmailOptions} options - The email options.
- * @returns {Promise<void>}
- */
 export async function sendEmail({ to, subject, html }: EmailOptions): Promise<void> {
-  if (!ZOHO_SMTP_USER || !ZOHO_SMTP_PASS || !EMAIL_FROM) {
+  if (!ZOHO_MAIL_USER || !ZOHO_MAIL_PASS) {
      console.error("Cannot send email because Zoho credentials are not configured in environment variables.");
      throw new Error("Email service is not configured.");
   }
   
   const mailOptions = {
-    from: `"Cuddleia" <${EMAIL_FROM}>`,
+    from: `"Cuddleia" <${ZOHO_MAIL_USER}>`,
     to,
     subject,
     html,
