@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "target": "esnext",
     "lib": [
       "dom",
       "dom.iterable",
@@ -25,9 +26,11 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@/ai/*": [
+        "./ai/*"
       ]
-    },
-    "target": "esnext"
+    }
   },
   "include": [
     "next-env.d.ts",
