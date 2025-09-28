@@ -4,28 +4,23 @@ import { createOrder } from '@/lib/paypal-api';
 import type { CartItem } from '@/lib/types';
 
 export async function POST(req: Request) {
-  console.log("API ROUTE: /api/paypal/create-order received a POST request.");
   try {
     const { cartItems } = (await req.json()) as { cartItems: CartItem[] };
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
-      console.error("CREATE-ORDER API ERROR: Cart is empty or invalid.");
       return NextResponse.json(
         { error: 'Cart is empty or invalid' },
         { status: 400 }
       );
     }
 
-    console.log("CREATE-ORDER: Calling createOrder helper with cart items:", cartItems);
     const orderData = await createOrder(cartItems);
-    
-    console.log("CREATE-ORDER: Full response from PayPal createOrder API:", JSON.stringify(orderData, null, 2));
 
     if (orderData && orderData.id) {
-        console.log("CREATE-ORDER API: Success! Returning order ID:", orderData.id);
+        // Return only the order ID to the frontend
         return NextResponse.json({ id: orderData.id });
     } else {
-        console.error("CREATE-ORDER API ERROR: PayPal response did not include an order ID.");
+        // This case should ideally not be reached if createOrder throws on failure
         return NextResponse.json(
             { error: "PayPal response did not include an order ID." },
             { status: 500 }
@@ -33,11 +28,10 @@ export async function POST(req: Request) {
     }
 
   } catch (err: any) {
-    console.error('CREATE-ORDER API CATCH BLOCK: An unexpected error occurred.', err);
-    // Ensure err.message exists and is a string.
-    const errorMessage = err.message || 'An unexpected error occurred.';
+    // This will catch errors thrown from getPayPalAccessToken or createOrder
+    console.error('CREATE-ORDER API CATCH BLOCK: An unexpected error occurred.', err.message);
     return NextResponse.json(
-      { error: 'Failed to create PayPal order.', details: errorMessage },
+      { error: 'Failed to create PayPal order.', details: err.message },
       { status: 500 }
     );
   }
