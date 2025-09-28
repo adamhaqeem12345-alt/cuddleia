@@ -1,7 +1,7 @@
 
 'use client';
 
-import { PayPalProvider } from '@/src/context/paypal-provider';
+import { PayPalProvider } from '@/context/paypal-provider';
 
 export default function CheckoutLayout({
   children,
