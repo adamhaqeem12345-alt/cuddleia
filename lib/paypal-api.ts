@@ -56,7 +56,7 @@ export async function createOrder(cart: CartItem[]) {
     }
     
     // Sanitize SKU: Replace invalid characters. PayPal allows alphanumeric, underscores, and spaces.
-    const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_ ]/g, '_').substring(0, 127);
+    const sanitizedSku = productDetails.id.replace(/[^a-zA-Z0-9_ -]/g, '_').substring(0, 127);
     
     // Perform calculations in cents to avoid floating point issues
     const unitPriceInCents = Math.round(productDetails.price * 100);
@@ -201,7 +201,7 @@ async function getProductInfoFromOrder(orderData: any): Promise<ProductInfo[]> {
     const items = orderData.purchase_units[0].items;
     return items.map((item: any) => {
         // Find product by comparing sanitized SKU
-        const product = products.find(p => p.id.replace(/[^a-zA-Z0-9_ ]/g, '_').substring(0, 127) === item.sku);
+        const product = products.find(p => p.id.replace(/[^a-zA-Z0-9_ -]/g, '_').substring(0, 127) === item.sku);
         if (!product) {
             // This should not happen if our data is consistent
             console.warn(`Product with SKU ${item.sku} not found in local products list.`);
