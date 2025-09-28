@@ -80,7 +80,7 @@ export default function CheckoutPage() {
     };
 
     // Show a loading spinner while the cart is being loaded from localStorage
-    if (!isCartReady) {
+    if (!isCartReady || (isCartReady && cart.length === 0)) {
         return (
             <div className="container mx-auto px-4 py-24 text-center">
                 <Loader2 className="mx-auto h-12 w-12 text-primary animate-spin" />
