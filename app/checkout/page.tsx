@@ -66,12 +66,6 @@ function CheckoutPageContent() {
                              <Image src="https://i.ibb.co/qphGz8x/amex.png" alt="American Express" width={50} height={25} className="h-auto" />
                         </div>
                     </div>
-
-
-                    <p className="text-center text-xs text-muted-foreground mb-6 max-w-sm mx-auto">
-                        Our store is currently in testing mode for demonstration purposes. This is a non-functional checkout.
-                    </p>
-                    
                 </div>
             </div>
         </AnimateIn>
