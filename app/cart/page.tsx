@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
+import { PayPalButtonsComponent } from '@/components/paypal-checkout-button';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, isCartReady } = useCart();
@@ -93,16 +94,16 @@ export default function CartPage() {
                     </TableRow>
                 </TableFooter>
               </Table>
-               <div className="mt-8 flex justify-between items-center">
+               <div className="mt-8 flex flex-col-reverse md:flex-row justify-between items-center gap-6">
                 <Button asChild variant="ghost">
                     <Link href="/products">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Continue Shopping
                     </Link>
                 </Button>
-                <div className='text-right text-sm text-muted-foreground'>
-                    <p>Checkout is currently disabled.</p>
-                    <p>(Approx. {subtotalPrice.myr.formatted})</p>
+                <div className='w-full md:w-auto md:max-w-xs'>
+                   <PayPalButtonsComponent />
+                   <p className="text-center mt-2 text-xs text-muted-foreground">(Approx. {subtotalPrice.myr.formatted})</p>
                 </div>
               </div>
             </section>
