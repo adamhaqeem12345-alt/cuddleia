@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { AddToCartButton } from './add-to-cart-button';
 import { ProductPrice } from '@/components/product-price';
 
-// Define the expected props structure for this page
 type Props = {
   params: { id: string };
 };
