@@ -1,5 +1,4 @@
 
-import axios from 'axios';
 import type { CartItem } from './types';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
@@ -18,15 +17,27 @@ async function getPayPalAccessToken(): Promise<string> {
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
 
     try {
-        const response = await axios.post(`${PAYPAL_API}/v1/oauth2/token`, 'grant_type=client_credentials', {
+        const response = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+            method: 'POST',
             headers: {
                 'Authorization': `Basic ${auth}`,
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
+            body: 'grant_type=client_credentials',
+            cache: 'no-store'
         });
-        return response.data.access_token;
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Failed to get PayPal access token:', errorData);
+            throw new Error('Failed to authenticate with PayPal.');
+        }
+
+        const data = await response.json();
+        return data.access_token;
+
     } catch (error: any) {
-        console.error('Failed to get PayPal access token:', error.response?.data || error.message);
+        console.error('Failed to get PayPal access token:', error.message);
         throw new Error('Failed to authenticate with PayPal.');
     }
 }
@@ -74,19 +85,29 @@ export async function createOrder(cart: CartItem[]) {
     };
 
     try {
-        const response = await axios.post(url, payload, {
+        const response = await fetch(url, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
             },
+            body: JSON.stringify(payload),
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Failed to create PayPal order:', errorData);
+            throw new Error('Failed to create PayPal order.');
+        }
+
+        const data = await response.json();
         return {
-            id: response.data.id,
-            status: response.data.status,
-            links: response.data.links,
+            id: data.id,
+            status: data.status,
+            links: data.links,
         };
     } catch (error: any) {
-        console.error('Failed to create PayPal order:', error.response?.data || error.message);
+        console.error('Failed to create PayPal order:', error.message);
         throw new Error('Failed to create PayPal order.');
     }
 }
@@ -101,16 +122,26 @@ export async function captureOrder(orderID: string) {
     const url = `${PAYPAL_API}/v2/checkout/orders/${orderID}/capture`;
     
     try {
-        const response = await axios.post(url, null, {
+        const response = await fetch(url, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
             },
+            cache: 'no-store'
         });
-        return response.data;
+
+         if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Failed to capture PayPal order:', errorData);
+            throw new Error('Failed to capture PayPal order.');
+        }
+        
+        const data = await response.json();
+        return data;
 
     } catch (error: any) {
-        console.error('Failed to capture PayPal order:', error.response?.data || error.message);
+        console.error('Failed to capture PayPal order:', error.message);
         throw new Error('Failed to capture PayPal order.');
     }
 }
