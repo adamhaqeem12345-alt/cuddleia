@@ -35,8 +35,11 @@ export default function CartPage() {
         
         {cart.length === 0 ? (
           <div className="text-center mt-16">
-            <ShoppingCart className="mx-auto h-24 w-24 text-muted-foreground/50" />
-            <p className="mt-6 text-lg text-muted-foreground">Your cart is currently empty.</p>
+            <div className="flex justify-center">
+              <ShoppingCart className="h-24 w-24 text-muted-foreground/30" />
+            </div>
+            <h2 className="mt-6 font-headline text-2xl text-foreground">Your cart is empty</h2>
+            <p className="mt-2 text-muted-foreground">Looks like you haven't added anything to your cart yet.</p>
             <Button asChild className="mt-8 rounded-full font-bold shadow-lg transition-transform hover:scale-105" size="lg">
               <Link href="/products">Start Shopping</Link>
             </Button>
@@ -46,20 +49,21 @@ export default function CartPage() {
             
             {/* Cart Items Section */}
             <div className="lg:col-span-2">
+              <div className="border rounded-2xl">
                 <Table>
                     <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[100px] hidden md:table-cell">Image</TableHead>
+                        <TableHead className="w-[100px] hidden md:table-cell pl-6">Image</TableHead>
                         <TableHead>Product</TableHead>
                         <TableHead className="text-center">Quantity</TableHead>
                         <TableHead className="text-right">Total</TableHead>
-                        <TableHead className="w-[50px] text-right"></TableHead>
+                        <TableHead className="w-[50px] text-right pr-6"></TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {cart.map((item) => (
                         <TableRow key={item.id}>
-                        <TableCell className="hidden md:table-cell p-2">
+                        <TableCell className="hidden md:table-cell p-2 pl-6">
                             <Image
                             src={item.imageUrl}
                             alt={item.name}
@@ -77,12 +81,12 @@ export default function CartPage() {
                         <TableCell>
                             <div className="flex items-center justify-center gap-1 sm:gap-2">
                             <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-4 w-4" /></Button>
-                            <Input type="number" value={item.quantity} readOnly className="h-8 w-12 text-center" />
+                            <Input type="number" value={item.quantity} readOnly className="h-8 w-12 text-center border-border" />
                             <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
                             </div>
                         </TableCell>
                         <TableCell className="text-right font-semibold">{getPrice(item.price * item.quantity).usd.formatted}</TableCell>
-                        <TableCell className="text-right p-2">
+                        <TableCell className="text-right p-2 pr-6">
                             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => removeFromCart(item.id)}>
                             <X className="h-5 w-5" />
                             <span className="sr-only">Remove</span>
@@ -92,22 +96,23 @@ export default function CartPage() {
                     ))}
                     </TableBody>
                 </Table>
-                <div className="mt-8">
-                    <Button asChild variant="ghost">
-                        <Link href="/products">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Continue Shopping
-                        </Link>
-                    </Button>
-                </div>
+              </div>
+              <div className="mt-4 text-left">
+                  <Button asChild variant="link" className="text-muted-foreground">
+                      <Link href="/products">
+                          <ArrowLeft className="mr-2 h-4 w-4" />
+                          Continue Shopping
+                      </Link>
+                  </Button>
+              </div>
             </div>
 
             {/* Order Summary Section */}
             <div className="lg:col-span-1">
-                <div className="bg-accent/30 rounded-2xl p-6 lg:p-8 sticky top-28">
-                     <h2 className="font-headline text-2xl font-bold text-foreground border-b pb-4 mb-4">Order Summary</h2>
+                <div className="bg-accent/20 rounded-2xl p-6 lg:p-8 sticky top-28 border">
+                     <h2 className="font-headline text-3xl font-bold text-foreground mb-6">Order Summary</h2>
                      <div className="space-y-4">
-                        <div className="flex justify-between font-medium">
+                        <div className="flex justify-between font-medium text-lg">
                             <span>Subtotal</span>
                             <span>{subtotalPrice.usd.formatted}</span>
                         </div>
@@ -115,7 +120,7 @@ export default function CartPage() {
                             <span>Taxes & Fees</span>
                             <span>Calculated at checkout</span>
                         </div>
-                         <div className="border-t pt-4 mt-4 flex justify-between font-bold text-lg">
+                         <div className="border-t pt-4 mt-4 flex justify-between font-bold text-xl">
                             <span>Order Total</span>
                             <span>{subtotalPrice.usd.formatted}</span>
                         </div>
