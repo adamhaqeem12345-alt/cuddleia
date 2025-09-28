@@ -63,7 +63,7 @@ export async function createOrder(cart: CartItem[]) {
     itemTotalInCents += unitPriceInCents * cartItem.quantity;
 
     return {
-      name: 'Digital Product',
+      name: productDetails.name,
       sku: sanitizedSku,
       unit_amount: {
         currency_code: 'USD',
@@ -220,3 +220,4 @@ async function getProductInfoFromOrder(orderData: any): Promise<ProductInfo[]> {
         };
     });
 }
+
