@@ -47,7 +47,7 @@ export default function CheckoutPage() {
         )
     }
 
-    const createOrderHandler = async () => {
+    const createOrderHandler = async (): Promise<string> => {
         console.log("CHECKOUT PAGE: createOrderHandler triggered. Calling API...");
         setError(null);
         try {
@@ -76,7 +76,7 @@ export default function CheckoutPage() {
         }
     };
 
-    const onApproveHandler = async (data: any) => {
+    const onApproveHandler = async (data: any): Promise<void> => {
         console.log("CHECKOUT PAGE: onApproveHandler triggered. Capturing order...", data);
         setLoading(true); // Show a loading spinner
         setError(null);
