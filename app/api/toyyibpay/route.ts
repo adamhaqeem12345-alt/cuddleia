@@ -9,11 +9,11 @@ const TOYYIBPAY_BILL_URL = 'https://toyyibpay.com/';
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
-    const items: Product[] = JSON.parse(formData.get('items') as string || '[]');
-    const total = parseFloat(formData.get('total') as string || '0');
-    const customerName = formData.get('customerName') as string;
-    const customerEmail = formData.get('customerEmail') as string;
+    const body = await req.json();
+    const items: Product[] = body.items || [];
+    const total = parseFloat(body.total || '0');
+    const customerName = body.customerName as string;
+    const customerEmail = body.customerEmail as string;
 
     if (!items || items.length === 0 || !total || !customerName || !customerEmail) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

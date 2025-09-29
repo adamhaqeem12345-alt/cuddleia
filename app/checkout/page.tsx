@@ -66,15 +66,17 @@ export default function CheckoutPage() {
     setIsToyyibPayProcessing(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append('items', JSON.stringify(items));
-      formData.append('total', subtotal.toString());
-      formData.append('customerName', 'Customer Name'); // Placeholder
-      formData.append('customerEmail', 'customer@example.com'); // Placeholder
-
       const response = await fetch('/api/toyyibpay', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: items,
+          total: subtotal,
+          customerName: 'Customer Name', // Placeholder
+          customerEmail: 'customer@example.com', // Placeholder
+        }),
       });
 
       const data = await response.json();
