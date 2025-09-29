@@ -6,15 +6,16 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useHasHydrated } from '@/lib/hooks';
-import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from "@paypal/react-paypal-js";
+import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderActions } from "@paypal/react-paypal-js";
 
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const hasHydrated = useHasHydrated();
@@ -29,6 +30,46 @@ export default function CheckoutPage() {
       router.push('/products');
     }
   }, [items, router, hasHydrated]);
+
+  useEffect(() => {
+    // This effect runs when the user is redirected back from PayPal.
+    const token = searchParams.get('token'); // PayPal's orderID is in the 'token' parameter
+    if (token) {
+      setIsProcessing(true);
+      setError(null);
+
+      const capturePayment = async (orderID: string) => {
+        try {
+          const response = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderID }),
+          });
+
+          const responseData = await response.json();
+
+          if (response.ok && responseData.success) {
+            console.log('Payment successful!');
+            clearCart();
+            // Redirect to a clean success URL without PayPal's query params
+            router.push('/checkout/success');
+          } else {
+            throw new Error(responseData.error || 'Failed to finalize PayPal payment.');
+          }
+        } catch (err) {
+          console.error("Capture payment error:", err);
+          let errorMessage = 'Could not finalize your payment. Please contact support.';
+          if (err instanceof Error) {
+            errorMessage = err.message;
+          }
+          setError(errorMessage);
+          setIsProcessing(false);
+        }
+      };
+
+      capturePayment(token);
+    }
+  }, [searchParams, clearCart, router]);
 
 
   useEffect(() => {
@@ -70,7 +111,7 @@ export default function CheckoutPage() {
     }
   };
   
-  if (!hasHydrated || items.length === 0) {
+  if (!hasHydrated || (items.length === 0 && !isProcessing) ) {
     // Show a loading or placeholder state until hydration is complete
     return (
         <div className="flex justify-center items-center min-h-screen">
@@ -78,6 +119,55 @@ export default function CheckoutPage() {
         </div>
     );
   }
+
+  const createPayPalOrder = async (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ total: subtotal, currency: 'USD' }),
+      });
+
+      const orderData = await response.json();
+
+      if (response.ok && orderData.orderID) {
+        return orderData.orderID;
+      } else {
+        throw new Error(orderData.error || 'Could not create PayPal order.');
+      }
+    } catch (err) {
+      console.error("createOrder error:", err);
+      let errorMessage = 'Could not initiate PayPal checkout. Please try again.';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+      setIsProcessing(false);
+      throw new Error(errorMessage); // Throw error to stop PayPal flow
+    }
+  };
+
+  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
+      // This function now redirects to PayPal instead of handling capture here.
+      setIsProcessing(true); // Keep processing state while redirecting
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ total: subtotal, currency: 'USD' }),
+      });
+      const orderData = await response.json();
+      if(orderData.approveLink) {
+          window.location.href = orderData.approveLink;
+      } else {
+          setError('Could not get PayPal approval link. Please try again.');
+          setIsProcessing(false);
+      }
+  };
+
 
   return (
     <div className="bg-background">
@@ -180,53 +270,8 @@ export default function CheckoutPage() {
                       <PayPalScriptProvider options={{ "client-id": paypalClientID, currency: "USD", intent: "capture" }}>
                         <PayPalButtons
                               style={{ layout: "vertical", shape: 'rect' }}
-                              createOrder={async (data: CreateOrderData, actions) => {
-                                  // This is the direct client-side creation
-                                  return actions.order.create({
-                                      purchase_units: [
-                                          {
-                                              amount: {
-                                                  value: subtotal.toFixed(2), // CRITICAL: Must be a string with 2 decimal places
-                                                  currency_code: 'USD',
-                                              },
-                                          },
-                                      ],
-                                      application_context: {
-                                          shipping_preference: 'NO_SHIPPING',
-                                      },
-                                  });
-                              }}
-                              onApprove={async (data: OnApproveData, actions) => {
-                                  setIsProcessing(true);
-                                  setError(null);
-                                  
-                                  try {
-                                      const response = await fetch('/api/paypal/capture-order', {
-                                          method: 'POST',
-                                          headers: { 'Content-Type': 'application/json' },
-                                          body: JSON.stringify({ orderID: data.orderID }),
-                                      });
-                                      
-                                      const responseData = await response.json();
-
-                                      if (response.ok && responseData.success) {
-                                          console.log('Payment successful!');
-                                          clearCart();
-                                          router.push(`/checkout/success?orderID=${data.orderID}`);
-                                      } else {
-                                          // This will handle API errors returned from our server, e.g., { success: false, error: '...' }
-                                          throw new Error(responseData.error || 'Failed to finalize payment.');
-                                      }
-                                  } catch (err) {
-                                      console.error("onApprove error:", err);
-                                      let errorMessage = 'Could not finalize your payment. Please contact support.';
-                                      if (err instanceof Error) {
-                                          errorMessage = err.message;
-                                      }
-                                      setError(errorMessage);
-                                      setIsProcessing(false); // Ensure processing is stopped on error
-                                  }
-                              }}
+                              createOrder={createPayPalOrder}
+                              onApprove={onPayPalApprove}
                               onError={(err: any) => {
                                   console.error("PayPal Buttons onError:", err);
                                   setError("An unexpected error occurred with PayPal. Please try again or contact support.");

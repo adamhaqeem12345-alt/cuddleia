@@ -12,12 +12,6 @@ export async function POST(req: NextRequest) {
         }
 
         const captureData = await captureOrder(orderID);
-
-        // This is where you would typically handle post-payment logic, like:
-        // - Verifying the transaction details (e.g., amount) against your internal records
-        // - Updating the order status in your database to "completed"
-        // - Triggering an email with download links, etc.
-        // For this app, we assume the amount is correct and proceed.
         
         console.log('Payment captured successfully:', captureData.id);
 

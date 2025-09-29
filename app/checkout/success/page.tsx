@@ -6,15 +6,22 @@ import { AnimateIn } from '@/components/animate-in';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 export default function CheckoutSuccessPage() {
   const { clearCart } = useCart();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Clear the cart on successful checkout.
-    // This is a failsafe in case onApprove didn't complete it.
-    clearCart();
-  }, [clearCart]);
+    // This component is now also used as the return URL for PayPal.
+    // The actual payment capture and cart clearing for PayPal happens on the checkout page.
+    // For other payment methods or direct navigation, we still clear the cart.
+    const fromPayPal = searchParams.has('token') && searchParams.has('PayerID');
+    
+    if (!fromPayPal) {
+      clearCart();
+    }
+  }, [clearCart, searchParams]);
 
   return (
     <div className="bg-background">
