@@ -1,3 +1,4 @@
+
 // lib/paypal.ts
 
 /**
@@ -37,6 +38,50 @@ async function getAccessToken(): Promise<string> {
 }
 
 /**
+ * Creates a new PayPal order on the server.
+ * @param {number} subtotal The total amount for the order.
+ * @returns {Promise<object>} The created order details.
+ */
+export async function createOrder(subtotal: number): Promise<any> {
+    const accessToken = await getAccessToken();
+    const base = process.env.NODE_ENV === 'production' 
+        ? "https://api-m.paypal.com" 
+        : "https://api-m.sandbox.paypal.com";
+    const url = `${base}/v2/checkout/orders`;
+
+    const purchaseAmount = subtotal.toFixed(2);
+
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+            intent: 'CAPTURE',
+            purchase_units: [{
+                amount: {
+                    currency_code: 'USD',
+                    value: purchaseAmount,
+                },
+            }],
+            application_context: {
+                shipping_preference: 'NO_SHIPPING',
+            },
+        }),
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error("PayPal API Error on Order Creation:", JSON.stringify(errorDetails, null, 2));
+        throw new Error(`Failed to create PayPal order. Status: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+
+/**
  * Captures a payment for a PayPal order.
  * @param {string} orderID The ID of the order to capture.
  * @returns {Promise<object>} The capture result.
@@ -64,3 +109,5 @@ export async function captureOrder(orderID: string): Promise<any> {
 
   return response.json();
 }
+
+    
