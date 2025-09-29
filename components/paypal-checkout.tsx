@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/context/cart-context';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertTriangle } from 'lucide-react';
+import type { CartItem } from '@/lib/types';
 
 declare global {
     interface Window {
@@ -23,11 +24,11 @@ export function PayPalCheckout() {
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [isInteracting, setIsInteracting] = useState(false);
+    
     const paypalRef = useRef<HTMLDivElement>(null);
-    const interactionTimer = useRef<any | null>(null);
-    const cartRef = useRef(cart);
+    const interactionTimer = useRef<number | null>(null);
+    const cartRef = useRef<CartItem[]>(cart);
 
-    // Keep a ref to the cart to avoid re-running the PayPal script effect
     useEffect(() => {
         cartRef.current = cart;
     }, [cart]);
@@ -43,7 +44,7 @@ export function PayPalCheckout() {
         const addPayPalScript = () => {
             const script = document.createElement('script');
             const params = new URLSearchParams({
-                'client-id': PAYPAL_CLIENT_ID!,
+                'client-id': PAYPAL_CLIENT_ID,
                 'currency': 'USD',
                 'intent': 'capture',
             });
@@ -67,7 +68,6 @@ export function PayPalCheckout() {
                 clearTimeout(interactionTimer.current);
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [PAYPAL_CLIENT_ID]);
 
     useEffect(() => {
@@ -87,9 +87,8 @@ export function PayPalCheckout() {
                     onClick: () => {
                         setError(null);
                         setIsInteracting(true);
-                        // Hide loading message after 3 seconds
                         if (interactionTimer.current) clearTimeout(interactionTimer.current);
-                        interactionTimer.current = setTimeout(() => {
+                        interactionTimer.current = window.setTimeout(() => {
                             setIsInteracting(false);
                         }, 3000);
                     },
@@ -183,7 +182,6 @@ export function PayPalCheckout() {
                  console.error("PayPal Buttons render error:", err);
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [scriptLoaded, router]);
 
     if (!PAYPAL_CLIENT_ID) {
