@@ -65,6 +65,33 @@ export default function CheckoutPage() {
     }
   };
 
+  const handlePayPal = async () => {
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ total: subtotal.toFixed(2) }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.approveUrl) {
+        window.location.href = data.approveUrl;
+      } else {
+        setError(data.error || 'Could not initiate PayPal payment.');
+        setIsProcessing(false);
+      }
+    } catch (err) {
+      console.error('PayPal fetch error:', err);
+      setError('An unexpected error occurred. Please try again.');
+      setIsProcessing(false);
+    }
+  };
+
 
   if (!hasHydrated || items.length === 0) {
     // Show a loading or placeholder state until hydration is complete
@@ -162,6 +189,23 @@ export default function CheckoutPage() {
                     >
                       Pay with ToyyibPay
                     </Button>
+                  </div>
+                  <div className="relative flex py-2 items-center">
+                    <div className="flex-grow border-t border-muted"></div>
+                    <span className="flex-shrink mx-4 text-muted-foreground">OR</span>
+                    <div className="flex-grow border-t border-muted"></div>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground mb-4 text-sm font-semibold">
+                      International Customers (Card / PayPal)
+                    </p>
+                    <button
+                      onClick={handlePayPal}
+                      disabled={isProcessing}
+                      className="w-full h-11 px-8 inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#ffc439] hover:bg-[#ffc439]/90 text-[#003087] font-bold"
+                    >
+                      Pay with PayPal
+                    </button>
                   </div>
                 </div>
               )}
