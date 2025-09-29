@@ -26,14 +26,15 @@ export async function POST(req: NextRequest) {
     }
     
     // ===================================================================================
-    // CRITICAL URL CONFIGURATION
+    // CRITICAL: URL CONFIGURATION - MUST BE UPDATED BEFORE GOING LIVE
     // ===================================================================================
     // ToyyibPay's API does NOT allow `localhost` in the callback or return URLs.
-    // For local testing, you can use a placeholder like "https://example.com".
-    // BEFORE GOING LIVE, you MUST replace these with your real production URLs.
+    // For local testing, you can use a public placeholder like "https://example.com".
+    //
+    // BEFORE GOING LIVE, you MUST replace these placeholders with your real production URLs.
     // ===================================================================================
-    const returnUrl = 'https://www.cuddleia.com/cart'; // Replace with your live site's cart/success page
-    const callbackUrl = 'https://www.cuddleia.com/api/webhook/toyyibpay'; // Replace with your live site's webhook URL
+    const returnUrl = 'https://www.cuddleia.com/cart'; // PRODUCTION URL: Replace with your live success/cart page
+    const callbackUrl = 'https://www.cuddleia.com/api/webhook/toyyibpay'; // PRODUCTION URL: Replace with your live webhook URL
     
     // Create a unique reference for this order. In a real app, this would be your internal order ID.
     const orderId = uuidv4();

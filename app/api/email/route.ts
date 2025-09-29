@@ -3,25 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { Product } from '@/lib/products';
 
-// It is highly recommended to use environment variables for security.
-// These will be read from your hosting environment.
-const ZOHO_EMAIL = process.env.ZOHO_MAIL_USER;
-const ZOHO_PASSWORD = process.env.ZOHO_MAIL_PASS;
-
-if (!ZOHO_EMAIL || !ZOHO_PASSWORD) {
-  console.error('Missing Zoho Mail credentials in environment variables.');
-}
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.zoho.com',
-  port: 465,
-  secure: true, // use SSL
-  auth: {
-    user: ZOHO_EMAIL,
-    pass: ZOHO_PASSWORD,
-  },
-});
-
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `
         <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px;">
@@ -51,8 +32,13 @@ function createEmailBody(name: string, items: Product[]): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Read environment variables inside the function to ensure they are available at runtime.
+  const ZOHO_EMAIL = process.env.ZOHO_MAIL_USER;
+  const ZOHO_PASSWORD = process.env.ZOHO_MAIL_PASS;
+
   if (!ZOHO_EMAIL || !ZOHO_PASSWORD) {
-      return NextResponse.json({ error: 'Email server is not configured.' }, { status: 500 });
+      console.error('CRITICAL: Missing Zoho Mail credentials in environment variables.');
+      return NextResponse.json({ error: 'Email server is not configured. Please contact support.' }, { status: 500 });
   }
     
   try {
@@ -61,6 +47,16 @@ export async function POST(req: NextRequest) {
     if (!to || !subject || !name || !items) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
+
+    const transporter = nodemailer.createTransport({
+        host: 'smtp.zoho.com',
+        port: 465,
+        secure: true, // use SSL
+        auth: {
+            user: ZOHO_EMAIL,
+            pass: ZOHO_PASSWORD,
+        },
+    });
 
     const mailOptions = {
       from: `"Cuddleia" <${ZOHO_EMAIL}>`,

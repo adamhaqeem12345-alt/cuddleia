@@ -3,21 +3,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products'; // Assuming products are accessible
 
 // ===================================================================================
-// IMPORTANT: DATABASE REQUIRED FOR THIS TO WORK
+// CRITICAL: DATABASE REQUIRED FOR AUTOMATED EMAILS
 // ===================================================================================
-// This function is a placeholder. In a real-world scenario, you MUST have a
-// database to store customer details against the `orderId` when the bill is created.
-// ToyyibPay's webhook does NOT send back the customer's name or email. It only
-// sends the `order_id` (as billExternalReferenceNo).
+// This function simulates what's needed to send a confirmation email after a 
+// successful ToyyibPay purchase.
 //
-// To make this work, you would:
-// 1. Before creating the ToyyibPay bill (in `/checkout`), save the customer's
-//    name, email, and the products in their cart to a database record
-//    with the `orderId` (e.g., from `uuidv4()`).
-// 2. Here in the webhook, use the `orderId` received from ToyyibPay to look up
-//    that database record.
-// 3. Retrieve the customer's email and purchased items from the record and
-//    then call the email sending API.
+// **THE PROBLEM:** ToyyibPay's webhook does NOT send back the customer's name or email. 
+// It only sends the `order_id` (which we send as `billExternalReferenceNo`).
+//
+// **THE SOLUTION:** To automatically email the customer their download links, you
+// must have a database. The workflow would be:
+//
+// 1. **Before Redirecting to ToyyibPay (in `/checkout`):**
+//    - Collect the customer's name and email from a form.
+//    - Generate a unique `orderId`.
+//    - Save the `orderId`, customer name, email, and the products in their cart
+//      to a database record (e.g., in a collection named 'orders').
+//
+// 2. **In this Webhook:**
+//    - Receive the `order_id` from ToyyibPay's callback.
+//    - Use this `order_id` to look up the customer's details from your database.
+//    - With the retrieved email and product list, call the `/api/email` route
+//      to send the confirmation email.
 // ===================================================================================
 async function getOrderDetailsFromDatabase(orderId: string): Promise<{ customerEmail: string; customerName: string; purchasedItems: Product[] } | null> {
     console.log(`[Webhook] Simulating database lookup for orderId: ${orderId}`);
@@ -29,7 +36,7 @@ async function getOrderDetailsFromDatabase(orderId: string): Promise<{ customerE
     // const purchasedProducts = products.filter(p => itemIds.includes(p.id));
     // return { customerEmail: order.customerEmail, customerName: order.customerName, purchasedItems: purchasedProducts };
 
-    // For now, since we have no database, we return null.
+    // For now, since we have no database, we return null. This prevents automated emails for ToyyibPay.
     console.error(`[Webhook] CRITICAL: No database is connected. Cannot retrieve customer details for orderId ${orderId} to send email.`);
     return null;
 }
