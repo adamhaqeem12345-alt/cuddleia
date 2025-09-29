@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Flower2, Menu, ShoppingBag } from 'lucide-react';
 import { Button } from './ui/button';
@@ -49,8 +51,8 @@ export function SiteHeader() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
-                    <div className="flex flex-col gap-6 pt-12">
-                         <Link href="/" className="transition-transform hover:scale-105 -ml-2">
+                    <div className="flex h-full flex-col gap-8 py-8">
+                         <Link href="/" className="transition-transform hover:scale-105 pl-4">
                             <div className="flex items-center gap-2">
                                 <Flower2 className="h-8 w-8 text-primary" />
                                 <span className="font-headline text-3xl font-bold tracking-tight text-foreground">
@@ -58,7 +60,7 @@ export function SiteHeader() {
                                 </span>
                             </div>
                         </Link>
-                        <nav className="flex flex-col items-start gap-6 mt-8">
+                        <nav className="flex flex-col items-start gap-6 pl-4">
                             <Link
                             href="/"
                             className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary"
