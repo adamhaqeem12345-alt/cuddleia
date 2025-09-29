@@ -1,9 +1,6 @@
 
 import type { CartItem } from './types';
 
-// These credentials are server-side only and should be set in your environment
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 // Use the live PayPal API endpoint for production
 const PAYPAL_API = 'https://api-m.paypal.com';
 
@@ -11,6 +8,10 @@ const PAYPAL_API = 'https://api-m.paypal.com';
  * Fetches a PayPal access token for API calls.
  */
 async function getPayPalAccessToken(): Promise<string> {
+    // These credentials are server-side only and should be set in your environment
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
         throw new Error('MISSING_PAYPAL_API_CREDENTIALS');
     }
