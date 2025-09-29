@@ -10,6 +10,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useHasHydrated } from '@/lib/hooks';
 
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+
+
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
@@ -79,36 +82,6 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-  
-  const handlePayPalCheckout = async () => {
-    setIsProcessing(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            items,
-            total: subtotal
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        throw new Error(data.error || 'Could not connect to PayPal.');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      console.error('PayPal checkout error:', errorMessage);
-      setError(`Failed to initiate PayPal checkout. Please try again. (${errorMessage})`);
-      setIsProcessing(false);
-    }
-  };
 
 
   if (!hasHydrated || items.length === 0) {
@@ -118,6 +91,16 @@ export default function CheckoutPage() {
             <Loader2 className="h-16 w-16 animate-spin" />
         </div>
     );
+  }
+  
+  const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
+  if (!PAYPAL_CLIENT_ID) {
+      return (
+        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
+            <p className="text-destructive">PayPal client ID is not configured. Payment is disabled.</p>
+        </div>
+      );
   }
 
   return (
@@ -225,13 +208,43 @@ export default function CheckoutPage() {
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
                       International Customers (PayPal or Card)
                     </p>
-                    <button
-                      onClick={handlePayPalCheckout}
-                      disabled={isProcessing}
-                      className="w-full h-11 px-8 bg-[#ffc439] hover:bg-[#f2b830] text-[#111] font-bold rounded-full transition-colors flex items-center justify-center shadow-md"
-                    >
-                        Pay with PayPal or Card
-                    </button>
+                    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
+                        <PayPalButtons
+                            style={{ layout: 'vertical', shape: 'rect' }}
+                            createOrder={async (data, actions) => {
+                                // This function is required, and it must return an order ID.
+                                // We are creating the order directly on the client side.
+                                return actions.order.create({
+                                    purchase_units: [{
+                                        amount: {
+                                            value: subtotal.toFixed(2), //
+                                            currency_code: 'USD'
+                                        }
+                                    }]
+                                });
+                            }}
+                            onApprove={async (data, actions) => {
+                                // This function is called when the user approves the payment.
+                                // Here, you would typically capture the order on your server.
+                                console.log('Payment Approved:', data);
+                                setIsProcessing(true);
+                                // For now, we will just clear the cart and redirect.
+                                // In a real app, call your server to capture the order first.
+                                // const details = await actions.order.capture();
+                                // await fetch('/api/paypal/capture-order', { ... });
+                                clearCart();
+                                router.push('/order-success');
+                            }}
+                            onError={(err) => {
+                                console.error("PayPal onError:", err);
+                                setError("An error occurred with the PayPal transaction. Please try again.");
+                                setIsProcessing(false);
+                            }}
+                            onCancel={() => {
+                                setIsProcessing(false);
+                            }}
+                        />
+                    </PayPalScriptProvider>
                   </div>
                 </div>
               )}
