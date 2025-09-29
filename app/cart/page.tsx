@@ -71,7 +71,9 @@ export default function CartPage() {
                              <ProductPrice price={subtotal} />
                         </div>
                         <p className="text-sm text-muted-foreground mb-6">Shipping and taxes will be calculated at checkout.</p>
-                        <Button size="lg" className="w-full font-bold">Proceed to Checkout</Button>
+                        <Button asChild size="lg" className="w-full font-bold">
+                            <Link href="/checkout">Proceed to Checkout</Link>
+                        </Button>
                         <div className="mt-6">
                              <Button asChild variant="ghost" className="w-full">
                                 <Link href="/products">
