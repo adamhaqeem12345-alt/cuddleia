@@ -210,8 +210,8 @@ export default function CheckoutPage() {
                     <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
                         <PayPalButtons
                             style={{ layout: 'vertical', shape: 'rect' }}
-                            createOrder={async (data, actions) => {
-                                const orderID = await actions.order.create({
+                            createOrder={(data, actions) => {
+                                return actions.order.create({
                                     purchase_units: [{
                                         amount: {
                                             value: subtotal.toFixed(2),
@@ -219,7 +219,6 @@ export default function CheckoutPage() {
                                         }
                                     }]
                                 });
-                                return orderID;
                             }}
                             onApprove={async (data, actions) => {
                                 // This function is called when the user approves the payment.
