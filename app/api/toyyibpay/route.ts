@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       billName: billName,
       billDescription: billDescription,
       billPriceSetting: '1',
-      billPayorInfo: '1',
+      billPayorInfo: '0', // Set to 0 to create an open bill without requiring payer info from our side.
       billAmount: billAmountInCents.toString(),
       billReturnUrl: `${appUrl}/cart`,
       billCallbackUrl: `${appUrl}/api/webhook/toyyibpay`,
