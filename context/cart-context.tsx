@@ -28,25 +28,31 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   // Load cart from localStorage on initial client-side render
   useEffect(() => {
+    // This code runs only on the client, after hydration.
+    // We wrap this in a try-catch block to prevent errors during server-side rendering or build.
     try {
       const item = window.localStorage.getItem('cuddleia-cart');
       if (item) {
         setCart(JSON.parse(item));
       }
     } catch (error) {
-      console.warn('Error reading localStorage cart', error);
+      console.warn('Could not read cart from localStorage:', error);
+      // If localStorage fails, we ensure the cart is an empty array.
+      setCart([]);
     } finally {
+      // Mark the cart as ready to be used by the UI.
       setIsCartReady(true);
     }
   }, []);
 
   // Save cart to localStorage whenever it changes
   useEffect(() => {
+    // Only attempt to save to localStorage if the cart is ready and on the client side.
     if (isCartReady) {
       try {
         window.localStorage.setItem('cuddleia-cart', JSON.stringify(cart));
       } catch (error) {
-        console.warn('Error writing to localStorage cart', error);
+        console.warn('Could not save cart to localStorage:', error);
       }
     }
   }, [cart, isCartReady]);
