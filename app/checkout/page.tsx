@@ -9,15 +9,70 @@ import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import type { OrderResponseBody, CreateOrderData, OnApproveData } from '@paypal/paypal-js';
 import { Product } from '@/lib/products';
 import { useHasHydrated } from '@/lib/hooks';
 
+// This is the PayPal part, but we will create the order and redirect manually
+async function createPaypalOrder(total: number): Promise<string | null> {
+    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_SECRET = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_SECRET;
+
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+        console.error('PayPal client ID or secret is not configured.');
+        return null;
+    }
+
+    const response = await fetch('https://api-m.sandbox.paypal.com/v1/oauth2/token', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Authorization': 'Basic ' + btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`)
+        },
+        body: 'grant_type=client_credentials'
+    });
+    
+    const auth = await response.json();
+    if (!auth.access_token) {
+        console.error('Failed to get PayPal access token');
+        return null;
+    }
+
+    const orderResponse = await fetch('https://api-m.sandbox.paypal.com/v2/checkout/orders', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${auth.access_token}`
+        },
+        body: JSON.stringify({
+            intent: 'CAPTURE',
+            purchase_units: [{
+                amount: {
+                    currency_code: 'USD',
+                    value: total.toFixed(2)
+                }
+            }],
+            application_context: {
+                return_url: `${window.location.origin}/`,
+                cancel_url: `${window.location.href}`,
+                brand_name: 'Cuddleia'
+            }
+        })
+    });
+
+    const orderData = await orderResponse.json();
+    if (orderData.links) {
+        const approvalLink = orderData.links.find((link: any) => link.rel === 'approve');
+        return approvalLink.href;
+    }
+    
+    return null;
+}
+
+
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
-  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,70 +103,6 @@ export default function CheckoutPage() {
     };
   }, []);
 
-
-  const sendConfirmationEmail = async (payerName: string, payerEmail: string, purchasedItems: Product[]) => {
-    try {
-      await fetch('/api/email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: payerEmail,
-          subject: 'Your Cuddleia Order Confirmation',
-          name: payerName,
-          items: purchasedItems,
-        }),
-      });
-    } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError);
-      // We don't block the user flow for this, but we log it.
-    }
-  };
-
-  const createOrder = (data: CreateOrderData, actions: any) => {
-    setError(null);
-
-    return actions.order.create({
-      purchase_units: [
-        {
-          amount: {
-            value: subtotal.toFixed(2),
-            currency_code: 'USD',
-          },
-        },
-      ],
-    });
-  };
-
-  const onApprove = async (data: OnApproveData, actions: any) => {
-    setIsProcessing(true); // Set processing state after approval
-    setError(null);
-    try {
-        const details: OrderResponseBody = await actions.order.capture();
-        
-        // Safely access payer information
-        if (details && details.payer) {
-            const payerName = details.payer.name?.given_name;
-            const payerEmail = details.payer.email_address;
-
-            if (payerName && payerEmail) {
-                // Send email but don't wait for it to complete
-                sendConfirmationEmail(payerName, payerEmail, items);
-            }
-        }
-        
-        // Immediately clear cart and redirect.
-        clearCart();
-        router.push('/');
-
-    } catch (err) {
-        console.error('Payment capture or email sending error:', err);
-        setError('Your payment was processed, but there was an issue finalizing your order. Please check your inbox or contact support.');
-        setIsProcessing(false); // Only reset on error
-    }
-  };
-  
   const handleToyyibPay = async () => {
     setIsProcessing(true);
     setIsRedirecting(true);
@@ -142,15 +133,25 @@ export default function CheckoutPage() {
     }
   };
 
-  const onError = (err: any) => {
-    setIsProcessing(false);
-    console.error('PayPal Checkout Error', err);
-    setError('An error occurred during the PayPal transaction. Please try again.');
-  };
-  
-  const onCancel = () => {
-    setIsProcessing(false);
-    setError('The payment was cancelled. Please try again if you wish to complete the purchase.');
+  const handlePayPalRedirect = async () => {
+    setIsProcessing(true);
+    setIsRedirecting(true);
+    setError(null);
+    try {
+        const approvalUrl = await createPaypalOrder(subtotal);
+        if (approvalUrl) {
+            window.location.href = approvalUrl;
+        } else {
+            setError('Could not connect to PayPal. Please try again or use another payment method.');
+            setIsProcessing(false);
+            setIsRedirecting(false);
+        }
+    } catch (err) {
+        console.error('PayPal redirect error:', err);
+        setError('An unexpected error occurred while connecting to PayPal.');
+        setIsProcessing(false);
+        setIsRedirecting(false);
+    }
   }
 
 
@@ -158,15 +159,6 @@ export default function CheckoutPage() {
     return null; // Render nothing until hydrated or if cart is truly empty
   }
   
-  if (!paypalClientId) {
-      return (
-        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
-            <h2 className="font-headline text-2xl font-bold">Configuration Error</h2>
-            <p className="text-muted-foreground mt-2">PayPal is not configured. Please set the NEXT_PUBLIC_PAYPAL_CLIENT_ID environment variable.</p>
-        </div>
-      )
-  }
-
   return (
     <div className="bg-background">
       <section className="bg-accent py-20 md:py-28 flex items-center justify-center">
@@ -222,13 +214,7 @@ export default function CheckoutPage() {
                     {isRedirecting ? (
                       <div className="text-center p-8">
                           <div className="animate-pulse font-semibold text-muted-foreground">
-                            Redirecting to payment gateway... Please wait.
-                          </div>
-                      </div>
-                    ) : isProcessing ? (
-                       <div className="text-center p-8">
-                          <div className="animate-pulse font-semibold text-muted-foreground">
-                            Processing your order... Please do not close this window.
+                            Redirecting to our secure payment processor... Please wait.
                           </div>
                       </div>
                     ) : (
@@ -254,16 +240,14 @@ export default function CheckoutPage() {
                           </div>
                           <div>
                               <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
-                              <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
-                                  <PayPalButtons 
-                                      style={{ layout: "vertical" }}
-                                      createOrder={createOrder}
-                                      onApprove={onApprove}
-                                      onError={onError}
-                                      onCancel={onCancel}
-                                      disabled={isProcessing}
-                                  />
-                              </PayPalScriptProvider>
+                              <Button
+                                  onClick={handlePayPalRedirect}
+                                  disabled={isProcessing}
+                                  size="lg"
+                                  className="w-full font-bold bg-[#0070BA] hover:bg-[#005ea6]"
+                              >
+                                  Pay with PayPal or Card
+                              </Button>
                           </div>
                       </div>
                     )}
@@ -285,6 +269,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-    
-
-    
