@@ -24,7 +24,7 @@ export function PayPalCheckout() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isInteracting, setIsInteracting] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
-    const interactionTimer = useRef<NodeJS.Timeout | null>(null);
+    const interactionTimer = useRef<any | null>(null);
     const cartRef = useRef(cart);
 
     // Keep a ref to the cart to avoid re-running the PayPal script effect
