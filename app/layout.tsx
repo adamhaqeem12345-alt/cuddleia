@@ -1,17 +1,17 @@
 import type { Metadata } from 'next';
-import { Alegreya, Alegreya_Sans } from 'next/font/google';
+import { Belleza, Alegreya } from 'next/font/google';
 import './globals.css';
 import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Alegreya({
+const fontHeadline = Belleza({
   subsets: ['latin'],
-  weight: ['400', '700'],
+  weight: ['400'],
   variable: '--font-headline',
 });
 
-const fontBody = Alegreya_Sans({
+const fontBody = Alegreya({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-body',
