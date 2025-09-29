@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -12,20 +11,8 @@ declare global {
     }
 }
 
-interface CreateOrderActions {
-    order: {
-        create: (options: any) => Promise<string>;
-    };
-}
-
 interface OnApproveData {
     orderID: string;
-}
-
-interface OnApproveActions {
-    order: {
-        capture: () => Promise<any>;
-    };
 }
 
 export function PayPalCheckout() {
@@ -78,26 +65,46 @@ export function PayPalCheckout() {
                         label: 'paypal',
                         height: 55,
                     },
-                    createOrder: async () => {
-                        setError(null);
+                    createOrder: () => {
                         try {
-                            const res = await fetch('/api/paypal/create-order', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ cart }),
-                            });
-
-                            const orderData = await res.json();
+                            const totalValue = cart.reduce((acc, item) => acc + (item.price / 100) * item.quantity, 0).toFixed(2);
                             
-                            if (!res.ok) {
-                                throw new Error(orderData.error || 'Failed to create order.');
+                            if (parseFloat(totalValue) <= 0) {
+                                setError("Cart total must be greater than zero.");
+                                throw new Error("Invalid cart total.");
                             }
 
-                            return orderData.id;
+                            const purchaseUnits = [{
+                                amount: {
+                                    value: totalValue,
+                                    breakdown: {
+                                        item_total: {
+                                            currency_code: 'USD',
+                                            value: totalValue,
+                                        }
+                                    }
+                                },
+                                items: cart.map(item => ({
+                                    name: item.name,
+                                    unit_amount: {
+                                        currency_code: 'USD',
+                                        value: (item.price / 100).toFixed(2),
+                                    },
+                                    quantity: item.quantity.toString()
+                                }))
+                            }];
+                            
+                            return window.paypal.rest.order.create({
+                                purchase_units: purchaseUnits,
+                                application_context: {
+                                    shipping_preference: 'NO_SHIPPING'
+                                }
+                            });
+
                         } catch (err: any) {
-                            console.error("CREATE_ORDER_ERROR:", err);
-                            setError(err.message || "An error occurred while creating the order.");
-                            throw err; // Propagate error to PayPal SDK
+                             console.error("CLIENT_CREATE_ORDER_ERROR:", err);
+                             setError("An error occurred while preparing your order. Please check the cart and try again.");
+                             throw err;
                         }
                     },
                     onApprove: async (data: OnApproveData) => {
@@ -130,7 +137,7 @@ export function PayPalCheckout() {
                     },
                     onError: (err: any) => {
                         console.error('PayPal Buttons onError:', err);
-                        setError("An unexpected error occurred with PayPal. Please try again.");
+                        setError("An unexpected error occurred with PayPal. Please try again or contact support.");
                     },
                     onCancel: () => {
                         console.log('PayPal payment cancelled.');
