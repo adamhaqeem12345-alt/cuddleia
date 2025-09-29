@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -57,7 +56,7 @@ export function PayPalCheckout() {
     }, [PAYPAL_CLIENT_ID]);
 
     useEffect(() => {
-        if (scriptLoaded && paypalRef.current && paypalRef.current.childElementCount === 0) {
+        if (scriptLoaded && paypalRef.current && paypalRef.current.childElementCount === 0 && !isProcessing) {
             try {
                 window.paypal.Buttons({
                     style: {
@@ -67,8 +66,12 @@ export function PayPalCheckout() {
                         label: 'paypal',
                         height: 55,
                     },
-                    onInit: (_data: any, actions: any) => {
+                    onInit: () => {
                         setIsButtonReady(true);
+                    },
+                    onClick: () => {
+                        // When the user clicks, immediately set processing state to show a loader.
+                        setIsProcessing(true);
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
@@ -76,6 +79,7 @@ export function PayPalCheckout() {
                             
                             if (parseFloat(totalValue) <= 0) {
                                 setError("Cart total must be greater than zero.");
+                                setIsProcessing(false);
                                 throw new Error("Invalid cart total.");
                             }
 
@@ -107,11 +111,12 @@ export function PayPalCheckout() {
                         } catch (err: any) {
                              console.error("CLIENT_CREATE_ORDER_ERROR:", err);
                              setError("An error occurred while preparing your order. Please check the cart and try again.");
+                             setIsProcessing(false);
                              throw err;
                         }
                     },
                     onApprove: async (data: OnApproveData) => {
-                         setIsProcessing(true);
+                         // The processing state is already true, now we just handle the capture
                          setError(null);
                          try {
                             const res = await fetch('/api/paypal/capture-order', {
@@ -134,16 +139,18 @@ export function PayPalCheckout() {
                          } catch (err: any) {
                             console.error("CAPTURE_ORDER_ERROR:", err);
                             setError(err.message || 'An error occurred while capturing the order.');
-                         } finally {
-                            // No need to set isProcessing to false, as we are navigating away.
+                            setIsProcessing(false); // Stop processing on error
                          }
                     },
                     onError: (err: any) => {
                         console.error('PayPal Buttons onError:', err);
                         setError("An unexpected error occurred with PayPal. Please try again or contact support.");
+                        setIsProcessing(false);
                     },
                     onCancel: () => {
                         console.log('PayPal payment cancelled.');
+                        // If the user cancels the popup, reset the processing state.
+                        setIsProcessing(false);
                     }
                 }).render(paypalRef.current);
             } catch (err: any) {
@@ -151,7 +158,7 @@ export function PayPalCheckout() {
                  console.error("PayPal Buttons render error:", err);
             }
         }
-    }, [scriptLoaded, cart, router, PAYPAL_CLIENT_ID]);
+    }, [scriptLoaded, cart, router, PAYPAL_CLIENT_ID, isProcessing]);
 
     if (!PAYPAL_CLIENT_ID) {
          return (
@@ -172,7 +179,7 @@ export function PayPalCheckout() {
             <div className="flex flex-col items-center justify-center text-center p-4 min-h-[120px]">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
                 <p className="mt-2 font-semibold text-foreground">Processing your payment...</p>
-                <p className="text-sm text-muted-foreground">Please do not close this window.</p>
+                <p className="text-sm text-muted-foreground">Please follow the instructions in the PayPal window.</p>
             </div>
         );
     }
@@ -195,8 +202,8 @@ export function PayPalCheckout() {
         <div className="min-h-[120px]">
             { !isButtonReady && (
                 <div className="space-y-2 animate-pulse">
-                    <div className="h-[55px] bg-gray-200 rounded-md"></div>
-                    <div className="h-[55px] bg-gray-200 rounded-md"></div>
+                    <div className="h-[55px] bg-gray-300/50 rounded-md"></div>
+                    <div className="h-[55px] bg-gray-300/50 rounded-md"></div>
                 </div>
             )}
             <div ref={paypalRef} style={{ opacity: isButtonReady ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}></div>
