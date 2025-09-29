@@ -46,13 +46,13 @@ export function ProductCard({ product }: ProductCardProps) {
                  <div className="flex items-center justify-between gap-4 pt-6">
                     <ProductPrice price={product.price} />
                     <div className="flex gap-2">
-                        <Button asChild variant="outline" size="icon" className="rounded-full">
+                         <Button asChild size="default" className="font-bold shadow-lg transition-transform hover:scale-105 active:scale-95">
                              <Link href={`/products/${product.id}`}>
-                                <Eye />
-                                <span className="sr-only">View Product</span>
+                                <Eye className="mr-2 h-5 w-5" />
+                                View
                             </Link>
                         </Button>
-                        <AddToCartButton product={product} showText={true} />
+                        <AddToCartButton product={product} variant="outline" className="w-auto" />
                     </div>
                 </div>
             </div>
