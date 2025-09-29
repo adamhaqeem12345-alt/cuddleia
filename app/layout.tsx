@@ -30,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn('antialiased', belleza.variable, alegreya.variable)}>
+      <body className={cn('antialiased font-body', belleza.variable, alegreya.variable)}>
         <CartProviderWrapper>
             <div className="flex flex-col min-h-screen">
                 <Header />
