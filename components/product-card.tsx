@@ -6,17 +6,14 @@ import {
   Card
 } from './ui/card';
 import type { Product } from '@/lib/products';
+import { ProductPrice } from './product-price';
+import { AddToCartButton } from './add-to-cart-button';
 
 interface ProductCardProps {
     product: Product;
 }
 
-// A map to convert prices from USD to MYR.
-// In a real application, this would be fetched from an API.
-const USD_TO_MYR = 4.21;
-
 export function ProductCard({ product }: ProductCardProps) {
-  const priceMYR = (product.price * USD_TO_MYR).toFixed(2);
   return (
     <div className="h-full">
         <Card className="group flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
@@ -47,10 +44,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     </div>
                 </div>
                  <div className="flex items-center justify-between gap-4 pt-6">
-                    <div>
-                        <p className="text-xl font-headline font-bold text-primary">${product.price.toFixed(2)} USD</p>
-                        <p className="text-xs text-muted-foreground">(Approx. RM{priceMYR})</p>
-                    </div>
+                    <ProductPrice price={product.price} />
                     <div className="flex gap-2">
                         <Button asChild variant="outline" size="icon" className="rounded-full">
                              <Link href={`/products/${product.id}`}>
@@ -58,9 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
                                 <span className="sr-only">View Product</span>
                             </Link>
                         </Button>
-                        <Button className="shadow-lg transition-transform hover:scale-105 active:scale-95">
-                            <ShoppingCart className="mr-2 h-5 w-5" /> Add
-                        </Button>
+                        <AddToCartButton product={product} showText={true} />
                     </div>
                 </div>
             </div>

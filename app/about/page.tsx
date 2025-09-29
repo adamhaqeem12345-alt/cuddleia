@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Image from 'next/image';
 import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
+import { AnimateIn } from '@/components/animate-in';
 
 export const metadata: Metadata = {
     title: 'About Cuddleia | Our Story',
@@ -12,19 +13,21 @@ export default function AboutPage() {
     <div className="bg-background">
       <section className="relative w-full bg-hero-background py-20 md:py-28 flex items-center justify-center">
         <div className="container mx-auto px-4">
-          <div className="relative z-10 text-center">
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-              Our <span className="text-primary">Story</span>
-            </h1>
-            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
-              Cuddleia began with honesty, faith, and a dream to create
-              something meaningful.
-            </p>
-          </div>
+          <AnimateIn>
+            <div className="relative z-10 text-center">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                Our <span className="text-primary">Story</span>
+              </h1>
+              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
+                Cuddleia began with honesty, faith, and a dream to create
+                something meaningful.
+              </p>
+            </div>
+          </AnimateIn>
         </div>
       </section>
 
-      <div>
+      <AnimateIn>
         <section className="py-24 sm:py-32">
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-4xl text-center">
@@ -58,9 +61,9 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-      </div>
+      </AnimateIn>
 
-      <div className="container mx-auto px-4 mb-24 sm:mb-32">
+      <AnimateIn className="container mx-auto px-4 mb-24 sm:mb-32">
         <div className="relative aspect-video w-full">
           <Image
             alt="Pastel floral graphics background"
@@ -70,9 +73,9 @@ export default function AboutPage() {
             className="rounded-2xl object-cover shadow-lg"
           />
         </div>
-      </div>
+      </AnimateIn>
 
-      <div>
+      <AnimateIn>
         <section className="bg-background py-24 sm:py-32">
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-4xl text-center">
@@ -140,9 +143,9 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-      </div>
+      </AnimateIn>
 
-      <div>
+      <AnimateIn>
         <section className="bg-accent/30 py-24 sm:py-32">
           <div className="container mx-auto px-4 text-center">
             <h2 className="font-headline text-4xl">Meet the Founder</h2>
@@ -171,7 +174,7 @@ export default function AboutPage() {
             </div>
           </div>
         </section>
-      </div>
+      </AnimateIn>
     </div>
   );
 }
