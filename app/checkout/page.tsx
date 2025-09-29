@@ -208,14 +208,30 @@ export default function CheckoutPage() {
                                 });
                             }}
                             onApprove={async (data, actions) => {
-                                console.log('Payment Approved:', data);
                                 setIsProcessing(true);
+                                // The user has approved the payment. Now we need to capture it.
                                 // In a real app, you would now capture the order on the server.
-                                // For this example, we'll just simulate success.
+                                // For this example, we will simulate success.
+                                //
                                 // const details = await actions.order.capture();
-                                // await fetch('/api/paypal/capture-order', { body: JSON.stringify({ orderId: data.orderID }) });
+                                // const response = await fetch('/api/paypal/capture-order', {
+                                //   method: 'POST',
+                                //   headers: { 'Content-Type': 'application/json' },
+                                //   body: JSON.stringify({ orderId: data.orderID })
+                                // });
+                                //
+                                // if (response.ok) {
+                                //   clearCart();
+                                //   router.push('/order-success');
+                                // } else {
+                                //   const errorData = await response.json();
+                                //   setError(errorData.error || 'Failed to capture payment.');
+                                //   setIsProcessing(false);
+                                // }
+                                
+                                console.log('Payment Approved. Simulating capture and redirecting.', data);
                                 clearCart();
-                                router.push('/order-success'); // Redirect to a success page
+                                router.push('/order-success');
                             }}
                             onError={(err) => {
                                 console.error("PayPal onError:", err);
