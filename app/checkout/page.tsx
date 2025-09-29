@@ -18,11 +18,14 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const USD_TO_MYR = 4.21;
+  const totalMYR = subtotal * USD_TO_MYR;
+
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !isProcessing) {
       router.push('/products');
     }
-  }, [items, router]);
+  }, [items, router, isProcessing]);
 
   const createOrder = (data: CreateOrderData, actions: any) => {
     return actions.order.create({
@@ -41,11 +44,36 @@ export default function CheckoutPage() {
     setIsProcessing(false);
     return actions.order.capture().then(function (details: any) {
       alert('Transaction completed by ' + details.payer.name.given_name);
-      // Here you would typically handle the post-payment logic,
-      // like sending an email with download links via Zoho.
       clearCart();
-      router.push('/'); // Redirect to home page after successful payment
+      router.push('/');
     });
+  };
+
+  const handleToyyibPay = async () => {
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/toyyibpay', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ items, total: totalMYR }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.paymentUrl) {
+          window.location.href = data.paymentUrl;
+      } else {
+          setError(data.error || 'Could not initiate ToyyibPay payment.');
+          setIsProcessing(false);
+      }
+    } catch (err) {
+      console.error('ToyyibPay fetch error:', err);
+      setError('An unexpected error occurred. Please try again.');
+      setIsProcessing(false);
+    }
   };
 
   const onError = (err: any) => {
@@ -116,30 +144,53 @@ export default function CheckoutPage() {
                         </div>
                     )}
 
-                    <div className="mb-6">
-                        <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
-                        <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
-                            <PayPalButtons 
-                                style={{ layout: "vertical" }}
-                                createOrder={createOrder}
-                                onApprove={onApprove}
-                                onError={onError}
-                                onClick={(data, actions) => {
-                                    if(data.fundingSource === 'card') {
-                                        handleCardClick();
-                                    }
-                                    setError(null);
-                                    return actions.resolve();
-                                }}
-                                onCancel={() => setIsProcessing(false)}
-                            />
-                        </PayPalScriptProvider>
-                        {isProcessing && (
-                            <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
-                                <p>Processing payment...</p>
+                    <div className="space-y-6">
+                        <div>
+                            <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (FPX)</p>
+                            <Button
+                                onClick={handleToyyibPay}
+                                disabled={isProcessing}
+                                size="lg"
+                                className="w-full font-bold"
+                            >
+                                {isProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
+                            </Button>
+                        </div>
+                        <div className="relative my-6">
+                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div className="w-full border-t border-border" />
                             </div>
-                        )}
+                            <div className="relative flex justify-center">
+                                <span className="bg-card px-2 text-sm text-muted-foreground">OR</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
+                            <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
+                                <PayPalButtons 
+                                    style={{ layout: "vertical" }}
+                                    createOrder={createOrder}
+                                    onApprove={onApprove}
+                                    onError={onError}
+                                    onClick={(data, actions) => {
+                                        if(data.fundingSource === 'card') {
+                                            handleCardClick();
+                                        }
+                                        setError(null);
+                                        return actions.resolve();
+                                    }}
+                                    onCancel={() => setIsProcessing(false)}
+                                    disabled={isProcessing}
+                                />
+                            </PayPalScriptProvider>
+                        </div>
                     </div>
+
+                    {isProcessing && !error && (
+                        <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
+                            <p>Connecting to payment gateway...</p>
+                        </div>
+                    )}
                  </div>
             </AnimateIn>
         </div>
