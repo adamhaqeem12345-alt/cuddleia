@@ -38,9 +38,12 @@ export async function POST(req: NextRequest) {
 
     const response = await fetch(TOYYIBPAY_API_URL, {
       method: 'POST',
-      body: params,
+      body: params, // This is the corrected line
     });
 
+    // ToyyibPay API returns an array of objects.
+    // On success: [{ "BillCode": "..." }]
+    // On error: [{ "msg": "..." }]
     const data = await response.json();
     
     if (data && data.length > 0 && data[0].BillCode) {
