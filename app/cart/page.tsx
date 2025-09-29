@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { X, ArrowLeft, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { AnimateIn } from '@/components/animate-in';
-// import { PayPalCheckout } from '@/components/paypal-checkout';
+import { PayPalCheckout } from '@/components/paypal-checkout';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, getPrice, isCartReady } = useCart();
@@ -125,8 +125,7 @@ export default function CartPage() {
                         </div>
                      </div>
                      <div className="mt-8">
-                        {/* <PayPalCheckout /> */}
-                        <div className="text-center text-muted-foreground">Checkout is temporarily unavailable.</div>
+                        <PayPalCheckout />
                      </div>
                 </div>
             </div>
