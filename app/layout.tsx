@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
-import { Playfair_Display, Inter } from 'next/font/google';
+import { Lora, Poppins } from 'next/font/google';
 import './globals.css';
 import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Playfair_Display({
+const fontHeadline = Lora({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-headline',
 });
 
-const fontBody = Inter({
+const fontBody = Poppins({
   subsets: ['latin'],
+  weight: ['400', '600'],
   variable: '--font-body',
 });
 
