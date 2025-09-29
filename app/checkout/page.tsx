@@ -75,35 +75,10 @@ export default function CheckoutPage() {
       setIsRedirecting(false);
     }
   };
-  
-    const onPayPalInit = (data: any, actions: any) => {
-        // This sets up the redirect flow for the main PayPal button
-        if (data.fundingSource === FUNDING.PAYPAL) {
-            actions.enable();
-        }
-    };
     
     const createOrder = (data: CreateOrderData, actions: any) => {
-        // If the funding source is PayPal, perform a redirect
-        if (data.fundingSource === FUNDING.PAYPAL) {
-            return actions.order.create({
-                purchase_units: [{
-                    amount: {
-                        value: subtotal.toFixed(2),
-                        currency_code: 'USD'
-                    }
-                }],
-                application_context: {
-                    return_url: `${window.location.origin}/`,
-                    cancel_url: window.location.href,
-                    brand_name: 'Cuddleia'
-                }
-            }).then((orderID: string) => {
-                return actions.redirect(orderID);
-            });
-        }
-        
-        // For card payments, create order without redirect context
+        // IMPORTANT: The amount must be a string with two decimal places.
+        // This is a strict requirement from the PayPal API.
         return actions.order.create({
             purchase_units: [{
                 amount: {
@@ -115,6 +90,7 @@ export default function CheckoutPage() {
     };
 
     const onApprove = async (data: OnApproveData, actions: any): Promise<void> => {
+        setIsProcessing(true); // Show processing state AFTER approval
         try {
             if (actions.order) {
                 const details: OrderResponseBody = await actions.order.capture();
@@ -143,16 +119,19 @@ export default function CheckoutPage() {
         } catch (error) {
             console.error('PayPal capture or email sending failed', error);
             setError('There was an issue processing your payment. Please try again.');
+            setIsProcessing(false);
         }
     };
 
     const onCancel = () => {
-       // user cancelled the payment
+       // User cancelled the payment, reset state if needed
+       setIsProcessing(false);
     }
 
     const onError = (err: any) => {
         console.error('PayPal Error:', err);
         setError('An error occurred with the PayPal transaction. Please try again.');
+        setIsProcessing(false);
     };
 
 
@@ -213,10 +192,10 @@ export default function CheckoutPage() {
                             </div>
                         )}
                         
-                        {isRedirecting ? (
+                        {isRedirecting || isProcessing ? (
                         <div className="text-center p-8">
                             <div className="animate-pulse font-semibold text-muted-foreground">
-                                Redirecting to our secure payment processor... Please wait.
+                                {isRedirecting ? 'Redirecting to our secure payment processor...' : 'Processing your payment...'}
                             </div>
                         </div>
                         ) : (
@@ -245,7 +224,6 @@ export default function CheckoutPage() {
                                 <div className="space-y-4">
                                      <PayPalButtons
                                         style={{ layout: 'vertical', label: 'pay', color: 'blue', shape: 'pill', tagline: false }}
-                                        onInit={onPayPalInit}
                                         createOrder={createOrder}
                                         onApprove={onApprove}
                                         onCancel={onCancel}
@@ -275,5 +253,3 @@ export default function CheckoutPage() {
     </PayPalScriptProvider>
   );
 }
-
-    
