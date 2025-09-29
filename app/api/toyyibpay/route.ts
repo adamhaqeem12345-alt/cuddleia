@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
 
 // This is your actual account secret key for creating bills.
-const TOYYIBPAY_SECRET = 'rx6j88vd-eye6-g5xf-s91k-a4c616556wpr'; 
+const TOYYIBPAY_SECRET = 'rx6j88vd-eye6-g5xf-s91k-a4c616556wpr';
 // This is your category code.
-const TOYYIBPAY_CATEGORY_CODE = 'j0tzqhka';
+const TOYYIBPAY_CATEGORY_CODE = '43cm97xz';
 const TOYYIBPAY_API_URL = 'https://toyyibpay.com/index.php/api/createBill';
 const TOYYIBPAY_BILL_URL = 'https://toyyibpay.com/';
 
@@ -30,15 +30,15 @@ export async function POST(req: NextRequest) {
       categoryCode: TOYYIBPAY_CATEGORY_CODE,
       billName: billName,
       billDescription: billDescription,
-      billPriceSetting: '1', // 1 for fixed amount
-      billPayorInfo: '1', // 1 to require payor info
+      billPriceSetting: '1',
+      billPayorInfo: '1',
       billAmount: billAmountInCents.toString(),
       billReturnUrl: 'https://www.cuddleia.com/cart', // Production Return URL
       billCallbackUrl: 'https://www.cuddleia.com/api/webhook/toyyibpay', // Production Callback URL
       billTo: 'Customer',
       billEmail: 'customer@example.com',
       billPhone: '0123456789',
-      billPaymentChannel: '0', // 0 for FPX only
+      billPaymentChannel: '0',
     });
 
     const response = await fetch(TOYYIBPAY_API_URL, {
