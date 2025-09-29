@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
-import { Lora, Poppins } from 'next/font/google';
+import { Alegreya, Alegreya_Sans } from 'next/font/google';
 import './globals.css';
 import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Lora({
+const fontHeadline = Alegreya({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-headline',
 });
 
-const fontBody = Poppins({
+const fontBody = Alegreya_Sans({
   subsets: ['latin'],
-  weight: ['400', '600'],
+  weight: ['400', '700'],
   variable: '--font-body',
 });
 
