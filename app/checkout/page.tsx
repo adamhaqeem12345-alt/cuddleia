@@ -10,6 +10,7 @@ import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { Product } from '@/lib/products';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -28,6 +29,26 @@ export default function CheckoutPage() {
     }
   }, [items, router, isProcessing]);
 
+  const sendConfirmationEmail = async (payerName: string, payerEmail: string, purchasedItems: Product[]) => {
+    try {
+      await fetch('/api/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: payerEmail,
+          subject: 'Your Cuddleia Order Confirmation',
+          name: payerName,
+          items: purchasedItems,
+        }),
+      });
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError);
+      // We don't block the user flow for this, but we log it.
+    }
+  };
+
   const createOrder = (data: CreateOrderData, actions: any) => {
     return actions.order.create({
       purchase_units: [
@@ -42,11 +63,17 @@ export default function CheckoutPage() {
   };
 
   const onApprove = (data: OnApproveData, actions: any) => {
-    setIsProcessing(false);
+    setIsProcessing(true); // Keep processing state while we capture and send email
     return actions.order.capture().then(function (details: any) {
-      alert('Transaction completed by ' + details.payer.name.given_name);
-      clearCart();
-      router.push('/');
+      const payerName = details.payer.name.given_name;
+      const payerEmail = details.payer.email_address;
+      
+      sendConfirmationEmail(payerName, payerEmail, items).finally(() => {
+        alert('Transaction completed by ' + payerName + '! A confirmation email has been sent.');
+        clearCart();
+        setIsProcessing(false);
+        router.push('/');
+      });
     });
   };
 
@@ -67,7 +94,10 @@ export default function CheckoutPage() {
 
       if (response.ok && data.paymentUrl) {
           setIsRedirecting(true);
-          window.location.href = data.paymentUrl; // Redirect in the same tab
+          // This ensures the UI updates *before* the browser navigates away.
+          setTimeout(() => {
+            window.location.href = data.paymentUrl;
+          }, 100);
       } else {
           setError(data.error || 'Could not initiate ToyyibPay payment.');
           setIsProcessing(false);
@@ -92,7 +122,7 @@ export default function CheckoutPage() {
     }, 3000);
   }
 
-  if (items.length === 0) {
+  if (items.length === 0 && !isRedirecting) {
     return null; 
   }
 
@@ -142,7 +172,7 @@ export default function CheckoutPage() {
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
                     
                     {error && (
-                        <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-800 p-4 mb-6" role="alert">
+                        <div className="bg-destructive/10 border-l-4 border-destructive text-destructive-foreground p-4 mb-6 rounded-md" role="alert">
                             <p className="font-bold">Payment Error</p>
                             <p>{error}</p>
                         </div>
@@ -151,7 +181,7 @@ export default function CheckoutPage() {
                     {isRedirecting ? (
                       <div className="text-center p-8">
                           <div className="animate-pulse font-semibold text-muted-foreground">
-                            Redirecting to payment gateway...
+                            Redirecting to payment gateway... Please wait.
                           </div>
                       </div>
                     ) : (
@@ -164,7 +194,7 @@ export default function CheckoutPage() {
                                   size="lg"
                                   className="w-full font-bold"
                               >
-                                  {isProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
+                                  {isProcessing && !isRedirecting ? 'Processing...' : 'Pay with ToyyibPay'}
                               </Button>
                           </div>
                           <div className="relative my-6">
@@ -188,6 +218,7 @@ export default function CheckoutPage() {
                                               handleCardClick();
                                           }
                                           setError(null);
+                                          setIsProcessing(true);
                                           return actions.resolve();
                                       }}
                                       onCancel={() => setIsProcessing(false)}

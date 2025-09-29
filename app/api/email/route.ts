@@ -1,0 +1,73 @@
+
+import { NextRequest, NextResponse } from 'next/server';
+import nodemailer from 'nodemailer';
+import { Product } from '@/lib/products';
+
+// IMPORTANT: You must replace these placeholder values with your actual
+// Zoho Mail credentials. For security, it's highly recommended to use
+// environment variables (e.g., process.env.ZOHO_EMAIL, process.env.ZOHO_PASSWORD)
+// instead of hardcoding them directly in the code.
+const ZOHO_EMAIL = 'your-email@zoho.com'; // <--- REPLACE WITH YOUR ZOHO EMAIL
+const ZOHO_PASSWORD = 'your-app-password'; // <--- REPLACE WITH YOUR ZOHO APP-SPECIFIC PASSWORD
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.zoho.com',
+  port: 465,
+  secure: true, // use SSL
+  auth: {
+    user: ZOHO_EMAIL,
+    pass: ZOHO_PASSWORD,
+  },
+});
+
+function createEmailBody(name: string, items: Product[]): string {
+    const productsHtml = items.map(item => `
+        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px;">
+            <h3 style="margin-top: 0; font-size: 18px; color: #333;">${item.name}</h3>
+            <p style="font-size: 14px; color: #555;">${item.description.substring(0,150)}...</p>
+            <a href="${item.downloadUrl}" style="display: inline-block; padding: 10px 15px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
+        </div>
+    `).join('');
+
+    return `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #e83e8c; font-size: 28px;">Cuddleia</h1>
+            </div>
+            <h2 style="font-size: 24px; color: #333;">Thank you for your order, ${name}!</h2>
+            <p>We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:</p>
+            
+            ${productsHtml}
+
+            <p>If you have any questions or need assistance, please don't hesitate to reply to this email.</p>
+            <p>With love,<br>The Cuddleia Team</p>
+            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #aaa;">
+                <p>Cuddleia | Cozy Digital Goods with Heart</p>
+            </div>
+        </div>
+    `;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const { to, subject, name, items } = await req.json();
+
+    if (!to || !subject || !name || !items) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    const mailOptions = {
+      from: `"Cuddleia" <${ZOHO_EMAIL}>`,
+      to: to,
+      subject: subject,
+      html: createEmailBody(name, items),
+    };
+
+    await transporter.sendMail(mailOptions);
+    return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
+  } catch (error) {
+    console.error('Email sending error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ error: 'Failed to send email', details: errorMessage }, { status: 500 });
+  }
+}
