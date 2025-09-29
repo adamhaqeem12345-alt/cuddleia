@@ -79,6 +79,7 @@ export default function CheckoutPage() {
     const createOrder = (data: CreateOrderData, actions: any) => {
         // IMPORTANT: The amount must be a string with two decimal places.
         // This is a strict requirement from the PayPal API.
+        // This creates the order directly on the client-side.
         return actions.order.create({
             purchase_units: [{
                 amount: {
@@ -119,6 +120,7 @@ export default function CheckoutPage() {
         } catch (error) {
             console.error('PayPal capture or email sending failed', error);
             setError('There was an issue processing your payment. Please try again.');
+        } finally {
             setIsProcessing(false);
         }
     };
@@ -130,7 +132,7 @@ export default function CheckoutPage() {
 
     const onError = (err: any) => {
         console.error('PayPal Error:', err);
-        setError('An error occurred with the PayPal transaction. Please try again.');
+        setError('An error occurred with the PayPal transaction. Please try again or use a different payment method.');
         setIsProcessing(false);
     };
 
@@ -253,3 +255,5 @@ export default function CheckoutPage() {
     </PayPalScriptProvider>
   );
 }
+
+    
