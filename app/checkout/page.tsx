@@ -155,9 +155,8 @@ export default function CheckoutPage() {
                     <div className="mt-6">
                         <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (Online Banking / FPX)</p>
                         <Button 
-                            variant="outline"
                             size="lg" 
-                            className="w-full font-bold"
+                            className="w-full font-bold rounded-lg"
                             onClick={handleToyyibPay}
                             disabled={isToyyibPayProcessing}
                         >
