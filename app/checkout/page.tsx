@@ -70,8 +70,6 @@ export default function CheckoutPage() {
   };
 
   const createOrder = (data: CreateOrderData, actions: any) => {
-    // Set processing state when PayPal window opens
-    setIsProcessing(true); 
     setError(null);
 
     return actions.order.create({
@@ -87,7 +85,7 @@ export default function CheckoutPage() {
   };
 
   const onApprove = async (data: OnApproveData, actions: any) => {
-    setIsProcessing(true);
+    setIsProcessing(true); // Set processing state after approval
     setError(null);
     try {
         const details: OrderResponseBody = await actions.order.capture();
@@ -149,6 +147,12 @@ export default function CheckoutPage() {
     console.error('PayPal Checkout Error', err);
     setError('An error occurred during the PayPal transaction. Please try again.');
   };
+  
+  const onCancel = () => {
+    setIsProcessing(false);
+    setError('The payment was cancelled. Please try again if you wish to complete the purchase.');
+  }
+
 
   if (!hasHydrated || (items.length === 0 && !isRedirecting)) {
     return null; // Render nothing until hydrated or if cart is truly empty
@@ -224,7 +228,7 @@ export default function CheckoutPage() {
                     ) : isProcessing ? (
                        <div className="text-center p-8">
                           <div className="animate-pulse font-semibold text-muted-foreground">
-                            Processing payment... Please complete the transaction in the PayPal window.
+                            Processing your order... Please do not close this window.
                           </div>
                       </div>
                     ) : (
@@ -237,7 +241,7 @@ export default function CheckoutPage() {
                                   size="lg"
                                   className="w-full font-bold"
                               >
-                                  {isProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
+                                  Pay with ToyyibPay
                               </Button>
                           </div>
                           <div className="relative my-6">
@@ -256,11 +260,7 @@ export default function CheckoutPage() {
                                       createOrder={createOrder}
                                       onApprove={onApprove}
                                       onError={onError}
-                                      onClick={(data, actions) => {
-                                          setError(null);
-                                          return actions.resolve();
-                                      }}
-                                      onCancel={() => setIsProcessing(false)}
+                                      onCancel={onCancel}
                                       disabled={isProcessing}
                                   />
                               </PayPalScriptProvider>
@@ -285,5 +285,6 @@ export default function CheckoutPage() {
     </div>
   );
 }
+    
 
     
