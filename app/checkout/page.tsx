@@ -13,8 +13,8 @@ import {
   PayPalScriptProvider,
   PayPalButtons,
   OnApproveData,
-  CreateOrderData,
 } from '@paypal/react-paypal-js';
+import type { CreateOrderActions } from '@paypal/paypal-js';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -66,7 +66,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const createPayPalOrder = (data: CreateOrderData, actions: any) => {
+  const createPayPalOrder = (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
     return actions.order.create({
       purchase_units: [
         {
@@ -215,13 +215,15 @@ export default function CheckoutPage() {
                     </p>
                      {paypalClientID ? (
                         <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
-                           <PayPalButtons
-                                style={{ layout: "vertical" }}
-                                createOrder={createPayPalOrder}
-                                onApprove={onPayPalApprove}
-                                onError={onPayPalError}
-                                disabled={isProcessing}
-                            />
+                           {hasHydrated && subtotal > 0 && (
+                             <PayPalButtons
+                                  style={{ layout: "vertical" }}
+                                  createOrder={createPayPalOrder}
+                                  onApprove={onPayPalApprove}
+                                  onError={onPayPalError}
+                                  disabled={isProcessing}
+                              />
+                           )}
                         </PayPalScriptProvider>
                       ) : (
                         <div className="text-center p-4 bg-muted rounded-lg">
