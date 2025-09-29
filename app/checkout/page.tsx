@@ -13,7 +13,7 @@ import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 
 
 export default function CheckoutPage() {
-  const { items, subtotal } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,6 +55,7 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (response.ok && data.paymentUrl) {
+        clearCart();
         window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
@@ -66,37 +67,7 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-
-  const createPayPalOrder = async () => {
-    setIsProcessing(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ total: subtotal.toFixed(2) }),
-      });
   
-      const data = await response.json();
-  
-      if (response.ok && data.approveUrl) {
-        // This is where the redirect happens.
-        window.location.href = data.approveUrl;
-        return data.orderID; // Return orderID for PayPal script, though redirect takes precedence
-      } else {
-        throw new Error(data.error || 'Could not create PayPal order.');
-      }
-    } catch (err: any) {
-      console.error('PayPal creation error:', err);
-      setError(err.message || 'An unexpected error occurred. Please try again.');
-      setIsProcessing(false);
-      throw err; // Re-throw to be caught by PayPal's onError
-    }
-  };
-
-
   if (!hasHydrated || items.length === 0) {
     // Show a loading or placeholder state until hydration is complete
     return (
@@ -175,7 +146,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      Redirecting to payment...
+                      Processing payment...
                     </span>
                   </div>
                 </div>
@@ -206,16 +177,41 @@ export default function CheckoutPage() {
                     <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "", currency: "USD", intent: "capture" }}>
                        <PayPalButtons
                             style={{ layout: "vertical", shape: 'rect' }}
-                            createOrder={createPayPalOrder}
+                            createOrder={async (data, actions) => {
+                                setIsProcessing(true);
+                                setError(null);
+                                // This is the direct, client-side order creation.
+                                return actions.order.create({
+                                    purchase_units: [
+                                        {
+                                            amount: {
+                                                value: subtotal.toFixed(2), // CRITICAL: Must be a string with 2 decimal places.
+                                            },
+                                        },
+                                    ],
+                                    application_context: {
+                                        shipping_preference: 'NO_SHIPPING',
+                                    },
+                                }).catch(err => {
+                                    console.error("PayPal createOrder error:", err);
+                                    setError("Could not initiate PayPal checkout. Please try again.");
+                                    setIsProcessing(false);
+                                    throw err;
+                                });
+                            }}
                             onApprove={async (data, actions) => {
-                              // This function is required, but the main logic is the redirect in createOrder.
-                              // This part will run if the redirect somehow fails or is blocked.
+                              // This function is where the payment is finalized.
+                              // The capture is handled by PayPal's servers, and then we redirect.
                               setIsProcessing(true);
+                              clearCart();
                               router.push(`/checkout/success?orderID=${data.orderID}`);
                             }}
                             onError={(err: any) => {
-                                console.error("PayPal Buttons Error:", err);
-                                setError("An error occurred with the PayPal payment. Please try again.");
+                                console.error("PayPal Buttons onError:", err);
+                                setError("An error occurred with the PayPal payment. Please check the console and try again.");
+                                setIsProcessing(false);
+                            }}
+                            onCancel={() => {
                                 setIsProcessing(false);
                             }}
                             disabled={isProcessing}
