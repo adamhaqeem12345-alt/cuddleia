@@ -63,15 +63,11 @@ export default function CheckoutPage() {
     }, 3000);
   }
 
-  const handleToyyibPay = async () => {
+  const handleToyyibPay = () => {
     setIsToyyibPayProcessing(true);
     setError(null);
-    try {
-        // In a real app, you would get customer details from a form
-        createToyyibpayBill(items, subtotal, 'Customer Name', 'customer@example.com');
-    } catch (e: any) {
-        setError(e.message || 'An unexpected error occurred.');
-    }
+    // In a real app, you would get customer details from a form
+    createToyyibpayBill(items, subtotal, 'Customer Name', 'customer@example.com');
   }
 
   if (items.length === 0) {
