@@ -4,16 +4,16 @@
 
 @layer base {
   :root {
-    --background: 348 100% 99%; /* Lighter pinkish white */
+    --background: 350 100% 98%; /* More pinkish white */
     --foreground: 345 35% 22%; /* Dark burgundy */
 
-    --card: 348 100% 99%;
+    --card: 350 100% 98%;
     --card-foreground: 345 35% 22%;
 
-    --popover: 348 100% 99%;
+    --popover: 350 100% 98%;
     --popover-foreground: 345 35% 22%;
 
-    --primary: 340 85% 70%; /* Main pink for buttons/links */
+    --primary: 340 90% 65%; /* A richer, more saturated pink */
     --primary-foreground: 355 100% 97%;
 
     --secondary: 348 30% 93%;
@@ -22,7 +22,7 @@
     --muted: 348 30% 93%;
     --muted-foreground: 345 8% 50%;
 
-    --accent: 340 90% 96%; /* Hero section background pink */
+    --accent: 345 100% 94%; /* A more saturated, pinker hero background */
     --accent-foreground: 345 35% 22%;
 
     --destructive: 0 84.2% 60.2%;
@@ -45,7 +45,7 @@
     --popover: 345 15% 12%;
     --popover-foreground: 348 30% 93%;
 
-    --primary: 340 85% 70%;
+    --primary: 340 90% 65%;
     --primary-foreground: 355 100% 97%;
 
     --secondary: 345 15% 18%;
@@ -54,7 +54,7 @@
     --muted: 345 15% 18%;
     --muted-foreground: 348 15% 65%;
 
-    --accent: 340 90% 96%;
+    --accent: 345 100% 94%;
     --accent-foreground: 345 35% 22%;
 
     --destructive: 0 62.8% 30.6%;
