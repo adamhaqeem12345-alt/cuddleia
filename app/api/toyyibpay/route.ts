@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     // Make the server-to-server request to ToyyibPay
     const response = await fetch(TOYYIBPAY_API_URL, {
       method: 'POST',
-      body: params, // The browser/server fetch API automatically sets the correct 'Content-Type' header for URLSearchParams
+      body: params,
     });
     
     const data = await response.json();
