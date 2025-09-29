@@ -14,7 +14,7 @@
     --popover-foreground: 345 35% 22%;
 
     --primary: 340 90% 65%; /* A richer, more saturated pink */
-    --primary-foreground: 355 100% 97%;
+    --primary-foreground: 345 35% 22%;
 
     --secondary: 348 30% 93%;
     --secondary-foreground: 345 10% 25%;
@@ -46,7 +46,7 @@
     --popover-foreground: 348 30% 93%;
 
     --primary: 340 90% 65%;
-    --primary-foreground: 355 100% 97%;
+    --primary-foreground: 345 35% 22%;
 
     --secondary: 345 15% 18%;
     --secondary-foreground: 348 30% 93%;
