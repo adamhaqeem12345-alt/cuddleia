@@ -62,24 +62,27 @@ export default function CheckoutPage() {
     });
   };
 
-  const onApprove = (data: OnApproveData, actions: any) => {
-    setIsProcessing(true); // Keep processing state while we capture and send email
+  const onApprove = async (data: OnApproveData, actions: any) => {
+    setIsProcessing(true);
     setError(null);
-    return actions.order.capture().then(function (details: any) {
+    try {
+      const details = await actions.order.capture();
       const payerName = details.payer.name.given_name;
       const payerEmail = details.payer.email_address;
+
+      // Send the email in the background, but don't wait for it to finish
+      // to unblock the UI and redirect the user.
+      sendConfirmationEmail(payerName, payerEmail, items);
       
-      sendConfirmationEmail(payerName, payerEmail, items).finally(() => {
-        alert('Transaction completed by ' + payerName + '! A confirmation email has been sent.');
-        clearCart();
-        setIsProcessing(false);
-        router.push('/');
-      });
-    }).catch((err: any) => {
-        console.error('Payment capture or email sending error:', err);
-        setError('Your payment was processed, but there was an issue sending the confirmation email. Please check your inbox or contact support.');
-        setIsProcessing(false);
-    });
+      // Clear cart and redirect immediately.
+      clearCart();
+      router.push('/');
+
+    } catch (err) {
+      console.error('Payment capture or email sending error:', err);
+      setError('Your payment was processed, but there was an issue finalizing the order. Please check your inbox or contact support.');
+      setIsProcessing(false); // Only reset on error
+    }
   };
 
   const handleToyyibPay = async () => {
