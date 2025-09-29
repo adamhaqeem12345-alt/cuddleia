@@ -65,7 +65,7 @@ export function PayPalCheckout() {
                         label: 'paypal',
                         height: 55,
                     },
-                    createOrder: () => {
+                    createOrder: (_data: any, actions: any) => {
                         try {
                             const totalValue = cart.reduce((acc, item) => acc + (item.price / 100) * item.quantity, 0).toFixed(2);
                             
@@ -74,28 +74,26 @@ export function PayPalCheckout() {
                                 throw new Error("Invalid cart total.");
                             }
 
-                            const purchaseUnits = [{
-                                amount: {
-                                    value: totalValue,
-                                    breakdown: {
-                                        item_total: {
-                                            currency_code: 'USD',
-                                            value: totalValue,
+                            return actions.order.create({
+                                purchase_units: [{
+                                    amount: {
+                                        value: totalValue,
+                                        breakdown: {
+                                            item_total: {
+                                                currency_code: 'USD',
+                                                value: totalValue,
+                                            }
                                         }
-                                    }
-                                },
-                                items: cart.map(item => ({
-                                    name: item.name,
-                                    unit_amount: {
-                                        currency_code: 'USD',
-                                        value: (item.price / 100).toFixed(2),
                                     },
-                                    quantity: item.quantity.toString()
-                                }))
-                            }];
-                            
-                            return window.paypal.rest.order.create({
-                                purchase_units: purchaseUnits,
+                                    items: cart.map(item => ({
+                                        name: item.name,
+                                        unit_amount: {
+                                            currency_code: 'USD',
+                                            value: (item.price / 100).toFixed(2),
+                                        },
+                                        quantity: item.quantity.toString()
+                                    }))
+                                }],
                                 application_context: {
                                     shipping_preference: 'NO_SHIPPING'
                                 }
