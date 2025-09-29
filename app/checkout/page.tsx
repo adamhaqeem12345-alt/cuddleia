@@ -9,9 +9,10 @@ import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
 
 export default function CheckoutPage() {
-  const { items, subtotal } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
 
   useEffect(() => {
@@ -19,6 +20,34 @@ export default function CheckoutPage() {
       router.push('/products');
     }
   }, [items, router]);
+
+  const createOrder = (data: CreateOrderData, actions: any) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: subtotal.toFixed(2),
+            currency_code: 'USD',
+          },
+        },
+      ],
+    });
+  };
+
+  const onApprove = (data: OnApproveData, actions: any) => {
+    return actions.order.capture().then(function (details: any) {
+      alert('Transaction completed by ' + details.payer.name.given_name);
+      // Here you would typically handle the post-payment logic,
+      // like sending an email with download links via Zoho.
+      clearCart();
+      router.push('/'); // Redirect to home page after successful payment
+    });
+  };
+
+  const onError = (err: any) => {
+    console.error('PayPal Checkout Error', err);
+    alert('An error occurred during the transaction. Please try again.');
+  };
 
   if (items.length === 0) {
     return null; 
@@ -68,9 +97,14 @@ export default function CheckoutPage() {
             <AnimateIn delay={150}>
                  <div className="bg-card p-8 rounded-2xl shadow-lg">
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
-                    <div className="text-center text-muted-foreground">
-                        <p>PayPal integration coming soon...</p>
-                    </div>
+                    <PayPalScriptProvider options={{ clientId: "YOUR_LIVE_CLIENT_ID", currency: "USD", intent: "capture" }}>
+                        <PayPalButtons 
+                            style={{ layout: "vertical" }}
+                            createOrder={createOrder}
+                            onApprove={onApprove}
+                            onError={onError}
+                        />
+                    </PayPalScriptProvider>
                  </div>
             </AnimateIn>
         </div>
