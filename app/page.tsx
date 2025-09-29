@@ -1,8 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
-import { products } from '@/lib/products';
 import { AnimateIn } from '@/components/animate-in';
 import { FeaturedProducts } from '@/components/featured-products';
 import { MadeWithHeart } from '@/components/made-with-heart';
