@@ -70,7 +70,7 @@ export function PayPalCheckout() {
                         setIsButtonReady(true);
                     },
                     onClick: () => {
-                        // When the user clicks, immediately set processing state to show a loader.
+                        // When the user clicks any payment button, immediately set processing state to show a loader.
                         setIsProcessing(true);
                     },
                     createOrder: (_data: any, actions: any) => {
