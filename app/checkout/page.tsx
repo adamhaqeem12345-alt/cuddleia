@@ -19,7 +19,6 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const hasHydrated = useHasHydrated();
-  const router_ = useRouter();
 
   const USD_TO_MYR = 4.21;
   const totalMYR = subtotal * USD_TO_MYR;
@@ -37,12 +36,12 @@ export default function CheckoutPage() {
         // For now, we will just clear the cart and redirect to a success page
         console.log('PayPal transaction successful. Token:', token);
         clearCart();
-        router_.push('/order-success'); // Redirect to a generic success page
+        router.push('/order-success'); // Redirect to a generic success page
       } else {
         router.push('/products');
       }
     }
-  }, [items, router, hasHydrated, clearCart, router_]);
+  }, [items, router, hasHydrated, clearCart]);
 
 
   useEffect(() => {
@@ -212,9 +211,7 @@ export default function CheckoutPage() {
                         <PayPalButtons
                             style={{ layout: 'vertical', shape: 'rect' }}
                             createOrder={async (data, actions) => {
-                                // This function is required, and it must return an order ID.
-                                // We are creating the order directly on the client side.
-                                return actions.order.create({
+                                const orderID = await actions.order.create({
                                     purchase_units: [{
                                         amount: {
                                             value: subtotal.toFixed(2),
@@ -222,6 +219,7 @@ export default function CheckoutPage() {
                                         }
                                     }]
                                 });
+                                return orderID;
                             }}
                             onApprove={async (data, actions) => {
                                 // This function is called when the user approves the payment.
