@@ -10,11 +10,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useHasHydrated } from '@/lib/hooks';
 
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-
-
 export default function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal } = useCart();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -76,16 +73,6 @@ export default function CheckoutPage() {
             <Loader2 className="h-16 w-16 animate-spin" />
         </div>
     );
-  }
-  
-  const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-
-  if (!PAYPAL_CLIENT_ID) {
-      return (
-        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
-            <p className="text-destructive">PayPal client ID is not configured. Payment is disabled.</p>
-        </div>
-      );
   }
 
   return (
@@ -175,74 +162,6 @@ export default function CheckoutPage() {
                     >
                       Pay with ToyyibPay
                     </Button>
-                  </div>
-                  <div className="relative my-6">
-                    <div
-                      className="absolute inset-0 flex items-center"
-                      aria-hidden="true"
-                    >
-                      <div className="w-full border-t border-border" />
-                    </div>
-                    <div className="relative flex justify-center">
-                      <span className="bg-card px-2 text-sm text-muted-foreground">
-                        OR
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground mb-4 text-sm font-semibold">
-                      International Customers (PayPal or Card)
-                    </p>
-                    <PayPalScriptProvider options={{ "client-id": PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
-                        <PayPalButtons
-                            style={{ layout: 'vertical', shape: 'rect' }}
-                            createOrder={(data, actions) => {
-                                console.log('Creating order with subtotal:', subtotal);
-                                return actions.order.create({
-                                    purchase_units: [{
-                                        amount: {
-                                            value: subtotal.toFixed(2),
-                                            currency_code: 'USD'
-                                        }
-                                    }]
-                                });
-                            }}
-                            onApprove={async (data, actions) => {
-                                setIsProcessing(true);
-                                // The user has approved the payment. Now we need to capture it.
-                                // In a real app, you would now capture the order on the server.
-                                // For this example, we will simulate success.
-                                //
-                                // const details = await actions.order.capture();
-                                // const response = await fetch('/api/paypal/capture-order', {
-                                //   method: 'POST',
-                                //   headers: { 'Content-Type': 'application/json' },
-                                //   body: JSON.stringify({ orderId: data.orderID })
-                                // });
-                                //
-                                // if (response.ok) {
-                                //   clearCart();
-                                //   router.push('/order-success');
-                                // } else {
-                                //   const errorData = await response.json();
-                                //   setError(errorData.error || 'Failed to capture payment.');
-                                //   setIsProcessing(false);
-                                // }
-                                
-                                console.log('Payment Approved. Simulating capture and redirecting.', data);
-                                clearCart();
-                                router.push('/order-success');
-                            }}
-                            onError={(err) => {
-                                console.error("PayPal onError:", err);
-                                setError("An error occurred with the PayPal transaction. Please try again.");
-                                setIsProcessing(false);
-                            }}
-                            onCancel={() => {
-                                setIsProcessing(false);
-                            }}
-                        />
-                    </PayPalScriptProvider>
                   </div>
                 </div>
               )}
