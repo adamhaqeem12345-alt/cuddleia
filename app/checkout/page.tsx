@@ -197,6 +197,7 @@ export default function CheckoutPage() {
                         <PayPalButtons
                             style={{ layout: 'vertical', shape: 'rect' }}
                             createOrder={(data, actions) => {
+                                console.log('Creating order with subtotal:', subtotal);
                                 return actions.order.create({
                                     purchase_units: [{
                                         amount: {
