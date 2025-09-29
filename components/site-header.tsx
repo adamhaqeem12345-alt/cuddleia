@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Flower2, Menu, ShoppingBag } from 'lucide-react';
+import { Flower2, Menu } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Sheet,
@@ -54,7 +54,7 @@ export function SiteHeader() {
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="max-w-xs">
+              <SheetContent side="left" className="max-w-[16rem]">
                 <SheetHeader>
                   <Link href="/" onClick={closeSheet} className="mb-8">
                     <div className="flex items-center gap-2">
@@ -80,14 +80,6 @@ export function SiteHeader() {
               </SheetContent>
             </Sheet>
           </div>
-
-          <Button asChild variant="outline" size="icon" className="relative h-14 w-14 rounded-full hidden md:inline-flex">
-            <Link href="/cart">
-                <ShoppingBag className="h-7 w-7 text-foreground" />
-                <span className="sr-only">Open Shopping Cart</span>
-            </Link>
-          </Button>
-
         </div>
       </div>
     </header>
