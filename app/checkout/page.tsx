@@ -15,7 +15,7 @@ import { Product } from '@/lib/products';
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
-  const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
+  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +84,7 @@ export default function CheckoutPage() {
 
   const handleToyyibPay = async () => {
     setIsProcessing(true);
-    setIsRedirecting(false);
+    setIsRedirecting(true);
     setError(null);
     try {
       const response = await fetch('/api/toyyibpay', {
@@ -98,19 +98,17 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (response.ok && data.paymentUrl) {
-          setIsRedirecting(true);
-          // This ensures the UI updates *before* the browser navigates away.
-          setTimeout(() => {
-            window.location.href = data.paymentUrl;
-          }, 100);
+          window.location.href = data.paymentUrl;
       } else {
           setError(data.error || 'Could not initiate ToyyibPay payment.');
           setIsProcessing(false);
+          setIsRedirecting(false);
       }
     } catch (err) {
       console.error('ToyyibPay fetch error:', err);
       setError('An unexpected error occurred. Please try again.');
       setIsProcessing(false);
+      setIsRedirecting(false);
     }
   };
 
@@ -129,6 +127,15 @@ export default function CheckoutPage() {
 
   if (items.length === 0 && !isRedirecting) {
     return null; 
+  }
+  
+  if (!paypalClientId) {
+      return (
+        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
+            <h2 className="font-headline text-2xl font-bold">Configuration Error</h2>
+            <p className="text-muted-foreground mt-2">PayPal is not configured. Please set the NEXT_PUBLIC_PAYPAL_CLIENT_ID environment variable.</p>
+        </div>
+      )
   }
 
   return (
@@ -199,7 +206,7 @@ export default function CheckoutPage() {
                                   size="lg"
                                   className="w-full font-bold"
                               >
-                                  {isProcessing && !isRedirecting ? 'Processing...' : 'Pay with ToyyibPay'}
+                                  {isProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
                               </Button>
                           </div>
                           <div className="relative my-6">
@@ -234,11 +241,6 @@ export default function CheckoutPage() {
                       </div>
                     )}
 
-                    {isProcessing && !error && !isRedirecting && (
-                        <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
-                            <p>Connecting to payment gateway...</p>
-                        </div>
-                    )}
                  </div>
             </AnimateIn>
         </div>
