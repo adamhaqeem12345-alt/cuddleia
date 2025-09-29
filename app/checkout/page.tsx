@@ -123,7 +123,7 @@ export default function CheckoutPage() {
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
                     
                     <div className="mb-6">
-                        <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers (Credit/Debit Card)</p>
+                        <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
                         <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
                             <PayPalButtons 
                                 style={{ layout: "vertical" }}
@@ -153,14 +153,14 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="mt-6">
-                        <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (FPX)</p>
+                        <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (Online Banking / FPX)</p>
                         <Button 
+                            variant="outline"
                             size="lg" 
-                            className="w-full font-bold bg-[#00AEEF] hover:bg-[#009bd6] text-white"
+                            className="w-full"
                             onClick={handleToyyibPay}
                             disabled={isToyyibPayProcessing}
                         >
-                            <Banknote className="mr-2 h-5 w-5" />
                             {isToyyibPayProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
                         </Button>
                          {isToyyibPayProcessing && (
