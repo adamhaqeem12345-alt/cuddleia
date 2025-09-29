@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ paymentUrl });
     } else {
       console.error('ToyyibPay API Error:', data);
-      const errorMessage = data && data.length > 0 ? data[0].msg : 'Unknown API error';
+      const errorMessage = data && data.length > 0 && data[0].msg ? data[0].msg : 'Unknown API error';
       return NextResponse.json({ error: `Could not create ToyyibPay bill: ${errorMessage}` }, { status: 500 });
     }
   } catch (error) {
