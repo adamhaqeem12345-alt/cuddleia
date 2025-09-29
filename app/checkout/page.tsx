@@ -67,13 +67,7 @@ export default function CheckoutPage() {
 
       if (response.ok && data.paymentUrl) {
           setIsRedirecting(true);
-          window.open(data.paymentUrl, '_blank');
-          // No longer redirecting in same tab, but we keep the processing state for a moment
-          setTimeout(() => {
-            setIsProcessing(false);
-            setIsRedirecting(false);
-          }, 4000);
-
+          window.location.href = data.paymentUrl; // Redirect in the same tab
       } else {
           setError(data.error || 'Could not initiate ToyyibPay payment.');
           setIsProcessing(false);
@@ -157,7 +151,7 @@ export default function CheckoutPage() {
                     {isRedirecting ? (
                       <div className="text-center p-8">
                           <div className="animate-pulse font-semibold text-muted-foreground">
-                            Opening payment page in a new tab...
+                            Redirecting to payment gateway...
                           </div>
                       </div>
                     ) : (
