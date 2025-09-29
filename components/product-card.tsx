@@ -34,6 +34,9 @@ export function ProductCard({ product }: ProductCardProps) {
                         <h3 className="font-semibold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
                             {product.name}
                         </h3>
+                         <div className="mb-4">
+                             <ProductPrice price={product.price} />
+                         </div>
                         <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">
                             {product.description}
                         </p>
@@ -43,17 +46,8 @@ export function ProductCard({ product }: ProductCardProps) {
                         <span>{product.disclaimer}</span>
                     </div>
                 </div>
-                 <div className="flex items-center justify-between gap-4 pt-6">
-                    <ProductPrice price={product.price} />
-                    <div className="flex gap-2">
-                         <Button asChild size="icon" variant="ghost" className="transition-transform hover:scale-110 active:scale-95">
-                             <Link href={`/products/${product.id}`}>
-                                <Eye className="h-5 w-5" />
-                                <span className="sr-only">View Product</span>
-                            </Link>
-                        </Button>
-                        <AddToCartButton product={product} variant="outline" size="icon" className="transition-transform hover:scale-110 active:scale-95" />
-                    </div>
+                 <div className="pt-6">
+                    <AddToCartButton product={product} size="rounded" className="w-full"/>
                 </div>
             </div>
         </Card>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Check } from 'lucide-react';
 import { Button, buttonVariants } from './ui/button';
 import { Product } from '@/lib/products';
 import { cn } from '@/lib/utils';
@@ -14,10 +14,14 @@ interface AddToCartButtonProps extends VariantProps<typeof buttonVariants> {
 }
 
 export function AddToCartButton({ product, variant, size, className }: AddToCartButtonProps) {
-    const { addToCart } = useCart();
+    const { addToCart, items } = useCart();
     const [isAdded, setIsAdded] = useState(false);
 
+    const isProductInCart = items.some(item => item.id === product.id);
+
     const handleAddToCart = () => {
+        if (isProductInCart) return;
+        
         addToCart(product);
         setIsAdded(true);
         setTimeout(() => {
@@ -27,6 +31,20 @@ export function AddToCartButton({ product, variant, size, className }: AddToCart
 
     const isIconOnly = size === 'icon';
 
+    if (isProductInCart) {
+        return (
+            <Button 
+                size={size || 'lg'}
+                variant={variant} 
+                className={cn("font-bold shadow-lg transition-all", className)}
+                disabled={true}
+            >
+                <Check className={cn("h-5 w-5", !isIconOnly && "mr-2")} /> 
+                {isIconOnly ? <span className="sr-only">Added</span> : 'Added!'}
+            </Button>
+        )
+    }
+    
     return (
         <Button 
             size={size || 'lg'}
