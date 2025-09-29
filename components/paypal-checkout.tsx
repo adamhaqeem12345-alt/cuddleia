@@ -20,6 +20,7 @@ export function PayPalCheckout() {
     const { cart } = useCart();
     const router = useRouter();
     const [scriptLoaded, setScriptLoaded] = useState(false);
+    const [isButtonReady, setIsButtonReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
@@ -65,6 +66,9 @@ export function PayPalCheckout() {
                         shape: 'rect',
                         label: 'paypal',
                         height: 55,
+                    },
+                    onInit: (_data: any, actions: any) => {
+                        setIsButtonReady(true);
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
@@ -131,7 +135,7 @@ export function PayPalCheckout() {
                             console.error("CAPTURE_ORDER_ERROR:", err);
                             setError(err.message || 'An error occurred while capturing the order.');
                          } finally {
-                            setIsProcessing(false);
+                            // No need to set isProcessing to false, as we are navigating away.
                          }
                     },
                     onError: (err: any) => {
@@ -165,7 +169,7 @@ export function PayPalCheckout() {
     
     if (isProcessing) {
          return (
-            <div className="flex flex-col items-center justify-center text-center p-4 h-[55px]">
+            <div className="flex flex-col items-center justify-center text-center p-4 min-h-[120px]">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
                 <p className="mt-2 font-semibold text-foreground">Processing your payment...</p>
                 <p className="text-sm text-muted-foreground">Please do not close this window.</p>
@@ -188,13 +192,14 @@ export function PayPalCheckout() {
     }
 
     return (
-        <div>
-            {!scriptLoaded && !error && (
-                <div className="flex items-center justify-center h-[55px] bg-gray-200 rounded-md">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin" />
+        <div className="min-h-[120px]">
+            { !isButtonReady && (
+                <div className="space-y-2 animate-pulse">
+                    <div className="h-[55px] bg-gray-200 rounded-md"></div>
+                    <div className="h-[55px] bg-gray-200 rounded-md"></div>
                 </div>
             )}
-            <div ref={paypalRef} style={{ display: scriptLoaded && !isProcessing ? 'block' : 'none' }}></div>
+            <div ref={paypalRef} style={{ opacity: isButtonReady ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}></div>
         </div>
     );
 }
