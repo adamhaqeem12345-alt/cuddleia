@@ -29,7 +29,7 @@
     --accent-foreground: 345 35% 25%;
 
     --destructive: 0, 84%, 60%;
-    --destructive-foreground: 345 100% 98%;
+    --destructive-foreground: 345, 100%, 98%;
 
     --border: 345 40% 90%;
     --input: 345 40% 90%;
@@ -63,7 +63,7 @@
     --accent-foreground: 345 100% 98%;
 
     --destructive: 0, 63%, 31%;
-    --destructive-foreground: 345 100% 98%;
+    --destructive-foreground: 345, 100%, 98%;
 
     --border: 345 12% 20%;
     --input: 345 12% 20%;
