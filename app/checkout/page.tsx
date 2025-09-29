@@ -10,7 +10,7 @@ import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
-import type { OrderResponseBody, CreateOrderData, OnApproveDataType } from '@paypal/paypal-js';
+import type { OrderResponseBody, CreateOrderData, OnApproveData } from '@paypal/paypal-js';
 import { Product } from '@/lib/products';
 
 export default function CheckoutPage() {
@@ -63,7 +63,7 @@ export default function CheckoutPage() {
     });
   };
 
-  const onApprove = async (data: OnApproveDataType, actions: any) => {
+  const onApprove = async (data: OnApproveData, actions: any) => {
     setIsProcessing(true);
     setError(null);
     try {
