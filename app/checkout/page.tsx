@@ -70,6 +70,10 @@ export default function CheckoutPage() {
   };
 
   const createOrder = (data: CreateOrderData, actions: any) => {
+    // Set processing state when PayPal window opens
+    setIsProcessing(true); 
+    setError(null);
+
     return actions.order.create({
       purchase_units: [
         {
@@ -146,13 +150,6 @@ export default function CheckoutPage() {
     setError('An error occurred during the PayPal transaction. Please try again.');
   };
 
-  const handleCardClick = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-        setIsProcessing(false);
-    }, 3000);
-  }
-
   if (!hasHydrated || (items.length === 0 && !isRedirecting)) {
     return null; // Render nothing until hydrated or if cart is truly empty
   }
@@ -224,6 +221,12 @@ export default function CheckoutPage() {
                             Redirecting to payment gateway... Please wait.
                           </div>
                       </div>
+                    ) : isProcessing ? (
+                       <div className="text-center p-8">
+                          <div className="animate-pulse font-semibold text-muted-foreground">
+                            Processing payment... Please complete the transaction in the PayPal window.
+                          </div>
+                      </div>
                     ) : (
                       <div className="space-y-6">
                           <div>
@@ -254,11 +257,7 @@ export default function CheckoutPage() {
                                       onApprove={onApprove}
                                       onError={onError}
                                       onClick={(data, actions) => {
-                                          if(data.fundingSource === 'card') {
-                                              handleCardClick();
-                                          }
                                           setError(null);
-                                          setIsProcessing(true);
                                           return actions.resolve();
                                       }}
                                       onCancel={() => setIsProcessing(false)}
@@ -286,3 +285,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
