@@ -24,6 +24,7 @@ export function PayPalCheckout() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isInteracting, setIsInteracting] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
+    const interactionTimer = useRef<NodeJS.Timeout | null>(null);
 
     const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
@@ -54,6 +55,12 @@ export function PayPalCheckout() {
         } else {
             addPayPalScript();
         }
+
+        return () => {
+            if (interactionTimer.current) {
+                clearTimeout(interactionTimer.current);
+            }
+        }
     }, [PAYPAL_CLIENT_ID]);
 
     useEffect(() => {
@@ -73,6 +80,11 @@ export function PayPalCheckout() {
                     onClick: () => {
                         setError(null);
                         setIsInteracting(true);
+                        // Hide loading message after 3 seconds
+                        if (interactionTimer.current) clearTimeout(interactionTimer.current);
+                        interactionTimer.current = setTimeout(() => {
+                            setIsInteracting(false);
+                        }, 3000);
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
@@ -116,6 +128,7 @@ export function PayPalCheckout() {
                         }
                     },
                     onApprove: async (data: OnApproveData) => {
+                         if (interactionTimer.current) clearTimeout(interactionTimer.current);
                          setIsInteracting(false);
                          setIsProcessing(true);
                          setError(null);
@@ -146,13 +159,15 @@ export function PayPalCheckout() {
                     onError: (err: any) => {
                         console.error('PayPal Buttons onError:', err);
                         setError("An unexpected error occurred with PayPal. Please try again or contact support.");
-                        setIsProcessing(false);
+                        if (interactionTimer.current) clearTimeout(interactionTimer.current);
                         setIsInteracting(false);
+                        setIsProcessing(false);
                     },
                     onCancel: () => {
                         console.log('PayPal payment cancelled.');
-                        setIsProcessing(false);
+                        if (interactionTimer.current) clearTimeout(interactionTimer.current);
                         setIsInteracting(false);
+                        setIsProcessing(false);
                     }
                 }).render(paypalRef.current);
             } catch (err: any) {
