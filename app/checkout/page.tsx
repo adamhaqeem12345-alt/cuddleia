@@ -23,6 +23,7 @@ export default function CheckoutPage() {
   const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
+    // This ensures that cart data is loaded from localStorage before rendering.
     setIsClient(true);
   }, []);
 
@@ -32,7 +33,7 @@ export default function CheckoutPage() {
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    // If the cart is empty after hydration, redirect.
+    // If the cart is empty after hydration on the client, redirect.
     if (isClient && items.length === 0) {
       router.push('/products');
     }
@@ -73,14 +74,15 @@ export default function CheckoutPage() {
 
   const createPayPalOrder = (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
     console.log("Creating PayPal order...");
+    // Ensure the subtotal is a string with exactly two decimal places.
+    // This is the critical step to prevent PayPal's validation from failing on the first attempt.
     const purchaseAmount = subtotal.toFixed(2);
-    console.log(`Subtotal from cart: ${subtotal}, formatted for PayPal: ${purchaseAmount}`);
     
     return actions.order.create({
       purchase_units: [
         {
           amount: {
-            value: purchaseAmount, // Use the pre-formatted, guaranteed-safe value
+            value: purchaseAmount,
             currency_code: 'USD',
           },
         },
