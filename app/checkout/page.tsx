@@ -3,7 +3,7 @@
 
 import { useCart } from '@/lib/cart';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Banknote } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isToyyibPayProcessing, setIsToyyibPayProcessing] = useState(false);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -58,6 +59,18 @@ export default function CheckoutPage() {
     setTimeout(() => {
         setIsProcessing(false);
     }, 3000);
+  }
+
+  const handleToyyibPay = async () => {
+    setIsToyyibPayProcessing(true);
+    // In a real scenario, you would redirect to ToyyibPay here.
+    // For now, we simulate success after a short delay.
+    setTimeout(() => {
+      alert('ToyyibPay transaction successful (simulation)!');
+      clearCart();
+      router.push('/');
+      setIsToyyibPayProcessing(false);
+    }, 2000);
   }
 
   if (items.length === 0) {
@@ -108,27 +121,54 @@ export default function CheckoutPage() {
             <AnimateIn delay={150}>
                  <div className="bg-card p-8 rounded-2xl shadow-lg">
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
-                    <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
-                        <PayPalButtons 
-                            style={{ layout: "vertical" }}
-                            createOrder={createOrder}
-                            onApprove={onApprove}
-                            onError={onError}
-                            onClick={(data, actions) => {
-                                // The 'card' funding source is for the Debit/Credit card button
-                                if(data.fundingSource === 'card') {
-                                    handleCardClick();
-                                }
-                                return actions.resolve();
-                            }}
-                            onCancel={() => setIsProcessing(false)}
-                        />
-                    </PayPalScriptProvider>
-                    {isProcessing && (
-                        <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
-                            <p>Processing payment...</p>
-                        </div>
-                    )}
+                    
+                    <div className="mb-6">
+                        <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers (Credit/Debit Card)</p>
+                        <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
+                            <PayPalButtons 
+                                style={{ layout: "vertical" }}
+                                createOrder={createOrder}
+                                onApprove={onApprove}
+                                onError={onError}
+                                onClick={(data, actions) => {
+                                    if(data.fundingSource === 'card') {
+                                        handleCardClick();
+                                    }
+                                    return actions.resolve();
+                                }}
+                                onCancel={() => setIsProcessing(false)}
+                            />
+                        </PayPalScriptProvider>
+                        {isProcessing && (
+                            <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
+                                <p>Processing payment...</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="relative flex py-5 items-center">
+                        <div className="flex-grow border-t border-muted"></div>
+                        <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+                        <div className="flex-grow border-t border-muted"></div>
+                    </div>
+
+                    <div className="mt-6">
+                        <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (FPX)</p>
+                        <Button 
+                            size="lg" 
+                            className="w-full font-bold bg-[#00AEEF] hover:bg-[#009bd6] text-white"
+                            onClick={handleToyyibPay}
+                            disabled={isToyyibPayProcessing}
+                        >
+                            <Banknote className="mr-2 h-5 w-5" />
+                            {isToyyibPayProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
+                        </Button>
+                         {isToyyibPayProcessing && (
+                            <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
+                                <p>Redirecting to bank...</p>
+                            </div>
+                        )}
+                    </div>
                  </div>
             </AnimateIn>
         </div>
