@@ -6,19 +6,16 @@ import { Product } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
 
 
-// IMPORTANT: The secret key and category code should be stored as environment variables
-// for better security, e.g., process.env.TOYYIBPAY_SECRET
-const TOYYIBPAY_SECRET = process.env.TOYYIBPAY_SECRET;
-const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE;
-
-if (!TOYYIBPAY_SECRET || !TOYYIBPAY_CATEGORY_CODE) {
-    console.error('Missing ToyyibPay credentials in environment variables.');
-}
-
-const TOYYIBPAY_API_URL = 'https://toyyibpay.com/index.php/api/createBill';
-const TOYYIBPAY_BILL_URL = 'https://toyyibpay.com/';
-
 export async function POST(req: NextRequest) {
+  // Read environment variables inside the function to ensure they are available at runtime.
+  const TOYYIBPAY_SECRET = process.env.TOYYIBPAY_SECRET;
+  const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE;
+
+  if (!TOYYIBPAY_SECRET || !TOYYIBPAY_CATEGORY_CODE) {
+    console.error('CRITICAL: Missing ToyyibPay secret key or category code in environment variables.');
+    return NextResponse.json({ error: 'Payment provider is not configured. Please contact support.' }, { status: 500 });
+  }
+    
   try {
     const body = await req.json();
     const items: Product[] = body.items;
@@ -28,17 +25,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing items or total in request' }, { status: 400 });
     }
     
-    if (!TOYYIBPAY_SECRET || !TOYYIBPAY_CATEGORY_CODE) {
-        return NextResponse.json({ error: 'Payment provider is not configured.' }, { status: 500 });
-    }
-    
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     
-    // In a real application with a database, you would create an order record here
-    // and use its unique ID as the billExternalReferenceNo.
+    // Create a unique reference for this order. In a real app, this would be your internal order ID.
     const orderId = uuidv4();
     
-    // Adhering to API character limits to prevent errors.
+    // Ensure billName and billDescription adhere to character limits to prevent API errors.
     const billName = `Cuddleia Order ${orderId.substring(0, 8)}`;
     const billDescription = 'Your digital goods from Cuddleia.';
     const billAmountInCents = Math.round(total * 100);
@@ -57,7 +49,7 @@ export async function POST(req: NextRequest) {
       billPaymentChannel: '0', // 0 for FPX Only
     });
 
-    const response = await fetch(TOYYIBPAY_API_URL, {
+    const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -83,7 +75,7 @@ export async function POST(req: NextRequest) {
     // According to docs, success is an array with a BillCode object.
     if (data && Array.isArray(data) && data.length > 0 && data[0].BillCode) {
       const billCode = data[0].BillCode;
-      const paymentUrl = TOYYIBPAY_BILL_URL + billCode;
+      const paymentUrl = 'https://toyyibpay.com/' + billCode;
       return NextResponse.json({ paymentUrl });
     } else {
       // If the response is 200 OK but doesn't contain a BillCode, it's an API-level error.
