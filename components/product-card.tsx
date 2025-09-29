@@ -3,36 +3,27 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { Eye, Info, ShoppingCart } from 'lucide-react';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Card
 } from './ui/card';
-
-interface Product {
-    id: string;
-    name: string;
-    price: number;
-    priceMYR: string;
-    image: string;
-    description: string;
-    note: string;
-}
+import type { Product } from '@/lib/products';
 
 interface ProductCardProps {
     product: Product;
 }
 
+// A map to convert prices from USD to MYR.
+// In a real application, this would be fetched from an API.
+const USD_TO_MYR = 4.21;
+
 export function ProductCard({ product }: ProductCardProps) {
+  const priceMYR = (product.price * USD_TO_MYR).toFixed(2);
   return (
     <div className="h-full">
         <Card className="group flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
             <Link href={`/products/${product.id}`} className="block">
                 <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <Image
-                    src={product.image}
+                    src={product.imageUrl}
                     alt={product.name}
                     fill
                     className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -52,13 +43,13 @@ export function ProductCard({ product }: ProductCardProps) {
                     </Link>
                      <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
                         <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                        <span>{product.note}</span>
+                        <span>{product.disclaimer}</span>
                     </div>
                 </div>
                  <div className="flex items-center justify-between gap-4 pt-6">
                     <div>
                         <p className="text-xl font-headline font-bold text-primary">${product.price.toFixed(2)} USD</p>
-                        <p className="text-xs text-muted-foreground">(Approx. RM{product.priceMYR})</p>
+                        <p className="text-xs text-muted-foreground">(Approx. RM{priceMYR})</p>
                     </div>
                     <div className="flex gap-2">
                         <Button asChild variant="outline" size="icon" className="rounded-full">
