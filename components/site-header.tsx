@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Flower2, Menu } from 'lucide-react';
+import { Flower2, Menu, ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Sheet,
@@ -9,10 +9,18 @@ import {
   SheetHeader,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useCart } from '@/lib/cart';
 
 export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false);
+  const { items } = useCart();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -45,6 +53,18 @@ export function SiteHeader() {
               </Link>
             ))}
           </nav>
+
+          <Button asChild variant="ghost" size="icon" className="h-14 w-14 rounded-full relative">
+            <Link href="/cart">
+              <ShoppingCart className="h-7 w-7 text-foreground" />
+              {isClient && items.length > 0 && (
+                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {items.length}
+                </span>
+              )}
+              <span className="sr-only">Shopping Cart</span>
+            </Link>
+          </Button>
           
           <div className="md:hidden">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
