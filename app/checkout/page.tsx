@@ -142,7 +142,7 @@ export default function CheckoutPage() {
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
                     
                     {error && (
-                        <div className="bg-destructive/10 text-destructive-foreground border border-destructive rounded-lg p-4 mb-6 text-center">
+                        <div className="bg-amber-100/30 text-amber-900 border border-amber-300 rounded-lg p-4 mb-6 text-center font-semibold">
                             <p>{error}</p>
                         </div>
                     )}
