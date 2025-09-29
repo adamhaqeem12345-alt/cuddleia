@@ -51,8 +51,8 @@ export function SiteHeader() {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left">
-                    <div className="flex flex-col gap-8 pt-12">
-                         <Link href="/" className="transition-transform hover:scale-105 pl-4">
+                    <div className="flex flex-col gap-8 pt-6">
+                         <Link href="/" className="transition-transform hover:scale-105 pl-4 mb-4">
                             <div className="flex items-center gap-2">
                                 <Flower2 className="h-8 w-8 text-primary" />
                                 <span className="font-headline text-3xl font-bold tracking-tight text-foreground">
