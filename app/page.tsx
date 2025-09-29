@@ -1,83 +1,160 @@
-'use client';
+import { ArrowRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { ProductCard } from '@/components/product-card';
+import { Button } from '@/components/ui/button';
 
-import { useState } from 'react';
+const featuredProducts = [
+  {
+    id: '001',
+    name: 'Barakah Business Blueprint',
+    price: 15.00,
+    priceMYR: '63.15',
+    image: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    description: `A beginner-friendly guide for Muslims starting a halal online business from scratch. This is a clear starting point that highlights the essentials, avoids common pitfalls, and helps you take your first steps with confidence.
+
+What you'll learn:
+• Business Models: Digital products, dropshipping, or physical goods.
+• Platforms: Best platforms to use without wasting money (Shopify, Gumroad, Etsy, Shopee, and more).
+• Halal Payments: Guidance on gateways like Toyyibpay, Stripe, and PayPal.
+• Branding: Why your own domain builds long-term trust.
+• Automation & AI: How tools like n8n and Canva AI can save you hours.
+• Marketing: How to effectively market on TikTok, Instagram, and Pinterest.`,
+    note: 'All content is AI-generated and all designs are created by me.',
+  },
+  {
+    id: '002',
+    name: 'iPad Wallpaper (Maroon Series)',
+    price: 6.00,
+    priceMYR: '25.26',
+    image: 'https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png',
+    description: `A digital Islamic wallpaper designed with floral art and Arabic calligraphy of Allah and Muhammad ﷺ, along with the reminder “Allah Loves You Forever.”
+
+Key Features:
+• Design: High-resolution floral art with a powerful Islamic reminder.
+• Resolution: 2048 × 2732 pixels, ensuring a sharp and clear image.
+• Orientation: Best for landscape lock screen with a normal clock display and no widgets.
+
+Compatibility:
+• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
+• Scaled fit for iPad Mini 6.
+
+Please Note:
+• This is a digital item only; no physical product will be shipped.
+• For personal use only—not for resale or redistribution.
+• Not recommended for portrait lock screens.`,
+    note: 'All wallpaper designs are 100% my work.',
+  },
+  {
+    id: '003',
+    name: 'iPad Wallpaper (Minimalist Series)',
+    price: 5.00,
+    priceMYR: '21.05',
+    image: 'https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png',
+    description: `A digital Islamic wallpaper featuring a minimalist floral background, Arabic calligraphy of Allah and Muhammad ﷺ, and the gentle reminder ‘Allah Loves You.'
+
+Key Features:
+• Design: Elegant, high-resolution minimalist design.
+• Resolution: 2048 × 2732 pixels for a crisp and clear display.
+• Orientation: Optimized for landscape lock screen use with a normal clock and no widgets.
+
+Compatibility:
+• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
+• Scaled fit for iPad Mini 6.
+
+Please Note:
+• This is a digital item only; no physical product will be shipped.
+• For personal use only—not for resale or redistribution.
+• Not recommended for portrait lock screens.`,
+    note: 'All wallpaper designs are 100% my work.',
+  },
+];
+
 
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handlePayClick = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
-  };
-
   return (
-    <main className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
-      <div className="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-md">
-        <header className="mb-6 border-b pb-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">
-            Postmortem: A Deep Dive into PayPal API Integration
-          </h1>
-          <p className="text-md text-gray-500 mt-2">
-            Fantastic news! We finally achieved a successful transaction. Let's summarize the critical lessons learned.
-          </p>
-        </header>
+    <>
+      <section className="relative w-full bg-hero-background py-20 md:py-28 flex items-center justify-center">
+        <div className="container mx-auto px-4">
+          <div className="relative z-10 text-center">
+            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+              Where Creativity Meets Barakah
+            </h1>
+            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
+              Discover cozy wallpapers and Islamic booklets designed to bring
+              warmth, beauty, and serenity to your digital life.
+            </p>
+            <div className="mt-8 flex justify-center gap-4">
+              <Button asChild size="lg" className="font-bold shadow-lg transition-transform hover:scale-105">
+                <Link href="/products">
+                  Shop Now <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="font-bold shadow-lg transition-transform hover:scale-105 bg-background/70">
+                <Link href="/about">Learn More</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-3">The Deceptive Error: PayPal's "code: 12"</h2>
-          <p className="text-gray-600 leading-relaxed">
-            This generic error from the PayPal Buttons script is deceptive. It almost never means the button itself is broken. It's a symptom of a deeper problem: the <code className="bg-gray-100 text-red-500 p-1 rounded">createOrder</code> callback failed to return a valid Order ID string to the script. Our entire struggle was a hunt for the reason why that ID wasn't being returned.
-          </p>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-3">Lesson 1: Server-Side Order Creation is a Fragile Chain</h2>
-          <p className="text-gray-600 leading-relaxed mb-4">
-            Creating orders on the server introduces a fragile chain of communication: Client {'->'} Your Server {'->'} PayPal API. A failure at any point can break the process. Our experience showed that:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-600">
-            <li><strong>Subtle Payload Errors Matter:</strong> PayPal's API is extremely strict. A number instead of a string, a value without two decimal places, or a field that's one character too long will cause a rejection.</li>
-            <li><strong>Error Propagation is Hard:</strong> When our server's request to PayPal failed, the specific error message wasn't correctly passed back to the client. The client just knew "something failed."</li>
-          </ul>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-3">Lesson 2: Client-Side Creation is a Robust Alternative</h2>
-          <p className="text-gray-600 leading-relaxed mb-4">
-            Our final, successful solution was to abandon server-side order creation and build the payload directly on the client. This creates a direct line of communication: Client {'->'} PayPal API. By removing our own server from the creation step, we eliminated the most complex part of the flow. This is a robust solution for use cases where the purchase logic is simple.
-          </p>
-          <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-            <h3 className="font-bold text-green-800">The Most Important Lesson: Formatting is Everything</h3>
-            <p className="text-green-700 mt-1">
-              Monetary values <span className="font-bold">must be a string with two decimal places</span> (e.g., <code className="bg-green-100 p-1 rounded">"15.00"</code>, not <code className="bg-red-100 p-1 rounded">15</code> or <code className="bg-red-100 p-1 rounded">"15.0"</code>). Using <code className="bg-green-100 p-1 rounded">.toFixed(2)</code> is a requirement.
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div>
+            <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+              Featured Products
+            </h2>
+            <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
+              Handpicked for you. Get started on your journey of beauty and
+              reflection with our most popular digital goods.
             </p>
           </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-3">Our Successful Architecture</h2>
-          <ol className="list-decimal list-inside space-y-3 text-gray-600">
-            <li><strong>Order Creation (Client-Side):</strong> The user clicks the PayPal button, and the browser constructs the simple payload (with the total amount correctly formatted) and sends it directly to PayPal to get an Order ID.</li>
-            <li><strong>User Approval:</strong> The user approves the transaction in the PayPal pop-up.</li>
-            <li><strong>Order Capture (Server-Side):</strong> After approval, the browser sends the Order ID to our server (<code className="bg-gray-100 text-red-500 p-1 rounded">/api/paypal/capture-order</code>). The server securely confirms the payment with PayPal and can trigger follow-up actions like sending a confirmation email.</li>
-          </ol>
-        </section>
-
-        <div className="mt-10 pt-6 border-t">
-          <button 
-            onClick={handlePayClick}
-            className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-          >
-            Pay with Card
-          </button>
-          {isLoading && (
-            <div className="mt-4 text-center text-gray-600">
-              <p>Loading payment options...</p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          <div className="mt-20 text-center">
+             <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg transition-transform hover:scale-105">
+                <Link href="/products">View All Products</Link>
+              </Button>
+          </div>
         </div>
-      </div>
-    </main>
+      </section>
+
+      <section className="bg-accent/20 py-24">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
+                <Image
+                  src="https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png"
+                  alt="Founder of Cuddleia"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+            <div>
+              <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                Made with Heart &amp; Soul
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Cuddleia was born from a passion for creating beautiful,
+                meaningful digital goods that blend modern aesthetics with
+                timeless Islamic values. Each product is crafted with love and a
+                prayer that it brings you peace, productivity, and a little
+                more barakah.
+              </p>
+               <Button asChild size="lg" className="font-bold shadow-lg transition-transform hover:scale-105">
+                <Link href="/about">
+                  Read Our Story <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
