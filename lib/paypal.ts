@@ -2,7 +2,10 @@
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const base = "https://api-m.sandbox.paypal.com"; // Use https://api-m.paypal.com for production
+// Use https://api-m.paypal.com for production
+const base = process.env.NODE_ENV === 'production' 
+    ? "https://api-m.paypal.com" 
+    : "https://api-m.sandbox.paypal.com";
 
 /**
  * Fetches an access token from the PayPal API.
@@ -23,12 +26,19 @@ async function getAccessToken(): Promise<string> {
         },
     });
 
+    if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error("Failed to get PayPal access token:", errorDetails);
+        throw new Error("Failed to authenticate with PayPal.");
+    }
+
     const data = await response.json();
     return data.access_token;
 }
 
 /**
  * Captures a payment for a PayPal order.
+ * This is the secure server-side step.
  * @param {string} orderID The ID of the order to capture.
  * @returns {Promise<object>} The capture result.
  */

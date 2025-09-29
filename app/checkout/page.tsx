@@ -9,7 +9,7 @@ import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useHasHydrated } from '@/lib/hooks';
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from "@paypal/react-paypal-js";
 
 
 export default function CheckoutPage() {
@@ -21,6 +21,8 @@ export default function CheckoutPage() {
 
   const USD_TO_MYR = 4.71;
   const totalMYR = subtotal * USD_TO_MYR;
+  const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
+
 
   useEffect(() => {
     if (hasHydrated && items.length === 0) {
@@ -174,63 +176,70 @@ export default function CheckoutPage() {
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
                       International Customers (Card / PayPal)
                     </p>
-                    <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "", currency: "USD", intent: "capture" }}>
-                       <PayPalButtons
-                            style={{ layout: "vertical", shape: 'rect' }}
-                            createOrder={(data, actions) => {
-                                setIsProcessing(true);
-                                setError(null);
-                                return actions.order.create({
-                                    purchase_units: [
-                                        {
-                                            amount: {
-                                                value: subtotal.toFixed(2),
-                                                currency_code: 'USD',
-                                            },
-                                        },
-                                    ],
-                                    application_context: {
-                                        shipping_preference: 'NO_SHIPPING',
-                                    },
-                                });
-                            }}
-                            onApprove={async (data) => {
-                                setIsProcessing(true);
-                                setError(null);
-                                try {
-                                    const response = await fetch('/api/paypal/capture-order', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ orderID: data.orderID }),
-                                    });
-                                    const responseData = await response.json();
-                                    
-                                    if (response.ok && responseData.success) {
-                                        clearCart();
-                                        router.push(`/checkout/success?orderID=${data.orderID}`);
-                                    } else {
-                                        throw new Error(responseData.error || 'Failed to capture payment.');
-                                    }
-                                } catch (err) {
-                                    let errorMessage = 'Could not finalize your payment. Please contact support.';
-                                    if (err instanceof Error) {
-                                        errorMessage = err.message;
-                                    }
-                                    setError(errorMessage);
-                                    setIsProcessing(false);
-                                }
-                            }}
-                            onError={(err: any) => {
-                                console.error("PayPal Buttons onError:", err);
-                                setError("An error occurred with the PayPal payment. Please try again or contact support.");
-                                setIsProcessing(false);
-                            }}
-                            onCancel={() => {
-                                setIsProcessing(false);
-                            }}
-                            disabled={isProcessing}
-                        />
-                    </PayPalScriptProvider>
+                    {paypalClientID ? (
+                      <PayPalScriptProvider options={{ "client-id": paypalClientID, currency: "USD", intent: "capture" }}>
+                        <PayPalButtons
+                              style={{ layout: "vertical", shape: 'rect' }}
+                              createOrder={async (data: CreateOrderData, actions) => {
+                                  setIsProcessing(true);
+                                  setError(null);
+                                  // This is the direct client-side creation
+                                  return actions.order.create({
+                                      purchase_units: [
+                                          {
+                                              amount: {
+                                                  value: subtotal.toFixed(2), // CRITICAL: Must be a string with 2 decimal places
+                                                  currency_code: 'USD',
+                                              },
+                                          },
+                                      ],
+                                      application_context: {
+                                          shipping_preference: 'NO_SHIPPING',
+                                      },
+                                  });
+                              }}
+                              onApprove={async (data: OnApproveData) => {
+                                  setIsProcessing(true);
+                                  setError(null);
+                                  try {
+                                      // This is the secure server-side capture
+                                      const response = await fetch('/api/paypal/capture-order', {
+                                          method: 'POST',
+                                          headers: { 'Content-Type': 'application/json' },
+                                          body: JSON.stringify({ orderID: data.orderID }),
+                                      });
+                                      
+                                      const responseData = await response.json();
+                                      
+                                      if (response.ok && responseData.success) {
+                                          clearCart();
+                                          router.push(`/checkout/success?orderID=${data.orderID}`);
+                                      } else {
+                                          throw new Error(responseData.error || 'Failed to capture payment.');
+                                      }
+                                  } catch (err) {
+                                      let errorMessage = 'Could not finalize your payment. Please contact support.';
+                                      if (err instanceof Error) {
+                                          errorMessage = err.message;
+                                      }
+                                      setError(errorMessage);
+                                      setIsProcessing(false);
+                                  }
+                              }}
+                              onError={(err: any) => {
+                                  console.error("PayPal Buttons onError:", err);
+                                  setError("An error occurred with the PayPal payment. Please try again or contact support.");
+                                  setIsProcessing(false);
+                              }}
+                              onCancel={() => {
+                                  setIsProcessing(false);
+                              }}
+                              disabled={isProcessing}
+                          />
+                      </PayPalScriptProvider>
+                    ) : (
+                       <p className="text-sm text-destructive-foreground bg-destructive/10 p-3 rounded-md">PayPal is not configured. Missing client ID.</p>
+                    )}
                   </div>
                 </div>
               )}
