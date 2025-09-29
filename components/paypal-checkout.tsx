@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -26,7 +27,7 @@ export function PayPalCheckout() {
     const [isInteracting, setIsInteracting] = useState(false);
     
     const paypalRef = useRef<HTMLDivElement>(null);
-    const interactionTimer = useRef<number | null>(null);
+    const interactionTimer = useRef<any>(null);
     const cartRef = useRef<CartItem[]>(cart);
 
     useEffect(() => {
@@ -88,7 +89,7 @@ export function PayPalCheckout() {
                         setError(null);
                         setIsInteracting(true);
                         if (interactionTimer.current) clearTimeout(interactionTimer.current);
-                        interactionTimer.current = window.setTimeout(() => {
+                        interactionTimer.current = setTimeout(() => {
                             setIsInteracting(false);
                         }, 3000);
                     },

@@ -5,7 +5,7 @@ import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
 
 export const metadata = {
   title: 'About Cuddleia | Our Story',
-  description: 'Cuddleia began with honesty, faith, and a dream to create something meaningful. Learn about our story, our values, and the heart behind our cozy digital goods.',
+  description: "Cuddleia began with honesty, faith, and a dream to create something meaningful. Learn about our story, our values, and the heart behind our cozy digital goods.",
 };
 
 export default function AboutPage() {
@@ -99,7 +99,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-headline text-xl">Built on Honesty</h3>
-                  <p className="mt-1 text-foreground/80">We're transparent about how we create. Our process combines faith, human creativity, and the support of AI in writing and ideas. Everything is refined and designed by hand, ensuring each product carries a genuine and personal touch.</p>
+                  <p className="mt-1 text-foreground/80">We&apos;re transparent about how we create. Our process combines faith, human creativity, and the support of AI in writing and ideas. Everything is refined and designed by hand, ensuring each product carries a genuine and personal touch.</p>
                 </div>
               </div>
             </div>
