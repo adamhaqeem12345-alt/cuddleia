@@ -24,8 +24,11 @@ function createEmailBody(name: string, items: Product[]): string {
 
             <p>If you have any questions or need assistance, please don't hesitate to reply to this email.</p>
             <p>With love,<br>The Cuddleia Team</p>
-            <div style="margin-top: 30px; text-align: center; font-size: 12px; color: #aaa;">
-                <p>Cuddleia | Cozy Digital Goods with Heart</p>
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #aaa;">
+                <p style="font-weight: bold; color: #888;">Terms of Use:</p>
+                <p>All digital products purchased from Cuddleia are for personal use only. You are not permitted to resell, redistribute, or share these files in any form. All rights are reserved by Cuddleia.</p>
+                <p style="margin-top: 20px;">Cuddleia | Cozy Digital Goods with Heart</p>
             </div>
         </div>
     `;
