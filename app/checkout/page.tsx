@@ -181,8 +181,6 @@ export default function CheckoutPage() {
                         <PayPalButtons
                               style={{ layout: "vertical", shape: 'rect' }}
                               createOrder={async (data: CreateOrderData, actions) => {
-                                  setIsProcessing(true);
-                                  setError(null);
                                   // This is the direct client-side creation
                                   return actions.order.create({
                                       purchase_units: [
@@ -198,11 +196,11 @@ export default function CheckoutPage() {
                                       },
                                   });
                               }}
-                              onApprove={async (data: OnApproveData) => {
+                              onApprove={async (data: OnApproveData, actions) => {
                                   setIsProcessing(true);
                                   setError(null);
+                                  
                                   try {
-                                      // This is the secure server-side capture
                                       const response = await fetch('/api/paypal/capture-order', {
                                           method: 'POST',
                                           headers: { 'Content-Type': 'application/json' },
@@ -210,25 +208,28 @@ export default function CheckoutPage() {
                                       });
                                       
                                       const responseData = await response.json();
-                                      
+
                                       if (response.ok && responseData.success) {
+                                          console.log('Payment successful!');
                                           clearCart();
                                           router.push(`/checkout/success?orderID=${data.orderID}`);
                                       } else {
-                                          throw new Error(responseData.error || 'Failed to capture payment.');
+                                          // This will handle API errors returned from our server, e.g., { success: false, error: '...' }
+                                          throw new Error(responseData.error || 'Failed to finalize payment.');
                                       }
                                   } catch (err) {
+                                      console.error("onApprove error:", err);
                                       let errorMessage = 'Could not finalize your payment. Please contact support.';
                                       if (err instanceof Error) {
                                           errorMessage = err.message;
                                       }
                                       setError(errorMessage);
-                                      setIsProcessing(false);
+                                      setIsProcessing(false); // Ensure processing is stopped on error
                                   }
                               }}
                               onError={(err: any) => {
                                   console.error("PayPal Buttons onError:", err);
-                                  setError("An error occurred with the PayPal payment. Please try again or contact support.");
+                                  setError("An unexpected error occurred with PayPal. Please try again or contact support.");
                                   setIsProcessing(false);
                               }}
                               onCancel={() => {
