@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { products as allProducts, Product } from '@/lib/products';
+import { Product } from '@/lib/products';
 
 const TOYYIBPAY_SECRET = 'rx6j88vd-eye6-g5xf-s91k-a4c616556wpr';
 const TOYYIBPAY_CATEGORY_CODE = '43cm97xz';
@@ -12,10 +12,10 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const items: Product[] = body.items || [];
     const total = parseFloat(body.total || '0');
-    const customerName = body.customerName as string;
-    const customerEmail = body.customerEmail as string;
+    const customerName = 'Customer Name'; // Placeholder
+    const customerEmail = 'customer@example.com'; // Placeholder
 
-    if (!items || items.length === 0 || !total || !customerName || !customerEmail) {
+    if (!items || items.length === 0 || !total) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -41,15 +41,18 @@ export async function POST(req: NextRequest) {
       body: params,
     });
     
+    // The result from ToyyibPay is expected to be a JSON array.
     const data = await response.json();
     
-    if (data && data.length > 0 && data[0].BillCode) {
+    // Check if the response is an array with at least one element which has a BillCode.
+    if (data && Array.isArray(data) && data.length > 0 && data[0].BillCode) {
       const billCode = data[0].BillCode;
       const paymentUrl = TOYYIBPAY_BILL_URL + billCode;
       return NextResponse.json({ paymentUrl });
     } else {
-      console.error('ToyyibPay API Error:', data);
-      const errorMessage = data && data.length > 0 && data[0].msg ? data[0].msg : 'Unknown API error';
+      // If the structure is not as expected, log the error and respond.
+      console.error('ToyyibPay API Error Response:', data);
+      const errorMessage = data && Array.isArray(data) && data.length > 0 && data[0].msg ? data[0].msg : 'Unknown API error';
       return NextResponse.json({ error: `Could not create ToyyibPay bill: ${errorMessage}` }, { status: 500 });
     }
   } catch (error) {

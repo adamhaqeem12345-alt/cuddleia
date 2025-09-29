@@ -73,8 +73,6 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: items,
           total: subtotal,
-          customerName: 'Customer Name', // Placeholder
-          customerEmail: 'customer@example.com', // Placeholder
         }),
       });
 
