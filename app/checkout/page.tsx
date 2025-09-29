@@ -217,7 +217,7 @@ export default function CheckoutPage() {
                                 return actions.order.create({
                                     purchase_units: [{
                                         amount: {
-                                            value: subtotal.toFixed(2), //
+                                            value: subtotal.toFixed(2),
                                             currency_code: 'USD'
                                         }
                                     }]
