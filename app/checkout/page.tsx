@@ -16,7 +16,6 @@ export default function CheckoutPage() {
   const router = useRouter();
   const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isToyyibPayProcessing, setIsToyyibPayProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,36 +60,6 @@ export default function CheckoutPage() {
         setIsProcessing(false);
     }, 3000);
   }
-
-  const handleToyyibPay = async () => {
-    setIsToyyibPayProcessing(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/toyyibpay', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          items: items,
-          total: subtotal,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.paymentUrl) {
-        window.location.href = data.paymentUrl;
-      } else {
-        throw new Error(data.error || 'Failed to create ToyyibPay bill.');
-      }
-    } catch (err: any) {
-      console.error('ToyyibPay Error:', err);
-      setError(err.message || 'An unexpected error occurred. Please try again.');
-    } finally {
-      setIsToyyibPayProcessing(false);
-    }
-  };
 
   if (items.length === 0) {
     return null; 
@@ -168,29 +137,6 @@ export default function CheckoutPage() {
                         {isProcessing && (
                             <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
                                 <p>Processing payment...</p>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="relative flex py-5 items-center">
-                        <div className="flex-grow border-t border-muted"></div>
-                        <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
-                        <div className="flex-grow border-t border-muted"></div>
-                    </div>
-
-                    <div className="mt-6">
-                        <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (Online Banking / FPX)</p>
-                        <Button 
-                            size="lg" 
-                            className="w-full font-bold rounded-lg"
-                            onClick={handleToyyibPay}
-                            disabled={isToyyibPayProcessing}
-                        >
-                            {isToyyibPayProcessing ? 'Connecting...' : 'Pay with ToyyibPay'}
-                        </Button>
-                         {isToyyibPayProcessing && (
-                            <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
-                                <p>Redirecting to bank...</p>
                             </div>
                         )}
                     </div>
