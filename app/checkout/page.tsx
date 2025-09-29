@@ -139,7 +139,8 @@ export default function CheckoutPage() {
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
                     
                     {error && (
-                        <div className="bg-amber-100/30 text-amber-900 border border-amber-300 rounded-lg p-4 mb-6 text-center font-semibold">
+                        <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-800 p-4 mb-6" role="alert">
+                            <p className="font-bold">Payment Error</p>
                             <p>{error}</p>
                         </div>
                     )}

@@ -15,29 +15,30 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const items: Product[] = body.items;
-    const total: number = body.total;
+    const total: number = body.total; // Total is expected in MYR
 
     if (!items || !total) {
       return NextResponse.json({ error: 'Missing items or total in request' }, { status: 400 });
     }
 
     const billName = 'Cuddleia Store Purchase';
-    const billDescription = items.map(item => item.name).join(', ');
+    const billDescription = items.map(item => item.name).join(', ').substring(0, 100);
     const billAmountInCents = Math.round(total * 100);
 
     const params = new URLSearchParams({
-      // CRITICAL FIX: The parameter for creating a bill is 'secretKey', not 'userSecretKey'.
-      secretKey: TOYYIBPAY_SECRET,
+      userSecretKey: TOYYIBPAY_SECRET,
       categoryCode: TOYYIBPAY_CATEGORY_CODE,
       billName: billName,
       billDescription: billDescription,
-      billPrice: billAmountInCents.toString(),
+      billPriceSetting: '1', // 1 for fixed amount
+      billPayorInfo: '1', // 1 to require payor info
       billAmount: billAmountInCents.toString(),
       billReturnUrl: 'https://www.cuddleia.com/cart', // Production Return URL
       billCallbackUrl: 'https://www.cuddleia.com/api/webhook/toyyibpay', // Production Callback URL
-      billTo: 'Customer', // Using generic 'Customer'
-      billEmail: 'customer@example.com', // Using generic email
-      billPhone: '0123456789', // Using generic phone
+      billTo: 'Customer',
+      billEmail: 'customer@example.com',
+      billPhone: '0123456789',
+      billPaymentChannel: '0', // 0 for FPX only
     });
 
     const response = await fetch(TOYYIBPAY_API_URL, {
@@ -48,16 +49,22 @@ export async function POST(req: NextRequest) {
       body: params.toString(),
     });
 
-    // Check if the response from ToyyibPay is not a 200 OK.
+    const responseText = await response.text();
+    
     if (!response.ok) {
-        const errorText = await response.text();
-        console.error('ToyyibPay API Error Response Text:', errorText);
-        return NextResponse.json({ error: `ToyyibPay API returned a non-200 status: ${response.status}. Response: ${errorText}` }, { status: 500 });
+        console.error('ToyyibPay API Error (Non-200 Status):', response.status, responseText);
+        return NextResponse.json({ error: `ToyyibPay API returned status ${response.status}. Response: ${responseText}` }, { status: 500 });
     }
 
-    const data = await response.json();
+    let data;
+    try {
+        data = JSON.parse(responseText);
+    } catch(e) {
+        console.error('Failed to parse ToyyibPay JSON response:', responseText);
+        return NextResponse.json({ error: 'Received an invalid response from ToyyibPay.'}, { status: 500 });
+    }
     
-    // Check for the BillCode in the successful response
+    // According to docs, success is an array with a BillCode object.
     if (data && Array.isArray(data) && data.length > 0 && data[0].BillCode) {
       const billCode = data[0].BillCode;
       const paymentUrl = TOYYIBPAY_BILL_URL + billCode;
@@ -65,11 +72,12 @@ export async function POST(req: NextRequest) {
     } else {
       // If the response is 200 OK but doesn't contain a BillCode, it's an API-level error.
       console.error('ToyyibPay API Error (but 200 OK):', data);
-      const errorMessage = data && Array.isArray(data) && data.length > 0 && (data[0].msg || data[0].status) ? (data[0].msg || data[0].status) : 'Unknown API error, response did not contain BillCode.';
+      const errorMessage = data && data.length > 0 && (data[0].msg || data[0].status) ? (data[0].msg || data[0].status) : 'Unknown API error, response did not contain BillCode.';
       return NextResponse.json({ error: `Could not create ToyyibPay bill: ${errorMessage}` }, { status: 500 });
     }
   } catch (error) {
     console.error('Failed to create Toyyibpay bill:', error);
-    return NextResponse.json({ error: 'There was an issue connecting to our payment provider.' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return NextResponse.json({ error: `There was an issue connecting to our payment provider: ${errorMessage}` }, { status: 500 });
   }
 }
