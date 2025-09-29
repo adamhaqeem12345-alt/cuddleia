@@ -53,10 +53,7 @@ export async function POST(req: NextRequest) {
       billReturnUrl: `${appUrl}/cart`,
       billCallbackUrl: `${appUrl}/api/webhook/toyyibpay`,
       billExternalReferenceNo: orderId,
-      billTo: 'Customer', // These can be generic since billPayorInfo is 1
-      billEmail: '',
-      billPhone: '',
-      billPaymentChannel: '0',
+      billPaymentChannel: '0', // 0 for FPX Only
     });
 
     const response = await fetch(TOYYIBPAY_API_URL, {
