@@ -25,7 +25,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing items or total in request' }, { status: 400 });
     }
     
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // ===================================================================================
+    // CRITICAL URL CONFIGURATION
+    // ===================================================================================
+    // ToyyibPay's API does NOT allow `localhost` in the callback or return URLs.
+    // For local testing, you can use a placeholder like "https://example.com".
+    // BEFORE GOING LIVE, you MUST replace these with your real production URLs.
+    // ===================================================================================
+    const returnUrl = 'https://www.cuddleia.com/cart'; // Replace with your live site's cart/success page
+    const callbackUrl = 'https://www.cuddleia.com/api/webhook/toyyibpay'; // Replace with your live site's webhook URL
     
     // Create a unique reference for this order. In a real app, this would be your internal order ID.
     const orderId = uuidv4();
@@ -41,10 +49,10 @@ export async function POST(req: NextRequest) {
       billName: billName,
       billDescription: billDescription,
       billPriceSetting: '1',
-      billPayorInfo: '0', // Set to 0 to create an open bill without requiring payer info from our side.
+      billPayorInfo: '0', // Creates an "open bill" where ToyyibPay collects customer info. This is the simplest and most reliable method.
       billAmount: billAmountInCents.toString(),
-      billReturnUrl: `${appUrl}/cart`,
-      billCallbackUrl: `${appUrl}/api/webhook/toyyibpay`,
+      billReturnUrl: returnUrl,
+      billCallbackUrl: callbackUrl,
       billExternalReferenceNo: orderId,
       billPaymentChannel: '0', // 0 for FPX Only
     });
