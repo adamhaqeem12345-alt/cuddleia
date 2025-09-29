@@ -8,8 +8,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 // IMPORTANT: The secret key and category code should be stored as environment variables
 // for better security, e.g., process.env.TOYYIBPAY_SECRET
-const TOYYIBPAY_SECRET = 'rx6j88vd-eye6-g5xf-s91k-a4c616556wpr';
-const TOYYIBPAY_CATEGORY_CODE = '43cm97xz';
+const TOYYIBPAY_SECRET = process.env.TOYYIBPAY_SECRET;
+const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE;
+
+if (!TOYYIBPAY_SECRET || !TOYYIBPAY_CATEGORY_CODE) {
+    console.error('Missing ToyyibPay credentials in environment variables.');
+}
 
 const TOYYIBPAY_API_URL = 'https://toyyibpay.com/index.php/api/createBill';
 const TOYYIBPAY_BILL_URL = 'https://toyyibpay.com/';
@@ -23,6 +27,12 @@ export async function POST(req: NextRequest) {
     if (!items || !total) {
       return NextResponse.json({ error: 'Missing items or total in request' }, { status: 400 });
     }
+    
+    if (!TOYYIBPAY_SECRET || !TOYYIBPAY_CATEGORY_CODE) {
+        return NextResponse.json({ error: 'Payment provider is not configured.' }, { status: 500 });
+    }
+    
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
     const billName = 'Cuddleia Store Purchase';
     const billDescription = items.map(item => item.name).join(', ').substring(0, 100);
@@ -40,8 +50,8 @@ export async function POST(req: NextRequest) {
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: billAmountInCents.toString(),
-      billReturnUrl: 'https://www.cuddleia.com/cart', // Production Return URL
-      billCallbackUrl: 'https://www.cuddleia.com/api/webhook/toyyibpay', // Production Callback URL
+      billReturnUrl: `${appUrl}/cart`,
+      billCallbackUrl: `${appUrl}/api/webhook/toyyibpay`,
       billExternalReferenceNo: orderId,
       billTo: 'Customer', // These can be generic since billPayorInfo is 1
       billEmail: '',
