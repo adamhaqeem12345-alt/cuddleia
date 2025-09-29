@@ -12,13 +12,11 @@ export async function POST(req: Request) {
 
         const captureData = await captureOrder(orderID);
 
-        // Optionally: Trigger fulfillment logic here (e.g., send email, log purchase)
-        // For now, we just return the capture data.
-
         return NextResponse.json(captureData);
 
     } catch (error: any) {
         console.error('API_CAPTURE_ORDER_ERROR:', error.message);
-        return NextResponse.json({ error: 'Failed to capture order.', details: error.message }, { status: 500 });
+        const details = error.details || 'No details available';
+        return NextResponse.json({ error: 'Failed to capture order.', details }, { status: 500 });
     }
 }

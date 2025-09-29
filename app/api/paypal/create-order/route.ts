@@ -1,13 +1,14 @@
 
 import { createOrder } from '@/lib/paypal-api';
 import { NextResponse } from 'next/server';
+import type { CartItem } from '@/lib/types';
 
 export async function POST(req: Request) {
     try {
-        const { cart } = await req.json();
+        const { cart } = await req.json() as { cart: CartItem[] };
 
-        if (!cart) {
-            return NextResponse.json({ error: 'Missing cart data' }, { status: 400 });
+        if (!cart || !Array.isArray(cart) || cart.length === 0) {
+            return NextResponse.json({ error: 'Missing or invalid cart data' }, { status: 400 });
         }
         
         const order = await createOrder(cart);
@@ -16,6 +17,7 @@ export async function POST(req: Request) {
 
     } catch (error: any) {
         console.error('API_CREATE_ORDER_ERROR:', error.message);
-        return NextResponse.json({ error: 'Failed to create order.', details: error.message }, { status: 500 });
+        const details = error.details || 'No details available';
+        return NextResponse.json({ error: 'Failed to create order.', details }, { status: 500 });
     }
 }
