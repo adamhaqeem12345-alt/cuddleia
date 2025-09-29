@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { Product } from '@/lib/products';
 
-// IMPORTANT: You must replace these placeholder values with your actual
-// Zoho Mail credentials. For security, it's highly recommended to use
-// environment variables (e.g., process.env.ZOHO_EMAIL, process.env.ZOHO_PASSWORD)
-// instead of hardcoding them directly in the code.
-const ZOHO_EMAIL = 'your-email@zoho.com'; // <--- REPLACE WITH YOUR ZOHO EMAIL
-const ZOHO_PASSWORD = 'your-app-password'; // <--- REPLACE WITH YOUR ZOHO APP-SPECIFIC PASSWORD
+// It is highly recommended to use environment variables for security.
+// These will be read from your hosting environment.
+const ZOHO_EMAIL = process.env.ZOHO_MAIL_USER;
+const ZOHO_PASSWORD = process.env.ZOHO_MAIL_PASS;
+
+if (!ZOHO_EMAIL || !ZOHO_PASSWORD) {
+  console.error('Missing Zoho Mail credentials in environment variables.');
+}
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.zoho.com',
@@ -49,6 +51,10 @@ function createEmailBody(name: string, items: Product[]): string {
 }
 
 export async function POST(req: NextRequest) {
+  if (!ZOHO_EMAIL || !ZOHO_PASSWORD) {
+      return NextResponse.json({ error: 'Email server is not configured.' }, { status: 500 });
+  }
+    
   try {
     const { to, subject, name, items } = await req.json();
 

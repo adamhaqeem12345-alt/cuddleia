@@ -1,69 +1,64 @@
 
 import { NextRequest, NextResponse } from 'next/server';
+import { products, Product } from '@/lib/products'; // Assuming products are accessible
 
-// This is a placeholder for a function that would fetch order details
-// based on the order_id provided by the webhook. In a real application,
-// you would look up the order in your database to get the customer's email
-// and the list of items they purchased.
-async function getOrderDetails(orderId: string) {
-    // In a real app, you'd do:
-    // const order = await database.orders.find({ where: { id: orderId }});
-    // return { customerEmail: order.customerEmail, items: order.items };
+// This function is a placeholder. In a real-world scenario, you would need
+// a database to store customer details against an orderId when the bill is created.
+// Then you'd look up that orderId here to get the customer's info.
+async function getOrderDetailsFromDatabase(orderId: string): Promise<{ customerEmail: string; customerName: string; purchasedItems: Product[] } | null> {
+    console.log(`[Webhook] Simulating database lookup for orderId: ${orderId}`);
     
-    // For this example, we'll return placeholder data.
-    // IMPORTANT: The email sending will fail unless you can retrieve the
-    // actual customer email and purchased items associated with the order_id.
-    console.warn(`[ToyyibPay Webhook] Using placeholder data for orderId: ${orderId}. You must implement a database lookup.`);
-    return {
-        customerEmail: 'customer-from-db@example.com', // This should be retrieved from your database
-        customerName: 'Valued Customer', // This should be retrieved from your database
-        purchasedItems: [], // This should be a list of Product objects from your database
-    };
-}
+    // In a real app, you would do something like:
+    // const order = await db.collection('orders').findOne({ orderId: orderId });
+    // if (!order) return null;
+    // const itemIds = order.items.map(item => item.id);
+    // const purchasedProducts = products.filter(p => itemIds.includes(p.id));
+    // return { customerEmail: order.customerEmail, customerName: order.customerName, purchasedItems: purchasedProducts };
 
+    // For now, as we don't have a database, we cannot reliably get customer data.
+    // Returning null to signify that we can't proceed with the email.
+    console.error(`[Webhook] CRITICAL: No database is connected. Cannot retrieve customer details for orderId ${orderId} to send email.`);
+    return null;
+}
 
 export async function POST(req: NextRequest) {
   try {
     const data = await req.formData();
-    const status = data.get('status');
-    const order_id = data.get('order_id') as string; // This is the billExternalReferenceNo we sent
-    const billcode = data.get('billcode');
+    const status = data.get('status') as string;
+    const order_id = data.get('order_id') as string; // This is the billExternalReferenceNo
+    const billcode = data.get('billcode') as string;
 
-    console.log(`[ToyyibPay Webhook] Received callback for billcode: ${billcode}, status: ${status}`);
+    console.log(`[ToyyibPay Webhook] Received callback for billcode: ${billcode}, status: ${status}, order_id: ${order_id}`);
 
     // status '1' means the payment was successful
     if (status === '1' && order_id) {
-        
-      // In a real-world scenario, you would look up the order in your database
-      // using the order_id (billExternalReferenceNo) to get the customer's email
-      // and the specific items they purchased.
-      const { customerEmail, customerName, purchasedItems } = await getOrderDetails(order_id);
+        console.log(`[Webhook] Payment successful for order ${order_id}. Attempting to send confirmation email.`);
 
-      // We don't have the customer's email directly in the webhook payload from Toyyibpay.
-      // A database that stores cart contents against the `billExternalReferenceNo` is required for a complete solution.
-      // Since we don't have that, we can't reliably send an email from here.
-      // We will log the success and you would need to implement the database logic.
-      
-      console.log(`[ToyyibPay Webhook] Payment successful for order ${order_id}.`);
-      console.log(`[ToyyibPay Webhook] An email should be sent to ${customerEmail}.`);
+        // In a real application, you'd fetch order details from your database.
+        const orderDetails = await getOrderDetailsFromDatabase(order_id);
 
-      // Here you would call your email API.
-      // NOTE: This call will likely fail without a real database lookup implemented in getOrderDetails.
-      /*
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: customerEmail,
-          subject: 'Your Cuddleia Order Confirmation',
-          name: customerName,
-          items: purchasedItems,
-        }),
-      });
-      */
+        if (orderDetails) {
+            const { customerEmail, customerName, purchasedItems } = orderDetails;
+            
+            // Call your email API to send the confirmation.
+            // This will only run if getOrderDetailsFromDatabase is implemented to return actual data.
+            await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: customerEmail,
+                    subject: 'Your Cuddleia Order Confirmation',
+                    name: customerName,
+                    items: purchasedItems,
+                }),
+            });
+             console.log(`[Webhook] Email request sent for order ${order_id} to ${customerEmail}.`);
+        } else {
+             console.log(`[Webhook] Did not send email for order ${order_id} because customer details could not be retrieved.`);
+        }
 
     } else {
-      console.log(`[ToyyibPay Webhook] Payment status for billcode ${billcode} was not successful (status: ${status}) or order_id was missing.`);
+      console.log(`[Webhook] Payment status for billcode ${billcode} was not successful (status: ${status}) or order_id was missing.`);
     }
 
     // Always return a 200 OK to ToyyibPay to acknowledge receipt of the webhook.

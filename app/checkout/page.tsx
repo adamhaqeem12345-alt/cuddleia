@@ -24,10 +24,10 @@ export default function CheckoutPage() {
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    if (items.length === 0 && !isProcessing) {
+    if (items.length === 0 && !isProcessing && !isRedirecting) {
       router.push('/products');
     }
-  }, [items, router, isProcessing]);
+  }, [items, router, isProcessing, isRedirecting]);
 
   const sendConfirmationEmail = async (payerName: string, payerEmail: string, purchasedItems: Product[]) => {
     try {
@@ -64,6 +64,7 @@ export default function CheckoutPage() {
 
   const onApprove = (data: OnApproveData, actions: any) => {
     setIsProcessing(true); // Keep processing state while we capture and send email
+    setError(null);
     return actions.order.capture().then(function (details: any) {
       const payerName = details.payer.name.given_name;
       const payerEmail = details.payer.email_address;
@@ -74,6 +75,10 @@ export default function CheckoutPage() {
         setIsProcessing(false);
         router.push('/');
       });
+    }).catch((err: any) => {
+        console.error('Payment capture or email sending error:', err);
+        setError('Your payment was processed, but there was an issue sending the confirmation email. Please check your inbox or contact support.');
+        setIsProcessing(false);
     });
   };
 

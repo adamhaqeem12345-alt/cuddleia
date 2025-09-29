@@ -3,11 +3,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
+import { v4 as uuidv4 } from 'uuid';
 
-// This is your actual account secret key for creating bills.
+
+// IMPORTANT: The secret key and category code should be stored as environment variables
+// for better security, e.g., process.env.TOYYIBPAY_SECRET
 const TOYYIBPAY_SECRET = 'rx6j88vd-eye6-g5xf-s91k-a4c616556wpr';
-// This is your category code.
 const TOYYIBPAY_CATEGORY_CODE = '43cm97xz';
+
 const TOYYIBPAY_API_URL = 'https://toyyibpay.com/index.php/api/createBill';
 const TOYYIBPAY_BILL_URL = 'https://toyyibpay.com/';
 
@@ -24,6 +27,10 @@ export async function POST(req: NextRequest) {
     const billName = 'Cuddleia Store Purchase';
     const billDescription = items.map(item => item.name).join(', ').substring(0, 100);
     const billAmountInCents = Math.round(total * 100);
+    
+    // In a real application with a database, you would create an order record here
+    // and use its unique ID as the billExternalReferenceNo.
+    const orderId = uuidv4();
 
     const params = new URLSearchParams({
       userSecretKey: TOYYIBPAY_SECRET,
@@ -35,9 +42,10 @@ export async function POST(req: NextRequest) {
       billAmount: billAmountInCents.toString(),
       billReturnUrl: 'https://www.cuddleia.com/cart', // Production Return URL
       billCallbackUrl: 'https://www.cuddleia.com/api/webhook/toyyibpay', // Production Callback URL
-      billTo: 'Customer',
-      billEmail: 'customer@example.com',
-      billPhone: '0123456789',
+      billExternalReferenceNo: orderId,
+      billTo: 'Customer', // These can be generic since billPayorInfo is 1
+      billEmail: '',
+      billPhone: '',
       billPaymentChannel: '0',
     });
 
