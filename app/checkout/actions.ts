@@ -26,8 +26,8 @@ export async function createToyyibpayBill(
   params.append('billDescription', billDescription);
   params.append('billPrice', amountInCents.toString());
   params.append('billAmount', amountInCents.toString());
-  params.append('billReturnUrl', 'http://localhost:3000/cart');
-  params.append('billCallbackUrl', 'http://localhost:3000/api/webhook/toyyibpay');
+  params.append('billReturnUrl', 'https://www.cuddleia.com/cart');
+  params.append('billCallbackUrl', 'https://www.cuddleia.com/api/webhook/toyyibpay');
   params.append('billTo', customerName);
   params.append('billEmail', customerEmail);
   params.append('billPhone', '0000000000'); // Placeholder phone
