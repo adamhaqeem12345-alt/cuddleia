@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCart } from '@/lib/cart';
@@ -81,7 +80,7 @@ export default function CheckoutPage() {
 
       const data = await response.json();
 
-      if (response.ok) {
+      if (response.ok && data.paymentUrl) {
         window.location.href = data.paymentUrl;
       } else {
         throw new Error(data.error || 'Failed to create ToyyibPay bill.');
