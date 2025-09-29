@@ -70,8 +70,7 @@ export function PayPalCheckout() {
                         setIsButtonReady(true);
                     },
                     onClick: () => {
-                        // When the user clicks any payment button, immediately set processing state to show a loader.
-                        setIsProcessing(true);
+                        setError(null); // Clear any previous errors when the user tries again
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
@@ -79,7 +78,6 @@ export function PayPalCheckout() {
                             
                             if (parseFloat(totalValue) <= 0) {
                                 setError("Cart total must be greater than zero.");
-                                setIsProcessing(false);
                                 throw new Error("Invalid cart total.");
                             }
 
@@ -111,12 +109,11 @@ export function PayPalCheckout() {
                         } catch (err: any) {
                              console.error("CLIENT_CREATE_ORDER_ERROR:", err);
                              setError("An error occurred while preparing your order. Please check the cart and try again.");
-                             setIsProcessing(false);
                              throw err;
                         }
                     },
                     onApprove: async (data: OnApproveData) => {
-                         // The processing state is already true, now we just handle the capture
+                         setIsProcessing(true); // Show processing spinner ONLY on approval
                          setError(null);
                          try {
                             const res = await fetch('/api/paypal/capture-order', {
@@ -149,8 +146,7 @@ export function PayPalCheckout() {
                     },
                     onCancel: () => {
                         console.log('PayPal payment cancelled.');
-                        // If the user cancels the popup, reset the processing state.
-                        setIsProcessing(false);
+                        setIsProcessing(false); // Reset if user cancels
                     }
                 }).render(paypalRef.current);
             } catch (err: any) {
@@ -179,7 +175,7 @@ export function PayPalCheckout() {
             <div className="flex flex-col items-center justify-center text-center p-4 min-h-[120px]">
                 <Loader2 className="h-8 w-8 text-primary animate-spin" />
                 <p className="mt-2 font-semibold text-foreground">Processing your payment...</p>
-                <p className="text-sm text-muted-foreground">Please follow the instructions in the PayPal window.</p>
+                <p className="text-sm text-muted-foreground">Please do not close this window.</p>
             </div>
         );
     }
@@ -200,7 +196,7 @@ export function PayPalCheckout() {
 
     return (
         <div className="min-h-[120px]">
-            { !isButtonReady && (
+            { !isButtonReady && !isProcessing && (
                 <div className="space-y-2 animate-pulse">
                     <div className="h-[55px] bg-gray-300/50 rounded-md"></div>
                     <div className="h-[55px] bg-gray-300/50 rounded-md"></div>
