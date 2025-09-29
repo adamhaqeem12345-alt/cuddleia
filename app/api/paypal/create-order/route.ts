@@ -28,3 +28,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `There was an issue connecting to PayPal: ${errorMessage}` }, { status: 500 });
   }
 }
+
