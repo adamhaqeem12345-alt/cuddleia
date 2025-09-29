@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    --background: 350 100% 98%; /* Very light pink */
+    --background: 345 100% 97%; /* Brighter Pink */
     --foreground: 350 60% 25%; /* Deep burgundy */
 
     --card: 350 80% 96%;
@@ -13,7 +13,7 @@
     --popover: 350 80% 96%;
     --popover-foreground: 350 60% 25%;
 
-    --primary: 340 90% 70%; /* Saturated Pink */
+    --primary: 340 100% 65%; /* Hotter Pink */
     --primary-foreground: 350 60% 25%; /* Deep burgundy */
 
     --secondary: 350 60% 92%;
@@ -22,7 +22,7 @@
     --muted: 350 60% 92%;
     --muted-foreground: 350 60% 55%;
 
-    --accent: 340 100% 95%; /* Soft, warm pink for hero */
+    --accent: 340 100% 90%; /* Stronger, vibrant pink for hero */
     --accent-foreground: 350 60% 25%;
 
     --destructive: 0 84% 60%;
