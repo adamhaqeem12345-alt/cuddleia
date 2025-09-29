@@ -9,8 +9,8 @@ import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { PayPalScriptProvider, PayPalButtons, OnApproveDataType } from '@paypal/react-paypal-js';
-import type { OrderResponseBody, CreateOrderData } from '@paypal/paypal-js';
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
+import type { OrderResponseBody, CreateOrderData, OnApproveDataType } from '@paypal/paypal-js';
 import { Product } from '@/lib/products';
 
 export default function CheckoutPage() {
@@ -263,5 +263,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
