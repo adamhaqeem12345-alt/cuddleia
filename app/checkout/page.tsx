@@ -10,7 +10,6 @@ import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
-import { createToyyibpayBill } from './actions';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -67,18 +66,33 @@ export default function CheckoutPage() {
     setIsToyyibPayProcessing(true);
     setError(null);
     try {
-        // In a real app, you would get customer details from a form
-        const result = await createToyyibpayBill(items, subtotal, 'Customer Name', 'customer@example.com');
-        if (result?.error) {
-            setError(result.error);
-        }
-    } catch (err) {
-        console.error(err);
-        setError('An unexpected error occurred. Please try again.');
+      const response = await fetch('/api/toyyibpay', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          total: subtotal,
+          customerName: 'Customer Name', // Placeholder
+          customerEmail: 'customer@example.com', // Placeholder
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error(data.error || 'Failed to create ToyyibPay bill.');
+      }
+    } catch (err: any) {
+      console.error('ToyyibPay Error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
-        setIsToyyibPayProcessing(false);
+      setIsToyyibPayProcessing(false);
     }
-  }
+  };
 
   if (items.length === 0) {
     return null; 
