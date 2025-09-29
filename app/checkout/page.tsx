@@ -25,23 +25,9 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (hasHydrated && items.length === 0) {
-      // Check for success query param from PayPal
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      const payerId = urlParams.get('PayerID');
-
-      // If it's a successful PayPal redirect, show success and clear cart
-      if (token && payerId) {
-        // Here you would typically capture the order on the server
-        // For now, we will just clear the cart and redirect to a success page
-        console.log('PayPal transaction successful. Token:', token);
-        clearCart();
-        router.push('/order-success'); // Redirect to a generic success page
-      } else {
-        router.push('/products');
-      }
+      router.push('/products');
     }
-  }, [items, router, hasHydrated, clearCart]);
+  }, [items, router, hasHydrated]);
 
 
   useEffect(() => {
@@ -221,14 +207,12 @@ export default function CheckoutPage() {
                                 });
                             }}
                             onApprove={async (data, actions) => {
-                                // This function is called when the user approves the payment.
-                                // Here, you would typically capture the order on your server.
                                 console.log('Payment Approved:', data);
                                 setIsProcessing(true);
+                                // In a real app, you would now capture the order on the server.
                                 // For now, we will just clear the cart and redirect.
-                                // In a real app, call your server to capture the order first.
                                 // const details = await actions.order.capture();
-                                // await fetch('/api/paypal/capture-order', { ... });
+                                // await fetch('/api/paypal/capture-order', { body: JSON.stringify({ orderId: data.orderID }) });
                                 clearCart();
                                 router.push('/order-success');
                             }}
