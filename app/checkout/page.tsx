@@ -157,7 +157,7 @@ export default function CheckoutPage() {
                         <Button 
                             variant="outline"
                             size="lg" 
-                            className="w-full"
+                            className="w-full font-bold"
                             onClick={handleToyyibPay}
                             disabled={isToyyibPayProcessing}
                         >
