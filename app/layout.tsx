@@ -1,22 +1,5 @@
 import type { Metadata } from 'next';
-import { Belleza, Alegreya_Sans } from 'next/font/google';
-import { cn } from '@/lib/utils';
-import Header from '@/components/header';
-import Footer from '@/components/footer';
-import { CartProviderWrapper } from '@/components/cart-provider-wrapper';
 import '@/app/globals.css';
-
-const belleza = Belleza({
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-belleza',
-});
-
-const alegreya = Alegreya_Sans({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-alegreya',
-});
 
 export const metadata: Metadata = {
   title: 'Cuddleia | Cozy Digital Goods with Heart',
@@ -29,13 +12,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn(belleza.variable, alegreya.variable)}>
+    <html lang="en">
       <body>
-        <CartProviderWrapper>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-        </CartProviderWrapper>
+        {children}
       </body>
     </html>
   );
