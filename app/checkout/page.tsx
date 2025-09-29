@@ -22,10 +22,10 @@ export default function CheckoutPage() {
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    if (hasHydrated && items.length === 0 && !isProcessing) {
+    if (hasHydrated && items.length === 0) {
       router.push('/products');
     }
-  }, [items, router, isProcessing, hasHydrated]);
+  }, [items, router, hasHydrated]);
 
   useEffect(() => {
     const handlePageShow = () => {
@@ -74,7 +74,7 @@ export default function CheckoutPage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ items, total: subtotal }),
+            body: JSON.stringify({ total: subtotal }),
         });
 
         const data = await response.json();
