@@ -157,7 +157,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      Connecting to our secure payment processor...
+                      Processing your payment...
                     </span>
                   </div>
                 </div>
@@ -210,11 +210,11 @@ export default function CheckoutPage() {
                                 console.log('Payment Approved:', data);
                                 setIsProcessing(true);
                                 // In a real app, you would now capture the order on the server.
-                                // For now, we will just clear the cart and redirect.
+                                // For this example, we'll just simulate success.
                                 // const details = await actions.order.capture();
                                 // await fetch('/api/paypal/capture-order', { body: JSON.stringify({ orderId: data.orderID }) });
                                 clearCart();
-                                router.push('/order-success');
+                                router.push('/order-success'); // Redirect to a success page
                             }}
                             onError={(err) => {
                                 console.error("PayPal onError:", err);
