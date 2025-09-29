@@ -3,14 +3,16 @@
 
 /**
  * Fetches an access token from the PayPal API.
+ * This function is designed to be called only on the server side.
  * @returns {Promise<string>} The access token.
  */
 async function getAccessToken(): Promise<string> {
+    // These variables are read at runtime on the server.
     const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-        console.error("CRITICAL: Missing PayPal credentials in environment variables.");
+        console.error("CRITICAL: Missing PayPal credentials in server environment variables.");
         throw new Error("MISSING_API_CREDENTIALS");
     }
 
@@ -109,5 +111,4 @@ export async function captureOrder(orderID: string): Promise<any> {
 
   return response.json();
 }
-
     

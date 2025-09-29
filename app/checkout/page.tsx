@@ -39,8 +39,14 @@ export default function CheckoutPage() {
     }
   }, [items, router, isClient, isProcessing]);
 
+  // Pre-create the PayPal order when the page loads
   useEffect(() => {
     if (isClient && subtotal > 0 && paypalClientID) {
+      // Set a flag to show we are preparing the order
+      if (!paypalOrderID && !isProcessing && !error) {
+        setIsProcessing(true); 
+      }
+      
       const createOrder = async () => {
         setError(null);
         try {
@@ -63,14 +69,16 @@ export default function CheckoutPage() {
           }
           setError(message);
           console.error('Error creating PayPal order in advance:', err);
+        } finally {
+            setIsProcessing(false);
         }
       };
       createOrder();
     }
-  }, [isClient, subtotal, paypalClientID]);
+  }, [isClient, subtotal, paypalClientID]); // Dependency array is key
 
 
-  if (!isClient || items.length === 0) {
+  if (!isClient || (items.length === 0 && !isProcessing)) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-16 w-16 animate-spin" />
@@ -102,9 +110,10 @@ export default function CheckoutPage() {
     }
   };
 
+  // This function now just returns the pre-fetched order ID
   const createPayPalOrder = (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
-    console.log("Providing pre-created PayPal order ID...");
     if (!paypalOrderID) {
+      setError("PayPal Order ID not ready. Please wait a moment and try again.");
       return Promise.reject(new Error("PayPal Order ID not available."));
     }
     return Promise.resolve(paypalOrderID);
@@ -113,7 +122,6 @@ export default function CheckoutPage() {
   const onPayPalApprove = async (data: OnApproveData, actions: any) => {
     setIsProcessing(true);
     setError(null);
-    console.log("PayPal payment approved. Capturing order...");
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -124,7 +132,6 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
-        console.log("Order captured successfully. Clearing cart and redirecting.");
         clearCart();
         router.push('/checkout/success');
       } else {
@@ -137,7 +144,6 @@ export default function CheckoutPage() {
       }
       setError(message);
       setIsProcessing(false);
-      console.error("Error capturing PayPal order:", err);
     }
   };
   
@@ -211,12 +217,12 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {isProcessing ? (
+              {(isProcessing && !paypalOrderID) ? (
                 <div className="text-center p-8">
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      Processing payment...
+                      Preparing secure payment...
                     </span>
                   </div>
                 </div>
@@ -246,7 +252,7 @@ export default function CheckoutPage() {
                     </p>
                      {paypalClientID ? (
                         <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
-                            {!paypalOrderID ? (
+                            {!paypalOrderID && !error ? (
                                 <div className="flex items-center justify-center h-24">
                                     <Loader2 className="h-6 w-6 animate-spin" />
                                     <span className="ml-3 font-semibold text-muted-foreground">Preparing PayPal...</span>
@@ -258,7 +264,7 @@ export default function CheckoutPage() {
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
                                     onError={onPayPalError}
-                                    disabled={isProcessing}
+                                    disabled={isProcessing || !paypalOrderID || !!error}
                                 />
                             )}
                         </PayPalScriptProvider>
@@ -287,5 +293,4 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
     
