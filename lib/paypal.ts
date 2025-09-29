@@ -1,21 +1,21 @@
 // lib/paypal.ts
 
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
-const base = process.env.NODE_ENV === 'production' 
-    ? "https://api-m.paypal.com" 
-    : "https://api-m.sandbox.paypal.com";
-
 /**
  * Fetches an access token from the PayPal API.
  * @returns {Promise<string>} The access token.
  */
 async function getAccessToken(): Promise<string> {
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
         throw new Error("MISSING_API_CREDENTIALS");
     }
 
     const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64");
+    const base = process.env.NODE_ENV === 'production' 
+        ? "https://api-m.paypal.com" 
+        : "https://api-m.sandbox.paypal.com";
 
     const response = await fetch(`${base}/v1/oauth2/token`, {
         method: "POST",
@@ -43,6 +43,9 @@ async function getAccessToken(): Promise<string> {
  */
 export async function createOrder(totalValue: number, currency: string): Promise<{orderID: string, approveLink: string}> {
     const accessToken = await getAccessToken();
+    const base = process.env.NODE_ENV === 'production' 
+        ? "https://api-m.paypal.com" 
+        : "https://api-m.sandbox.paypal.com";
     const url = `${base}/v2/checkout/orders`;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
@@ -96,6 +99,9 @@ export async function createOrder(totalValue: number, currency: string): Promise
  */
 export async function captureOrder(orderID: string): Promise<any> {
   const accessToken = await getAccessToken();
+  const base = process.env.NODE_ENV === 'production' 
+        ? "https://api-m.paypal.com" 
+        : "https://api-m.sandbox.paypal.com";
   const url = `${base}/v2/checkout/orders/${orderID}/capture`;
 
   const response = await fetch(url, {
