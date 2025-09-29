@@ -14,6 +14,7 @@ import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } f
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
+  const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
 
   useEffect(() => {
     if (items.length === 0) {
@@ -97,7 +98,7 @@ export default function CheckoutPage() {
             <AnimateIn delay={150}>
                  <div className="bg-card p-8 rounded-2xl shadow-lg">
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
-                    <PayPalScriptProvider options={{ clientId: "YOUR_LIVE_CLIENT_ID", currency: "USD", intent: "capture" }}>
+                    <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
                         <PayPalButtons 
                             style={{ layout: "vertical" }}
                             createOrder={createOrder}
