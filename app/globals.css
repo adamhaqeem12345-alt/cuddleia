@@ -1,82 +1,33 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
   :root {
-    --background: 345 30% 97%;
-    --foreground: 345 35% 25%;
-
-    --hero-background: 345 95% 92%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 345 35% 25%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 345 35% 25%;
-
-    --primary: 345 90% 70%;
-    --primary-foreground: 345 35% 25%;
-
-    --secondary: 345 60% 94%;
-    --secondary-foreground: 345 35% 25%;
-
-    --muted: 345 60% 94%;
-    --muted-foreground: 345 25% 45%;
-
-    --accent: 345 80% 94%;
-    --accent-foreground: 345 35% 25%;
-
-    --destructive: 0, 84%, 60%;
-    --destructive-foreground: 345, 100%, 98%;
-
-    --border: 345 40% 90%;
-    --input: 345 40% 90%;
-    --ring: 345 85% 60%;
-
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 345 12% 10%;
-    --foreground: 345 100% 98%;
-
-    --hero-background: 345 12% 12%;
-
-    --card: 345 12% 10%;
-    --card-foreground: 345 100% 98%;
-
-    --popover: 345 12% 10%;
-    --popover-foreground: 345 100% 98%;
-
-    --primary: 345 85% 60%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 345 12% 20%;
-    --secondary-foreground: 345 100% 98%;
-
-    --muted: 345 12% 20%;
-    --muted-foreground: 345 100% 90%;
-
-    --accent: 345 12% 20%;
-    --accent-foreground: 345 100% 98%;
-
-    --destructive: 0, 63%, 31%;
-    --destructive-foreground: 345, 100%, 98%;
-
-    --border: 345 12% 20%;
-    --input: 345 12% 20%;
-    --ring: 345 85% 60%;
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
 }
-    
