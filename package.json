@@ -1,5 +1,5 @@
 {
-  "name": "cuddleia-nextjs",
+  "name": "new-next-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,10 +11,7 @@
   "dependencies": {
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.5",
-    "tailwindcss-animate": "^1.0.7",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.4.0"
+    "next": "14.2.3"
   },
   "devDependencies": {
     "typescript": "^5",
@@ -24,7 +21,6 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "eslint": "^8",
-    "eslint-config-next": "14.2.5",
-    "autoprefixer": "^10.4.19"
+    "eslint-config-next": "14.2.3"
   }
 }
