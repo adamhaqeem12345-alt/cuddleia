@@ -33,14 +33,15 @@ export async function POST(req: NextRequest) {
     }
     
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-    const billName = 'Cuddleia Store Purchase';
-    const billDescription = items.map(item => item.name).join(', ').substring(0, 100);
-    const billAmountInCents = Math.round(total * 100);
     
     // In a real application with a database, you would create an order record here
     // and use its unique ID as the billExternalReferenceNo.
     const orderId = uuidv4();
+    
+    // Adhering to API character limits to prevent errors.
+    const billName = `Cuddleia Order ${orderId.substring(0, 8)}`;
+    const billDescription = 'Your digital goods from Cuddleia.';
+    const billAmountInCents = Math.round(total * 100);
 
     const params = new URLSearchParams({
       userSecretKey: TOYYIBPAY_SECRET,
