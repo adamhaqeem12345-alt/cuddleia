@@ -25,6 +25,12 @@ export function PayPalCheckout() {
     const [isInteracting, setIsInteracting] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
     const interactionTimer = useRef<NodeJS.Timeout | null>(null);
+    const cartRef = useRef(cart);
+
+    // Keep a ref to the cart to avoid re-running the PayPal script effect
+    useEffect(() => {
+        cartRef.current = cart;
+    }, [cart]);
 
     const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
 
@@ -61,10 +67,11 @@ export function PayPalCheckout() {
                 clearTimeout(interactionTimer.current);
             }
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [PAYPAL_CLIENT_ID]);
 
     useEffect(() => {
-        if (scriptLoaded && paypalRef.current && paypalRef.current.childElementCount === 0 && !isProcessing) {
+        if (scriptLoaded && paypalRef.current && paypalRef.current.childElementCount === 0) {
             try {
                 window.paypal.Buttons({
                     style: {
@@ -88,7 +95,8 @@ export function PayPalCheckout() {
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
-                            const totalValue = cart.reduce((acc, item) => acc + (item.price / 100) * item.quantity, 0).toFixed(2);
+                            const currentCart = cartRef.current;
+                            const totalValue = currentCart.reduce((acc, item) => acc + (item.price / 100) * item.quantity, 0).toFixed(2);
                             
                             if (parseFloat(totalValue) <= 0) {
                                 setError("Cart total must be greater than zero.");
@@ -106,7 +114,7 @@ export function PayPalCheckout() {
                                             }
                                         }
                                     },
-                                    items: cart.map(item => ({
+                                    items: currentCart.map(item => ({
                                         name: item.name,
                                         unit_amount: {
                                             currency_code: 'USD',
@@ -175,7 +183,8 @@ export function PayPalCheckout() {
                  console.error("PayPal Buttons render error:", err);
             }
         }
-    }, [scriptLoaded, cart, router, PAYPAL_CLIENT_ID, isProcessing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [scriptLoaded, router]);
 
     if (!PAYPAL_CLIENT_ID) {
          return (
