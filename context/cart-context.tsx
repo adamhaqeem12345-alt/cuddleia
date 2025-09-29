@@ -53,7 +53,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const getPrice = (priceInCents: number): Price => {
     const usdPrice = priceInCents / 100;
-    const myrPrice = usdPrice * USD_TO_MYR_RATE;
+    const myrPrice = usdPrice * USD_TO_MYR_rate;
     return {
         usd: {
             formatted: `$${usdPrice.toFixed(2)} USD`,

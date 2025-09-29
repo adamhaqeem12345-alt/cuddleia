@@ -3,7 +3,7 @@ import { Belleza, Alegreya_Sans } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import { CartProvider } from '@/context/cart-context';
+import { CartProviderWrapper } from '@/components/cart-provider-wrapper';
 import '@/app/globals.css';
 
 const belleza = Belleza({
@@ -31,11 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn(belleza.variable, alegreya.variable)}>
       <body>
-        <CartProvider>
+        <CartProviderWrapper>
           <Header />
           <main className="flex-grow">{children}</main>
           <Footer />
-        </CartProvider>
+        </CartProviderWrapper>
       </body>
     </html>
   );
