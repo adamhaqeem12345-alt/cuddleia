@@ -51,7 +51,7 @@ export function SiteHeader() {
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-full max-w-[22rem]">
+              <SheetContent side="left" className="w-full max-w-[20rem]">
                 <div className="flex flex-col h-full p-4">
                   <div className="border-b pb-4 mb-4">
                      <Link href="/" className="transition-transform hover:scale-105">
