@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js';
 import type { OrderResponseBody, CreateOrderData, OnApproveData } from '@paypal/paypal-js';
 import { Product } from '@/lib/products';
+import { useHasHydrated } from '@/lib/utils';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -20,15 +21,18 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasHydrated = useHasHydrated();
+
 
   const USD_TO_MYR = 4.21;
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    if (items.length === 0 && !isProcessing && !isRedirecting) {
+    // Only redirect if hydration is complete and the cart is truly empty.
+    if (hasHydrated && items.length === 0 && !isProcessing && !isRedirecting) {
       router.push('/products');
     }
-  }, [items, router, isProcessing, isRedirecting]);
+  }, [items, router, isProcessing, isRedirecting, hasHydrated]);
 
   // This effect handles the case where the user navigates back from the payment gateway.
   useEffect(() => {
@@ -149,8 +153,8 @@ export default function CheckoutPage() {
     }, 3000);
   }
 
-  if (items.length === 0 && !isRedirecting) {
-    return null; 
+  if (!hasHydrated || (items.length === 0 && !isRedirecting)) {
+    return null; // Render nothing until hydrated or if cart is truly empty
   }
   
   if (!paypalClientId) {
@@ -282,3 +286,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
