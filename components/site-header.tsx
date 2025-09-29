@@ -51,9 +51,9 @@ export function SiteHeader() {
                   <span className="sr-only">Open Menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:w-auto sm:max-w-xs">
-                <div className="flex flex-col h-full">
-                  <div className="border-b pb-4">
+              <SheetContent side="left" className="w-full sm:max-w-sm">
+                <div className="flex flex-col h-full p-4">
+                  <div className="border-b pb-4 mb-4">
                      <Link href="/" className="transition-transform hover:scale-105">
                       <div className="flex items-center gap-2">
                         <Flower2 className="h-8 w-8 text-primary" />
@@ -63,12 +63,12 @@ export function SiteHeader() {
                       </div>
                     </Link>
                   </div>
-                  <nav className="flex flex-col gap-6 py-6">
+                  <nav className="flex flex-col gap-4">
                     {navLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="font-headline text-xl text-foreground/80 transition-colors hover:text-primary"
+                        className="font-headline text-xl text-foreground/80 transition-colors hover:text-primary p-2 rounded-md hover:bg-accent"
                       >
                         {link.label}
                       </Link>
