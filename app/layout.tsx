@@ -5,13 +5,13 @@ import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Alegreya({
+const fontHeadline = Alegreya_Sans({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-headline',
 });
 
-const fontBody = Alegreya_Sans({
+const fontBody = Alegreya({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-body',
