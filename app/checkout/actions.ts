@@ -38,20 +38,20 @@ export async function createToyyibpayBill(
       body: params,
     });
 
+    // ToyyibPay might return errors with a 200 OK status, so we need to inspect the body
     const data = await response.json();
 
     if (data && data.length > 0 && data[0].BillCode) {
       const billCode = data[0].BillCode;
       redirect(TOYYIBPAY_BILL_URL + billCode);
     } else {
-      console.error('ToyyibPay API Error:', data);
+      // If there's no BillCode, it's an error. Log the actual response from ToyyibPay.
+      console.error('ToyyibPay API Error Response:', data);
       throw new Error('Could not create ToyyibPay bill. The API returned an error.');
     }
   } catch (error) {
     console.error('Failed to create Toyyibpay bill:', error);
-    if (error instanceof Error && error.message.includes('Could not create ToyyibPay bill')) {
-        throw error;
-    }
+    // Re-throw a generic error to be caught by the client
     throw new Error('There was an issue connecting to our payment provider. Please try again later.');
   }
 }
