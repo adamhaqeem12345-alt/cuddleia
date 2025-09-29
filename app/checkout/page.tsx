@@ -68,12 +68,16 @@ export default function CheckoutPage() {
     setError(null);
     try {
         const details: OrderResponseBody = await actions.order.capture();
-        const payerName = details.payer.name?.given_name;
-        const payerEmail = details.payer.email_address;
+        
+        // Safely access payer information
+        if (details && details.payer) {
+            const payerName = details.payer.name?.given_name;
+            const payerEmail = details.payer.email_address;
 
-        if (payerName && payerEmail) {
-            // Send email but don't wait for it to complete
-            sendConfirmationEmail(payerName, payerEmail, items);
+            if (payerName && payerEmail) {
+                // Send email but don't wait for it to complete
+                sendConfirmationEmail(payerName, payerEmail, items);
+            }
         }
         
         // Immediately clear cart and redirect.
