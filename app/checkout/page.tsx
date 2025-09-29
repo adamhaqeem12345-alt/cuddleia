@@ -9,6 +9,8 @@ import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useHasHydrated } from '@/lib/hooks';
+import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+
 
 export default function CheckoutPage() {
   const { items, subtotal } = useCart();
@@ -65,7 +67,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePayPal = async () => {
+  const createPayPalOrder = async () => {
     setIsProcessing(true);
     setError(null);
     try {
@@ -76,19 +78,21 @@ export default function CheckoutPage() {
         },
         body: JSON.stringify({ total: subtotal.toFixed(2) }),
       });
-
+  
       const data = await response.json();
-
+  
       if (response.ok && data.approveUrl) {
+        // This is where the redirect happens.
         window.location.href = data.approveUrl;
+        return data.orderID; // Return orderID for PayPal script, though redirect takes precedence
       } else {
-        setError(data.error || 'Could not initiate PayPal payment.');
-        setIsProcessing(false);
+        throw new Error(data.error || 'Could not create PayPal order.');
       }
-    } catch (err) {
-      console.error('PayPal fetch error:', err);
-      setError('An unexpected error occurred. Please try again.');
+    } catch (err: any) {
+      console.error('PayPal creation error:', err);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
       setIsProcessing(false);
+      throw err; // Re-throw to be caught by PayPal's onError
     }
   };
 
@@ -171,7 +175,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      Processing your payment...
+                      Redirecting to payment...
                     </span>
                   </div>
                 </div>
@@ -199,13 +203,24 @@ export default function CheckoutPage() {
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
                       International Customers (Card / PayPal)
                     </p>
-                    <button
-                      onClick={handlePayPal}
-                      disabled={isProcessing}
-                      className="w-full h-11 px-8 inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-[#ffc439] hover:bg-[#ffc439]/90 text-[#003087] font-bold"
-                    >
-                      Pay with PayPal
-                    </button>
+                    <PayPalScriptProvider options={{ "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "", currency: "USD", intent: "capture" }}>
+                       <PayPalButtons
+                            style={{ layout: "vertical", shape: 'rect' }}
+                            createOrder={createPayPalOrder}
+                            onApprove={async (data, actions) => {
+                              // This function is required, but the main logic is the redirect in createOrder.
+                              // This part will run if the redirect somehow fails or is blocked.
+                              setIsProcessing(true);
+                              router.push(`/checkout/success?orderID=${data.orderID}`);
+                            }}
+                            onError={(err: any) => {
+                                console.error("PayPal Buttons Error:", err);
+                                setError("An error occurred with the PayPal payment. Please try again.");
+                                setIsProcessing(false);
+                            }}
+                            disabled={isProcessing}
+                        />
+                    </PayPalScriptProvider>
                   </div>
                 </div>
               )}

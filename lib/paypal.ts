@@ -51,8 +51,7 @@ export async function createOrder(total: string) {
       },
     ],
     application_context: {
-        // IMPORTANT: These URLs must be absolute and accessible from the public internet.
-        // For local development, you must use a tunneling service like ngrok.
+        // These URLs are where PayPal will redirect the user after payment.
         return_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout/success`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/checkout`,
         brand_name: "Cuddleia",
