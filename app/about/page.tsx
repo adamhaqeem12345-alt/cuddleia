@@ -18,7 +18,7 @@ export default function AboutPage() {
               <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
                 Our <span className="text-primary">Story</span>
               </h1>
-              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
+              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
                 Cuddleia began with honesty, faith, and a dream to create
                 something meaningful.
               </p>
@@ -34,7 +34,7 @@ export default function AboutPage() {
               <h2 className="font-headline text-4xl leading-tight text-foreground">
                 From a simple idea to a cozy corner of the internet.
               </h2>
-              <div className="prose prose-lg mt-6 max-w-none font-body text-foreground/80 mx-auto space-y-4">
+              <div className="prose prose-lg mt-6 max-w-none font-body text-muted-foreground mx-auto space-y-4">
                 <p>
                   Cuddleia is born from a simple dream: to bring warmth, beauty,
                   and faith into the digital spaces we inhabit daily. We are
@@ -80,7 +80,7 @@ export default function AboutPage() {
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-4xl text-center">
               <h2 className="font-headline text-4xl">What We Cherish</h2>
-              <p className="mx-auto mt-4 max-w-2xl text-lg text-foreground/80">
+              <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
                 Our work is guided by these core principles.
               </p>
             </div>
@@ -91,7 +91,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-headline text-xl">Made with Love</h3>
-                  <p className="mt-1 text-foreground/80">
+                  <p className="mt-1 text-muted-foreground">
                     Every product is created with intention and care. From the
                     words shaped with AI to the design crafted by human hands,
                     each detail is touched by both technology and heart.
@@ -104,7 +104,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-headline text-xl">Gentle &amp; Uplifting</h3>
-                  <p className="mt-1 text-foreground/80">
+                  <p className="mt-1 text-muted-foreground">
                     Our goal is to bring peace, positivity, and faith-driven
                     encouragement into your everyday digital life.
                   </p>
@@ -118,7 +118,7 @@ export default function AboutPage() {
                   <h3 className="font-headline text-xl">
                     Aesthetic &amp; Functional
                   </h3>
-                  <p className="mt-1 text-foreground/80">
+                  <p className="mt-1 text-muted-foreground">
                     We believe beauty and purpose belong together. Our products
                     are designed to look inspiring while also helping you stay
                     organized and focused.
@@ -131,7 +131,7 @@ export default function AboutPage() {
                 </div>
                 <div>
                   <h3 className="font-headline text-xl">Built on Honesty</h3>
-                  <p className="mt-1 text-foreground/80">
+                  <p className="mt-1 text-muted-foreground">
                     We’re transparent about how we create. Our process
                     combines faith, human creativity, and the support of AI in
                     writing and ideas. Everything is refined and designed by
@@ -161,7 +161,7 @@ export default function AboutPage() {
               <div className="text-left">
                 <h3 className="font-headline text-2xl">Adam Haqeem</h3>
                 <p className="text-primary">Founder &amp; Creator</p>
-                <p className="mt-2 text-foreground/80">
+                <p className="mt-2 text-muted-foreground">
                   Adam Haqeem is the heart and soul behind Cuddleia. With a deep
                   love for faith, creativity, and honesty, he pours sincerity
                   into every digital creation. Guided by the belief that

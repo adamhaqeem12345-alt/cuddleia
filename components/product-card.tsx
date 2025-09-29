@@ -34,7 +34,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         <h3 className="font-semibold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
                             {product.name}
                         </h3>
-                        <p className="text-sm font-body text-foreground/70 line-clamp-3 mb-4">
+                        <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">
                             {product.description}
                         </p>
                     </Link>

@@ -21,7 +21,7 @@ export default function ProductsPage() {
                             <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
                                 All Products
                             </h1>
-                            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-foreground/80">
+                            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
                                 Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
                             </p>
                         </div>
