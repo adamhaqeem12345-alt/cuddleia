@@ -13,6 +13,9 @@ export async function POST(req: NextRequest) {
 
         const captureData = await captureOrder(orderID);
         
+        // TODO: Here you would trigger an email to the customer with their downloads.
+        // This requires knowing the customer's email and what they purchased, which needs to be
+        // saved in a database during order creation.
         console.log('Payment captured successfully:', captureData.id);
 
         return NextResponse.json({ success: true, data: captureData }, { status: 200 });
