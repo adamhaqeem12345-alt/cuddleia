@@ -1,33 +1,32 @@
 import type { Metadata } from 'next';
-import { Creepster, Special_Elite } from 'next/font/google';
+import { Playfair_Display, Inter } from 'next/font/google';
 import './globals.css';
 import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Creepster({
+const fontHeadline = Playfair_Display({
   subsets: ['latin'],
-  weight: ['400'],
+  weight: ['400', '700'],
   variable: '--font-headline',
 });
 
-const fontBody = Special_Elite({
+const fontBody = Inter({
   subsets: ['latin'],
-  weight: ['400'],
   variable: '--font-body',
 });
 
 export const metadata: Metadata = {
-  title: 'PUNISHMENT',
+  title: 'Cuddleia | Cozy Digital Goods with Heart',
   description:
-    'This is your punishment.',
+    'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
   keywords:
-    'punishment,failure,disappointment',
-  robots: 'noindex, nofollow',
+    'islamic digital products,ipad wallpaper,digital booklets,muslim lifestyle,cuddleia,cozy digital goods,barakah business',
+  robots: 'index, follow',
   openGraph: {
-    title: 'PUNISHMENT',
+    title: 'Cuddleia | Cozy Digital Goods with Heart',
     description:
-      'This is your punishment.',
+      'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
     url: 'https://www.cuddleia.com',
     siteName: 'Cuddleia',
     locale: 'en_US',
@@ -43,9 +42,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'PUNISHMENT',
+    title: 'Cuddleia | Cozy Digital Goods with Heart',
     description:
-      'This is your punishment.',
+      'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
     images: ['https://www.cuddleia.com/og-image.png'],
   },
   icons: {
