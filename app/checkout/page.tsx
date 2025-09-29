@@ -3,13 +3,14 @@
 
 import { useCart } from '@/lib/cart';
 import Link from 'next/link';
-import { ArrowLeft, Banknote } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { createToyyibpayBill } from './actions';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -17,6 +18,7 @@ export default function CheckoutPage() {
   const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
   const [isProcessing, setIsProcessing] = useState(false);
   const [isToyyibPayProcessing, setIsToyyibPayProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -51,7 +53,7 @@ export default function CheckoutPage() {
   const onError = (err: any) => {
     setIsProcessing(false);
     console.error('PayPal Checkout Error', err);
-    alert('An error occurred during the transaction. Please try again.');
+    setError('An error occurred during the PayPal transaction. Please try again.');
   };
 
   const handleCardClick = () => {
@@ -63,14 +65,14 @@ export default function CheckoutPage() {
 
   const handleToyyibPay = async () => {
     setIsToyyibPayProcessing(true);
-    // In a real scenario, you would redirect to ToyyibPay here.
-    // For now, we simulate success after a short delay.
-    setTimeout(() => {
-      alert('ToyyibPay transaction successful (simulation)!');
-      clearCart();
-      router.push('/');
-      setIsToyyibPayProcessing(false);
-    }, 2000);
+    setError(null);
+    try {
+        // In a real app, you would get customer details from a form
+        await createToyyibpayBill(items, subtotal, 'Customer Name', 'customer@example.com');
+    } catch (e: any) {
+        setError(e.message || 'An unexpected error occurred.');
+        setIsToyyibPayProcessing(false);
+    }
   }
 
   if (items.length === 0) {
@@ -122,6 +124,12 @@ export default function CheckoutPage() {
                  <div className="bg-card p-8 rounded-2xl shadow-lg">
                     <h2 className="font-headline text-2xl font-bold mb-6">Payment Method</h2>
                     
+                    {error && (
+                        <div className="bg-destructive/10 text-destructive-foreground border border-destructive rounded-lg p-4 mb-6 text-center">
+                            <p>{error}</p>
+                        </div>
+                    )}
+
                     <div className="mb-6">
                         <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
                         <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
@@ -134,6 +142,7 @@ export default function CheckoutPage() {
                                     if(data.fundingSource === 'card') {
                                         handleCardClick();
                                     }
+                                    setError(null);
                                     return actions.resolve();
                                 }}
                                 onCancel={() => setIsProcessing(false)}
@@ -160,7 +169,7 @@ export default function CheckoutPage() {
                             onClick={handleToyyibPay}
                             disabled={isToyyibPayProcessing}
                         >
-                            {isToyyibPayProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
+                            {isToyyibPayProcessing ? 'Connecting...' : 'Pay with ToyyibPay'}
                         </Button>
                          {isToyyibPayProcessing && (
                             <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
