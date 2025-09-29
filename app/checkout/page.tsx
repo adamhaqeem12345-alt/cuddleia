@@ -9,7 +9,8 @@ import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalScriptProvider, PayPalButtons, CreateOrderData, OnApproveDataType } from '@paypal/react-paypal-js';
+import type { OrderResponseBody } from '@paypal/paypal-js';
 import { Product } from '@/lib/products';
 
 export default function CheckoutPage() {
@@ -62,29 +63,30 @@ export default function CheckoutPage() {
     });
   };
 
-  const onApprove = async (data: OnApproveData, actions: any) => {
+  const onApprove = async (data: OnApproveDataType, actions: any) => {
     setIsProcessing(true);
     setError(null);
     try {
-      const details = await actions.order.capture();
-      const payerName = details.payer.name.given_name;
-      const payerEmail = details.payer.email_address;
+        const details: OrderResponseBody = await actions.order.capture();
+        const payerName = details.payer.name?.given_name;
+        const payerEmail = details.payer.email_address;
 
-      // Send the email in the background, but don't wait for it to finish
-      // to unblock the UI and redirect the user.
-      sendConfirmationEmail(payerName, payerEmail, items);
-      
-      // Clear cart and redirect immediately.
-      clearCart();
-      router.push('/');
+        if (payerName && payerEmail) {
+            // Send email but don't wait for it to complete
+            sendConfirmationEmail(payerName, payerEmail, items);
+        }
+        
+        // Immediately clear cart and redirect.
+        clearCart();
+        router.push('/');
 
     } catch (err) {
-      console.error('Payment capture or email sending error:', err);
-      setError('Your payment was processed, but there was an issue finalizing the order. Please check your inbox or contact support.');
-      setIsProcessing(false); // Only reset on error
+        console.error('Payment capture or email sending error:', err);
+        setError('Your payment was processed, but there was an issue finalizing your order. Please check your inbox or contact support.');
+        setIsProcessing(false); // Only reset on error
     }
   };
-
+  
   const handleToyyibPay = async () => {
     setIsProcessing(true);
     setIsRedirecting(true);
@@ -261,3 +263,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
