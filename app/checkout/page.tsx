@@ -30,6 +30,21 @@ export default function CheckoutPage() {
     }
   }, [items, router, isProcessing, isRedirecting]);
 
+  // This effect handles the case where the user navigates back from the payment gateway.
+  useEffect(() => {
+    const handlePageShow = () => {
+      // When the page is shown again (e.g., via the back button), reset the state.
+      setIsProcessing(false);
+      setIsRedirecting(false);
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
+  }, []);
+
+
   const sendConfirmationEmail = async (payerName: string, payerEmail: string, purchasedItems: Product[]) => {
     try {
       await fetch('/api/email', {
