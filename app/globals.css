@@ -4,17 +4,17 @@
 
 @layer base {
   :root {
-    --background: 348 43% 97%; /* Very light pink */
-    --foreground: 345 10% 25%;
+    --background: 348 100% 99%; /* Lighter pinkish white */
+    --foreground: 345 35% 22%; /* Dark burgundy */
 
-    --card: 348 43% 99%;
-    --card-foreground: 345 10% 25%;
+    --card: 348 100% 99%;
+    --card-foreground: 345 35% 22%;
 
-    --popover: 348 43% 99%;
-    --popover-foreground: 345 10% 25%;
+    --popover: 348 100% 99%;
+    --popover-foreground: 345 35% 22%;
 
-    --primary: 340 76% 83%; /* Soft pink */
-    --primary-foreground: 345 30% 20%;
+    --primary: 340 85% 70%; /* Main pink for buttons/links */
+    --primary-foreground: 355 100% 97%;
 
     --secondary: 348 30% 93%;
     --secondary-foreground: 345 10% 25%;
@@ -22,15 +22,15 @@
     --muted: 348 30% 93%;
     --muted-foreground: 345 8% 50%;
 
-    --accent: 270 76% 83%; /* Pale lavender */
-    --accent-foreground: 270 30% 20%;
+    --accent: 340 90% 96%; /* Hero section background pink */
+    --accent-foreground: 345 35% 22%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 348 30% 88%;
     --input: 348 30% 88%;
-    --ring: 340 76% 73%;
+    --ring: 340 85% 80%;
 
     --radius: 1.25rem;
   }
@@ -45,8 +45,8 @@
     --popover: 345 15% 12%;
     --popover-foreground: 348 30% 93%;
 
-    --primary: 340 76% 83%;
-    --primary-foreground: 345 30% 20%;
+    --primary: 340 85% 70%;
+    --primary-foreground: 355 100% 97%;
 
     --secondary: 345 15% 18%;
     --secondary-foreground: 348 30% 93%;
@@ -54,15 +54,15 @@
     --muted: 345 15% 18%;
     --muted-foreground: 348 15% 65%;
 
-    --accent: 270 76% 83%;
-    --accent-foreground: 270 30% 20%;
+    --accent: 340 90% 96%;
+    --accent-foreground: 345 35% 22%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 345 15% 22%;
     --input: 345 15% 22%;
-    --ring: 340 76% 73%;
+    --ring: 340 85% 80%;
   }
 }
 
@@ -72,10 +72,5 @@
   }
   body {
     @apply bg-background text-foreground;
-  }
-  .bg-hero-background {
-      background-image: linear-gradient(to top, hsl(var(--background)) 5%, transparent 60%), url('https://i.postimg.cc/B6fhrK2V/Cuddleia-Hero-Banner.png');
-      background-size: cover;
-      background-position: center;
   }
 }

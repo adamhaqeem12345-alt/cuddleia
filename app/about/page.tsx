@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="bg-background">
-      <section className="relative w-full bg-hero-background py-20 md:py-28 flex items-center justify-center">
+      <section className="bg-accent py-20 md:py-28 flex items-center justify-center">
         <div className="container mx-auto px-4">
           <AnimateIn>
             <div className="relative z-10 text-center">
