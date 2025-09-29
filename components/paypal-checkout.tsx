@@ -22,6 +22,7 @@ export function PayPalCheckout() {
     const [isButtonReady, setIsButtonReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
 
     const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -70,7 +71,8 @@ export function PayPalCheckout() {
                         setIsButtonReady(true);
                     },
                     onClick: () => {
-                        setError(null); // Clear any previous errors when the user tries again
+                        setError(null);
+                        setIsInitiatingPayment(true);
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
@@ -109,11 +111,13 @@ export function PayPalCheckout() {
                         } catch (err: any) {
                              console.error("CLIENT_CREATE_ORDER_ERROR:", err);
                              setError("An error occurred while preparing your order. Please check the cart and try again.");
+                             setIsInitiatingPayment(false);
                              throw err;
                         }
                     },
                     onApprove: async (data: OnApproveData) => {
-                         setIsProcessing(true); // Show processing spinner ONLY on approval
+                         setIsProcessing(true);
+                         setIsInitiatingPayment(false);
                          setError(null);
                          try {
                             const res = await fetch('/api/paypal/capture-order', {
@@ -136,17 +140,19 @@ export function PayPalCheckout() {
                          } catch (err: any) {
                             console.error("CAPTURE_ORDER_ERROR:", err);
                             setError(err.message || 'An error occurred while capturing the order.');
-                            setIsProcessing(false); // Stop processing on error
+                            setIsProcessing(false);
                          }
                     },
                     onError: (err: any) => {
                         console.error('PayPal Buttons onError:', err);
                         setError("An unexpected error occurred with PayPal. Please try again or contact support.");
                         setIsProcessing(false);
+                        setIsInitiatingPayment(false);
                     },
                     onCancel: () => {
                         console.log('PayPal payment cancelled.');
-                        setIsProcessing(false); // Reset if user cancels
+                        setIsProcessing(false);
+                        setIsInitiatingPayment(false);
                     }
                 }).render(paypalRef.current);
             } catch (err: any) {
@@ -198,11 +204,17 @@ export function PayPalCheckout() {
         <div className="min-h-[120px]">
             { !isButtonReady && !isProcessing && (
                 <div className="space-y-2 animate-pulse">
-                    <div className="h-[55px] bg-gray-300/50 rounded-md"></div>
-                    <div className="h-[55px] bg-gray-300/50 rounded-md"></div>
+                    <div className="h-[55px] bg-muted/50 rounded-md"></div>
+                    <div className="h-[55px] bg-muted/50 rounded-md"></div>
                 </div>
             )}
             <div ref={paypalRef} style={{ opacity: isButtonReady ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}></div>
+            {isInitiatingPayment && (
+                <div className="flex items-center justify-center text-center mt-2">
+                    <Loader2 className="h-4 w-4 text-muted-foreground animate-spin mr-2" />
+                    <p className="text-sm text-muted-foreground">Opening secure payment form...</p>
+                </div>
+            )}
         </div>
     );
 }
