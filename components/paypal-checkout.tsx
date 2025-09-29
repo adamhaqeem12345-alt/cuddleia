@@ -27,7 +27,7 @@ export function PayPalCheckout() {
     const [isInteracting, setIsInteracting] = useState(false);
     
     const paypalRef = useRef<HTMLDivElement>(null);
-    const interactionTimer = useRef<any>(null);
+    const interactionTimer = useRef<number | null>(null);
     const cartRef = useRef<CartItem[]>(cart);
 
     useEffect(() => {
@@ -89,7 +89,7 @@ export function PayPalCheckout() {
                         setError(null);
                         setIsInteracting(true);
                         if (interactionTimer.current) clearTimeout(interactionTimer.current);
-                        interactionTimer.current = setTimeout(() => {
+                        interactionTimer.current = window.setTimeout(() => {
                             setIsInteracting(false);
                         }, 3000);
                     },
