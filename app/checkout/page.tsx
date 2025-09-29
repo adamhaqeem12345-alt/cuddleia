@@ -13,8 +13,12 @@ import {
   PayPalScriptProvider,
   PayPalButtons,
   OnApproveData,
+  CreateOrderData,
 } from '@paypal/react-paypal-js';
-import type { CreateOrderActions } from '@paypal/paypal-js';
+import type {
+  CreateOrderActions,
+  OnApproveActions,
+} from '@paypal/paypal-js';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -22,7 +26,6 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [paypalOrderID, setPaypalOrderID] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -34,57 +37,10 @@ export default function CheckoutPage() {
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    if (isClient && items.length === 0 && !isProcessing) {
+    if (isClient && items.length === 0) {
       router.push('/products');
     }
-  }, [items, router, isClient, isProcessing]);
-
-  // Pre-create the PayPal order when the page loads
-  useEffect(() => {
-    if (isClient && subtotal > 0 && paypalClientID) {
-      // Set a flag to show we are preparing the order
-      if (!paypalOrderID && !isProcessing && !error) {
-        setIsProcessing(true); 
-      }
-      
-      const createOrder = async () => {
-        setError(null);
-        try {
-          const response = await fetch('/api/paypal/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subtotal: subtotal }),
-          });
-
-          const orderData = await response.json();
-          if (response.ok && orderData.orderID) {
-            setPaypalOrderID(orderData.orderID);
-          } else {
-            throw new Error(orderData.error || 'Failed to create PayPal order.');
-          }
-        } catch (err) {
-          let message = 'Could not prepare PayPal payment. Please refresh the page.';
-          if (err instanceof Error) {
-            message = err.message;
-          }
-          setError(message);
-          console.error('Error creating PayPal order in advance:', err);
-        } finally {
-            setIsProcessing(false);
-        }
-      };
-      createOrder();
-    }
-  }, [isClient, subtotal, paypalClientID]); // Dependency array is key
-
-
-  if (!isClient || (items.length === 0 && !isProcessing)) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-16 w-16 animate-spin" />
-      </div>
-    );
-  }
+  }, [items, router, isClient]);
 
   const handleToyyibPay = async () => {
     setIsProcessing(true);
@@ -110,16 +66,36 @@ export default function CheckoutPage() {
     }
   };
 
-  // This function now just returns the pre-fetched order ID
-  const createPayPalOrder = (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
-    if (!paypalOrderID) {
-      setError("PayPal Order ID not ready. Please wait a moment and try again.");
-      return Promise.reject(new Error("PayPal Order ID not available."));
+  const createPayPalOrder = (
+    data: CreateOrderData,
+    actions: CreateOrderActions
+  ) => {
+    if (subtotal <= 0) {
+      setError('Cannot create an order with a zero subtotal.');
+      return Promise.reject(new Error('Invalid subtotal'));
     }
-    return Promise.resolve(paypalOrderID);
+
+    const purchaseAmount = subtotal.toFixed(2);
+
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: purchaseAmount,
+            currency_code: 'USD',
+          },
+        },
+      ],
+      application_context: {
+        shipping_preference: 'NO_SHIPPING',
+      },
+    });
   };
 
-  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
+  const onPayPalApprove = async (
+    data: OnApproveData,
+    actions: OnApproveActions
+  ) => {
     setIsProcessing(true);
     setError(null);
     try {
@@ -135,7 +111,9 @@ export default function CheckoutPage() {
         clearCart();
         router.push('/checkout/success');
       } else {
-        throw new Error(responseData.error || 'Failed to finalize PayPal payment.');
+        throw new Error(
+          responseData.error || 'Failed to finalize PayPal payment.'
+        );
       }
     } catch (err) {
       let message = 'Could not finalize your payment. Please contact support.';
@@ -146,11 +124,21 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-  
+
   const onPayPalError = (err: any) => {
-    console.error("PayPal button error:", err);
-    setError("An error occurred with PayPal. Please try refreshing the page or use a different payment method.");
+    console.error('PayPal button error:', err);
+    setError(
+      'An error occurred with PayPal. Please try refreshing the page or use a different payment method.'
+    );
     setIsProcessing(false);
+  };
+
+  if (!isClient || items.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-16 w-16 animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -217,12 +205,12 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {(isProcessing && !paypalOrderID) ? (
+              {isProcessing ? (
                 <div className="text-center p-8">
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      Preparing secure payment...
+                      Processing your payment...
                     </span>
                   </div>
                 </div>
@@ -243,36 +231,38 @@ export default function CheckoutPage() {
                   </div>
                   <div className="relative flex py-2 items-center">
                     <div className="flex-grow border-t border-muted"></div>
-                    <span className="flex-shrink mx-4 text-muted-foreground">OR</span>
+                    <span className="flex-shrink mx-4 text-muted-foreground">
+                      OR
+                    </span>
                     <div className="flex-grow border-t border-muted"></div>
                   </div>
                   <div>
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
                       International Customers (Card / PayPal)
                     </p>
-                     {paypalClientID ? (
-                        <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
-                            {!paypalOrderID && !error ? (
-                                <div className="flex items-center justify-center h-24">
-                                    <Loader2 className="h-6 w-6 animate-spin" />
-                                    <span className="ml-3 font-semibold text-muted-foreground">Preparing PayPal...</span>
-                                </div>
-                            ) : (
-                                <PayPalButtons
-                                    key={paypalOrderID}
-                                    style={{ layout: "vertical" }}
-                                    createOrder={createPayPalOrder}
-                                    onApprove={onPayPalApprove}
-                                    onError={onPayPalError}
-                                    disabled={isProcessing || !paypalOrderID || !!error}
-                                />
-                            )}
-                        </PayPalScriptProvider>
-                      ) : (
-                        <div className="text-center p-4 bg-muted rounded-lg">
-                            <p className="text-muted-foreground font-semibold">PayPal is currently unavailable.</p>
-                        </div>
-                      )}
+                    {paypalClientID ? (
+                      <PayPalScriptProvider
+                        options={{
+                          'client-id': paypalClientID,
+                          currency: 'USD',
+                          intent: 'capture',
+                        }}
+                      >
+                        <PayPalButtons
+                          style={{ layout: 'vertical' }}
+                          createOrder={createPayPalOrder}
+                          onApprove={onPayPalApprove}
+                          onError={onPayPalError}
+                          disabled={isProcessing}
+                        />
+                      </PayPalScriptProvider>
+                    ) : (
+                      <div className="text-center p-4 bg-muted rounded-lg">
+                        <p className="text-muted-foreground font-semibold">
+                          PayPal is currently unavailable.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -293,4 +283,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-    
