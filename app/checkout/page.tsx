@@ -8,7 +8,6 @@ import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useHasHydrated } from '@/lib/hooks';
 import {
   PayPalScriptProvider,
   PayPalButtons,
@@ -21,7 +20,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const hasHydrated = useHasHydrated();
+  const [arePaymentsVisible, setArePaymentsVisible] = useState(false);
   
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
 
@@ -29,12 +28,23 @@ export default function CheckoutPage() {
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    if (hasHydrated && items.length === 0) {
+    // If the cart is empty after hydration, redirect.
+    if (arePaymentsVisible && items.length === 0) {
       router.push('/products');
     }
-  }, [items, router, hasHydrated]);
+  }, [items, router, arePaymentsVisible]);
+  
+  useEffect(() => {
+    // Wait for 2 seconds before showing payment options
+    const timer = setTimeout(() => {
+      setArePaymentsVisible(true);
+    }, 2000);
 
-  if (!hasHydrated || items.length === 0) {
+    return () => clearTimeout(timer); // Cleanup timer on component unmount
+  }, []);
+
+
+  if (items.length === 0 && arePaymentsVisible) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-16 w-16 animate-spin" />
@@ -180,12 +190,12 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {isProcessing ? (
+              {!arePaymentsVisible || isProcessing ? (
                 <div className="text-center p-8">
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      Processing payment...
+                      {isProcessing ? 'Processing payment...' : 'Loading payment options...'}
                     </span>
                   </div>
                 </div>
@@ -215,15 +225,13 @@ export default function CheckoutPage() {
                     </p>
                      {paypalClientID ? (
                         <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
-                           {hasHydrated && subtotal > 0 && (
-                             <PayPalButtons
-                                  style={{ layout: "vertical" }}
-                                  createOrder={createPayPalOrder}
-                                  onApprove={onPayPalApprove}
-                                  onError={onPayPalError}
-                                  disabled={isProcessing}
-                              />
-                           )}
+                            <PayPalButtons
+                                style={{ layout: "vertical" }}
+                                createOrder={createPayPalOrder}
+                                onApprove={onPayPalApprove}
+                                onError={onPayPalError}
+                                disabled={isProcessing}
+                            />
                         </PayPalScriptProvider>
                       ) : (
                         <div className="text-center p-4 bg-muted rounded-lg">
