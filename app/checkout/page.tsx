@@ -20,8 +20,12 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [arePaymentsVisible, setArePaymentsVisible] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
 
   const USD_TO_MYR = 4.71;
@@ -29,22 +33,13 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // If the cart is empty after hydration, redirect.
-    if (arePaymentsVisible && items.length === 0) {
+    if (isClient && items.length === 0) {
       router.push('/products');
     }
-  }, [items, router, arePaymentsVisible]);
+  }, [items, router, isClient]);
   
-  useEffect(() => {
-    // Wait for 2 seconds before showing payment options
-    const timer = setTimeout(() => {
-      setArePaymentsVisible(true);
-    }, 2000);
 
-    return () => clearTimeout(timer); // Cleanup timer on component unmount
-  }, []);
-
-
-  if (items.length === 0 && arePaymentsVisible) {
+  if (!isClient || items.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="h-16 w-16 animate-spin" />
@@ -77,11 +72,15 @@ export default function CheckoutPage() {
   };
 
   const createPayPalOrder = (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
+    console.log("Creating PayPal order...");
+    const purchaseAmount = subtotal.toFixed(2);
+    console.log(`Subtotal from cart: ${subtotal}, formatted for PayPal: ${purchaseAmount}`);
+    
     return actions.order.create({
       purchase_units: [
         {
           amount: {
-            value: subtotal.toFixed(2),
+            value: purchaseAmount, // Use the pre-formatted, guaranteed-safe value
             currency_code: 'USD',
           },
         },
@@ -95,6 +94,7 @@ export default function CheckoutPage() {
   const onPayPalApprove = async (data: OnApproveData, actions: any) => {
     setIsProcessing(true);
     setError(null);
+    console.log("PayPal payment approved. Capturing order...");
     try {
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -105,6 +105,7 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
+        console.log("Order captured successfully. Clearing cart and redirecting.");
         clearCart();
         router.push('/checkout/success');
       } else {
@@ -117,6 +118,7 @@ export default function CheckoutPage() {
       }
       setError(message);
       setIsProcessing(false);
+      console.error("Error capturing PayPal order:", err);
     }
   };
   
@@ -190,12 +192,12 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {!arePaymentsVisible || isProcessing ? (
+              {isProcessing ? (
                 <div className="text-center p-8">
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
                     <span className="font-semibold text-muted-foreground">
-                      {isProcessing ? 'Processing payment...' : 'Loading payment options...'}
+                      Processing payment...
                     </span>
                   </div>
                 </div>
