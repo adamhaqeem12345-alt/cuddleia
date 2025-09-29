@@ -20,7 +20,6 @@ export default function CheckoutPage() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasHydrated = useHasHydrated();
-  const [isPayPalRedirect, setIsPayPalRedirect] = useState(false);
 
 
   const USD_TO_MYR = 4.21;
@@ -77,36 +76,46 @@ export default function CheckoutPage() {
     }
   };
   
-    const onPayPalClick = (data: Record<string, unknown>) => {
+    const onPayPalInit = (data: any, actions: any) => {
+        // This sets up the redirect flow for the main PayPal button
         if (data.fundingSource === FUNDING.PAYPAL) {
-            setIsPayPalRedirect(true);
-        } else {
-            setIsPayPalRedirect(false);
+            actions.enable();
         }
     };
-
+    
     const createOrder = (data: CreateOrderData, actions: any) => {
-        const application_context = isPayPalRedirect ? {
-            return_url: `${window.location.origin}/`,
-            cancel_url: `${window.location.href}`,
-            brand_name: 'Cuddleia'
-        } : {};
-
+        // If the funding source is PayPal, perform a redirect
+        if (data.fundingSource === FUNDING.PAYPAL) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        value: subtotal.toFixed(2),
+                        currency_code: 'USD'
+                    }
+                }],
+                application_context: {
+                    return_url: `${window.location.origin}/`,
+                    cancel_url: window.location.href,
+                    brand_name: 'Cuddleia'
+                }
+            }).then((orderID: string) => {
+                return actions.redirect(orderID);
+            });
+        }
+        
+        // For card payments, create order without redirect context
         return actions.order.create({
             purchase_units: [{
                 amount: {
                     value: subtotal.toFixed(2),
                     currency_code: 'USD'
                 }
-            }],
-            application_context,
+            }]
         });
     };
 
     const onApprove = async (data: OnApproveData, actions: any): Promise<void> => {
         try {
-            // If it was a redirect flow, this part might execute on a different page load
-            // The logic here is for on-site capture
             if (actions.order) {
                 const details: OrderResponseBody = await actions.order.capture();
                 
@@ -134,20 +143,16 @@ export default function CheckoutPage() {
         } catch (error) {
             console.error('PayPal capture or email sending failed', error);
             setError('There was an issue processing your payment. Please try again.');
-        } finally {
-            setIsPayPalRedirect(false);
         }
     };
 
     const onCancel = () => {
-        setIsPayPalRedirect(false);
+       // user cancelled the payment
     }
 
     const onError = (err: any) => {
         console.error('PayPal Error:', err);
         setError('An error occurred with the PayPal transaction. Please try again.');
-        setIsProcessing(false); // Reset on error
-        setIsPayPalRedirect(false);
     };
 
 
@@ -240,7 +245,7 @@ export default function CheckoutPage() {
                                 <div className="space-y-4">
                                      <PayPalButtons
                                         style={{ layout: 'vertical', label: 'pay', color: 'blue', shape: 'pill', tagline: false }}
-                                        onClick={onPayPalClick}
+                                        onInit={onPayPalInit}
                                         createOrder={createOrder}
                                         onApprove={onApprove}
                                         onCancel={onCancel}
@@ -270,3 +275,5 @@ export default function CheckoutPage() {
     </PayPalScriptProvider>
   );
 }
+
+    
