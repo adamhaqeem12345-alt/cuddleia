@@ -68,10 +68,9 @@ export default function CheckoutPage() {
     setError(null);
     try {
         // In a real app, you would get customer details from a form
-        await createToyyibpayBill(items, subtotal, 'Customer Name', 'customer@example.com');
+        createToyyibpayBill(items, subtotal, 'Customer Name', 'customer@example.com');
     } catch (e: any) {
         setError(e.message || 'An unexpected error occurred.');
-        setIsToyyibPayProcessing(false);
     }
   }
 
