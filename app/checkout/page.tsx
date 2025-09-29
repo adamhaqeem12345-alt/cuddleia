@@ -6,82 +6,33 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useHasHydrated } from '@/lib/hooks';
-import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderActions } from "@paypal/react-paypal-js";
-
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const hasHydrated = useHasHydrated();
 
   const USD_TO_MYR = 4.71;
   const totalMYR = subtotal * USD_TO_MYR;
-  const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
-
 
   useEffect(() => {
     if (hasHydrated && items.length === 0) {
       router.push('/products');
     }
   }, [items, router, hasHydrated]);
-
-  useEffect(() => {
-    // This effect runs when the user is redirected back from PayPal.
-    const token = searchParams.get('token'); // PayPal's orderID is in the 'token' parameter
-    if (token) {
-      setIsProcessing(true);
-      setError(null);
-
-      const capturePayment = async (orderID: string) => {
-        try {
-          const response = await fetch('/api/paypal/capture-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderID }),
-          });
-
-          const responseData = await response.json();
-
-          if (response.ok && responseData.success) {
-            console.log('Payment successful!');
-            clearCart();
-            // Redirect to a clean success URL without PayPal's query params
-            router.push('/checkout/success');
-          } else {
-            throw new Error(responseData.error || 'Failed to finalize PayPal payment.');
-          }
-        } catch (err) {
-          console.error("Capture payment error:", err);
-          let errorMessage = 'Could not finalize your payment. Please contact support.';
-          if (err instanceof Error) {
-            errorMessage = err.message;
-          }
-          setError(errorMessage);
-          setIsProcessing(false);
-        }
-      };
-
-      capturePayment(token);
-    }
-  }, [searchParams, clearCart, router]);
-
-
-  useEffect(() => {
-    const handlePageShow = () => {
-      setIsProcessing(false);
-    };
-
-    window.addEventListener('pageshow', handlePageShow);
-    return () => {
-      window.removeEventListener('pageshow', handlePageShow);
-    };
-  }, []);
+  
+  if (!hasHydrated || items.length === 0) {
+    return (
+        <div className="flex justify-center items-center min-h-screen">
+            <Loader2 className="h-16 w-16 animate-spin" />
+        </div>
+    );
+  }
 
   const handleToyyibPay = async () => {
     setIsProcessing(true);
@@ -89,14 +40,10 @@ export default function CheckoutPage() {
     try {
       const response = await fetch('/api/toyyibpay', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items, total: totalMYR }),
       });
-
       const data = await response.json();
-
       if (response.ok && data.paymentUrl) {
         clearCart();
         window.location.href = data.paymentUrl;
@@ -110,64 +57,35 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-  
-  if (!hasHydrated || (items.length === 0 && !isProcessing) ) {
-    // Show a loading or placeholder state until hydration is complete
-    return (
-        <div className="flex justify-center items-center min-h-screen">
-            <Loader2 className="h-16 w-16 animate-spin" />
-        </div>
-    );
-  }
 
-  const createPayPalOrder = async (data: Record<string, unknown>, actions: CreateOrderActions): Promise<string> => {
+  const handlePayPal = async () => {
     setIsProcessing(true);
     setError(null);
     try {
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ total: subtotal, currency: 'USD' }),
-      });
+        const response = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ total: subtotal, currency: 'USD' }),
+        });
 
-      const orderData = await response.json();
+        const orderData = await response.json();
 
-      if (response.ok && orderData.orderID) {
-        return orderData.orderID;
-      } else {
-        throw new Error(orderData.error || 'Could not create PayPal order.');
-      }
+        if (response.ok && orderData.approveLink) {
+            clearCart();
+            window.location.href = orderData.approveLink;
+        } else {
+            throw new Error(orderData.error || 'Could not create PayPal order.');
+        }
     } catch (err) {
-      console.error("createOrder error:", err);
-      let errorMessage = 'Could not initiate PayPal checkout. Please try again.';
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      }
-      setError(errorMessage);
-      setIsProcessing(false);
-      throw new Error(errorMessage); // Throw error to stop PayPal flow
+        console.error("PayPal creation error:", err);
+        let errorMessage = 'Could not initiate PayPal checkout. Please try again.';
+        if (err instanceof Error) {
+            errorMessage = err.message;
+        }
+        setError(errorMessage);
+        setIsProcessing(false);
     }
   };
-
-  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
-      // This function now redirects to PayPal instead of handling capture here.
-      setIsProcessing(true); // Keep processing state while redirecting
-      const response = await fetch('/api/paypal/create-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ total: subtotal, currency: 'USD' }),
-      });
-      const orderData = await response.json();
-      if(orderData.approveLink) {
-          window.location.href = orderData.approveLink;
-      } else {
-          setError('Could not get PayPal approval link. Please try again.');
-          setIsProcessing(false);
-      }
-  };
-
 
   return (
     <div className="bg-background">
@@ -266,26 +184,14 @@ export default function CheckoutPage() {
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
                       International Customers (Card / PayPal)
                     </p>
-                    {paypalClientID ? (
-                      <PayPalScriptProvider options={{ "client-id": paypalClientID, currency: "USD", intent: "capture" }}>
-                        <PayPalButtons
-                              style={{ layout: "vertical", shape: 'rect' }}
-                              createOrder={createPayPalOrder}
-                              onApprove={onPayPalApprove}
-                              onError={(err: any) => {
-                                  console.error("PayPal Buttons onError:", err);
-                                  setError("An unexpected error occurred with PayPal. Please try again or contact support.");
-                                  setIsProcessing(false);
-                              }}
-                              onCancel={() => {
-                                  setIsProcessing(false);
-                              }}
-                              disabled={isProcessing}
-                          />
-                      </PayPalScriptProvider>
-                    ) : (
-                       <p className="text-sm text-destructive-foreground bg-destructive/10 p-3 rounded-md">PayPal is not configured. Missing client ID.</p>
-                    )}
+                     <Button
+                      onClick={handlePayPal}
+                      disabled={isProcessing}
+                      size="lg"
+                      className="w-full font-bold bg-[#0070ba] hover:bg-[#005ea6]"
+                    >
+                      Pay with PayPal
+                    </Button>
                   </div>
                 </div>
               )}
