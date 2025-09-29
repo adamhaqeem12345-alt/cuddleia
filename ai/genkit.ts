@@ -7,15 +7,18 @@
  * Google AI plugin for accessing Gemini models.
  */
 
-import { genkit } from 'genkit';
+import { genkit, GenkitPlugin } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 
+// Conditionally initialize plugins based on environment variable availability.
+// This prevents build-time errors when environment variables are not set.
+const plugins: GenkitPlugin[] = [];
+if (process.env.GEMINI_API_KEY) {
+  plugins.push(googleAI());
+}
+
 export const ai = genkit({
-  plugins: [
-    googleAI({
-      // The API key is set via the GEMINI_API_KEY environment variable
-    }),
-  ],
+  plugins: plugins,
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });

@@ -1,14 +1,13 @@
 
-import type { CartItem } from './types';
-
 // Use the live PayPal API endpoint for production
 const PAYPAL_API = 'https://api-m.paypal.com';
 
 /**
  * Fetches a PayPal access token for API calls.
+ * This function safely accesses environment variables at runtime.
  */
 async function getPayPalAccessToken(): Promise<string> {
-    // These credentials are server-side only and should be set in your environment
+    // These credentials are server-side only and should be accessed only when the function is called.
     const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
