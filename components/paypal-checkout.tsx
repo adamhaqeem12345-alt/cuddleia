@@ -22,7 +22,7 @@ export function PayPalCheckout() {
     const [isButtonReady, setIsButtonReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
-    const [isInitiatingPayment, setIsInitiatingPayment] = useState(false);
+    const [isInteracting, setIsInteracting] = useState(false);
     const paypalRef = useRef<HTMLDivElement>(null);
 
     const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
@@ -72,7 +72,7 @@ export function PayPalCheckout() {
                     },
                     onClick: () => {
                         setError(null);
-                        setIsInitiatingPayment(true);
+                        setIsInteracting(true);
                     },
                     createOrder: (_data: any, actions: any) => {
                         try {
@@ -111,13 +111,13 @@ export function PayPalCheckout() {
                         } catch (err: any) {
                              console.error("CLIENT_CREATE_ORDER_ERROR:", err);
                              setError("An error occurred while preparing your order. Please check the cart and try again.");
-                             setIsInitiatingPayment(false);
+                             setIsInteracting(false);
                              throw err;
                         }
                     },
                     onApprove: async (data: OnApproveData) => {
+                         setIsInteracting(false);
                          setIsProcessing(true);
-                         setIsInitiatingPayment(false);
                          setError(null);
                          try {
                             const res = await fetch('/api/paypal/capture-order', {
@@ -147,12 +147,12 @@ export function PayPalCheckout() {
                         console.error('PayPal Buttons onError:', err);
                         setError("An unexpected error occurred with PayPal. Please try again or contact support.");
                         setIsProcessing(false);
-                        setIsInitiatingPayment(false);
+                        setIsInteracting(false);
                     },
                     onCancel: () => {
                         console.log('PayPal payment cancelled.');
                         setIsProcessing(false);
-                        setIsInitiatingPayment(false);
+                        setIsInteracting(false);
                     }
                 }).render(paypalRef.current);
             } catch (err: any) {
@@ -209,7 +209,7 @@ export function PayPalCheckout() {
                 </div>
             )}
             <div ref={paypalRef} style={{ opacity: isButtonReady ? 1 : 0, transition: 'opacity 0.5s ease-in-out' }}></div>
-            {isInitiatingPayment && (
+            {isInteracting && (
                 <div className="flex items-center justify-center text-center mt-2">
                     <Loader2 className="h-4 w-4 text-muted-foreground animate-spin mr-2" />
                     <p className="text-sm text-muted-foreground">Opening secure payment form...</p>
