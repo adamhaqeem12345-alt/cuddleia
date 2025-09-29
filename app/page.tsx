@@ -69,7 +69,7 @@ export default function Home() {
             </AnimateIn>
              <AnimateIn delay={150}>
               <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Made with Heart & Soul
+                Made with Heart &amp; Soul
               </h2>
               <p className="text-lg text-muted-foreground mb-6">
                 Cuddleia was born from a passion for creating beautiful, meaningful digital goods that blend modern aesthetics with timeless Islamic values. Each product is crafted with love and a prayer that it brings you peace, productivity, and a little more barakah.
