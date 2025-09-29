@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
   const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -36,6 +37,7 @@ export default function CheckoutPage() {
   };
 
   const onApprove = (data: OnApproveData, actions: any) => {
+    setIsProcessing(false);
     return actions.order.capture().then(function (details: any) {
       alert('Transaction completed by ' + details.payer.name.given_name);
       // Here you would typically handle the post-payment logic,
@@ -46,9 +48,17 @@ export default function CheckoutPage() {
   };
 
   const onError = (err: any) => {
+    setIsProcessing(false);
     console.error('PayPal Checkout Error', err);
     alert('An error occurred during the transaction. Please try again.');
   };
+
+  const handleCardClick = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+        setIsProcessing(false);
+    }, 3000);
+  }
 
   if (items.length === 0) {
     return null; 
@@ -104,8 +114,21 @@ export default function CheckoutPage() {
                             createOrder={createOrder}
                             onApprove={onApprove}
                             onError={onError}
+                            onClick={(data, actions) => {
+                                // The 'card' funding source is for the Debit/Credit card button
+                                if(data.fundingSource === 'card') {
+                                    handleCardClick();
+                                }
+                                return actions.resolve();
+                            }}
+                            onCancel={() => setIsProcessing(false)}
                         />
                     </PayPalScriptProvider>
+                    {isProcessing && (
+                        <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
+                            <p>Processing payment...</p>
+                        </div>
+                    )}
                  </div>
             </AnimateIn>
         </div>
