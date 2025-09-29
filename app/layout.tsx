@@ -1,32 +1,33 @@
 import type { Metadata } from 'next';
-import { Belleza, Alegreya } from 'next/font/google';
+import { Creepster, Special_Elite } from 'next/font/google';
 import './globals.css';
 import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Belleza({
+const fontHeadline = Creepster({
   subsets: ['latin'],
   weight: ['400'],
   variable: '--font-headline',
 });
 
-const fontBody = Alegreya({
+const fontBody = Special_Elite({
   subsets: ['latin'],
+  weight: ['400'],
   variable: '--font-body',
 });
 
 export const metadata: Metadata = {
-  title: 'Cuddleia | Cozy Digital Goods with Heart',
+  title: 'PUNISHMENT',
   description:
-    'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
+    'This is your punishment.',
   keywords:
-    'islamic digital products,ipad wallpaper,digital booklets,muslim lifestyle,cuddleia,cozy digital goods,barakah business',
-  robots: 'index, follow',
+    'punishment,failure,disappointment',
+  robots: 'noindex, nofollow',
   openGraph: {
-    title: 'Cuddleia | Cozy Digital Goods with Heart',
+    title: 'PUNISHMENT',
     description:
-      'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
+      'This is your punishment.',
     url: 'https://www.cuddleia.com',
     siteName: 'Cuddleia',
     locale: 'en_US',
@@ -42,9 +43,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Cuddleia | Cozy Digital Goods with Heart',
+    title: 'PUNISHMENT',
     description:
-      'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
+      'This is your punishment.',
     images: ['https://www.cuddleia.com/og-image.png'],
   },
   icons: {
