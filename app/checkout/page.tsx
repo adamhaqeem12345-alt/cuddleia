@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const paypalClientId = "AcP9f98y69e5wW3gR4v1qoIoZejFUNxj4CF9ceA-CBbXq152xI1qnMugLF_rKs3yXN-fuyFIKuWpqeIW";
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const USD_TO_MYR = 4.21;
@@ -64,6 +65,7 @@ export default function CheckoutPage() {
       const data = await response.json();
 
       if (response.ok && data.paymentUrl) {
+          setIsRedirecting(true);
           window.location.href = data.paymentUrl;
       } else {
           setError(data.error || 'Could not initiate ToyyibPay payment.');
@@ -144,50 +146,58 @@ export default function CheckoutPage() {
                             <p>{error}</p>
                         </div>
                     )}
+                    
+                    {isRedirecting ? (
+                      <div className="text-center p-8">
+                          <div className="animate-pulse font-semibold text-muted-foreground">
+                            Redirecting to payment gateway...
+                          </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                          <div>
+                              <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (FPX)</p>
+                              <Button
+                                  onClick={handleToyyibPay}
+                                  disabled={isProcessing}
+                                  size="lg"
+                                  className="w-full font-bold"
+                              >
+                                  {isProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
+                              </Button>
+                          </div>
+                          <div className="relative my-6">
+                              <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                                  <div className="w-full border-t border-border" />
+                              </div>
+                              <div className="relative flex justify-center">
+                                  <span className="bg-card px-2 text-sm text-muted-foreground">OR</span>
+                              </div>
+                          </div>
+                          <div>
+                              <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
+                              <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
+                                  <PayPalButtons 
+                                      style={{ layout: "vertical" }}
+                                      createOrder={createOrder}
+                                      onApprove={onApprove}
+                                      onError={onError}
+                                      onClick={(data, actions) => {
+                                          if(data.fundingSource === 'card') {
+                                              handleCardClick();
+                                          }
+                                          setError(null);
+                                          return actions.resolve();
+                                      }}
+                                      onCancel={() => setIsProcessing(false)}
+                                      disabled={isProcessing}
+                                  />
+                              </PayPalScriptProvider>
+                          </div>
+                      </div>
+                    )}
 
-                    <div className="space-y-6">
-                        <div>
-                            <p className="text-muted-foreground mb-4 text-sm font-semibold">Malaysian Customers (FPX)</p>
-                            <Button
-                                onClick={handleToyyibPay}
-                                disabled={isProcessing}
-                                size="lg"
-                                className="w-full font-bold"
-                            >
-                                {isProcessing ? 'Processing...' : 'Pay with ToyyibPay'}
-                            </Button>
-                        </div>
-                        <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                <div className="w-full border-t border-border" />
-                            </div>
-                            <div className="relative flex justify-center">
-                                <span className="bg-card px-2 text-sm text-muted-foreground">OR</span>
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
-                            <PayPalScriptProvider options={{ clientId: paypalClientId, currency: "USD", intent: "capture" }}>
-                                <PayPalButtons 
-                                    style={{ layout: "vertical" }}
-                                    createOrder={createOrder}
-                                    onApprove={onApprove}
-                                    onError={onError}
-                                    onClick={(data, actions) => {
-                                        if(data.fundingSource === 'card') {
-                                            handleCardClick();
-                                        }
-                                        setError(null);
-                                        return actions.resolve();
-                                    }}
-                                    onCancel={() => setIsProcessing(false)}
-                                    disabled={isProcessing}
-                                />
-                            </PayPalScriptProvider>
-                        </div>
-                    </div>
-
-                    {isProcessing && !error && (
+                    {isProcessing && !error && !isRedirecting && (
                         <div className="mt-4 text-center text-sm text-muted-foreground animate-pulse">
                             <p>Connecting to payment gateway...</p>
                         </div>
