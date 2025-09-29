@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { Product } from '@/lib/products';
+import { products as allProducts, Product } from '@/lib/products';
 
 const TOYYIBPAY_SECRET = 'rx6j88vd-eye6-g5xf-s91k-a4c616556wpr';
 const TOYYIBPAY_CATEGORY_CODE = '43cm97xz';
@@ -9,9 +9,13 @@ const TOYYIBPAY_BILL_URL = 'https://toyyibpay.com/';
 
 export async function POST(req: NextRequest) {
   try {
-    const { items, total, customerName, customerEmail } = await req.json() as { items: Product[], total: number, customerName: string, customerEmail: string };
+    const formData = await req.formData();
+    const items: Product[] = JSON.parse(formData.get('items') as string || '[]');
+    const total = parseFloat(formData.get('total') as string || '0');
+    const customerName = formData.get('customerName') as string;
+    const customerEmail = formData.get('customerEmail') as string;
 
-    if (!items || !total || !customerName || !customerEmail) {
+    if (!items || items.length === 0 || !total || !customerName || !customerEmail) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -38,7 +42,7 @@ export async function POST(req: NextRequest) {
     });
 
     const data = await response.json();
-
+    
     if (data && data.length > 0 && data[0].BillCode) {
       const billCode = data[0].BillCode;
       const paymentUrl = TOYYIBPAY_BILL_URL + billCode;
