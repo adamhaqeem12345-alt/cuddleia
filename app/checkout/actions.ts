@@ -45,12 +45,13 @@ export async function createToyyibpayBill(
       redirect(TOYYIBPAY_BILL_URL + billCode);
     } else {
       console.error('ToyyibPay API Error:', data);
-      throw new Error('Could not create ToyyibPay bill.');
+      throw new Error('Could not create ToyyibPay bill. The API returned an error.');
     }
   } catch (error) {
     console.error('Failed to create Toyyibpay bill:', error);
-    return {
-      error: 'There was an issue connecting to our payment provider. Please try again later.',
-    };
+    if (error instanceof Error && error.message.includes('Could not create ToyyibPay bill')) {
+        throw error;
+    }
+    throw new Error('There was an issue connecting to our payment provider. Please try again later.');
   }
 }
