@@ -10,11 +10,10 @@ import { useState } from 'react';
 
 interface AddToCartButtonProps extends VariantProps<typeof buttonVariants> {
     product: Product;
-    showText?: boolean;
     className?: string;
 }
 
-export function AddToCartButton({ product, showText = false, variant, className }: AddToCartButtonProps) {
+export function AddToCartButton({ product, variant, size, className }: AddToCartButtonProps) {
     const { addToCart } = useCart();
     const [isAdded, setIsAdded] = useState(false);
 
@@ -26,16 +25,18 @@ export function AddToCartButton({ product, showText = false, variant, className 
         }, 2000);
     }
 
+    const isIconOnly = size === 'icon';
+
     return (
         <Button 
-            size={showText ? 'default' : 'lg'} 
+            size={size || 'lg'}
             variant={variant} 
             className={cn("font-bold shadow-lg transition-all hover:scale-105 active:scale-95", className)}
             onClick={handleAddToCart}
             disabled={isAdded}
         >
-            <ShoppingCart className="mr-2 h-5 w-5" /> 
-            {isAdded ? 'Added!' : (showText ? 'Add' : 'Add to Cart')}
+            <ShoppingCart className={cn("h-5 w-5", !isIconOnly && "mr-2")} /> 
+            {isIconOnly ? <span className="sr-only">Add to Cart</span> : (isAdded ? 'Added!' : 'Add to Cart')}
         </Button>
     )
 }
