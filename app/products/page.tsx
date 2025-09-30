@@ -1,3 +1,4 @@
+
 import { products } from '@/lib/products';
 import { ProductCard } from '@/components/product-card';
 import type { Metadata } from 'next';
@@ -36,10 +37,8 @@ export default function ProductsPage() {
                         </h2>
                     </AnimateIn>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-                       {booklets.map((product, index) => (
-                            <AnimateIn key={product.id} delay={index * 150}>
-                                <ProductCard product={product} />
-                            </AnimateIn>
+                       {booklets.map((product) => (
+                            <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 </section>
@@ -50,10 +49,8 @@ export default function ProductsPage() {
                         </h2>
                     </AnimateIn>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-                        {wallpapers.map((product, index) => (
-                             <AnimateIn key={product.id} delay={index * 150}>
-                                <ProductCard product={product} />
-                            </AnimateIn>
+                        {wallpapers.map((product) => (
+                            <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                 </section>
