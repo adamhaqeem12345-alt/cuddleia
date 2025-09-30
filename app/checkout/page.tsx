@@ -12,12 +12,12 @@ import { useEffect, useState } from 'react';
 import {
   PayPalScriptProvider,
   PayPalButtons,
-  CreateOrderData,
 } from '@paypal/react-paypal-js';
 import type {
   CreateOrderActions,
   OnApproveActions,
   OnApproveData,
+  CreateOrderData
 } from '@paypal/paypal-js';
 
 export default function CheckoutPage() {
@@ -99,6 +99,8 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setError(null);
     try {
+      const captureData = await actions.order.capture();
+      
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,6 +110,19 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
+        // Additional logic to send email
+        const payerName = captureData.payer?.name?.given_name || 'Valued Customer';
+        await fetch('/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: captureData.payer.email_address,
+            subject: 'Your Cuddleia Order Confirmation',
+            name: payerName,
+            items: items,
+          })
+        });
+
         clearCart();
         router.push('/checkout/success');
       } else {
