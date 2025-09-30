@@ -100,6 +100,9 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setError(null);
     try {
+      if (!actions.order) {
+        throw new Error('PayPal actions.order is not available.');
+      }
       const captureData = await actions.order.capture();
       
       const response = await fetch('/api/paypal/capture-order', {
