@@ -12,12 +12,12 @@ import { useEffect, useState } from 'react';
 import {
   PayPalScriptProvider,
   PayPalButtons,
-  OnApproveData,
   CreateOrderData,
 } from '@paypal/react-paypal-js';
 import type {
   CreateOrderActions,
   OnApproveActions,
+  OnApproveData,
 } from '@paypal/paypal-js';
 
 export default function CheckoutPage() {
