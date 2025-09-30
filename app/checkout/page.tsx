@@ -17,7 +17,7 @@ import type {
   CreateOrderActions,
   OnApproveActions,
   OnApproveData,
-  CreateOrderData
+  CreateOrderData,
 } from '@paypal/paypal-js';
 
 export default function CheckoutPage() {
@@ -78,6 +78,7 @@ export default function CheckoutPage() {
     const purchaseAmount = subtotal.toFixed(2);
 
     return actions.order.create({
+      intent: 'CAPTURE',
       purchase_units: [
         {
           amount: {
