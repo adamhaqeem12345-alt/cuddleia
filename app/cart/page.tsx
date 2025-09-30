@@ -70,7 +70,7 @@ export default function CartPage() {
                             <span>Subtotal</span>
                              <ProductPrice price={subtotal} />
                         </div>
-                        <p className="text-sm text-muted-foreground mb-6">Shipping and taxes will be calculated at checkout.</p>
+                        <p className="text-sm text-muted-foreground mb-6">Taxes may be calculated at checkout.</p>
                         <Button asChild size="lg" className="w-full font-bold">
                             <Link href="/checkout">Proceed to Checkout</Link>
                         </Button>
