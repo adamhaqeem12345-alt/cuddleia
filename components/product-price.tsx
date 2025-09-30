@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
 
-const USD_TO_MYR = 4.21; // Updated exchange rate
+const USD_TO_MYR = 4.21;
 
 interface ProductPriceProps {
     price: number;

@@ -32,7 +32,7 @@ export default function CheckoutPage() {
 
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
-  const USD_TO_MYR = 4.71;
+  const USD_TO_MYR = 4.21;
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
