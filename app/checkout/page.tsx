@@ -115,17 +115,19 @@ export default function CheckoutPage() {
 
       if (response.ok && responseData.success) {
         // Additional logic to send email
-        const payerName = captureData.payer?.name?.given_name || 'Valued Customer';
-        await fetch('/api/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: captureData.payer.email_address,
-            subject: 'Your Cuddleia Order Confirmation',
-            name: payerName,
-            items: items,
-          })
-        });
+        if (captureData.payer && captureData.payer.email_address) {
+            const payerName = captureData.payer?.name?.given_name || 'Valued Customer';
+            await fetch('/api/email', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                to: captureData.payer.email_address,
+                subject: 'Your Cuddleia Order Confirmation',
+                name: payerName,
+                items: items,
+              })
+            });
+        }
 
         clearCart();
         router.push('/checkout/success');
