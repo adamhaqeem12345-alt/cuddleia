@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 
-const USD_TO_MYR = 4.21;
+const USD_TO_MYR = 4.22;
 
 interface ProductPriceProps {
     price: number;
