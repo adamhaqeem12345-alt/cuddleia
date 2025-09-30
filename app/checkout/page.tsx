@@ -16,8 +16,6 @@ import {
 import type {
   CreateOrderActions,
   OnApproveActions,
-  OnApproveData,
-  CreateOrderData,
 } from '@paypal/paypal-js';
 
 export default function CheckoutPage() {
@@ -67,7 +65,7 @@ export default function CheckoutPage() {
   };
 
   const createPayPalOrder = (
-    data: CreateOrderData,
+    data: any,
     actions: CreateOrderActions
   ) => {
     if (subtotal <= 0) {
@@ -94,7 +92,7 @@ export default function CheckoutPage() {
   };
 
   const onPayPalApprove = async (
-    data: OnApproveData,
+    data: any,
     actions: OnApproveActions
   ) => {
     setIsProcessing(true);
@@ -264,7 +262,7 @@ export default function CheckoutPage() {
                     {paypalClientID ? (
                       <PayPalScriptProvider
                         options={{
-                          'client-id': paypalClientID,
+                          clientId: paypalClientID,
                           currency: 'USD',
                           intent: 'capture',
                         }}
