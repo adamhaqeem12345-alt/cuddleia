@@ -24,6 +24,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isPayPalLoading, setIsPayPalLoading] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -151,6 +152,14 @@ export default function CheckoutPage() {
     );
     setIsProcessing(false);
   };
+  
+  const handlePayPalClick = () => {
+    setError(null);
+    setIsPayPalLoading(true);
+    setTimeout(() => {
+      setIsPayPalLoading(false);
+    }, 3000);
+  };
 
   if (!isClient || items.length === 0) {
     return (
@@ -272,6 +281,7 @@ export default function CheckoutPage() {
                           createOrder={createPayPalOrder}
                           onApprove={onPayPalApprove}
                           onError={onPayPalError}
+                          onClick={handlePayPalClick}
                           disabled={isProcessing}
                         />
                       </PayPalScriptProvider>
@@ -281,6 +291,12 @@ export default function CheckoutPage() {
                           PayPal is currently unavailable.
                         </p>
                       </div>
+                    )}
+                    {isPayPalLoading && (
+                        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Connecting to PayPal...</span>
+                        </div>
                     )}
                   </div>
                 </div>
