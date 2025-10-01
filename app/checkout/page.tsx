@@ -283,6 +283,9 @@ export default function CheckoutPage() {
                           onChange={(e) => setEmail(e.target.value)}
                           required
                       />
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Your digital products will be sent to this email address.
+                      </p>
                   </div>
                   {formError && (
                       <p className="text-sm text-destructive">{formError}</p>
@@ -395,5 +398,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
