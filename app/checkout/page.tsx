@@ -101,10 +101,8 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setError(null);
     try {
-      if (!actions.order) {
-        throw new Error('PayPal actions.order is not available.');
-      }
-      const captureData = await actions.order.capture();
+      // The capture is now done on the server-side only.
+      // We just need to call our backend to finalize it.
       
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -115,14 +113,17 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
-        // Additional logic to send email
-        if (captureData.payer && captureData.payer.email_address) {
-            const payerName = captureData.payer?.name?.given_name || 'Valued Customer';
+        // The server response now contains the capture details.
+        const captureDetails = responseData.data;
+
+        // Use captureDetails from the server to send the email.
+        if (captureDetails.payer && captureDetails.payer.email_address) {
+            const payerName = captureDetails.payer?.name?.given_name || 'Valued Customer';
             await fetch('/api/email', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                to: captureData.payer.email_address,
+                to: captureDetails.payer.email_address,
                 subject: 'Your Cuddleia Order Confirmation',
                 name: payerName,
                 items: items,
@@ -153,6 +154,7 @@ export default function CheckoutPage() {
       'An error occurred with PayPal. Please try refreshing the page or use a different payment method.'
     );
     setIsProcessing(false);
+    setIsPayPalLoading(false);
   };
   
   const handlePayPalClick = () => {
