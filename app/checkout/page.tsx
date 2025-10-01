@@ -94,7 +94,7 @@ export default function CheckoutPage() {
   const handleApplyDiscount = () => {
     // For now, we'll hardcode a single discount code.
     // In a real app, this would involve an API call to a database.
-    if (discountCode.toUpperCase() === 'CUDDLE10') {
+    if (discountCode.toUpperCase() === 'CUDDLEIA10') {
       const discountAmount = subtotal * 0.10;
       setDiscount(discountAmount);
       setDiscountMessage('Successfully applied 10% discount!');
