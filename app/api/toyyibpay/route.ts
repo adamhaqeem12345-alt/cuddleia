@@ -22,6 +22,8 @@ const productSchema = z.object({
 const toyyibPayRequestSchema = z.object({
   items: z.array(productSchema).min(1, { message: 'At least one item is required' }),
   total: z.number().positive({ message: 'Total must be a positive number' }),
+  customerName: z.string().min(1, { message: 'Customer name is required'}),
+  customerEmail: z.string().email({ message: 'A valid customer email is required'}),
 });
 
 export async function POST(req: NextRequest) {
@@ -43,7 +45,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { items, total } = validation.data;
+    const { items, total, customerName, customerEmail } = validation.data;
     
     // ===================================================================================
     // CRITICAL: URL CONFIGURATION - MUST BE UPDATED BEFORE GOING LIVE
@@ -53,7 +55,7 @@ export async function POST(req: NextRequest) {
     //
     // BEFORE GOING LIVE, you MUST replace these placeholders with your real production URLs.
     // ===================================================================================
-    const returnUrl = 'https://www.cuddleia.com/cart'; // PRODUCTION URL: Replace with your live success/cart page
+    const returnUrl = 'https://www.cuddleia.com/checkout/success'; // PRODUCTION URL: Replace with your live success page
     const callbackUrl = 'https://www.cuddleia.com/api/webhook/toyyibpay'; // PRODUCTION URL: Replace with your live webhook URL
     
     // Create a unique reference for this order. In a real app, this would be your internal order ID.
@@ -61,7 +63,7 @@ export async function POST(req: NextRequest) {
     
     // Ensure billName and billDescription adhere to character limits to prevent API errors.
     const billName = `Cuddleia Order ${orderId.substring(0, 8)}`;
-    const billDescription = 'Your digital goods from Cuddleia.';
+    const billDescription = `Your digital goods from Cuddleia for ${customerEmail}.`;
     const billAmountInCents = Math.round(total * 100);
 
     const params = new URLSearchParams({
@@ -70,11 +72,14 @@ export async function POST(req: NextRequest) {
       billName: billName,
       billDescription: billDescription,
       billPriceSetting: '1',
-      billPayorInfo: '0', // Creates an "open bill" where ToyyibPay collects customer info. This is the simplest and most reliable method.
+      billPayorInfo: '1', // We are providing customer info
       billAmount: billAmountInCents.toString(),
       billReturnUrl: returnUrl,
       billCallbackUrl: callbackUrl,
       billExternalReferenceNo: orderId,
+      billTo: customerName,
+      billEmail: customerEmail,
+      billPhone: '0123456789', // Phone is required by ToyyibPay when billPayorInfo=1, but can be a placeholder
       billPaymentChannel: '0', // 0 for FPX Only
     });
 
@@ -103,6 +108,8 @@ export async function POST(req: NextRequest) {
     
     // According to docs, success is an array with a BillCode object.
     if (data && Array.isArray(data) && data.length > 0 && data[0].BillCode) {
+      // Before sending the payment URL, we must save the order details for the webhook.
+      // This is now handled by passing the data directly to ToyyibPay.
       const billCode = data[0].BillCode;
       const paymentUrl = 'https://toyyibpay.com/' + billCode;
       return NextResponse.json({ paymentUrl });
@@ -118,3 +125,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `There was an issue connecting to our payment provider: ${errorMessage}` }, { status: 500 });
   }
 }
+
+    
