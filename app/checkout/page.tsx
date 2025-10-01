@@ -270,7 +270,28 @@ export default function CheckoutPage() {
                 <h2 className="font-headline text-2xl font-bold border-b pb-4 mb-6">
                   Order Summary
                 </h2>
-                <div className="space-y-4 mb-6">
+                
+                <div className="pb-6 border-b">
+                  <h3 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+                    <Tags className="h-5 w-5"/>
+                    Have a discount code?
+                  </h3>
+                  <div className="flex gap-2">
+                      <Input 
+                        type="text"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        className="flex-grow"
+                        placeholder='Enter code here'
+                      />
+                      <Button onClick={handleApplyDiscount} disabled={!discountCode}>Apply</Button>
+                  </div>
+                  {discountMessage && (
+                    <p className={`text-sm mt-2 ${discount > 0 ? 'text-green-600' : 'text-destructive'}`}>{discountMessage}</p>
+                  )}
+                </div>
+
+                <div className="space-y-4 mb-6 pt-6">
                   {items.map((item) => (
                     <div
                       key={item.id}
@@ -302,24 +323,6 @@ export default function CheckoutPage() {
                     <ProductPrice price={finalTotal} />
                   </div>
                 </div>
-              </div>
-               <div>
-                  <h3 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
-                    <Tags className="h-5 w-5"/>
-                    Discount Code
-                  </h3>
-                  <div className="flex gap-2">
-                      <Input 
-                        type="text"
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value)}
-                        className="flex-grow"
-                      />
-                      <Button onClick={handleApplyDiscount} disabled={!discountCode}>Apply</Button>
-                  </div>
-                  {discountMessage && (
-                    <p className={`text-sm mt-2 ${discount > 0 ? 'text-green-600' : 'text-destructive'}`}>{discountMessage}</p>
-                  )}
               </div>
             </div>
           </AnimateIn>
