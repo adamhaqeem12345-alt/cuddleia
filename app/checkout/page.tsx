@@ -36,10 +36,11 @@ export default function CheckoutPage() {
   const totalMYR = subtotal * USD_TO_MYR;
 
   useEffect(() => {
-    if (isClient && items.length === 0) {
+    // This effect should only run if the page is not in a processing state.
+    if (isClient && items.length === 0 && !isProcessing) {
       router.push('/products');
     }
-  }, [items, router, isClient]);
+  }, [items, router, isClient, isProcessing]);
 
   const handleToyyibPay = async () => {
     setIsProcessing(true);
@@ -52,8 +53,9 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        clearCart();
+        // Only clear the cart AFTER redirecting.
         window.location.href = data.paymentUrl;
+        clearCart();
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
         setIsProcessing(false);
