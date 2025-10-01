@@ -17,6 +17,8 @@ import type {
   CreateOrderActions,
   OnApproveActions,
 } from '@paypal/paypal-js';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -26,6 +28,10 @@ export default function CheckoutPage() {
   const [isClient, setIsClient] = useState(false);
   const [isPayPalLoading, setIsPayPalLoading] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -51,14 +57,40 @@ export default function CheckoutPage() {
     }
   }, [items, router, isClient, isProcessing]);
 
+
+  const validateForm = () => {
+      if (!name.trim() || !email.trim()) {
+          setFormError('Please enter your name and email address.');
+          return false;
+      }
+      // Simple email regex validation
+      if (!/\S+@\S+\.\S+/.test(email)) {
+          setFormError('Please enter a valid email address.');
+          return false;
+      }
+      setFormError('');
+      return true;
+  }
+
   const handleToyyibPay = async () => {
+    if (!validateForm()) return;
     if (!totalMYR) {
-        setError("Could not determine the exchange rate. Please try again in a moment.");
-        return;
+      setError(
+        'Could not determine the exchange rate. Please try again in a moment.'
+      );
+      return;
     }
     setIsProcessing(true);
     setError(null);
     try {
+        // ================================================================================================
+        // CRITICAL STEP FOR PRODUCTION:
+        // Before redirecting, you MUST save the order details (name, email, items) to your database
+        // along with a unique order ID. You will pass this order ID to ToyyibPay as `billExternalReferenceNo`.
+        // The ToyyibPay webhook will then use this ID to look up the order and send the email.
+        // Since there is no database yet, this step is simulated.
+        // ================================================================================================
+
       const response = await fetch('/api/toyyibpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -67,8 +99,8 @@ export default function CheckoutPage() {
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
         // Redirect first, then clear cart.
-        window.location.href = data.paymentUrl;
         clearCart();
+        window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
         setIsProcessing(false);
@@ -80,10 +112,11 @@ export default function CheckoutPage() {
     }
   };
 
-  const createPayPalOrder = (
-    data: any,
-    actions: CreateOrderActions
-  ) => {
+  const createPayPalOrder = (data: any, actions: CreateOrderActions) => {
+    if (!validateForm()) {
+        // We must reject the promise to stop the PayPal flow
+        return Promise.reject(new Error("Invalid form details."));
+    }
     if (subtotal <= 0) {
       setError('Cannot create an order with a zero subtotal.');
       return Promise.reject(new Error('Invalid subtotal'));
@@ -107,17 +140,14 @@ export default function CheckoutPage() {
     });
   };
 
-  const onPayPalApprove = async (
-    data: any,
-    actions: OnApproveActions
-  ) => {
+  const onPayPalApprove = async (data: any, actions: OnApproveActions) => {
     setIsProcessing(true);
     setError(null);
     try {
       if (!actions.order) {
         throw new Error('PayPal order details are not available.');
       }
-      
+
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -127,21 +157,17 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
-        const captureDetails = responseData.data;
-
-        if (captureDetails.payer && captureDetails.payer.email_address) {
-            const payerName = captureDetails.payer?.name?.given_name || 'Valued Customer';
-            await fetch('/api/email', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                to: captureDetails.payer.email_address,
-                subject: 'Your Cuddleia Order Confirmation',
-                name: payerName,
-                items: items,
-              })
-            });
-        }
+        // Use the email provided in the form, not from PayPal.
+        await fetch('/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: email,
+            subject: 'Your Cuddleia Order Confirmation',
+            name: name,
+            items: items,
+          }),
+        });
 
         clearCart();
         router.push('/checkout/success');
@@ -168,10 +194,15 @@ export default function CheckoutPage() {
     setIsProcessing(false);
     setIsPayPalLoading(false);
   };
-  
+
   const handlePayPalClick = () => {
+    // Validate form before showing the PayPal modal
+    if (!validateForm()) {
+        return;
+    }
     setError(null);
     setIsPayPalLoading(true);
+    // Hide loading indicator after a few seconds if PayPal modal doesn't open
     setTimeout(() => {
       setIsPayPalLoading(false);
     }, 3000);
@@ -205,32 +236,52 @@ export default function CheckoutPage() {
       <div className="container mx-auto px-4 py-16 sm:py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start">
           <AnimateIn>
-            <div className="bg-card p-8 rounded-2xl shadow-lg">
-              <h2 className="font-headline text-2xl font-bold border-b pb-4 mb-6">
-                Order Summary
-              </h2>
-              <div className="space-y-4 mb-6">
-                {items.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Quantity: 1
-                      </p>
+            <div className="bg-card p-8 rounded-2xl shadow-lg space-y-8">
+              <div>
+                <h2 className="font-headline text-2xl font-bold border-b pb-4 mb-6">
+                  Order Summary
+                </h2>
+                <div className="space-y-4 mb-6">
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center"
+                    >
+                      <div>
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Quantity: 1
+                        </p>
+                      </div>
+                      <ProductPrice price={item.price} />
                     </div>
-                    <ProductPrice price={item.price} />
+                  ))}
+                </div>
+                <div className="border-t pt-4">
+                  <div className="flex justify-between items-center font-bold text-lg">
+                    <span>Total</span>
+                    <ProductPrice price={subtotal} />
                   </div>
-                ))}
-              </div>
-              <div className="border-t pt-4">
-                <div className="flex justify-between items-center font-bold text-lg">
-                  <span>Total</span>
-                  <ProductPrice price={subtotal} />
                 </div>
               </div>
+              
+              <div>
+                <h2 className="font-headline text-2xl font-bold border-b pb-4 mb-6">
+                    Your Details
+                </h2>
+                <div className="space-y-4">
+                    <div>
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input id="name" type="text" placeholder="First and Last Name" value={name} onChange={e => setName(e.target.value)} className="mt-1" />
+                    </div>
+                     <div>
+                        <Label htmlFor="email">Email Address</Label>
+                        <Input id="email" type="email" placeholder="Where should we send your downloads?" value={email} onChange={e => setEmail(e.target.value)} className="mt-1"/>
+                    </div>
+                    {formError && <p className="text-sm text-destructive">{formError}</p>}
+                </div>
+              </div>
+
             </div>
           </AnimateIn>
           <AnimateIn delay={150}>
@@ -266,11 +317,18 @@ export default function CheckoutPage() {
                     </p>
                     <Button
                       onClick={handleToyyibPay}
-                      disabled={isProcessing || !totalMYR}
+                      disabled={isProcessing || !totalMYR || !name || !email}
                       size="lg"
                       className="w-full font-bold"
                     >
-                      {totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Loading Rate</>}
+                      {totalMYR ? (
+                        'Pay with ToyyibPay'
+                      ) : (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
+                          Loading Rate
+                        </>
+                      )}
                     </Button>
                   </div>
                   <div className="relative flex py-2 items-center">
@@ -298,7 +356,7 @@ export default function CheckoutPage() {
                           onApprove={onPayPalApprove}
                           onError={onPayPalError}
                           onClick={handlePayPalClick}
-                          disabled={isProcessing}
+                          disabled={isProcessing || !name || !email}
                         />
                       </PayPalScriptProvider>
                     ) : (
@@ -309,10 +367,10 @@ export default function CheckoutPage() {
                       </div>
                     )}
                     {isPayPalLoading && (
-                        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Connecting to PayPal...</span>
-                        </div>
+                      <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Connecting to PayPal...</span>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -334,3 +392,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    

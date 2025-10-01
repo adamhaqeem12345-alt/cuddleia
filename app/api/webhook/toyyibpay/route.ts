@@ -14,9 +14,9 @@ import { products, Product } from '@/lib/products'; // Assuming products are acc
 // **THE SOLUTION:** To automatically email the customer their download links, you
 // must have a database. The workflow would be:
 //
-// 1. **Before Redirecting to ToyyibPay (in `/checkout`):**
-//    - Collect the customer's name and email from a form.
-//    - Generate a unique `orderId`.
+// 1. **Before Redirecting to ToyyibPay (on the Checkout Page):**
+//    - Collect the customer's name and email from the new form.
+//    - Generate a unique `orderId` (which you're already doing with uuidv4).
 //    - Save the `orderId`, customer name, email, and the products in their cart
 //      to a database record (e.g., in a collection named 'orders').
 //
@@ -87,3 +87,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
   }
 }
+
+    
