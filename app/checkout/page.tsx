@@ -46,6 +46,19 @@ export default function CheckoutPage() {
         }
       })
       .catch(console.error);
+
+    // Add a pageshow event listener to reset processing state
+    const handlePageShow = (event: PageTransitionEvent) => {
+      // event.persisted is true if the page is from back/forward cache
+      if (event.persisted) {
+        setIsProcessing(false);
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, []);
 
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
@@ -91,7 +104,8 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        clearCart();
+        // We don't clear the cart here anymore. It's cleared on the success page.
+        // If the user cancels, the cart remains intact.
         window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
