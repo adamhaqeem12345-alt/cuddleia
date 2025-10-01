@@ -2,7 +2,7 @@ import { products } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Info, Star } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Metadata, ResolvingMetadata } from 'next';
 import { AnimateIn } from '@/components/animate-in';
@@ -58,13 +58,6 @@ export default function ProductDetailPage({ params }: Props) {
   if (!product) {
     notFound();
   }
-
-  // Placeholder reviews
-  const reviews = [
-    { id: 1, name: 'Aisha R.', rating: 5, text: "Absolutely beautiful and brings so much peace to my workspace. The quality is amazing. Highly recommend!" },
-    { id: 2, name: 'Fatimah S.', rating: 5, text: "The Barakah Business Blueprint was exactly what I needed. It's clear, concise, and gave me the confidence to finally start my own online store." },
-    { id: 3, name: 'Maryam H.', rating: 4, text: "Love the minimalist design of the wallpaper. It's so calming to look at every day. Wish there were more color options!" }
-  ];
 
   return (
     <div className="bg-rose-50/30">
@@ -123,30 +116,6 @@ export default function ProductDetailPage({ params }: Props) {
             </div>
           </AnimateIn>
         </div>
-      </div>
-       <div className="border-t bg-background">
-        <AnimateIn>
-            <section className="container mx-auto px-4 py-16 sm:py-24">
-                <h2 className="font-headline text-4xl font-bold text-foreground mb-12 text-center">
-                    What Our Customers Are Saying
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {reviews.map((review, index) => (
-                        <AnimateIn key={review.id} delay={index * 150}>
-                             <div className="bg-card p-8 rounded-2xl shadow-lg h-full flex flex-col">
-                                <div className="flex items-center mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`h-5 w-5 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
-                                    ))}
-                                </div>
-                                <p className="text-muted-foreground font-body italic mb-4 flex-grow">"{review.text}"</p>
-                                <p className="font-headline text-lg font-semibold text-foreground">- {review.name}</p>
-                            </div>
-                        </AnimateIn>
-                    ))}
-                </div>
-            </section>
-        </AnimateIn>
       </div>
     </div>
   );
