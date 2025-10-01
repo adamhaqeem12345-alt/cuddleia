@@ -3,7 +3,7 @@
 
 import { useCart } from '@/lib/cart';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Tags } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
@@ -34,6 +34,10 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState('');
   const [formError, setFormError] = useState('');
 
+  // Discount state
+  const [discountCode, setDiscountCode] = useState('');
+  const [discount, setDiscount] = useState(0);
+  const [discountMessage, setDiscountMessage] = useState('');
 
   useEffect(() => {
     setIsClient(true);
@@ -63,7 +67,9 @@ export default function CheckoutPage() {
 
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
-  const totalMYR = exchangeRate ? subtotal * exchangeRate : null;
+  const finalTotal = subtotal - discount;
+  const totalMYR = exchangeRate ? finalTotal * exchangeRate : null;
+
 
   useEffect(() => {
     // This effect should only run if the page is not in a processing state.
@@ -74,20 +80,34 @@ export default function CheckoutPage() {
 
   const validateForm = () => {
     if (!name.trim()) {
-        setFormError('Please enter your name.');
-        return false;
+      setFormError('Please enter your name.');
+      return false;
     }
     if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
-        setFormError('Please enter a valid email address.');
-        return false;
+      setFormError('Please enter a valid email address.');
+      return false;
     }
     setFormError('');
     return true;
-  }
+  };
+  
+  const handleApplyDiscount = () => {
+    // For now, we'll hardcode a single discount code.
+    // In a real app, this would involve an API call to a database.
+    if (discountCode.toUpperCase() === 'CUDDLE10') {
+      const discountAmount = subtotal * 0.10;
+      setDiscount(discountAmount);
+      setDiscountMessage('Successfully applied 10% discount!');
+    } else {
+      setDiscount(0);
+      setDiscountMessage('Invalid or expired discount code.');
+    }
+  };
+
 
   const handleToyyibPay = async () => {
     if (!validateForm()) return;
-    
+
     if (!totalMYR) {
       setError(
         'Could not determine the exchange rate. Please try again in a moment.'
@@ -100,7 +120,12 @@ export default function CheckoutPage() {
       const response = await fetch('/api/toyyibpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, total: totalMYR, customerName: name, customerEmail: email }),
+        body: JSON.stringify({
+          items,
+          total: totalMYR,
+          customerName: name,
+          customerEmail: email,
+        }),
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
@@ -120,15 +145,15 @@ export default function CheckoutPage() {
 
   const createPayPalOrder = (data: any, actions: CreateOrderActions) => {
     if (!validateForm()) {
-        // Prevent PayPal modal from opening if form is invalid
-        return Promise.reject(new Error("Form is not valid."));
+      // Prevent PayPal modal from opening if form is invalid
+      return Promise.reject(new Error('Form is not valid.'));
     }
-    if (subtotal <= 0) {
-      setError('Cannot create an order with a zero subtotal.');
-      return Promise.reject(new Error('Invalid subtotal'));
+    if (finalTotal <= 0 && subtotal > 0) { // Allow free items, but not negative totals
+      setError('The total amount is invalid after the discount.');
+      return Promise.reject(new Error('Invalid total'));
     }
 
-    const purchaseAmount = subtotal.toFixed(2);
+    const purchaseAmount = finalTotal.toFixed(2);
 
     return actions.order.create({
       intent: 'CAPTURE',
@@ -261,12 +286,41 @@ export default function CheckoutPage() {
                     </div>
                   ))}
                 </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center font-bold text-lg">
+                <div className="border-t pt-4 space-y-2">
+                    <div className="flex justify-between items-center text-muted-foreground">
+                        <span>Subtotal</span>
+                        <ProductPrice price={subtotal} simple />
+                    </div>
+                     {discount > 0 && (
+                        <div className="flex justify-between items-center text-green-600">
+                            <span>Discount (10%)</span>
+                            <span>-<ProductPrice price={discount} simple /></span>
+                        </div>
+                    )}
+                  <div className="flex justify-between items-center font-bold text-lg border-t pt-4 mt-2">
                     <span>Total</span>
-                    <ProductPrice price={subtotal} />
+                    <ProductPrice price={finalTotal} />
                   </div>
                 </div>
+              </div>
+               <div>
+                  <h3 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+                    <Tags className="h-5 w-5"/>
+                    Discount Code
+                  </h3>
+                  <div className="flex gap-2">
+                      <Input 
+                        type="text"
+                        placeholder="e.g. CUDDLE10"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value)}
+                        className="flex-grow"
+                      />
+                      <Button onClick={handleApplyDiscount} disabled={!discountCode}>Apply</Button>
+                  </div>
+                  {discountMessage && (
+                    <p className={`text-sm mt-2 ${discount > 0 ? 'text-green-600' : 'text-destructive'}`}>{discountMessage}</p>
+                  )}
               </div>
             </div>
           </AnimateIn>
@@ -276,36 +330,36 @@ export default function CheckoutPage() {
                 Your Details
               </h2>
               <div className="space-y-4 mb-8">
-                  <div>
-                      <Label htmlFor="name">Name</Label>
-                      <Input 
-                          id="name" 
-                          type="text"
-                          placeholder="First and Last Name"
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          required
-                      />
-                  </div>
-                   <div>
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                          id="email" 
-                          type="email"
-                          placeholder="Your email for product delivery"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                      />
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Your digital products will be sent to this email address.
-                      </p>
-                  </div>
-                  {formError && (
-                      <p className="text-sm text-destructive">{formError}</p>
-                  )}
+                <div>
+                  <Label htmlFor="name">Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder="First and Last Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Your email for product delivery"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Your digital products will be sent to this email address.
+                  </p>
+                </div>
+                {formError && (
+                  <p className="text-sm text-destructive">{formError}</p>
+                )}
               </div>
-              
+
               <h2 className="font-headline text-2xl font-bold mb-6 pt-6 border-t">
                 Payment Method
               </h2>
@@ -412,3 +466,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
