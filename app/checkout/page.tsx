@@ -311,7 +311,6 @@ export default function CheckoutPage() {
                   <div className="flex gap-2">
                       <Input 
                         type="text"
-                        placeholder="e.g. CUDDLE10"
                         value={discountCode}
                         onChange={(e) => setDiscountCode(e.target.value)}
                         className="flex-grow"
@@ -466,5 +465,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
