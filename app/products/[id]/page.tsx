@@ -8,7 +8,6 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { AnimateIn } from '@/components/animate-in';
 import { AddToCartButton } from '@/components/add-to-cart-button';
 import { ProductPrice } from '@/components/product-price';
-import { WatermarkedImage } from '@/components/watermarked-image';
 
 type Props = {
   params: { id: string };
@@ -76,12 +75,12 @@ export default function ProductDetailPage({ params }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
           <AnimateIn>
-            <div className="w-full h-auto rounded-2xl shadow-2xl overflow-hidden">
-                <WatermarkedImage
+            <div className="relative w-full h-auto aspect-[4/3] rounded-2xl shadow-2xl overflow-hidden">
+                <Image
                   src={product.imageUrl}
                   alt={product.name}
-                  width={product.imageWidth}
-                  height={product.imageHeight}
+                  fill
+                  className="object-cover"
                   priority
                 />
             </div>
