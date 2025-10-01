@@ -4,7 +4,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 
+const productSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  price: z.number(),
+  imageUrl: z.string().url(),
+  imageWidth: z.number(),
+  imageHeight: z.number(),
+  category: z.union([z.literal('Booklets'), z.literal('Wallpapers')]),
+  downloadUrl: z.string().url(),
+  disclaimer: z.string(),
+});
+
+const toyyibPayRequestSchema = z.object({
+  items: z.array(productSchema).min(1, { message: 'At least one item is required' }),
+  total: z.number().positive({ message: 'Total must be a positive number' }),
+});
 
 export async function POST(req: NextRequest) {
   // Read environment variables inside the function to ensure they are available at runtime.
@@ -18,12 +36,14 @@ export async function POST(req: NextRequest) {
     
   try {
     const body = await req.json();
-    const items: Product[] = body.items;
-    const total: number = body.total; // Total is expected in MYR
+    
+    const validation = toyyibPayRequestSchema.safeParse(body);
 
-    if (!items || !total) {
-      return NextResponse.json({ error: 'Missing items or total in request' }, { status: 400 });
+    if (!validation.success) {
+        return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { items, total } = validation.data;
     
     // ===================================================================================
     // CRITICAL: URL CONFIGURATION - MUST BE UPDATED BEFORE GOING LIVE

@@ -2,6 +2,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { Product } from '@/lib/products';
+import { z } from 'zod';
+
+const productSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  price: z.number(),
+  imageUrl: z.string().url(),
+  imageWidth: z.number(),
+  imageHeight: z.number(),
+  category: z.union([z.literal('Booklets'), z.literal('Wallpapers')]),
+  downloadUrl: z.string().url(),
+  disclaimer: z.string(),
+});
+
+const emailRequestSchema = z.object({
+  to: z.string().email({ message: 'Invalid email address' }),
+  subject: z.string().min(1, { message: 'Subject is required' }),
+  name: z.string().min(1, { message: 'Name is required' }),
+  items: z.array(productSchema).min(1, { message: 'At least one item is required' }),
+});
+
 
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `
@@ -45,11 +67,15 @@ export async function POST(req: NextRequest) {
   }
     
   try {
-    const { to, subject, name, items } = await req.json();
+    const body = await req.json();
 
-    if (!to || !subject || !name || !items) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    const validation = emailRequestSchema.safeParse(body);
+
+    if (!validation.success) {
+        return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
     }
+
+    const { to, subject, name, items } = validation.data;
 
     const transporter = nodemailer.createTransport({
         host: 'smtp.zoho.com',

@@ -2,22 +2,27 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal';
+import { z } from 'zod';
+
+const captureRequestSchema = z.object({
+  orderID: z.string().min(1, { message: "Order ID is required." }),
+});
+
 
 export async function POST(req: NextRequest) {
     try {
-        const { orderID } = await req.json();
+        const body = await req.json();
 
-        if (!orderID) {
-            return NextResponse.json({ success: false, error: 'Missing orderID' }, { status: 400 });
+        const validation = captureRequestSchema.safeParse(body);
+
+        if (!validation.success) {
+            return NextResponse.json({ success: false, error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
         }
+        
+        const { orderID } = validation.data;
 
         const captureData = await captureOrder(orderID);
         
-        // TODO: Here you would trigger an email to the customer with their downloads.
-        // This requires knowing the customer's email and what they purchased, which needs to be
-        // saved in a database during order creation.
-        console.log('Payment captured successfully:', captureData.id);
-
         return NextResponse.json({ success: true, data: captureData }, { status: 200 });
 
     } catch (error) {
