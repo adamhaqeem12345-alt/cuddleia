@@ -25,15 +25,24 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isPayPalLoading, setIsPayPalLoading] = useState(false);
+  const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
   useEffect(() => {
     setIsClient(true);
+    // Fetch the exchange rate
+    fetch('/api/exchange-rate')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.rate) {
+          setExchangeRate(data.rate);
+        }
+      })
+      .catch(console.error);
   }, []);
 
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
-  const USD_TO_MYR = 4.21;
-  const totalMYR = subtotal * USD_TO_MYR;
+  const totalMYR = exchangeRate ? subtotal * exchangeRate : null;
 
   useEffect(() => {
     // This effect should only run if the page is not in a processing state.
@@ -43,6 +52,10 @@ export default function CheckoutPage() {
   }, [items, router, isClient, isProcessing]);
 
   const handleToyyibPay = async () => {
+    if (!totalMYR) {
+        setError("Could not determine the exchange rate. Please try again in a moment.");
+        return;
+    }
     setIsProcessing(true);
     setError(null);
     try {
@@ -53,7 +66,7 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        // Only clear the cart AFTER redirecting.
+        // Redirect first, then clear cart.
         window.location.href = data.paymentUrl;
         clearCart();
       } else {
@@ -101,8 +114,9 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     setError(null);
     try {
-      // The capture is now done on the server-side only.
-      // We just need to call our backend to finalize it.
+      if (!actions.order) {
+        throw new Error('PayPal order details are not available.');
+      }
       
       const response = await fetch('/api/paypal/capture-order', {
         method: 'POST',
@@ -113,10 +127,8 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
-        // The server response now contains the capture details.
         const captureDetails = responseData.data;
 
-        // Use captureDetails from the server to send the email.
         if (captureDetails.payer && captureDetails.payer.email_address) {
             const payerName = captureDetails.payer?.name?.given_name || 'Valued Customer';
             await fetch('/api/email', {
@@ -254,11 +266,11 @@ export default function CheckoutPage() {
                     </p>
                     <Button
                       onClick={handleToyyibPay}
-                      disabled={isProcessing}
+                      disabled={isProcessing || !totalMYR}
                       size="lg"
                       className="w-full font-bold"
                     >
-                      Pay with ToyyibPay
+                      {totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Loading Rate</>}
                     </Button>
                   </div>
                   <div className="relative flex py-2 items-center">
