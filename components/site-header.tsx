@@ -6,7 +6,9 @@ import { Button } from './ui/button';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { useEffect, useState } from 'react';
@@ -76,6 +78,8 @@ export function SiteHeader() {
               </SheetTrigger>
               <SheetContent side="left" className="max-w-[16rem]">
                 <SheetHeader>
+                  <SheetTitle className="sr-only">Menu</SheetTitle>
+                  <SheetDescription className="sr-only">Main site navigation links.</SheetDescription>
                   <Link href="/" onClick={closeSheet} className="mb-8">
                     <div className="flex items-center gap-2">
                       <Flower2 className="h-8 w-8 text-primary" />
