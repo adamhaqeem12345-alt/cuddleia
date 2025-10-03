@@ -61,9 +61,10 @@ export async function POST(req: NextRequest) {
     // Create a unique reference for this order. In a real app, this would be your internal order ID.
     const orderId = uuidv4();
     
-    // Ensure billName and billDescription adhere to character limits to prevent API errors.
+    // Encode the product IDs into the description. This is our workaround for not having a database.
+    const productIds = items.map(item => item.id).join(',');
     const billName = `Cuddleia Order ${orderId.substring(0, 8)}`;
-    const billDescription = `Your digital goods from Cuddleia for ${customerEmail}.`;
+    const billDescription = `Items: ${productIds}`; // Pass the IDs here!
     const billAmountInCents = Math.round(total * 100);
 
     const params = new URLSearchParams({
@@ -108,8 +109,6 @@ export async function POST(req: NextRequest) {
     
     // According to docs, success is an array with a BillCode object.
     if (data && Array.isArray(data) && data.length > 0 && data[0].BillCode) {
-      // Before sending the payment URL, we must save the order details for the webhook.
-      // This is now handled by passing the data directly to ToyyibPay.
       const billCode = data[0].BillCode;
       const paymentUrl = 'https://toyyibpay.com/' + billCode;
       return NextResponse.json({ paymentUrl });
@@ -125,5 +124,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `There was an issue connecting to our payment provider: ${errorMessage}` }, { status: 500 });
   }
 }
-
-    
