@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
     // Encode the product IDs into the description. This is our workaround for not having a database.
     const productIds = items.map(item => item.id).join(',');
     const billName = `Cuddleia Order ${orderId.substring(0, 8)}`;
-    const billDescription = `Items: ${productIds}`; // Pass the IDs here!
+    const billDescription = `Items:${productIds}`; // Pass the IDs here!
     const billAmountInCents = Math.round(total * 100);
 
     const params = new URLSearchParams({

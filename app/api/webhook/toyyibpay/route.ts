@@ -25,10 +25,10 @@ const toyyibpayWebhookSchema = z.object({
 async function getPurchasedItems(billDescription: string): Promise<Product[]> {
     console.log(`[Webhook] Extracting product IDs from description: "${billDescription}"`);
     
-    // Expected format: "Items: 001,002,003"
-    const prefix = "Items: ";
+    // Expected format: "Items:001,002,003"
+    const prefix = "Items:";
     if (!billDescription.startsWith(prefix)) {
-        console.error(`[Webhook] CRITICAL: billDescription does not have the expected "Items: " prefix.`);
+        console.error(`[Webhook] CRITICAL: billDescription does not have the expected "Items:" prefix.`);
         return [];
     }
 
