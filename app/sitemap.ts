@@ -3,7 +3,7 @@ import { products } from '@/lib/products';
 import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const appUrl = 'https://www.cuddleia.com';
 
   const productRoutes = products.map((product) => ({
     url: `${appUrl}/products/${product.id}`,
