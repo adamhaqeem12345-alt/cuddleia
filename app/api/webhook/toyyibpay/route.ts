@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
                 console.log(`[Webhook] Email request sent successfully for order ${order_id} to ${billEmail}.`);
             } else {
                 const errorBody = await emailResponse.text();
-                console.error(`[Webhook] Failed to send email for order ${order_id}. Status: ${emailResponse.status}. Body: ${errorBody}`);
+                console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Status: ${emailResponse.status}. Body: ${errorBody}`);
             }
 
         } else {
