@@ -47,24 +47,14 @@ export async function POST(req: NextRequest) {
 
     const { items, total, customerName, customerEmail } = validation.data;
     
-    // ===================================================================================
-    // CRITICAL: URL CONFIGURATION - MUST BE UPDATED BEFORE GOING LIVE
-    // ===================================================================================
-    // ToyyibPay's API does NOT allow `localhost` in the callback or return URLs.
-    // For local testing, you can use a public placeholder like "https://example.com".
-    //
-    // BEFORE GOING LIVE, you MUST replace these placeholders with your real production URLs.
-    // ===================================================================================
-    const returnUrl = 'https://www.cuddleia.com/checkout/success'; // PRODUCTION URL: Replace with your live success page
-    const callbackUrl = 'https://www.cuddleia.com/api/webhook/toyyibpay'; // PRODUCTION URL: Replace with your live webhook URL
+    const returnUrl = 'https://www.cuddleia.com/checkout/success';
+    const callbackUrl = 'https://www.cuddleia.com/api/webhook/toyyibpay';
     
-    // Create a unique reference for this order. In a real app, this would be your internal order ID.
     const orderId = uuidv4();
     
-    // Encode the product IDs into the description. This is our workaround for not having a database.
     const productIds = items.map(item => item.id).join(',');
     const billName = `Cuddleia Order ${orderId.substring(0, 8)}`;
-    const billDescription = `Items:${productIds}`; // Pass the IDs here!
+    const billDescription = `Items:${productIds}`;
     const billAmountInCents = Math.round(total * 100);
 
     const params = new URLSearchParams({
@@ -73,15 +63,16 @@ export async function POST(req: NextRequest) {
       billName: billName,
       billDescription: billDescription,
       billPriceSetting: '1',
-      billPayorInfo: '1', // We are providing customer info
+      billPayorInfo: '1',
       billAmount: billAmountInCents.toString(),
       billReturnUrl: returnUrl,
       billCallbackUrl: callbackUrl,
       billExternalReferenceNo: orderId,
       billTo: customerName,
       billEmail: customerEmail,
-      billPhone: '0123456789', // Phone is required by ToyyibPay when billPayorInfo=1, but can be a placeholder
+      billPhone: '0123456789',
       billPaymentChannel: '0', // 0 for FPX Only
+      billSplitPayment: '0', // Added this parameter to fix FPX issues
     });
 
     const response = await fetch('https://toyyibpay.com/index.php/api/createBill', {
@@ -107,13 +98,11 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Received an invalid response from ToyyibPay.'}, { status: 500 });
     }
     
-    // According to docs, success is an array with a BillCode object.
     if (data && Array.isArray(data) && data.length > 0 && data[0].BillCode) {
       const billCode = data[0].BillCode;
       const paymentUrl = 'https://toyyibpay.com/' + billCode;
       return NextResponse.json({ paymentUrl });
     } else {
-      // If the response is 200 OK but doesn't contain a BillCode, it's an API-level error.
       console.error('ToyyibPay API Error (but 200 OK):', data);
       const errorMessage = data && data.length > 0 && (data[0].msg || data[0].status) ? (data[0].msg || data[0].status) : 'Unknown API error, response did not contain BillCode.';
       return NextResponse.json({ error: `Could not create ToyyibPay bill: ${errorMessage}` }, { status: 500 });
