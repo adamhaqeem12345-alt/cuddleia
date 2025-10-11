@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-// This is a comment to force a build reset.
+// Forcing a fresh build to resolve platform errors.
 const nextConfig = {
   images: {
     remotePatterns: [
