@@ -14,23 +14,63 @@ export interface Product {
 export const products: Product[] = [
   {
     id: '001',
-    name: 'Barakah Business Blueprint: Halal Business Guide',
-    description: `A beginner-friendly guide for Muslims starting a halal online business from scratch. This is a clear starting point that highlights the essentials, avoids common pitfalls, and helps you take your first steps with confidence.
-
-What you'll learn:
-• Business Models: Digital products, dropshipping, or physical goods.
-• Platforms: Best platforms to use without wasting money (Shopify, Gumroad, Etsy, Shopee, and more).
-• Halal Payments: Guidance on gateways like Toyyibpay, Stripe, and PayPal.
-• Branding: Why your own domain builds long-term trust.
-• Automation & AI: How tools like n8n and Canva AI can save you hours.
-• Marketing: How to effectively market on TikTok, Instagram, and Pinterest.`,
+    name: 'Vol. 1: Barakah Business Blueprint',
+    description: `The foundational guide for Muslims starting a halal online business. This volume covers essential business models (digital, dropshipping), platform selection (Shopify, Etsy), and setting up halal payment gateways.`,
     price: 15.00,
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     imageWidth: 1080,
     imageHeight: 1080,
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
-    disclaimer: 'All content is AI-generated and all designs are created by me.',
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+  {
+    id: '006',
+    name: 'Vol. 2: The Art of Halal Branding',
+    description: `Discover how to build a brand that resonates with Muslim values. This volume explores brand identity, creating a memorable logo, and establishing long-term trust with your audience through authentic storytelling.`,
+    price: 15.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1080,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+   {
+    id: '007',
+    name: 'Vol. 3: Mastering Digital Marketing',
+    description: `Learn how to market your products effectively on platforms like TikTok, Instagram, and Pinterest. This volume focuses on content strategies that attract and engage your ideal customers without compromising your values.`,
+    price: 15.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1080,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+   {
+    id: '008',
+    name: 'Vol. 4: Automation & AI for Barakah',
+    description: `Unlock the power of automation to save time and effort. This volume teaches you how to use tools like n8n for workflow automation and Canva AI for design, allowing you to focus on what truly matters in your business.`,
+    price: 15.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1080,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+   {
+    id: '009',
+    name: 'Vol. 5: Scaling with Iman & Strategy',
+    description: `The final volume on growing your business sustainably. Learn about financial management, customer service excellence, and long-term strategic planning, all while keeping your faith at the center of your operations.`,
+    price: 15.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1080,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    disclaimer: 'Content is AI-generated and designs are by me.',
   },
   {
     id: '002',
@@ -44,12 +84,7 @@ Key Features:
 
 Compatibility:
 • iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
-• Scaled fit for iPad Mini 6.
-
-Please Note:
-• This is a digital item only; no physical product will be shipped.
-• For personal use only—not for resale or redistribution.
-• Not recommended for portrait lock screens.`,
+• Scaled fit for iPad Mini 6.`,
     price: 6.00,
     imageUrl: 'https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png',
     imageWidth: 2732,
@@ -66,16 +101,7 @@ Please Note:
 Key Features:
 • Design: Elegant, high-resolution minimalist design.
 • Resolution: 2048 × 2732 pixels for a crisp and clear display.
-• Orientation: Optimized for landscape lock screen use with a normal clock and no widgets.
-
-Compatibility:
-• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
-• Scaled fit for iPad Mini 6.
-
-Please Note:
-• This is a digital item only; no physical product will be shipped.
-• For personal use only—not for resale or redistribution.
-• Not recommended for portrait lock screens.`,
+• Orientation: Optimized for landscape lock screen use with a normal clock and no widgets.`,
     price: 5.00,
     imageUrl: 'https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png',
     imageWidth: 2732,
@@ -92,16 +118,7 @@ Please Note:
 Key Features:
 • Design: A warm and inviting pink floral aesthetic.
 • Resolution: 2048 × 2732 pixels, delivering a high-quality, sharp image.
-• Orientation: Works best as a landscape lock screen with a normal clock display and no widgets.
-
-Compatibility:
-• iPad Pro 12.9" (3rd Gen+), iPad Air 10.9", iPad 10th Gen, and other 4:3 tablets.
-• Scaled fit for iPad Mini 6.
-
-Please Note:
-• This is a digital item only; no physical product will be shipped.
-• For personal use only—not for resale or redistribution.
-• Not recommended for portrait lock screens.`,
+• Orientation: Works best as a landscape lock screen with a normal clock display and no widgets.`,
     price: 5.00,
     imageUrl: 'https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png',
     imageWidth: 2732,

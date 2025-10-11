@@ -4,23 +4,23 @@ import { AnimateIn } from './animate-in';
 import { Button } from './ui/button';
 import Link from 'next/link';
 
-const featuredProducts = products.slice(0, 3);
+// Now specifically features wallpapers as side products
+const featuredWallpapers = products.filter(p => p.category === 'Wallpapers').slice(0, 3);
 
 export function FeaturedProducts() {
     return (
-        <section className="py-24 bg-background">
+        <section className="py-24 bg-background/50">
             <div className="container mx-auto px-4">
             <AnimateIn>
                 <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-                Featured Products
+                Cozy Wallpapers
                 </h2>
                 <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
-                Handpicked for you. Get started on your journey of beauty and
-                reflection with our most popular digital goods.
+                Beautify your digital space with our collection of faith-inspired wallpapers for your tablet and desktop.
                 </p>
             </AnimateIn>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-                {featuredProducts.map((product, index) => (
+                {featuredWallpapers.map((product, index) => (
                 <AnimateIn key={product.id} delay={index * 150}>
                     <ProductCard product={product} />
                 </AnimateIn>
