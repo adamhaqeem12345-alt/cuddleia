@@ -1,6 +1,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
+// This tells Next.js to always run this function dynamically on the server.
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   // 1. Check for environment variables
   const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
