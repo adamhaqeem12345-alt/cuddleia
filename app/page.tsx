@@ -86,16 +86,16 @@ const EbookScrollExperience = () => {
               <p className="text-center text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
                 Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
               </p>
-              <motion.div ref={carouselRef} className="cursor-grab overflow-hidden">
+              <div ref={carouselRef} className="overflow-hidden md:cursor-grab">
                 <motion.div 
-                  className="flex gap-8"
+                  className="flex flex-col md:flex-row gap-8"
                   drag="x"
                   dragConstraints={carouselRef}
                 >
                     {ebooks.map((product) => (
-                      <motion.div key={product.id} className="min-w-[60vw] sm:min-w-[40vw] md:min-w-0">
+                      <motion.div key={product.id} className="w-full md:min-w-0 flex-shrink-0 md:w-auto">
                         <Link href={`/products/${product.id}`} className="block group">
-                          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
+                          <div className="relative aspect-[3/4] max-w-xs mx-auto w-full overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
                               <Image
                                   src={product.imageUrl}
                                   alt={product.name}
@@ -108,7 +108,7 @@ const EbookScrollExperience = () => {
                       </motion.div>
                     ))}
                 </motion.div>
-              </motion.div>
+              </div>
               <div className="mt-12 text-center">
                   <Button asChild size="lg" variant="secondary">
                     <Link href="/products">
