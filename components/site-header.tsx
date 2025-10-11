@@ -33,12 +33,12 @@ export function SiteHeader() {
   const closeSheet = () => setIsOpen(false);
 
   return (
-    <header className="w-full border-b sticky top-0 z-40 bg-accent/80 backdrop-blur-md">
+    <header className="w-full sticky top-0 z-40 bg-accent">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
-            <Flower2 className="h-8 w-8 text-muted-foreground" />
-            <span className="font-headline text-3xl font-bold tracking-tight text-primary">
+            <Flower2 className="h-8 w-8 text-primary" />
+            <span className="font-headline text-3xl font-bold tracking-tight text-muted-foreground">
               cuddleia
             </span>
           </div>
@@ -82,8 +82,8 @@ export function SiteHeader() {
                   <SheetDescription className="sr-only">Main site navigation links.</SheetDescription>
                   <Link href="/" onClick={closeSheet} className="mb-8">
                     <div className="flex items-center gap-2">
-                      <Flower2 className="h-8 w-8 text-muted-foreground" />
-                      <span className="font-headline text-3xl font-bold tracking-tight text-primary">
+                      <Flower2 className="h-8 w-8 text-primary" />
+                      <span className="font-headline text-3xl font-bold tracking-tight text-muted-foreground">
                         cuddleia
                       </span>
                     </div>
