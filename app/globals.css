@@ -5,36 +5,36 @@
 @layer base {
   :root {
     /* A richer, more saturated pink for the background */
-    --background: 340 100% 95%;
+    --background: 340 100% 92%;
     /* Dark brown for text, for excellent contrast */
     --foreground: 350 60% 25%;
 
     /* A slightly lighter pink for cards */
-    --card: 340 100% 98%;
+    --card: 340 100% 96%;
     --card-foreground: 350 60% 25%;
 
-    --popover: 340 100% 98%;
+    --popover: 340 100% 96%;
     --popover-foreground: 350 60% 25%;
 
     /* A more saturated pink for highlights, buttons, and icons */
     --primary: 340 90% 65%;
     --primary-foreground: 350 60% 15%;
 
-    --secondary: 340 100% 92%;
+    --secondary: 340 100% 94%;
     --secondary-foreground: 350 60% 25%;
 
-    --muted: 340 100% 92%;
+    --muted: 340 100% 94%;
     --muted-foreground: 350 60% 45%;
 
     /* Accent is the same as background for a seamless look */
-    --accent: 340 100% 95%;
+    --accent: 340 100% 92%;
     --accent-foreground: 350 60% 25%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 340 100% 90%;
-    --input: 340 100% 90%;
+    --border: 340 100% 88%;
+    --input: 340 100% 88%;
     --ring: 340 90% 65%;
 
     --radius: 0.75rem;
