@@ -13,20 +13,18 @@ export default function AboutPage() {
   return (
     <div className="bg-background">
       <div className="bg-accent">
-        <section className="py-20 md:py-28 flex items-center justify-center">
-          <div className="container mx-auto px-4">
-            <AnimateIn>
-              <div className="relative z-10 text-center">
-                <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-                  Our <span className="text-primary">Story</span>
-                </h1>
-                <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                  Cuddleia began with honesty, faith, and a dream to create
-                  something meaningful.
-                </p>
-              </div>
-            </AnimateIn>
-          </div>
+        <section className="container mx-auto px-4 py-20 md:py-28 text-center">
+          <AnimateIn>
+            <div className="relative z-10">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                Our <span className="text-primary">Story</span>
+              </h1>
+              <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
+                Cuddleia began with honesty, faith, and a dream to create
+                something meaningful.
+              </p>
+            </div>
+          </AnimateIn>
         </section>
       </div>
 
