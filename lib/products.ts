@@ -127,4 +127,25 @@ Key Features:
     downloadUrl: 'https://drive.google.com/file/d/1Kf9NdBI6T7rAow-D5Pf4F_5--Em5cjr0/view?usp=drivesdk',
     disclaimer: 'All wallpaper designs are 100% my work.',
   },
+  // --- TEMPLATE FOR NEW PRODUCT ---
+  // Copy and paste the block below to add a new product.
+  // Make sure to change the 'id' to a new unique number.
+  /*
+  {
+    id: '006', // <-- Change this to a new unique number
+    name: 'Your New Product Name',
+    description: `A detailed description of your product.
+    
+You can even use multiple lines for features.
+• Feature 1
+• Feature 2`,
+    price: 9.99, // Set the price in USD
+    imageUrl: 'https://i.postimg.cc/your-image-url.png', // URL for the product image
+    imageWidth: 1080, // Width of the image
+    imageHeight: 1080, // Height of the image
+    category: 'Booklets', // or 'Wallpapers'
+    downloadUrl: 'https://drive.google.com/your-file-link', // The Google Drive link for the download
+    disclaimer: 'Your disclaimer text here.',
+  },
+  */
 ];
