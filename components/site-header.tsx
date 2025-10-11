@@ -37,7 +37,7 @@ export function SiteHeader() {
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
-            <Flower2 className="h-8 w-8 text-primary" />
+            <Flower2 className="h-8 w-8 text-muted-foreground" />
             <span className="font-headline text-3xl font-bold tracking-tight text-primary">
               cuddleia
             </span>
@@ -82,7 +82,7 @@ export function SiteHeader() {
                   <SheetDescription className="sr-only">Main site navigation links.</SheetDescription>
                   <Link href="/" onClick={closeSheet} className="mb-8">
                     <div className="flex items-center gap-2">
-                      <Flower2 className="h-8 w-8 text-primary" />
+                      <Flower2 className="h-8 w-8 text-muted-foreground" />
                       <span className="font-headline text-3xl font-bold tracking-tight text-primary">
                         cuddleia
                       </span>
