@@ -37,8 +37,8 @@ export function SiteHeader() {
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
-            <Flower2 className="h-8 w-8 text-primary" />
-            <span className="font-headline text-3xl font-bold tracking-tight text-muted-foreground">
+            <Flower2 className="h-8 w-8 text-primary-foreground" />
+            <span className="font-headline text-3xl font-bold tracking-tight text-primary-foreground">
               cuddleia
             </span>
           </div>
@@ -49,7 +49,7 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary"
+                className="font-headline text-lg text-foreground/80 transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>
@@ -60,7 +60,7 @@ export function SiteHeader() {
             <Link href="/cart">
               <ShoppingCart className="h-7 w-7 text-foreground" />
               {isClient && items.length > 0 && (
-                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-secondary text-secondary-foreground text-xs font-bold">
                   {items.length}
                 </span>
               )}

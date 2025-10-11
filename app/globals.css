@@ -4,26 +4,26 @@
 
 @layer base {
   :root {
-    --background: 345 100% 97%; /* Brighter Pink */
-    --foreground: 350 60% 25%; /* Deep burgundy */
+    --background: 340 100% 65%; /* Hotter Pink */
+    --foreground: 350 100% 98%; /* Light Pink/White */
 
-    --card: 350 80% 96%;
-    --card-foreground: 350 60% 25%;
+    --card: 340 90% 70%;
+    --card-foreground: 350 60% 15%;
 
-    --popover: 350 80% 96%;
-    --popover-foreground: 350 60% 25%;
+    --popover: 340 90% 70%;
+    --popover-foreground: 350 60% 15%;
 
     --primary: 340 100% 65%; /* Hotter Pink */
-    --primary-foreground: 350 60% 25%; /* Deep burgundy */
+    --primary-foreground: 350 100% 98%;
 
     --secondary: 350 60% 92%;
     --secondary-foreground: 350 60% 25%;
 
-    --muted: 350 60% 92%;
-    --muted-foreground: 25 50% 30%; /* Dark Brown */
+    --muted: 340 80% 85%;
+    --muted-foreground: 350 100% 98%;
 
-    --accent: 340 100% 97%; /* Match background for seamless header */
-    --accent-foreground: 350 60% 25%;
+    --accent: 340 100% 65%; /* Hotter Pink - same as background */
+    --accent-foreground: 350 100% 98%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
