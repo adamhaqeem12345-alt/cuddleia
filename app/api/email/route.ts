@@ -4,8 +4,6 @@ import nodemailer from 'nodemailer';
 import { Product } from '@/lib/products';
 import { z } from 'zod';
 
-export const dynamic = 'force-dynamic';
-
 const productSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -104,3 +102,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to send email', details: errorMessage }, { status: 500 });
   }
 }
+
+    

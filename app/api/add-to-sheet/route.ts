@@ -3,8 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { z } from 'zod';
 
-export const dynamic = 'force-dynamic';
-
 const sheetRequestSchema = z.object({
   customerName: z.string(),
   customerEmail: z.string().email(),
@@ -76,3 +74,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to write to sheet', details: errorMessage }, { status: 200 });
   }
 }
+
+    

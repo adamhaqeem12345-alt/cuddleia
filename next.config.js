@@ -1,5 +1,4 @@
 /** @type {import('next').NextConfig} */
-// Forcing a fresh build to resolve platform errors.
 const nextConfig = {
   images: {
     remotePatterns: [
@@ -27,3 +26,5 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
+    
