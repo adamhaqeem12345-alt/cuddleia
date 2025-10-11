@@ -22,15 +22,12 @@ const EbookScrollExperience = () => {
 
   const { scrollYProgress } = useScroll({
     target: targetRef,
-    offset: ['start end', 'end end'], // Start animation when top of target hits bottom of viewport
+    offset: ['start end', 'end end'],
   });
 
-  // Animation for Intro Section (Fades in, then out)
   const introOpacity = useTransform(scrollYProgress, [0, 0.2, 0.4, 0.5], [0, 1, 1, 0]);
   const introScale = useTransform(scrollYProgress, [0, 0.2], [0.95, 1]);
 
-
-  // Animation for the rest of the series (Carousel)
   const seriesOpacity = useTransform(scrollYProgress, [0.45, 0.6], [0, 1]);
   const seriesScale = useTransform(scrollYProgress, [0.45, 0.6], [0.9, 1]);
 
@@ -38,8 +35,7 @@ const EbookScrollExperience = () => {
     <>
       <div ref={targetRef} className="relative h-[200vh] bg-accent">
         <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Section 2: Intro to the series */}
-           <motion.div
+          <motion.div
             style={{ opacity: introOpacity, scale: introScale }}
             className="absolute inset-0 flex items-center justify-center px-4"
           >
@@ -74,7 +70,6 @@ const EbookScrollExperience = () => {
             </div>
           </motion.div>
           
-          {/* Section 3: Full Series Carousel */}
           <motion.div 
             style={{ opacity: seriesOpacity, scale: seriesScale }}
             className="absolute inset-0 flex flex-col items-center justify-center"
@@ -95,7 +90,7 @@ const EbookScrollExperience = () => {
                     {ebooks.map((product) => (
                       <motion.div key={product.id} className="flex-shrink-0 w-[75%] md:w-auto">
                         <Link href={`/products/${product.id}`} className="block group">
-                          <div className="relative aspect-[3/4] max-w-xs mx-auto w-full overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
+                          <div className="relative aspect-[3/4] w-full max-w-[280px] md:max-w-xs mx-auto overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
                               <Image
                                   src={product.imageUrl}
                                   alt={product.name}
@@ -128,7 +123,6 @@ const EbookScrollExperience = () => {
 export default function HomePage() {
   return (
     <>
-      {/* Static, perfectly centered hero section */}
       <section className="h-[75vh] bg-accent flex flex-col items-center justify-center text-center px-4">
         <AnimateIn>
           <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
