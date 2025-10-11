@@ -7,13 +7,15 @@ import { cn } from '@/lib/utils';
 import { VariantProps } from 'class-variance-authority';
 import { useCart } from '@/lib/cart';
 import { useState } from 'react';
+import { ReactNode } from 'react';
 
 interface AddToCartButtonProps extends VariantProps<typeof buttonVariants> {
     product: Product;
     className?: string;
+    children?: ReactNode;
 }
 
-export function AddToCartButton({ product, variant, size, className }: AddToCartButtonProps) {
+export function AddToCartButton({ product, variant, size, className, children }: AddToCartButtonProps) {
     const { addToCart, items } = useCart();
     const [isAdded, setIsAdded] = useState(false);
 
@@ -53,8 +55,14 @@ export function AddToCartButton({ product, variant, size, className }: AddToCart
             onClick={handleAddToCart}
             disabled={isAdded}
         >
-            <ShoppingCart className={cn("h-5 w-5", !isIconOnly && "mr-2")} /> 
-            {isIconOnly ? <span className="sr-only">Add to Cart</span> : (isAdded ? 'Added!' : 'Add to Cart')}
+            {children ? (
+                isAdded ? <><Check className="mr-2 h-5 w-5"/> Added!</> : children
+            ) : (
+                <>
+                    <ShoppingCart className={cn("h-5 w-5", !isIconOnly && "mr-2")} /> 
+                    {isIconOnly ? <span className="sr-only">Add to Cart</span> : (isAdded ? 'Added!' : 'Add to Cart')}
+                </>
+            )}
         </Button>
     )
 }
