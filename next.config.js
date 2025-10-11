@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// This is a comment to force a build reset.
 const nextConfig = {
   images: {
     remotePatterns: [
