@@ -6,6 +6,8 @@ import { Product } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const productSchema = z.object({
   id: z.string(),
   name: z.string(),
