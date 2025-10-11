@@ -1,8 +1,11 @@
+
 // app/api/paypal/capture-order/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal';
 import { z } from 'zod';
+
+export const dynamic = 'force-dynamic';
 
 const captureRequestSchema = z.object({
   orderID: z.string().min(1, { message: "Order ID is required." }),

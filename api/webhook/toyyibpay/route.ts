@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 // This schema defines the expected product structure that would have been saved with an order.
 const productSchema = z.object({
   id: z.string(),

@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer';
 import { Product } from '@/lib/products';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const productSchema = z.object({
   id: z.string(),
   name: z.string(),
