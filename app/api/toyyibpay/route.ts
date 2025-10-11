@@ -1,6 +1,4 @@
 
-'use server';
-
 import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
 import { v4 as uuidv4 } from 'uuid';
