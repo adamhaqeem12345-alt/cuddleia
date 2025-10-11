@@ -33,7 +33,7 @@ export function SiteHeader() {
   const closeSheet = () => setIsOpen(false);
 
   return (
-    <header className="w-full border-b sticky top-0 z-40 bg-background/80 backdrop-blur-md">
+    <header className="w-full border-b sticky top-0 z-40 bg-accent/80 backdrop-blur-md">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
