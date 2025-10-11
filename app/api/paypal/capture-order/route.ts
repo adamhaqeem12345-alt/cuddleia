@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 const captureRequestSchema = z.object({
   orderID: z.string().min(1, { message: "Order ID is required." }),
 });
@@ -32,5 +34,3 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, error: `Failed to capture payment: ${errorMessage}` }, { status: 500 });
     }
 }
-
-    

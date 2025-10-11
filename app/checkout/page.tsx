@@ -188,6 +188,18 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
+        const itemsString = items.map(item => `  - ${item.name}`).join('\n');
+        const telegramMessage = `
+🎉 *New PayPal Sale!* 🎉
+
+*Customer:* ${name}
+*Email:* ${email}
+
+*Items Purchased:*
+${itemsString}
+
+*Total Amount:* $${finalTotal.toFixed(2)} USD
+            `;
         
         // Use Promise.all to run non-dependent tasks concurrently
         await Promise.all([
@@ -212,6 +224,12 @@ export default function CheckoutPage() {
                     products: items.map(item => item.name).join(', '),
                     amount: finalTotal,
                 }),
+            }),
+            // 3. Send Telegram Notification
+            fetch('/api/telegram-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: telegramMessage }),
             }),
         ]);
 
@@ -484,5 +502,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    

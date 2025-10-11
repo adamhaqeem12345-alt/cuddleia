@@ -4,6 +4,8 @@ import nodemailer from 'nodemailer';
 import { products, Product } from '@/lib/products';
 import { z } from 'zod';
 
+export const dynamic = 'force-dynamic';
+
 // This function is copied from the main email API route
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `
@@ -89,5 +91,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to send manual email', details: errorMessage }, { status: 500 });
   }
 }
-
-    
