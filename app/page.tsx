@@ -20,40 +20,22 @@ const EbookScrollExperience = () => {
   const targetRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: targetRef,
-    offset: ['start start', 'end end'],
+    offset: ['start end', 'end end'], // Start animation when top of target hits bottom of viewport
   });
 
-  // Opacity for Hero Section (Fades out)
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
-
   // Animation for Intro Section (Fades in, then out)
-  const introOpacity = useTransform(scrollYProgress, [0.15, 0.25, 0.45, 0.55], [0, 1, 1, 0]);
-  const introScale = useTransform(scrollYProgress, [0.15, 0.25], [0.95, 1]);
+  const introOpacity = useTransform(scrollYProgress, [0, 0.2, 0.4, 0.5], [0, 1, 1, 0]);
+  const introScale = useTransform(scrollYProgress, [0, 0.2], [0.95, 1]);
 
 
   // Animation for the rest of the series (Carousel)
-  const seriesOpacity = useTransform(scrollYProgress, [0.5, 0.6], [0, 1]);
-  const seriesScale = useTransform(scrollYProgress, [0.5, 0.6], [0.9, 1]);
+  const seriesOpacity = useTransform(scrollYProgress, [0.45, 0.6], [0, 1]);
+  const seriesScale = useTransform(scrollYProgress, [0.45, 0.6], [0.9, 1]);
 
   return (
     <>
-      <div ref={targetRef} className="relative h-[300vh] bg-accent">
+      <div ref={targetRef} className="relative h-[200vh] bg-accent">
         <div className="sticky top-0 h-screen overflow-hidden">
-          {/* Section 1: Hero */}
-          <motion.div
-            style={{ opacity: heroOpacity, scale: heroScale }}
-            className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
-          >
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-              Cozy Digital Goods
-            </h1>
-            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-              Thoughtfully designed Islamic booklets and wallpapers that bring
-              warmth, beauty, and serenity to your day.
-            </p>
-          </motion.div>
-
           {/* Section 2: Intro to the series */}
            <motion.div
             style={{ opacity: introOpacity, scale: introScale }}
@@ -134,5 +116,23 @@ const EbookScrollExperience = () => {
 
 
 export default function HomePage() {
-  return <EbookScrollExperience />
+  return (
+    <>
+      {/* Static, perfectly centered hero section */}
+      <section className="h-[75vh] bg-accent flex flex-col items-center justify-center text-center px-4">
+        <AnimateIn>
+          <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+            Cozy Digital Goods
+          </h1>
+          <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
+            Thoughtfully designed Islamic booklets and wallpapers that bring
+            warmth, beauty, and serenity to your day.
+          </p>
+        </AnimateIn>
+      </section>
+
+      {/* The rest of the page with scroll animations */}
+      <EbookScrollExperience />
+    </>
+  );
 }
