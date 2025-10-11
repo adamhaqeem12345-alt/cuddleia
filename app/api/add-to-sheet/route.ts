@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       spreadsheetId: GOOGLE_SHEET_ID,
       range: 'Sheet1!A:E', // The name of your sheet and the columns to append to
       valueInputOption: 'USER_ENTERED',
-      resource: {
+      requestBody: {
         values: [newRow],
       },
     });
