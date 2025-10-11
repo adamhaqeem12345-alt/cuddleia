@@ -86,14 +86,14 @@ const EbookScrollExperience = () => {
               <p className="text-center text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
                 Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
               </p>
-              <div ref={carouselRef} className="overflow-hidden md:cursor-grab">
+              <div ref={carouselRef} className="overflow-x-auto md:cursor-grab">
                 <motion.div 
-                  className="flex flex-col md:flex-row gap-8"
+                  className="flex gap-8 px-4 md:px-0"
                   drag="x"
                   dragConstraints={carouselRef}
                 >
                     {ebooks.map((product) => (
-                      <motion.div key={product.id} className="w-full md:min-w-0 flex-shrink-0 md:w-auto">
+                      <motion.div key={product.id} className="flex-shrink-0 w-[75%] md:w-auto">
                         <Link href={`/products/${product.id}`} className="block group">
                           <div className="relative aspect-[3/4] max-w-xs mx-auto w-full overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
                               <Image
@@ -120,8 +120,6 @@ const EbookScrollExperience = () => {
           </motion.div>
         </div>
       </div>
-      <FeaturedProducts />
-      <MadeWithHeart />
     </>
   );
 };
@@ -143,8 +141,9 @@ export default function HomePage() {
         </AnimateIn>
       </section>
 
-      {/* The rest of the page with scroll animations */}
       <EbookScrollExperience />
+      <FeaturedProducts />
+      <MadeWithHeart />
     </>
   );
 }
