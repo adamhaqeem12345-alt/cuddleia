@@ -57,28 +57,30 @@ const BarakahBlueprintSection = () => {
             </section>
             
             <section className="bg-background py-24 sm:py-32">
-                <AnimateIn>
-                    <div className="container mx-auto px-4">
-                         <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                <div className="container mx-auto px-4">
+                     <AnimateIn>
+                        <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
                             The Complete 5-Volume Series
                         </h2>
                         <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
                             Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {series.map((product, index) => (
-                                <AnimateIn key={product.id} delay={index * 150}>
-                                    <ProductCard product={product} />
-                                </AnimateIn>
-                            ))}
-                        </div>
+                    </AnimateIn>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {series.map((product, index) => (
+                            <AnimateIn key={product.id} delay={index * 150}>
+                                <ProductCard product={product} />
+                            </AnimateIn>
+                        ))}
+                    </div>
+                    <AnimateIn delay={series.length * 150}>
                         <div className="mt-20 text-center">
                             <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg transition-transform hover:scale-105">
                                 <Link href="/products">View All Products <ArrowRight className="ml-2 h-5 w-5"/></Link>
                             </Button>
                         </div>
-                    </div>
-                </AnimateIn>
+                    </AnimateIn>
+                </div>
             </section>
         </>
     )
