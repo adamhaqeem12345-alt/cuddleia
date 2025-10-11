@@ -16,16 +16,14 @@ export default function ProductsPage() {
     return (
         <div className="bg-background">
             <div className="bg-accent">
-                <section className="container mx-auto px-4 py-20 text-center">
-                    <AnimateIn>
-                        <div className="relative z-10">
-                            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-                                All Products
-                            </h1>
-                            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                                Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
-                            </p>
-                        </div>
+                <section className="flex h-[40vh] flex-col items-center justify-center">
+                    <AnimateIn className="container mx-auto px-4 text-center">
+                        <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                            All Products
+                        </h1>
+                        <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
+                            Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
+                        </p>
                     </AnimateIn>
                 </section>
             </div>
