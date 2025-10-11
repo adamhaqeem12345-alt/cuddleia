@@ -188,16 +188,31 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
-        await fetch('/api/email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            to: email, // Use the email from our form
-            subject: 'Your Cuddleia Order Confirmation',
-            name: name, // Use the name from our form
-            items: items,
-          }),
-        });
+        // Use Promise.all to run non-dependent tasks concurrently
+        await Promise.all([
+            // 1. Send the product email
+            fetch('/api/email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: email,
+                    subject: 'Your Cuddleia Order Confirmation',
+                    name: name,
+                    items: items,
+                }),
+            }),
+            // 2. Add the order to the Google Sheet
+            fetch('/api/add-to-sheet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    customerName: name,
+                    customerEmail: email,
+                    products: items.map(item => item.name).join(', '),
+                    amount: finalTotal,
+                }),
+            })
+        ]);
 
         clearCart();
         router.push('/checkout/success');

@@ -18,6 +18,7 @@ const toyyibpayWebhookSchema = z.object({
     billTo: z.string(), // Customer's Name
     billEmail: z.string().email(), // Customer's Email
     billDescription: z.string(), // Contains the encoded product IDs
+    amount: z.string(), // Amount in cents
 });
 
 // This function now decodes the purchased item IDs from the bill description.
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
         billTo: data.get('billTo'),
         billEmail: data.get('billEmail'),
         billDescription: data.get('billDescription'), // This now contains our product IDs
+        amount: data.get('amount'), // Amount in cents
     };
     
     const validation = toyyibpayWebhookSchema.safeParse(webhookData);
@@ -68,7 +70,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid webhook data' }, { status: 400 });
     }
 
-    const { status, order_id, billcode, billTo, billEmail, billDescription } = validation.data;
+    const { status, order_id, billcode, billTo, billEmail, billDescription, amount } = validation.data;
 
     console.log(`[ToyyibPay Webhook] Received callback for billcode: ${billcode}, status: ${status}, order_id: ${order_id}`);
 
@@ -84,22 +86,46 @@ export async function POST(req: NextRequest) {
             
             console.log(`[Webhook] Sending email with ${purchasedItems.length} items to ${billEmail}.`);
             
-            const emailResponse = await fetch(`${appUrl}/api/email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: billEmail,
-                    subject: 'Your Cuddleia Order Confirmation',
-                    name: billTo,
-                    items: purchasedItems,
+            // We use Promise.allSettled to ensure we try both operations even if one fails.
+            const [emailResult, sheetResult] = await Promise.allSettled([
+                // 1. Send the product email
+                fetch(`${appUrl}/api/email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: billEmail,
+                        subject: 'Your Cuddleia Order Confirmation',
+                        name: billTo,
+                        items: purchasedItems,
+                    }),
                 }),
-            });
-            
-            if (emailResponse.ok) {
+                // 2. Add the order to the Google Sheet
+                fetch(`${appUrl}/api/add-to-sheet`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerName: billTo,
+                        customerEmail: billEmail,
+                        products: purchasedItems.map(item => item.name).join(', '),
+                        amount: parseFloat(amount) / 100, // Convert cents to dollars for logging
+                    }),
+                })
+            ]);
+
+            // Check email result
+            if (emailResult.status === 'fulfilled' && emailResult.value.ok) {
                 console.log(`[Webhook] Email request sent successfully for order ${order_id} to ${billEmail}.`);
             } else {
-                const errorBody = await emailResponse.text();
-                console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Status: ${emailResponse.status}. Body: ${errorBody}`);
+                 const errorBody = emailResult.status === 'fulfilled' ? await emailResult.value.text() : emailResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Details: ${errorBody}`);
+            }
+
+            // Check sheet result
+            if (sheetResult.status === 'fulfilled' && sheetResult.value.ok) {
+                console.log(`[Webhook] Successfully added order ${order_id} to Google Sheet.`);
+            } else {
+                const errorBody = sheetResult.status === 'fulfilled' ? await sheetResult.value.text() : sheetResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
             }
 
         } else {
