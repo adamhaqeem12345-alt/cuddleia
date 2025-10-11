@@ -55,20 +55,39 @@ const EbookScrollExperience = () => {
           </motion.div>
 
           {/* Section 2: Intro to the series */}
-          <motion.div
+           <motion.div
             style={{ opacity: introOpacity, scale: introScale }}
-            className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
+            className="absolute inset-0 flex items-center justify-center px-4"
           >
-            <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Introducing The Barakah Blueprint
-            </h2>
-            <p className="text-center text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up, starting with your first volume, completely free.
-            </p>
-             <AddToCartButton product={vol1} size="lg" className="font-bold">
-                <Download className="mr-2 h-5 w-5" />
-                Get Volume 1 Free
-             </AddToCartButton>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+              <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden">
+                 <Image
+                    src={vol1.imageUrl}
+                    alt={vol1.name}
+                    fill
+                    className="object-cover"
+                />
+              </div>
+              <div className="text-center md:text-left">
+                <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                  The Barakah Blueprint
+                </h2>
+                <p className="text-lg text-muted-foreground mb-8">
+                  A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                  <AddToCartButton product={vol1} size="lg" className="font-bold">
+                      <Download className="mr-2 h-5 w-5" />
+                      Get Volume 1 Free
+                  </AddToCartButton>
+                   <Button asChild size="lg" variant="outline">
+                      <Link href="/products">
+                        Explore the Series
+                      </Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
           </motion.div>
           
           {/* Section 3: Full Series Carousel */}
