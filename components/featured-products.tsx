@@ -9,7 +9,7 @@ const featuredWallpapers = products.filter(p => p.category === 'Wallpapers').sli
 
 export function FeaturedProducts() {
     return (
-        <section className="py-24 bg-background/50">
+        <section className="py-24 bg-accent">
             <div className="container mx-auto px-4">
             <AnimateIn>
                 <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
