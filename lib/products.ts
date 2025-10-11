@@ -16,7 +16,7 @@ export const products: Product[] = [
     id: '001',
     name: 'Vol. 1: Barakah Business Blueprint',
     description: `The foundational guide for Muslims starting a halal online business. This volume covers essential business models (digital, dropshipping), platform selection (Shopify, Etsy), and setting up halal payment gateways.`,
-    price: 15.00,
+    price: 0.00,
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     imageWidth: 1080,
     imageHeight: 1080,
