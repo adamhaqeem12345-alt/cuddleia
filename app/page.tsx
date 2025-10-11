@@ -18,6 +18,8 @@ const EbookScrollExperience = () => {
   const vol1 = ebooks[0];
 
   const targetRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
   const { scrollYProgress } = useScroll({
     target: targetRef,
     offset: ['start end', 'end end'], // Start animation when top of target hits bottom of viewport
@@ -77,33 +79,43 @@ const EbookScrollExperience = () => {
             style={{ opacity: seriesOpacity, scale: seriesScale }}
             className="absolute inset-0 flex flex-col items-center justify-center"
           >
-            <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-              The Complete 5-Volume Series
-            </h2>
-            <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
-              Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-4 w-full max-w-6xl">
-                {ebooks.map((product) => (
-                    <Link href={`/products/${product.id}`} key={product.id} className="block group">
-                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
-                          <Image
-                              src={product.imageUrl}
-                              alt={product.name}
-                              fill
-                              className="object-cover"
-                          />
-                      </div>
-                      <h3 className="mt-4 font-headline text-lg text-center text-foreground transition-colors group-hover:text-primary">{product.name}</h3>
+            <div className="w-full max-w-6xl mx-auto px-4">
+              <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                The Complete 5-Volume Series
+              </h2>
+              <p className="text-center text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
+                Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
+              </p>
+              <motion.div ref={carouselRef} className="cursor-grab overflow-hidden">
+                <motion.div 
+                  className="flex gap-8"
+                  drag="x"
+                  dragConstraints={carouselRef}
+                >
+                    {ebooks.map((product) => (
+                      <motion.div key={product.id} className="min-w-[60vw] sm:min-w-[40vw] md:min-w-0">
+                        <Link href={`/products/${product.id}`} className="block group">
+                          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
+                              <Image
+                                  src={product.imageUrl}
+                                  alt={product.name}
+                                  fill
+                                  className="object-cover"
+                              />
+                          </div>
+                          <h3 className="mt-4 font-headline text-lg text-center text-foreground transition-colors group-hover:text-primary">{product.name}</h3>
+                        </Link>
+                      </motion.div>
+                    ))}
+                </motion.div>
+              </motion.div>
+              <div className="mt-12 text-center">
+                  <Button asChild size="lg" variant="secondary">
+                    <Link href="/products">
+                      Explore All Products <ArrowRight className="ml-2 h-5 w-5" />
                     </Link>
-                ))}
-            </div>
-             <div className="mt-12">
-                <Button asChild size="lg" variant="secondary">
-                  <Link href="/products">
-                    Explore All Products <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
+                  </Button>
+              </div>
             </div>
           </motion.div>
         </div>
