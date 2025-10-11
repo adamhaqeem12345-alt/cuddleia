@@ -16,7 +16,7 @@ export default function ProductsPage() {
     return (
         <div className="bg-background">
             <div className="bg-accent">
-                <section className="container mx-auto px-4 py-20 md:py-28 text-center">
+                <section className="container mx-auto px-4 min-h-[40vh] flex items-center justify-center text-center">
                     <AnimateIn>
                         <div className="relative z-10">
                             <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
