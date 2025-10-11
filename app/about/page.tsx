@@ -30,7 +30,7 @@ export default function AboutPage() {
         </section>
       </div>
 
-      <main>
+      <main className="bg-background">
         <AnimateIn>
           <section className="py-24 sm:py-32">
             <div className="container mx-auto px-4">
@@ -80,7 +80,7 @@ export default function AboutPage() {
         </AnimateIn>
 
         <AnimateIn>
-          <section className="bg-background py-24 sm:py-32">
+          <section className="py-24 sm:py-32">
             <div className="container mx-auto px-4">
               <div className="mx-auto max-w-4xl text-center">
                 <h2 className="font-headline text-4xl">What We Cherish</h2>

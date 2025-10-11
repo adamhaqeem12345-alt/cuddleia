@@ -31,7 +31,7 @@ export default function ProductsPage() {
                     </div>
                 </section>
             </div>
-            <main className="container mx-auto px-4 py-24 sm:py-32">
+            <main className="container mx-auto px-4 py-24 sm:py-32 bg-background">
                 <section key="Booklets" className="mb-20">
                     <AnimateIn>
                         <h2 className="font-headline text-4xl font-bold text-foreground mb-10 border-b pb-4">
