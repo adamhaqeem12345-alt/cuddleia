@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Adding a comment to force a build environment reset.
   images: {
     remotePatterns: [
       {
