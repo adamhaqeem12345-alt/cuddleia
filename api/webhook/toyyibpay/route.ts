@@ -17,49 +17,35 @@ const toyyibpayWebhookSchema = z.object({
     billcode: z.string(),
     billTo: z.string(), // Customer's Name
     billEmail: z.string().email(), // Customer's Email
-    billDescription: z.string(), // Contains the email as a backup
+    billDescription: z.string(), // Contains the encoded product IDs
+    amount: z.string(), // Amount in cents
 });
 
-// This function simulates looking up which products were in the customer's cart.
-// In a real application with a database, you would save the cart items with the order_id
-// and retrieve them here. For now, we will parse them from the billDescription.
-// THIS IS A WORKAROUND. A database is the proper solution.
+// This function now decodes the purchased item IDs from the bill description.
+// This is the workaround for not having a database.
 async function getPurchasedItems(billDescription: string): Promise<Product[]> {
-    console.log(`[Webhook] Simulating product lookup from description: "${billDescription}"`);
+    console.log(`[Webhook] Extracting product IDs from description: "${billDescription}"`);
     
-    // A more robust temporary solution could involve encoding item IDs in the description,
-    // but for now, we have to assume we can't determine the exact items without a DB.
-    // This is a major limitation. To send a generic email, we could return an empty array,
-    // but the email body expects items.
+    // Expected format: "Items:001,002,003"
+    const prefix = "Items:";
+    if (!billDescription.startsWith(prefix)) {
+        console.error(`[Webhook] CRITICAL: billDescription does not have the expected "Items:" prefix.`);
+        return [];
+    }
+
+    const idsString = billDescription.substring(prefix.length);
+    const purchasedIds = idsString.split(',');
+
+    if (purchasedIds.length === 0 || (purchasedIds.length === 1 && !purchasedIds[0])) {
+         console.warn(`[Webhook] No product IDs found in description string: "${idsString}"`);
+         return [];
+    }
     
-    // Let's assume for now we cannot determine the items and must rely on manual fulfillment
-    // if we don't have a DB. The code below will try to send an email, but it will be empty.
-    // The correct solution is a database.
-    console.warn(`[Webhook] CRITICAL: No database connected. Cannot determine which products were purchased for order. Email will not contain download links.`);
-    
-    // This will result in an email with no products.
-    return [];
-}
+    // Find the full product details from our main products list
+    const purchasedItems = products.filter(p => purchasedIds.includes(p.id));
 
-
-// A temporary function to simulate finding all products in an order.
-// This is NOT robust. In a real app, you save the cart items against the orderId.
-async function getOrderDetailsFromDatabase(orderId: string): Promise<{ purchasedItems: Product[] } | null> {
-    console.log(`[Webhook] Simulating database lookup for orderId: ${orderId}`);
-    
-    // Since we don't have a database, we can't know which products were purchased.
-    // We'll return a placeholder. In a real app, this would be a DB query.
-    // const order = await db.collection('orders').findOne({ orderId });
-    // const purchasedProducts = products.filter(p => order.itemIds.includes(p.id));
-    // return { purchasedItems: purchasedProducts };
-
-    // Let's pretend all products were purchased for the sake of sending an email.
-    // This is incorrect but allows the email to be sent.
-    const allProductIds = products.map(p => p.id);
-    const orderInDb = { itemIds: allProductIds }; // DUMMY DATA
-
-    const purchasedItems = products.filter(p => orderInDb.itemIds.includes(p.id));
-    return { purchasedItems };
+    console.log(`[Webhook] Found ${purchasedItems.length} purchased items for order.`);
+    return purchasedItems;
 }
 
 
@@ -73,7 +59,8 @@ export async function POST(req: NextRequest) {
         billcode: data.get('billcode'),
         billTo: data.get('billTo'),
         billEmail: data.get('billEmail'),
-        billDescription: data.get('billDescription'),
+        billDescription: data.get('billDescription'), // This now contains our product IDs
+        amount: data.get('amount'), // Amount in cents
     };
     
     const validation = toyyibpayWebhookSchema.safeParse(webhookData);
@@ -83,43 +70,93 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Invalid webhook data' }, { status: 400 });
     }
 
-    const { status, order_id, billcode, billTo, billEmail } = validation.data;
+    const { status, order_id, billcode, billTo, billEmail, billDescription, amount } = validation.data;
 
     console.log(`[ToyyibPay Webhook] Received callback for billcode: ${billcode}, status: ${status}, order_id: ${order_id}`);
 
     // status '1' means the payment was successful
     if (status === '1' && order_id) {
-        console.log(`[Webhook] Payment successful for order ${order_id}. Customer: ${billTo} <${billEmail}>. Sending email.`);
+        console.log(`[Webhook] Payment successful for order ${order_id}. Customer: ${billTo} <${billEmail}>. Preparing to send notifications.`);
 
-        // In a real app with a DB, we'd use the order_id to get the list of purchased items.
-        // Since we don't have a DB, we will send an email with ALL product links as a fallback.
-        // This is not ideal, but it automates the email sending.
-        const orderDetails = await getOrderDetailsFromDatabase(order_id);
+        // Get the purchased items using our new decoding function.
+        const purchasedItems = await getPurchasedItems(billDescription);
 
-        if (orderDetails) {
-            const { purchasedItems } = orderDetails;
-            
+        if (purchasedItems.length > 0) {
             const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+            const totalAmountMYR = parseFloat(amount) / 100;
+            const itemsString = purchasedItems.map(item => `  - ${item.name}`).join('\n');
+            const telegramMessage = `
+🎉 *New ToyyibPay Sale!* 🎉
+
+*Customer:* ${billTo}
+*Email:* ${billEmail}
+
+*Items Purchased:*
+${itemsString}
+
+*Total Amount:* RM${totalAmountMYR.toFixed(2)}
+            `;
             
-            const emailResponse = await fetch(`${appUrl}/api/email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: billEmail,
-                    subject: 'Your Cuddleia Order Confirmation',
-                    name: billTo,
-                    items: purchasedItems, // This will contain all products as a fallback
+            console.log(`[Webhook] Sending notifications for ${purchasedItems.length} items to ${billEmail}.`);
+            
+            // We use Promise.allSettled to ensure we try all operations even if one fails.
+            const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
+                // 1. Send the product email
+                fetch(`${appUrl}/api/email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: billEmail,
+                        subject: 'Your Cuddleia Order Confirmation',
+                        name: billTo,
+                        items: purchasedItems,
+                    }),
                 }),
-            });
-            
-            if (emailResponse.ok) {
+                // 2. Add the order to the Google Sheet
+                fetch(`${appUrl}/api/add-to-sheet`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        customerName: billTo,
+                        customerEmail: billEmail,
+                        products: purchasedItems.map(item => item.name).join(', '),
+                        amount: totalAmountMYR,
+                    }),
+                }),
+                // 3. Send Telegram notification
+                fetch(`${appUrl}/api/telegram-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: telegramMessage }),
+                }),
+            ]);
+
+            // Check email result
+            if (emailResult.status === 'fulfilled' && emailResult.value.ok) {
                 console.log(`[Webhook] Email request sent successfully for order ${order_id} to ${billEmail}.`);
             } else {
-                console.error(`[Webhook] Failed to send email for order ${order_id}. Status: ${emailResponse.status}`);
+                 const errorBody = emailResult.status === 'fulfilled' ? await emailResult.value.text() : emailResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Details: ${errorBody}`);
+            }
+
+            // Check sheet result
+            if (sheetResult.status === 'fulfilled' && sheetResult.value.ok) {
+                console.log(`[Webhook] Successfully added order ${order_id} to Google Sheet.`);
+            } else {
+                const errorBody = sheetResult.status === 'fulfilled' ? await sheetResult.value.text() : sheetResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
+            }
+
+            // Check Telegram result
+            if (telegramResult.status === 'fulfilled' && telegramResult.value.ok) {
+                console.log(`[Webhook] Successfully sent Telegram notification for order ${order_id}.`);
+            } else {
+                const errorBody = telegramResult.status === 'fulfilled' ? await telegramResult.value.text() : telegramResult.reason;
+                console.error(`[Webhook] FAILED TO SEND TELEGRAM NOTIFICATION for order ${order_id}. Details: ${errorBody}`);
             }
 
         } else {
-             console.log(`[Webhook] Did not send email for order ${order_id} because customer details could not be retrieved.`);
+             console.warn(`[Webhook] Did not send email for order ${order_id} because no purchased items could be determined from the bill description.`);
         }
 
     } else {
@@ -133,5 +170,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
   }
 }
-
-    
