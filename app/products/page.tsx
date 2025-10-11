@@ -15,21 +15,23 @@ export default function ProductsPage() {
 
     return (
         <div className="bg-background">
-            <section className="bg-accent py-20 md:py-28 flex items-center justify-center">
-                <div className="container mx-auto px-4">
-                    <AnimateIn>
-                        <div className="relative z-10 text-center">
-                            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-                                All Products
-                            </h1>
-                            <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                                Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
-                            </p>
-                        </div>
-                    </AnimateIn>
-                </div>
-            </section>
-            <div className="container mx-auto px-4 py-24 sm:py-32">
+            <div className="bg-accent">
+                <section className="py-20 md:py-28 flex items-center justify-center">
+                    <div className="container mx-auto px-4">
+                        <AnimateIn>
+                            <div className="relative z-10 text-center">
+                                <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                                    All Products
+                                </h1>
+                                <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
+                                    Discover our full collection of digital goods, crafted with love to bring warmth, beauty, and barakah into your life.
+                                </p>
+                            </div>
+                        </AnimateIn>
+                    </div>
+                </section>
+            </div>
+            <main className="container mx-auto px-4 py-24 sm:py-32">
                 <section key="Booklets" className="mb-20">
                     <AnimateIn>
                         <h2 className="font-headline text-4xl font-bold text-foreground mb-10 border-b pb-4">
@@ -54,7 +56,7 @@ export default function ProductsPage() {
                         ))}
                     </div>
                 </section>
-            </div>
+            </main>
         </div>
     );
 }
