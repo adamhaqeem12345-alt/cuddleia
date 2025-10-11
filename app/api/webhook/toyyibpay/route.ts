@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
                         customerName: billTo,
                         customerEmail: billEmail,
                         products: purchasedItems.map(item => item.name).join(', '),
-                        amount: parseFloat(amount) / 100, // Convert cents to dollars for logging
+                        amount: parseFloat(amount) / 100, // Convert cents to dollars/ringgit for logging
                     }),
                 })
             ]);
