@@ -5,119 +5,84 @@ import { products } from '@/lib/products';
 import { AnimateIn } from '@/components/animate-in';
 import { FeaturedProducts } from '@/components/featured-products';
 import { MadeWithHeart } from '@/components/made-with-heart';
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, Download } from 'lucide-react';
+import { Download, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { AddToCartButton } from '@/components/add-to-cart-button';
+import { ProductCard } from '@/components/product-card';
 
-const EbookScrollExperience = () => {
-  const ebooks = products.filter((p) => p.category === 'Booklets').slice(0, 5);
-  const vol1 = ebooks[0];
+const BarakahBlueprintSection = () => {
+    const vol1 = products.find(p => p.id === '001');
+    const series = products.filter(p => p.category === 'Booklets').slice(0, 4);
 
-  const targetRef = useRef<HTMLDivElement>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
+    if (!vol1) return null;
 
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ['start end', 'end end'],
-  });
-
-  const introOpacity = useTransform(scrollYProgress, [0, 0.2, 0.4, 0.5], [0, 1, 1, 0]);
-  const introScale = useTransform(scrollYProgress, [0, 0.2], [0.95, 1]);
-
-  const seriesOpacity = useTransform(scrollYProgress, [0.45, 0.6], [0, 1]);
-  const seriesScale = useTransform(scrollYProgress, [0.45, 0.6], [0.9, 1]);
-
-  return (
-    <>
-      <div ref={targetRef} className="relative h-[200vh] bg-accent">
-        <div className="sticky top-0 h-screen overflow-hidden">
-          <motion.div
-            style={{ opacity: introOpacity, scale: introScale }}
-            className="absolute inset-0 flex items-center justify-center px-4"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
-              <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden">
-                 <Image
-                    src={vol1.imageUrl}
-                    alt={vol1.name}
-                    fill
-                    className="object-cover"
-                />
-              </div>
-              <div className="text-center md:text-left">
-                <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-                  The Barakah Blueprint
-                </h2>
-                <p className="text-lg text-muted-foreground mb-8">
-                  A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                  <AddToCartButton product={vol1} size="lg" className="font-bold">
-                      <Download className="mr-2 h-5 w-5" />
-                      Get Volume 1 Free
-                  </AddToCartButton>
-                   <Button asChild size="lg" variant="outline">
-                      <Link href="/products">
-                        Explore the Series
-                      </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-          
-          <motion.div 
-            style={{ opacity: seriesOpacity, scale: seriesScale }}
-            className="absolute inset-0 flex flex-col items-center justify-center"
-          >
-            <div className="w-full max-w-6xl mx-auto px-4">
-              <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-                The Complete 5-Volume Series
-              </h2>
-              <p className="text-center text-lg text-muted-foreground mb-12 max-w-3xl mx-auto">
-                Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
-              </p>
-              <div ref={carouselRef} className="overflow-x-auto md:cursor-grab">
-                <motion.div 
-                  className="flex gap-8 px-4 md:px-0"
-                  drag="x"
-                  dragConstraints={carouselRef}
-                >
-                    {ebooks.map((product) => (
-                      <motion.div key={product.id} className="flex-shrink-0 w-[75%] md:w-auto">
-                        <Link href={`/products/${product.id}`} className="block group">
-                          <div className="relative aspect-[3/4] w-full max-w-[280px] md:max-w-xs mx-auto overflow-hidden rounded-lg shadow-xl transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl">
-                              <Image
-                                  src={product.imageUrl}
-                                  alt={product.name}
-                                  fill
-                                  className="object-cover"
-                              />
-                          </div>
-                          <h3 className="mt-4 font-headline text-lg text-center text-foreground transition-colors group-hover:text-primary">{product.name}</h3>
-                        </Link>
-                      </motion.div>
-                    ))}
-                </motion.div>
-              </div>
-              <div className="mt-12 text-center">
-                  <Button asChild size="lg" variant="secondary">
-                    <Link href="/products">
-                      Explore All Products <ArrowRight className="ml-2 h-5 w-5" />
-                    </Link>
-                  </Button>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    </>
-  );
-};
+    return (
+        <>
+            <section className="bg-accent py-24 sm:py-32">
+                <AnimateIn>
+                    <div className="container mx-auto px-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+                           <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden">
+                                <Image
+                                    src={vol1.imageUrl}
+                                    alt={vol1.name}
+                                    fill
+                                    className="object-cover"
+                                />
+                            </div>
+                            <div className="text-center md:text-left">
+                                <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                                The Barakah Blueprint
+                                </h2>
+                                <p className="text-lg text-muted-foreground mb-8">
+                                A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.
+                                </p>
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                                <AddToCartButton product={vol1} size="lg" className="font-bold">
+                                    <Download className="mr-2 h-5 w-5" />
+                                    Get Volume 1 Free
+                                </AddToCartButton>
+                                <Button asChild size="lg" variant="outline">
+                                    <Link href="/products">
+                                        Explore the Series
+                                    </Link>
+                                </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </AnimateIn>
+            </section>
+            
+            <section className="bg-background py-24 sm:py-32">
+                <AnimateIn>
+                    <div className="container mx-auto px-4">
+                         <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                            The Complete 5-Volume Series
+                        </h2>
+                        <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
+                            Each volume builds on the last, covering everything from branding and marketing to automation and scaling with Iman.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {series.map((product, index) => (
+                                <AnimateIn key={product.id} delay={index * 150}>
+                                    <ProductCard product={product} />
+                                </AnimateIn>
+                            ))}
+                        </div>
+                        <div className="mt-20 text-center">
+                            <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg transition-transform hover:scale-105">
+                                <Link href="/products">View All Products <ArrowRight className="ml-2 h-5 w-5"/></Link>
+                            </Button>
+                        </div>
+                    </div>
+                </AnimateIn>
+            </section>
+        </>
+    )
+}
 
 
 export default function HomePage() {
@@ -135,7 +100,7 @@ export default function HomePage() {
         </AnimateIn>
       </section>
 
-      <EbookScrollExperience />
+      <BarakahBlueprintSection />
       <FeaturedProducts />
       <MadeWithHeart />
     </>
