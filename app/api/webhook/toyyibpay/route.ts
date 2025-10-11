@@ -76,18 +76,31 @@ export async function POST(req: NextRequest) {
 
     // status '1' means the payment was successful
     if (status === '1' && order_id) {
-        console.log(`[Webhook] Payment successful for order ${order_id}. Customer: ${billTo} <${billEmail}>. Preparing to send email.`);
+        console.log(`[Webhook] Payment successful for order ${order_id}. Customer: ${billTo} <${billEmail}>. Preparing to send notifications.`);
 
         // Get the purchased items using our new decoding function.
         const purchasedItems = await getPurchasedItems(billDescription);
 
         if (purchasedItems.length > 0) {
             const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+            const totalAmountMYR = parseFloat(amount) / 100;
+            const itemsString = purchasedItems.map(item => `  - ${item.name}`).join('\n');
+            const telegramMessage = `
+🎉 *New ToyyibPay Sale!* 🎉
+
+*Customer:* ${billTo}
+*Email:* ${billEmail}
+
+*Items Purchased:*
+${itemsString}
+
+*Total Amount:* RM${totalAmountMYR.toFixed(2)}
+            `;
             
-            console.log(`[Webhook] Sending email with ${purchasedItems.length} items to ${billEmail}.`);
+            console.log(`[Webhook] Sending notifications for ${purchasedItems.length} items to ${billEmail}.`);
             
-            // We use Promise.allSettled to ensure we try both operations even if one fails.
-            const [emailResult, sheetResult] = await Promise.allSettled([
+            // We use Promise.allSettled to ensure we try all operations even if one fails.
+            const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
                 // 1. Send the product email
                 fetch(`${appUrl}/api/email`, {
                     method: 'POST',
@@ -107,9 +120,15 @@ export async function POST(req: NextRequest) {
                         customerName: billTo,
                         customerEmail: billEmail,
                         products: purchasedItems.map(item => item.name).join(', '),
-                        amount: parseFloat(amount) / 100, // Convert cents to dollars/ringgit for logging
+                        amount: totalAmountMYR,
                     }),
-                })
+                }),
+                // 3. Send Telegram notification
+                fetch(`${appUrl}/api/telegram-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: telegramMessage }),
+                }),
             ]);
 
             // Check email result
@@ -126,6 +145,14 @@ export async function POST(req: NextRequest) {
             } else {
                 const errorBody = sheetResult.status === 'fulfilled' ? await sheetResult.value.text() : sheetResult.reason;
                 console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
+            }
+
+            // Check Telegram result
+            if (telegramResult.status === 'fulfilled' && telegramResult.value.ok) {
+                console.log(`[Webhook] Successfully sent Telegram notification for order ${order_id}.`);
+            } else {
+                const errorBody = telegramResult.status === 'fulfilled' ? await telegramResult.value.text() : telegramResult.reason;
+                console.error(`[Webhook] FAILED TO SEND TELEGRAM NOTIFICATION for order ${order_id}. Details: ${errorBody}`);
             }
 
         } else {
