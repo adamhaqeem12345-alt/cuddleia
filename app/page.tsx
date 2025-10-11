@@ -14,7 +14,7 @@ import { ProductCard } from '@/components/product-card';
 
 const BarakahBlueprintSection = () => {
     const vol1 = products.find(p => p.id === '001');
-    const series = products.filter(p => p.category === 'Booklets').slice(0, 4);
+    const series = products.filter(p => p.category === 'Booklets' && p.id !== '001');
 
     if (!vol1) return null;
 
