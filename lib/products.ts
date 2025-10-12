@@ -57,15 +57,24 @@ What you’ll learn:
   },
   {
     id: '007',
-    name: 'Vol. 3: Halal Marketing & Sales',
-    description: 'Discover ethical and effective marketing strategies. This volume covers content creation, social media presence with integrity, and sales techniques that are built on honesty and trust, ensuring your methods are halal.',
-    price: 12.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    name: 'Barakah Business Blueprint Vol. 3 (Creating, Marketing & Selling With Soul)',
+    description: `In this third volume of the Barakah Business Blueprint, your digital home begins to speak. You’ll learn how to express your message with calm confidence — through words, visuals, and systems that reflect sincerity instead of noise. This volume guides you in creating content that carries meaning, building trust through rhythm and honesty, and sharing your business as a form of da’wah, not performance.
+
+You’ll explore how to plan your content, design with intention, and craft communication that builds gentle connection with your audience. Every chapter helps you create from a place of purpose — where storytelling becomes service, and growth happens with peace.
+
+What you’ll learn:
+• How to craft meaningful content that reflects sincerity and purpose
+• Ways to use social media and storytelling as tools for calm connection
+• How to design visuals and captions that align with your brand’s values
+• Building trust through honest communication and rhythm-based posting
+• Transforming your business into a voice of da’wah and quiet influence`,
+    price: 20.00,
+    imageUrl: 'https://i.postimg.cc/SsDZHJ8r/Barakah-Business-Blueprint-Vol-III.png',
     imageWidth: 1080,
     imageHeight: 1350,
     category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
-    disclaimer: 'Content is AI-generated and designs are by me.',
+    downloadUrl: 'https://drive.google.com/file/d/1oC5qtfRb2m52frSve9vGBOX2NLoDQZX4/view?usp=drivesdk',
+    disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
   },
   {
     id: '008',
