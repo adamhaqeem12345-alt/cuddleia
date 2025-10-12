@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Adding a comment to force a build environment reset.
+  // Adding a comment to force a build environment reset. This may resolve platform-level build errors.
   images: {
     remotePatterns: [
       {
@@ -27,5 +27,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
-    
