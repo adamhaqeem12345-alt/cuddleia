@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Download, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import { AddToCartButton } from '@/components/add-to-cart-button';
 import { ProductCard } from '@/components/product-card';
 
 const BarakahBlueprintSection = () => {
     const vol1 = products.find(p => p.id === '001');
+    // Filter out Vol 1 from the series display
     const series = products.filter(p => p.category === 'Booklets' && p.id !== '001');
 
     if (!vol1) return null;
@@ -40,10 +40,12 @@ const BarakahBlueprintSection = () => {
                                 A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                <AddToCartButton product={vol1} size="lg" className="font-bold">
-                                    <Download className="mr-2 h-5 w-5" />
-                                    Get Volume 1 Free
-                                </AddToCartButton>
+                                <Button asChild size="lg" className="font-bold">
+                                    <Link href={vol1.downloadUrl} target="_blank">
+                                        <Download className="mr-2 h-5 w-5" />
+                                        Get Volume 1 Free
+                                    </Link>
+                                </Button>
                                 <Button asChild size="lg" variant="outline">
                                     <Link href="/products">
                                         Explore the Series
