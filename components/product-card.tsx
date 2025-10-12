@@ -20,20 +20,22 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
-        <Link href={`/products/${product.id}`} className="block">
-            <div className={cn(
-                "relative w-full overflow-hidden",
-                product.category === 'Wallpapers' ? 'aspect-video' : 'aspect-[3/4]'
-            )}>
-                <Image
-                    src={product.imageUrl}
-                    alt={product.name}
-                    fill
-                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
-            </div>
-        </Link>
+        <div className="p-0">
+             <Link href={`/products/${product.id}`} className="block">
+                <div className={cn(
+                    "relative w-full overflow-hidden",
+                    product.category === 'Wallpapers' ? 'aspect-[4/3]' : 'aspect-[3/4]'
+                )}>
+                    <Image
+                        src={product.imageUrl}
+                        alt={product.name}
+                        fill
+                        className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
+                </div>
+            </Link>
+        </div>
         <div className="flex flex-1 flex-col p-6">
             <div className="flex-1">
                 <Link href={`/products/${product.id}`}>
@@ -54,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
             <div className="pt-6">
             {product.price === 0 ? (
-                <Button asChild size="rounded" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95" onClick={(e) => e.stopPropagation()}>
+                <Button asChild size="rounded" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
                 <Link href={product.downloadUrl} target="_blank">
                     <Download className="mr-2 h-5 w-5" />
                     Download Now
