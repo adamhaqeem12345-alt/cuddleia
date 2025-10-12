@@ -6,7 +6,7 @@
   :root {
     /* Main content background - a slightly lighter, softer pink */
     --background: 340 100% 96%;
-    /* Dark brown for text, for excellent contrast. This is now the main body text color. */
+    /* Dark brown for headlines and main text. */
     --foreground: 30 40% 25%;
 
     /* Cards will use the same soft pink as the background */
@@ -25,7 +25,8 @@
     --secondary-foreground: 30 40% 25%;
 
     --muted: 340 100% 94%;
-    --muted-foreground: 30 40% 45%;
+    /* Softer, neutral brown for body text to create hierarchy */
+    --muted-foreground: 30 25% 40%;
 
     /* Hero section background - the richer pink */
     --accent: 340 100% 92%;
