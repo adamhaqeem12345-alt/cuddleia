@@ -502,5 +502,4 @@ ${itemsString}
       </div>
     </div>
   );
-
-    
+}
