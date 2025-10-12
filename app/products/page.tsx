@@ -37,7 +37,7 @@ export default function ProductsPage() {
                             <p className="mt-2 text-lg text-muted-foreground">The Barakah Blueprint Series</p>
                         </div>
                     </AnimateIn>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                        {booklets.map((product, index) => (
                             <AnimateIn key={product.id} delay={index * 150}>
                                 <ProductCard product={product} />
@@ -51,7 +51,7 @@ export default function ProductsPage() {
                             Wallpapers
                         </h2>
                     </AnimateIn>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                         {wallpapers.map((product, index) => (
                            <AnimateIn key={product.id} delay={index * 150}>
                                 <ProductCard product={product} />
