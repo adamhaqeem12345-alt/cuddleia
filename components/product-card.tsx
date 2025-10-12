@@ -1,13 +1,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Info } from 'lucide-react';
+import { Download, Info } from 'lucide-react';
 import {
   Card
 } from './ui/card';
 import type { Product } from '@/lib/products';
 import { ProductPrice } from './product-price';
 import { AddToCartButton } from './add-to-cart-button';
+import { Button } from './ui/button';
 
 interface ProductCardProps {
     product: Product;
@@ -17,7 +18,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.id}`} className="h-full group">
         <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2">
-            <div className="relative aspect-[4/3] w-full overflow-hidden">
+            <div className="relative aspect-[3/4] w-full overflow-hidden">
                 <Image
                     src={product.imageUrl}
                     alt={product.name}
@@ -43,8 +44,16 @@ export function ProductCard({ product }: ProductCardProps) {
                     </div>
                 </div>
                  <div className="pt-6">
-                    {/* The AddToCartButton stops the Link propagation, so it works independently */}
-                    <AddToCartButton product={product} size="rounded" className="w-full"/>
+                    {product.price === 0 ? (
+                        <Button asChild size="rounded" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95" onClick={(e) => e.stopPropagation()}>
+                            <Link href={product.downloadUrl} target="_blank">
+                                <Download className="mr-2 h-5 w-5" />
+                                Download Now
+                            </Link>
+                        </Button>
+                    ) : (
+                        <AddToCartButton product={product} size="rounded" className="w-full"/>
+                    )}
                 </div>
             </div>
         </Card>

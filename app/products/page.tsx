@@ -30,13 +30,18 @@ export default function ProductsPage() {
             <main className="container mx-auto px-4 py-24 sm:py-32 bg-background">
                 <section key="Booklets" className="mb-20">
                     <AnimateIn>
-                        <h2 className="font-headline text-4xl font-bold text-foreground mb-10 border-b pb-4">
-                            Booklets
-                        </h2>
+                        <div className="border-b pb-4 mb-10">
+                            <h2 className="font-headline text-4xl font-bold text-foreground">
+                                Booklets
+                            </h2>
+                            <p className="mt-2 text-lg text-muted-foreground">The Barakah Blueprint Series</p>
+                        </div>
                     </AnimateIn>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-                       {booklets.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                       {booklets.map((product, index) => (
+                            <AnimateIn key={product.id} delay={index * 150}>
+                                <ProductCard product={product} />
+                            </AnimateIn>
                         ))}
                     </div>
                 </section>
@@ -47,8 +52,10 @@ export default function ProductsPage() {
                         </h2>
                     </AnimateIn>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-12">
-                        {wallpapers.map((product) => (
-                            <ProductCard key={product.id} product={product} />
+                        {wallpapers.map((product, index) => (
+                           <AnimateIn key={product.id} delay={index * 150}>
+                                <ProductCard product={product} />
+                            </AnimateIn>
                         ))}
                     </div>
                 </section>
