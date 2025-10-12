@@ -1,9 +1,11 @@
+
 export interface Product {
     id: string;
     name: string;
     description: string;
     price: number;
     imageUrl: string;
+    imageUrl2?: string; // Optional second image for the gallery
     imageWidth: number;
     imageHeight: number;
     category: 'Booklets' | 'Wallpapers';
@@ -87,6 +89,7 @@ Compatibility:
 • Scaled fit for iPad Mini 6.`,
     price: 6.00,
     imageUrl: 'https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png',
+    imageUrl2: 'https://i.postimg.cc/yNnB3v61/Screenshot-2024-08-01-at-12-07-27-AM.png',
     imageWidth: 2732,
     imageHeight: 2048,
     category: 'Wallpapers',
@@ -104,6 +107,7 @@ Key Features:
 • Orientation: Optimized for landscape lock screen use with a normal clock and no widgets.`,
     price: 5.00,
     imageUrl: 'https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png',
+    imageUrl2: 'https://i.postimg.cc/k4GqcD03/Screenshot-2024-08-01-at-12-07-42-AM.png',
     imageWidth: 2732,
     imageHeight: 2048,
     category: 'Wallpapers',
@@ -121,6 +125,7 @@ Key Features:
 • Orientation: Works best as a landscape lock screen with a normal clock display and no widgets.`,
     price: 5.00,
     imageUrl: 'https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png',
+    imageUrl2: 'https://i.postimg.cc/T3sLdJdC/Screenshot-2024-08-01-at-12-07-52-AM.png',
     imageWidth: 2732,
     imageHeight: 2048,
     category: 'Wallpapers',
@@ -166,3 +171,5 @@ You can even use multiple lines for features.
   },
   */
 ];
+
+    
