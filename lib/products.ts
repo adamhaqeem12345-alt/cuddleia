@@ -99,15 +99,15 @@ What you’ll learn:
   },
   {
     id: '009',
-    name: 'Vol. 5: Scaling with Barakah',
-    description: 'The final volume focuses on sustainable growth. Learn how to expand your product line, manage finances according to Islamic principles (zakat, avoiding riba), and build a business that has a lasting positive impact.',
-    price: 12.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    name: 'Barakah Business Blueprint Vol. 5 (Legacy, Leadership & Wealth)',
+    description: `In this fifth and final volume of the Barakah Business Blueprint, you will learn how to lead with heart and sustain with wisdom. This is the stage where your work begins to impact others — where your systems, people, and community start to rely on your calm guidance. Inside, we’ll explore how to lead ethically, manage wealth with purpose, and build a legacy that outlives your name. Each page reminds you that leadership in Islam is not power, but amanah — and true wealth is not in ownership, but in what you leave behind in others.`,
+    price: 15.00,
+    imageUrl: 'https://i.postimg.cc/sftVLXJn/Barakah-Business-Blueprint-Vol-V.png',
     imageWidth: 1080,
     imageHeight: 1350,
     category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
-    disclaimer: 'Content is AI-generated and designs are by me.',
+    downloadUrl: 'https://drive.google.com/file/d/16m54EeuJkE96uo5uYXD036KRXBcYqewq/view?usp=drivesdk',
+    disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
   },
   {
     id: '010',
