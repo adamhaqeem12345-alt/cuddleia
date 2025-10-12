@@ -36,15 +36,24 @@ What you’ll learn:
   },
   {
     id: '006',
-    name: 'Vol. 2: Branding & Identity with Iman',
-    description: 'This volume guides you through creating a heart-centered brand that reflects your Islamic values. Learn to define your mission, craft a memorable brand name, and design a visual identity that connects with your audience.',
-    price: 12.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    name: 'Barakah Business Blueprint Vol. 2 (Building The Base)',
+    description: `In this second volume of the Barakah Business Blueprint, you’ll learn how to build your calm foundation — a digital home that reflects order, ease, and sincerity. We’ll walk together through setting up your ecosystem, shaping your visual identity, and crafting a workspace that keeps your effort peaceful and your intentions pure.
+
+You’ll also explore how to organize your files, protect your data, and maintain your business flow with barakah. With guided system pages and structured walkthroughs, this volume helps you move from scattered effort to steady rhythm — where your work becomes a space of focus, beauty, and calm direction.
+
+What you’ll learn:
+• How to create a well-structured, peaceful digital workspace
+• The essential apps and systems for smooth daily management
+• How to build your brand’s visual and organizational identity
+• Methods to protect, back up, and maintain your business data
+• System Companion Pages for sustainable, barakah-filled workflow`,
+    price: 20.00,
+    imageUrl: 'https://i.postimg.cc/KzXpt6bQ/Barakah-Business-Blueprint-Vol-II-by-Cuddleia.png',
     imageWidth: 1080,
     imageHeight: 1350,
     category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
-    disclaimer: 'Content is AI-generated and designs are by me.',
+    downloadUrl: 'https://drive.google.com/file/d/1BHSSOioZWeoQS3sOCL6f8E-EP2rHwPyF/view?usp=drivesdk',
+    disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
   },
   {
     id: '007',
