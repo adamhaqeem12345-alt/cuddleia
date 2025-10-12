@@ -47,7 +47,7 @@ const BarakahBlueprintSection = () => {
                                     </Link>
                                 </Button>
                                 <Button asChild size="lg" variant="outline">
-                                    <Link href={`/products/${seriesBundle?.id}`}>
+                                    <Link href="/products">
                                         Explore the Series
                                     </Link>
                                 </Button>
