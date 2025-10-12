@@ -310,7 +310,7 @@ ${itemsString}
                     <Tags className="h-5 w-5"/>
                     Have a discount code?
                   </h3>
-                   <p className="text-sm text-muted-foreground mb-4">Please apply your discount code before entering your name and email to ensure the correct total is calculated.</p>
+                   <p className="text-sm text-muted-foreground mb-4">Please apply your discount code (if any) before entering your name and email to ensure the correct total is calculated.</p>
                   <div className="flex gap-2">
                       <Input 
                         type="text"
