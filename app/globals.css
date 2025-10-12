@@ -6,23 +6,23 @@
   :root {
     /* Main content background - a slightly lighter, softer pink */
     --background: 340 100% 96%;
-    /* Dark brown for headlines and main text. */
-    --foreground: 30 40% 25%;
+    /* Dark maroon for headlines and main text. */
+    --foreground: 350 45% 30%;
 
     /* Cards will use the same soft pink as the background */
     --card: 340 100% 96%;
-    /* The headline color - a rich, dark brown */
-    --card-foreground: 30 40% 25%;
+    /* The headline color - a rich, dark maroon */
+    --card-foreground: 350 45% 30%;
 
     --popover: 340 100% 96%;
-    --popover-foreground: 30 40% 25%;
+    --popover-foreground: 350 45% 30%;
 
     /* A more saturated pink for highlights, buttons, and icons */
     --primary: 340 90% 65%;
     --primary-foreground: 350 60% 15%;
 
     --secondary: 340 100% 94%;
-    --secondary-foreground: 30 40% 25%;
+    --secondary-foreground: 350 45% 30%;
 
     --muted: 340 100% 94%;
     /* Softer, neutral brown for body text to create hierarchy */
@@ -30,7 +30,7 @@
 
     /* Hero section background - the richer pink */
     --accent: 340 100% 92%;
-    --accent-foreground: 30 40% 25%;
+    --accent-foreground: 350 45% 30%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
