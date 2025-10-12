@@ -23,8 +23,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/products/${product.id}`} className="block">
             <div className={cn(
                 "relative w-full overflow-hidden",
-                // All cards will now use a portrait aspect ratio
-                'aspect-[3/4]'
+                product.category === 'Wallpapers' ? 'aspect-video' : 'aspect-[3/4]'
             )}>
                 <Image
                     src={product.imageUrl}
