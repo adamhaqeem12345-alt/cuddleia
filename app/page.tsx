@@ -34,7 +34,7 @@ const BarakahBlueprintSection = () => {
                             </div>
                             <div className="text-center md:text-left">
                                 <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
-                                The Barakah Blueprint
+                                The Barakah Business Blueprint
                                 </h2>
                                 <p className="text-lg text-muted-foreground mb-8">
                                 A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.
