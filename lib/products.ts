@@ -100,7 +100,16 @@ What you’ll learn:
   {
     id: '009',
     name: 'Barakah Business Blueprint Vol. 5 (Legacy, Leadership & Wealth)',
-    description: `In this fifth and final volume of the Barakah Business Blueprint, you will learn how to lead with heart and sustain with wisdom. This is the stage where your work begins to impact others — where your systems, people, and community start to rely on your calm guidance. Inside, we’ll explore how to lead ethically, manage wealth with purpose, and build a legacy that outlives your name. Each page reminds you that leadership in Islam is not power, but amanah — and true wealth is not in ownership, but in what you leave behind in others.`,
+    description: `The final volume of the Barakah Business Blueprint brings your journey to completion — transforming success into service, and profit into purpose. Here, you’ll learn how to lead with adab, manage wealth responsibly, and build systems that continue to benefit others long after your work is done.
+
+This volume helps you view leadership as amanah (trust), wealth as a tool for khidmah (service), and business as a legacy of sincerity. You’ll discover how to nurture teams, reinvest with wisdom, and ensure every decision you make carries both integrity and barakah.
+
+What you’ll learn:
+• How to lead with adab and emotional balance
+• Principles of halal wealth management and mindful reinvestment
+• Building a brand culture rooted in sincerity and service
+• Turning profit into sadaqah jariyah through purposeful systems
+• Sustaining your business as a lasting legacy of good`,
     price: 15.00,
     imageUrl: 'https://i.postimg.cc/sftVLXJn/Barakah-Business-Blueprint-Vol-V.png',
     imageWidth: 1080,
