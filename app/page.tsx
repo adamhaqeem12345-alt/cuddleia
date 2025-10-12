@@ -46,7 +46,7 @@ const BarakahBlueprintSection = () => {
                                         Get volume 1 for free
                                     </Link>
                                 </Button>
-                                <Button asChild size="lg" variant="outline" className="font-bold">
+                                <Button asChild size="lg" variant="outline">
                                     <Link href="/products">
                                         Explore the Series
                                     </Link>
@@ -59,7 +59,7 @@ const BarakahBlueprintSection = () => {
             </section>
             
             {seriesBundle && (
-                 <section className="bg-accent py-24 sm:py-32">
+                 <section className="bg-background py-24 sm:py-32">
                     <div className="container mx-auto px-4">
                          <AnimateIn>
                             <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -106,7 +106,7 @@ export default function HomePage() {
             <Button asChild size="lg" className="font-bold">
               <Link href="/products">Shop Now</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="font-bold">
+            <Button asChild size="lg" variant="outline">
               <Link href="/about">Learn More</Link>
             </Button>
           </div>
