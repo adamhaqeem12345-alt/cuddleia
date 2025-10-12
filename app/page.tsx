@@ -93,12 +93,19 @@ export default function HomePage() {
       <section className="h-[75vh] bg-accent flex flex-col items-center justify-center text-center px-4">
         <AnimateIn>
           <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
-            Cozy Digital Goods
+            Where Creativity Meets Barakah
           </h1>
           <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-            Thoughtfully designed Islamic booklets and wallpapers that bring
-            warmth, beauty, and serenity to your day.
+            Discover cozy wallpapers and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.
           </p>
+          <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="font-bold">
+              <Link href="/products">Shop Now</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline">
+              <Link href="/about">Learn More</Link>
+            </Button>
+          </div>
         </AnimateIn>
       </section>
 
