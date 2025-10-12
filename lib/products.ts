@@ -4,6 +4,7 @@ export interface Product {
     name: string;
     description: string;
     price: number;
+    originalPrice?: number;
     imageUrl: string;
     imageWidth: number;
     imageHeight: number;
@@ -134,6 +135,7 @@ What you’ll receive:
 • Templates, companion pages, and challenges for practical action
 • A complete framework to build your halal business ecosystem`,
     price: 70.00,
+    originalPrice: 80.00,
     imageUrl: 'https://i.postimg.cc/rsqhc9sF/The-complete-collection-Vol-I.png',
     imageWidth: 1080,
     imageHeight: 1350,

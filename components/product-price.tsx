@@ -5,10 +5,11 @@ import { useEffect, useState } from 'react';
 
 interface ProductPriceProps {
     price: number;
+    originalPrice?: number;
     simple?: boolean;
 }
 
-export function ProductPrice({ price, simple = false }: ProductPriceProps) {
+export function ProductPrice({ price, originalPrice, simple = false }: ProductPriceProps) {
     const [priceMYR, setPriceMYR] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -31,6 +32,7 @@ export function ProductPrice({ price, simple = false }: ProductPriceProps) {
     }, [price]);
 
     const displayPrice = `$${price.toFixed(2)} USD`;
+    const displayOriginalPrice = originalPrice ? `$${originalPrice.toFixed(2)} USD` : '';
 
     if (simple) {
         return <span>{displayPrice}</span>
@@ -46,7 +48,12 @@ export function ProductPrice({ price, simple = false }: ProductPriceProps) {
 
     return (
         <div>
-            <p className="text-xl font-headline font-bold text-primary">{displayPrice}</p>
+            <div className="flex items-center gap-2">
+                <p className="text-xl font-headline font-bold text-primary">{displayPrice}</p>
+                {originalPrice && originalPrice > price && (
+                    <p className="text-lg font-headline text-muted-foreground line-through">{displayOriginalPrice}</p>
+                )}
+            </div>
             {isLoading 
                 ? <p className="text-xs text-muted-foreground">Loading conversion...</p> 
                 : (priceMYR && <p className="text-xs text-muted-foreground">(Approx. RM{priceMYR})</p>)
@@ -54,5 +61,3 @@ export function ProductPrice({ price, simple = false }: ProductPriceProps) {
         </div>
     )
 }
-
-    

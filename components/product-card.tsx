@@ -42,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     </h3>
                 </Link>
                 <div className="mb-4">
-                    <ProductPrice price={product.price} />
+                    <ProductPrice price={product.price} originalPrice={product.originalPrice} />
                 </div>
                 <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">
                     {product.description}

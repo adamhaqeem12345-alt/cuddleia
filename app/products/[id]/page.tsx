@@ -94,7 +94,7 @@ export default function ProductDetailPage({ params }: Props) {
                 </h1>
                 
                 <div className="mb-6">
-                    <ProductPrice price={product.price} />
+                    <ProductPrice price={product.price} originalPrice={product.originalPrice} />
                 </div>
 
                 <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
