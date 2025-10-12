@@ -59,7 +59,7 @@ const BarakahBlueprintSection = () => {
             </section>
             
             {seriesBundle && (
-                 <section className="bg-background py-24 sm:py-32">
+                 <section className="bg-accent py-24 sm:py-32">
                     <div className="container mx-auto px-4">
                          <AnimateIn>
                             <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
