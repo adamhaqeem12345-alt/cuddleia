@@ -46,7 +46,7 @@ const BarakahBlueprintSection = () => {
                                         Get volume 1 for free
                                     </Link>
                                 </Button>
-                                <Button asChild size="lg" variant="outline">
+                                <Button asChild size="lg" variant="outline" className="font-bold">
                                     <Link href="/products">
                                         Explore the Series
                                     </Link>
@@ -106,7 +106,7 @@ export default function HomePage() {
             <Button asChild size="lg" className="font-bold">
               <Link href="/products">Shop Now</Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button asChild size="lg" variant="outline" className="font-bold">
               <Link href="/about">Learn More</Link>
             </Button>
           </div>
