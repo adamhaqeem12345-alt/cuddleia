@@ -7,7 +7,7 @@
     /* Main content background - a slightly lighter, softer pink */
     --background: 340 100% 96%;
     /* Dark brown for text, for excellent contrast. This is now the main body text color. */
-    --foreground: 30 25% 30%;
+    --foreground: 30 40% 25%;
 
     /* Cards will use the same soft pink as the background */
     --card: 340 100% 96%;
