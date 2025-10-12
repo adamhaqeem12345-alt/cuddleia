@@ -120,15 +120,26 @@ What you’ll learn:
   },
   {
     id: '010',
-    name: 'The Barakah Blueprint (Full 5-Volume Series)',
-    description: `Get the entire 5-volume collection in one bundle! This complete series guides you through building a sincere, halal, and successful business from the ground up, covering branding, marketing, automation, and scaling with Iman.`,
-    price: 45.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    name: 'Barakah Business Blueprint — The Complete Collection (Vol. 1-5)',
+    description: `Build your business with integrity, grow it with clarity, and sustain it with barakah. The Barakah Business Blueprint Complete Collection gathers all five volumes into one seamless journey — guiding you from your first intention to your lasting legacy.
+
+Each volume is written to help you balance faith and structure, sincerity and strategy. From understanding halal business models and setting up calm digital systems, to expressing your message with honesty, sustaining growth with peace, and leading with adab — this series is your full manual for business done with heart.
+
+Perfect for entrepreneurs, creatives, and dreamers who wish to earn with purpose, this collection walks beside you as both teacher and companion — helping you build, automate, and grow with peace, not pressure.
+
+What you’ll receive:
+• All five volumes (I–V) of the Barakah Business Blueprint series
+• Step-by-step guidance from intention to legacy
+• Technical walkthroughs blended with calm, faith-based reflection
+• Templates, companion pages, and challenges for practical action
+• A complete framework to build your halal business ecosystem`,
+    price: 70.00,
+    imageUrl: 'https://i.postimg.cc/rsqhc9sF/The-complete-collection-Vol-I.png',
     imageWidth: 1080,
     imageHeight: 1350,
     category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder link
-    disclaimer: 'Content is AI-generated and designs are by me.',
+    downloadUrl: 'https://drive.google.com/drive/folders/1ZSw8l2E9gFBD6sUyyok0S2VtKgMhoeNn',
+    disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
   },
   {
     id: '002',
