@@ -20,16 +20,16 @@ const BarakahBlueprintSection = () => {
 
     return (
         <>
-            <section className="bg-accent py-24 sm:py-32">
+            <section className="bg-background/80 py-24 sm:py-32">
                 <AnimateIn>
                     <div className="container mx-auto px-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
-                           <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden">
+                           <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden group">
                                 <Image
                                     src={vol1.imageUrl}
                                     alt={vol1.name}
                                     fill
-                                    className="object-cover"
+                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                                 />
                             </div>
                             <div className="text-center md:text-left">
@@ -71,7 +71,7 @@ const BarakahBlueprintSection = () => {
                         </AnimateIn>
                         <div className="flex justify-center">
                             <AnimateIn>
-                                <div className="max-w-sm">
+                                <div className="max-w-sm w-full">
                                     <ProductCard product={seriesBundle} />
                                 </div>
                             </AnimateIn>

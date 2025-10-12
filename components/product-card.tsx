@@ -20,22 +20,20 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
-        <div className="p-0">
-             <Link href={`/products/${product.id}`} className="block">
-                <div className={cn(
-                    "relative w-full overflow-hidden",
-                    product.category === 'Wallpapers' ? 'aspect-[4/3]' : 'aspect-[3/4]'
-                )}>
-                    <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
-                </div>
-            </Link>
-        </div>
+        <Link href={`/products/${product.id}`} className="block p-0">
+            <div className={cn(
+                "relative w-full overflow-hidden",
+                product.category === 'Wallpapers' ? 'aspect-[4/3]' : 'aspect-[3/4]'
+            )}>
+                <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
+            </div>
+        </Link>
         <div className="flex flex-1 flex-col p-6">
             <div className="flex-1">
                 <Link href={`/products/${product.id}`}>

@@ -20,9 +20,57 @@ export const products: Product[] = [
     price: 0.00,
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     imageWidth: 1080,
-    imageHeight: 1080,
+    imageHeight: 1350,
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+  {
+    id: '006',
+    name: 'Vol. 2: Branding & Identity with Iman',
+    description: 'This volume guides you through creating a heart-centered brand that reflects your Islamic values. Learn to define your mission, craft a memorable brand name, and design a visual identity that connects with your audience.',
+    price: 12.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1350,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+  {
+    id: '007',
+    name: 'Vol. 3: Halal Marketing & Sales',
+    description: 'Discover ethical and effective marketing strategies. This volume covers content creation, social media presence with integrity, and sales techniques that are built on honesty and trust, ensuring your methods are halal.',
+    price: 12.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1350,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+  {
+    id: '008',
+    name: 'Vol. 4: Automation & Efficiency',
+    description: 'Learn to streamline your business operations to free up your time for what matters most. This volume explores tools for automating marketing, order fulfillment for digital products, and managing customer service efficiently.',
+    price: 12.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1350,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
+    disclaimer: 'Content is AI-generated and designs are by me.',
+  },
+  {
+    id: '009',
+    name: 'Vol. 5: Scaling with Barakah',
+    description: 'The final volume focuses on sustainable growth. Learn how to expand your product line, manage finances according to Islamic principles (zakat, avoiding riba), and build a business that has a lasting positive impact.',
+    price: 12.00,
+    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    imageWidth: 1080,
+    imageHeight: 1350,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
     disclaimer: 'Content is AI-generated and designs are by me.',
   },
   {
@@ -32,7 +80,7 @@ export const products: Product[] = [
     price: 45.00,
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     imageWidth: 1080,
-    imageHeight: 1080,
+    imageHeight: 1350,
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder link
     disclaimer: 'Content is AI-generated and designs are by me.',
@@ -109,25 +157,4 @@ Key Features:
     downloadUrl: 'https://drive.google.com/file/d/1Kf9NdBI6T7rAow-D5Pf4F_5--Em5cjr0/view?usp=drivesdk',
     disclaimer: 'All wallpaper designs are 100% my work.',
   },
-  // --- TEMPLATE FOR NEW PRODUCT ---
-  // Copy and paste the block below to add a new product.
-  // Make sure to change the 'id' to a new unique number.
-  /*
-  {
-    id: '006', // <-- Change this to a new unique number
-    name: 'Your New Product Name',
-    description: `A detailed description of your product.
-    
-You can even use multiple lines for features.
-• Feature 1
-• Feature 2`,
-    price: 9.99, // Set the price in USD
-    imageUrl: 'https://i.postimg.cc/your-image-url.png', // URL for the product image
-    imageWidth: 1080, // Width of the image
-    imageHeight: 1080, // Height of the image
-    category: 'Booklets', // or 'Wallpapers'
-    downloadUrl: 'https://drive.google.com/your-file-link', // The Google Drive link for the download
-    disclaimer: 'Your disclaimer text here.',
-  },
-  */
 ];
