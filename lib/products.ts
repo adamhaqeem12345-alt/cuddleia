@@ -11,6 +11,8 @@ export interface Product {
     category: 'Booklets' | 'Wallpapers';
     downloadUrl: string;
     disclaimer: string;
+    bundleIncludes?: string[];
+    includedInBundle?: string[];
 }
 
 export const products: Product[] = [
@@ -34,6 +36,7 @@ What you’ll learn:
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1-v2_zgCQDfpNjByZgD3IzzCla5XbO_lz/view?usp=drivesdk',
     disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
+    includedInBundle: ['010'],
   },
   {
     id: '006',
@@ -55,6 +58,7 @@ What you’ll learn:
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1BHSSOioZWeoQS3sOCL6f8E-EP2rHwPyF/view?usp=drivesdk',
     disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
+    includedInBundle: ['010'],
   },
   {
     id: '007',
@@ -76,6 +80,7 @@ What you’ll learn:
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1oC5qtfRb2m52frSve9vGBOX2NLoDQZX4/view?usp=drivesdk',
     disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
+    includedInBundle: ['010'],
   },
   {
     id: '008',
@@ -97,6 +102,7 @@ What you’ll learn:
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/1TDWKNxGadHRsBqAtmxegr7GpU7HxEIHK/view?usp=drivesdk',
     disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
+    includedInBundle: ['010'],
   },
   {
     id: '009',
@@ -118,6 +124,7 @@ What you’ll learn:
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/file/d/16m54EeuJkE96uo5uYXD036KRXBcYqewq/view?usp=drivesdk',
     disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
+    includedInBundle: ['010'],
   },
   {
     id: '010',
@@ -142,6 +149,7 @@ What you’ll receive:
     category: 'Booklets',
     downloadUrl: 'https://drive.google.com/drive/folders/1ZSw8l2E9gFBD6sUyyok0S2VtKgMhoeNn',
     disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
+    bundleIncludes: ['001', '006', '007', '008', '009'],
   },
   {
     id: '002',

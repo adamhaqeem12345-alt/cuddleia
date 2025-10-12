@@ -7,7 +7,7 @@ import { Product } from '@/lib/products';
 import { cn } from '@/lib/utils';
 import { VariantProps } from 'class-variance-authority';
 import { useCart } from '@/lib/cart';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ReactNode } from 'react';
 
 interface AddToCartButtonProps extends VariantProps<typeof buttonVariants> {
@@ -20,7 +20,20 @@ export function AddToCartButton({ product, variant, size, className, children }:
     const { addToCart, items } = useCart();
     const [isAdded, setIsAdded] = useState(false);
 
-    const isProductInCart = items.some(item => item.id === product.id);
+    const isProductInCart = useMemo(() => {
+        // 1. Check if the product itself is in the cart
+        if (items.some(item => item.id === product.id)) {
+            return true;
+        }
+        // 2. Check if this product is included in a bundle that's in the cart
+        if (product.includedInBundle) {
+            return product.includedInBundle.some(bundleId => 
+                items.some(cartItem => cartItem.id === bundleId)
+            );
+        }
+        return false;
+    }, [items, product]);
+
 
     const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault(); // Stop the event from propagating to the parent Link

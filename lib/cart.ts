@@ -3,7 +3,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Product } from './products';
+import { Product, products } from './products';
 
 interface CartState {
   items: Product[];
@@ -13,6 +13,9 @@ interface CartState {
   subtotal: number;
 }
 
+const bundleProduct = products.find(p => p.id === '010');
+const bundleItemIds = bundleProduct?.bundleIncludes || [];
+
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
@@ -20,9 +23,33 @@ export const useCart = create<CartState>()(
       subtotal: 0,
       addToCart: (product) => {
         set((state) => {
-            const newItems = [...state.items, product];
-            const newSubtotal = newItems.reduce((acc, item) => acc + item.price, 0);
-            return { items: newItems, subtotal: newSubtotal };
+            let currentItems = [...state.items];
+
+            // If the added product is the bundle
+            if (product.id === bundleProduct?.id) {
+                // Remove individual items that are in the bundle
+                currentItems = currentItems.filter(item => !bundleItemIds.includes(item.id));
+            }
+            
+            // Add the new product
+            if (!currentItems.some(item => item.id === product.id)) {
+                 currentItems.push(product);
+            }
+
+            // Check if all individual bundle items are now in the cart
+            const hasAllBundleItems = bundleItemIds.every(id => currentItems.some(item => item.id === id));
+
+            if (bundleProduct && hasAllBundleItems) {
+                // Remove individual items
+                currentItems = currentItems.filter(item => !bundleItemIds.includes(item.id));
+                // Add the bundle if it's not already there
+                if (!currentItems.some(item => item.id === bundleProduct.id)) {
+                    currentItems.push(bundleProduct);
+                }
+            }
+            
+            const newSubtotal = currentItems.reduce((acc, item) => acc + item.price, 0);
+            return { items: currentItems, subtotal: newSubtotal };
         });
       },
       removeFromCart: (productId) => {
