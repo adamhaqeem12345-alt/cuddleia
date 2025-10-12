@@ -148,7 +148,7 @@ export default function CheckoutPage() {
       // Prevent PayPal modal from opening if form is invalid
       return Promise.reject(new Error('Form is not valid.'));
     }
-    if (finalTotal <= 0 && subtotal > 0) { // Allow free items, but not negative totals
+    if (finalTotal < 0) {
       setError('The total amount is invalid after the discount.');
       return Promise.reject(new Error('Invalid total'));
     }
