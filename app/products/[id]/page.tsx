@@ -75,14 +75,15 @@ export default function ProductDetailPage({ params }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24 items-start">
           <AnimateIn>
-            <div className="relative w-full max-w-md mx-auto h-auto aspect-[3/4] rounded-2xl shadow-2xl overflow-hidden">
-                <Image
-                  src={product.imageUrl}
-                  alt={product.name}
-                  fill
-                  className="object-contain"
-                  priority
-                />
+            <div className="flex justify-center items-center">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                width={product.imageWidth}
+                height={product.imageHeight}
+                className="w-full max-w-md h-auto object-contain"
+                priority
+              />
             </div>
           </AnimateIn>
 
