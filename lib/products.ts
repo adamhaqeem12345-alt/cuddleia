@@ -78,15 +78,24 @@ What you’ll learn:
   },
   {
     id: '008',
-    name: 'Vol. 4: Automation & Efficiency',
-    description: 'Learn to streamline your business operations to free up your time for what matters most. This volume explores tools for automating marketing, order fulfillment for digital products, and managing customer service efficiently.',
-    price: 12.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
+    name: 'Barakah Business Blueprint Vol. 4 (Nurturing, Scaling & Sustaining With Barakah)',
+    description: `In this fourth volume of the Barakah Business Blueprint, you’ll learn how to sustain and grow your business without losing your calm. It’s about scaling with structure — building systems that work even when you rest, and letting automation, delegation, and discipline bring balance to your effort.
+
+You’ll explore how to manage your time, organize your team, and plan your finances with barakah at the center. This volume teaches you how to maintain consistency, track performance gently, and build resilience in both workflow and faith. Growth becomes not a chase, but a steady rhythm of effort guided by trust.
+
+What you’ll learn:
+• How to organize your systems for long-term sustainability
+• Practical ways to automate and delegate while keeping control
+• Time and financial management guided by simplicity and purpose
+• How to review progress and adjust strategies without burnout
+• Building consistency and peace through stable, faith-rooted growth`,
+    price: 25.00,
+    imageUrl: 'https://i.postimg.cc/KzDzbyvC/Barakah-Business-Blueprint-Vol-IV.png',
     imageWidth: 1080,
     imageHeight: 1350,
     category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder
-    disclaimer: 'Content is AI-generated and designs are by me.',
+    downloadUrl: 'https://drive.google.com/file/d/1TDWKNxGadHRsBqAtmxegr7GpU7HxEIHK/view?usp=drivesdk',
+    disclaimer: 'Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.',
   },
   {
     id: '009',
