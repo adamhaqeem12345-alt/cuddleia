@@ -43,7 +43,7 @@ const BarakahBlueprintSection = () => {
                                 <Button asChild size="lg" className="font-bold">
                                     <Link href={vol1.downloadUrl} target="_blank">
                                         <Download className="mr-2 h-5 w-5" />
-                                        Get Volume 1 Free
+                                        Get volume 1 for free
                                     </Link>
                                 </Button>
                                 <Button asChild size="lg" variant="outline">
