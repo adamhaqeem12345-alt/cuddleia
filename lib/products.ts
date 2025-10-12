@@ -26,51 +26,15 @@ export const products: Product[] = [
     disclaimer: 'Content is AI-generated and designs are by me.',
   },
   {
-    id: '006',
-    name: 'Vol. 2: The Art of Halal Branding',
-    description: `Discover how to build a brand that resonates with Muslim values. This volume explores brand identity, creating a memorable logo, and establishing long-term trust with your audience through authentic storytelling.`,
-    price: 15.00,
+    id: '010',
+    name: 'The Barakah Blueprint (Full 5-Volume Series)',
+    description: `Get the entire 5-volume collection in one bundle! This complete series guides you through building a sincere, halal, and successful business from the ground up, covering branding, marketing, automation, and scaling with Iman.`,
+    price: 45.00,
     imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
     imageWidth: 1080,
     imageHeight: 1080,
     category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
-    disclaimer: 'Content is AI-generated and designs are by me.',
-  },
-   {
-    id: '007',
-    name: 'Vol. 3: Mastering Digital Marketing',
-    description: `Learn how to market your products effectively on platforms like TikTok, Instagram, and Pinterest. This volume focuses on content strategies that attract and engage your ideal customers without compromising your values.`,
-    price: 15.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
-    imageWidth: 1080,
-    imageHeight: 1080,
-    category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
-    disclaimer: 'Content is AI-generated and designs are by me.',
-  },
-   {
-    id: '008',
-    name: 'Vol. 4: Automation & AI for Barakah',
-    description: `Unlock the power of automation to save time and effort. This volume teaches you how to use tools like n8n for workflow automation and Canva AI for design, allowing you to focus on what truly matters in your business.`,
-    price: 15.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
-    imageWidth: 1080,
-    imageHeight: 1080,
-    category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
-    disclaimer: 'Content is AI-generated and designs are by me.',
-  },
-   {
-    id: '009',
-    name: 'Vol. 5: Scaling with Iman & Strategy',
-    description: `The final volume on growing your business sustainably. Learn about financial management, customer service excellence, and long-term strategic planning, all while keeping your faith at the center of your operations.`,
-    price: 15.00,
-    imageUrl: 'https://i.postimg.cc/WbHNrcfr/Barakah-Business-Blueprint-by-Cuddleia.png',
-    imageWidth: 1080,
-    imageHeight: 1080,
-    category: 'Booklets',
-    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk',
+    downloadUrl: 'https://drive.google.com/file/d/1RUV9y6JLBK99dS6aUQMZY4zAsi7HqEH7/view?usp=drivesdk', // Placeholder link
     disclaimer: 'Content is AI-generated and designs are by me.',
   },
   {
@@ -167,5 +131,3 @@ You can even use multiple lines for features.
   },
   */
 ];
-
-    
