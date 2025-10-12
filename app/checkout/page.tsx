@@ -306,10 +306,11 @@ ${itemsString}
                 </h2>
                 
                 <div className="pb-6 border-b">
-                  <h3 className="font-headline text-lg font-bold mb-4 flex items-center gap-2">
+                  <h3 className="font-headline text-lg font-bold mb-2 flex items-center gap-2">
                     <Tags className="h-5 w-5"/>
                     Have a discount code?
                   </h3>
+                   <p className="text-sm text-muted-foreground mb-4">Please apply your discount code before entering your name and email to ensure the correct total is calculated.</p>
                   <div className="flex gap-2">
                       <Input 
                         type="text"
@@ -501,4 +502,5 @@ ${itemsString}
       </div>
     </div>
   );
-}
+
+    
