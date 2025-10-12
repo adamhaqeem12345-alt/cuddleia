@@ -6,11 +6,12 @@
   :root {
     /* Main content background - a slightly lighter, softer pink */
     --background: 340 100% 96%;
-    /* Dark brown for text, for excellent contrast */
-    --foreground: 30 40% 25%;
+    /* Dark brown for text, for excellent contrast. This is now the main body text color. */
+    --foreground: 30 25% 30%;
 
     /* Cards will use the same soft pink as the background */
     --card: 340 100% 96%;
+    /* The headline color - a rich, dark brown */
     --card-foreground: 30 40% 25%;
 
     --popover: 340 100% 96%;
@@ -42,10 +43,10 @@
 
   .dark {
     --background: 30 20% 10%;
-    --foreground: 30 10% 98%;
+    --foreground: 30 10% 75%; /* Lighter gray for body text in dark mode */
 
     --card: 30 20% 15%;
-    --card-foreground: 30 10% 98%;
+    --card-foreground: 30 10% 98%; /* White for headlines in dark mode */
 
     --popover: 30 20% 15%;
     --popover-foreground: 30 10% 98%;
