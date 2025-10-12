@@ -11,18 +11,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useCart } from '@/lib/cart';
+import { useHasHydrated } from '@/lib/hooks';
 
 export function SiteHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const { items } = useCart();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
+  const hasHydrated = useHasHydrated();
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -59,7 +55,7 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="icon" className="h-14 w-14 rounded-full relative">
             <Link href="/cart">
               <ShoppingCart className="h-7 w-7 text-foreground" />
-              {isClient && items.length > 0 && (
+              {hasHydrated && items.length > 0 && (
                 <span className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
                   {items.length}
                 </span>
