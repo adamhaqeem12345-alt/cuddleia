@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ShoppingCart, Check } from 'lucide-react';
@@ -21,7 +22,8 @@ export function AddToCartButton({ product, variant, size, className, children }:
 
     const isProductInCart = items.some(item => item.id === product.id);
 
-    const handleAddToCart = () => {
+    const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault(); // Stop the event from propagating to the parent Link
         if (isProductInCart) return;
         
         addToCart(product);
@@ -40,6 +42,7 @@ export function AddToCartButton({ product, variant, size, className, children }:
                 variant={variant} 
                 className={cn("font-bold shadow-lg transition-all", className)}
                 disabled={true}
+                onClick={(e) => e.preventDefault()}
             >
                 <Check className={cn("h-5 w-5", !isIconOnly && "mr-2")} /> 
                 {isIconOnly ? <span className="sr-only">Added</span> : 'Added!'}
