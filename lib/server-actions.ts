@@ -103,14 +103,45 @@ const emailRequestSchema = z.object({
 export type EmailData = z.infer<typeof emailRequestSchema>;
 
 function createEmailBody(name: string, items: Product[]): string {
+    const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
+
     const productsHtml = items.map(item => `
-        <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #eee; border-radius: 8px; text-align: center;">
-            <img src="${item.imageUrl}" alt="${item.name}" style="max-width: 80%; height: auto; object-fit: cover; border-radius: 4px; margin-bottom: 20px;">
-            <h3 style="margin-top: 0; font-size: 20px; color: #333;">${item.name}</h3>
-            <p style="font-size: 14px; color: #555; margin-bottom: 20px;">${item.description.substring(0,150)}...</p>
-            <a href="${item.downloadUrl}" style="display: inline-block; padding: 12px 25px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
+        <div style="margin-bottom: 20px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <table width="100%" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td width="100" valign="top">
+                        <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: auto; object-fit: cover; border-radius: 4px;">
+                    </td>
+                    <td style="padding-left: 20px;" valign="top">
+                        <h3 style="margin-top: 0; margin-bottom: 5px; font-size: 18px; color: #333;">${item.name}</h3>
+                        <p style="font-size: 14px; color: #555; margin-top: 0; margin-bottom: 15px;">${item.description.substring(0,120)}...</p>
+                        <a href="${item.downloadUrl}" style="display: inline-block; padding: 10px 20px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
+                    </td>
+                </tr>
+            </table>
         </div>
     `).join('');
+
+    const summaryItemsHtml = items.map(item => `
+        <tr>
+            <td style="padding: 10px 0;">${item.name}</td>
+            <td style="padding: 10px 0; text-align: right;">${item.price === 0 ? 'Free' : `$${item.price.toFixed(2)}`}</td>
+        </tr>
+    `).join('');
+
+    const orderSummaryHtml = `
+      <div style="margin-top: 30px; margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
+          <h3 style="margin-top: 0; font-size: 20px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Order Summary</h3>
+          <table width="100%" cellspacing="0" cellpadding="0" style="font-size: 14px; color: #555;">
+              ${summaryItemsHtml}
+              <tr>
+                  <td style="padding: 15px 0; border-top: 1px solid #eee; font-weight: bold;">Total</td>
+                  <td style="padding: 15px 0; border-top: 1px solid #eee; text-align: right; font-weight: bold;">${totalAmount === 0 ? 'Free' : `$${totalAmount.toFixed(2)} USD`}</td>
+              </tr>
+          </table>
+      </div>
+    `;
+
 
     return `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff9f9;">
@@ -124,6 +155,8 @@ function createEmailBody(name: string, items: Product[]): string {
             <div style="margin-top: 20px;">
                 ${productsHtml}
             </div>
+            
+            ${totalAmount > 0 ? orderSummaryHtml : ''}
 
             <div style="margin-top: 30px; padding: 20px; text-align: center; background-color: #fff0f5; border-radius: 8px;">
                 <h3 style="margin-top: 0; font-size: 20px; color: #333;">Join Our Community!</h3>
