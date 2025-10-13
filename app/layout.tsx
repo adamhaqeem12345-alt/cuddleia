@@ -7,7 +7,7 @@ import { SiteFooter } from '@/components/site-footer';
 
 const fontHeadline = Belleza({
   subsets: ['latin'],
-  weight: ['400'],
+  weight: '400',
   variable: '--font-headline',
 });
 
