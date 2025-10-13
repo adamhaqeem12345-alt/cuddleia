@@ -462,48 +462,45 @@ ${itemsString}
                       )}
                     </Button>
                   </div>
-                  <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-muted"></div>
-                    <span className="flex-shrink mx-4 text-muted-foreground">
-                      OR
-                    </span>
-                    <div className="flex-grow border-t border-muted"></div>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground mb-4 text-sm font-semibold">
-                      International Customers (Card / PayPal)
-                    </p>
-                    {paypalClientID ? (
-                      <PayPalScriptProvider
-                        options={{
-                          clientId: paypalClientID,
-                          currency: 'USD',
-                          intent: 'capture',
-                        }}
-                      >
-                        <PayPalButtons
-                          style={{ layout: 'vertical' }}
-                          createOrder={createPayPalOrder}
-                          onApprove={onPayPalApprove}
-                          onError={onPayPalError}
-                          onClick={handlePayPalClick}
-                          disabled={isProcessing || !isFormValid}
-                        />
-                      </PayPalScriptProvider>
-                    ) : (
-                      <div className="text-center p-4 bg-muted rounded-lg">
-                        <p className="text-muted-foreground font-semibold">
-                          PayPal is currently unavailable.
+                  {paypalClientID && (
+                    <>
+                      <div className="relative flex py-2 items-center">
+                        <div className="flex-grow border-t border-muted"></div>
+                        <span className="flex-shrink mx-4 text-muted-foreground">
+                          OR
+                        </span>
+                        <div className="flex-grow border-t border-muted"></div>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground mb-4 text-sm font-semibold">
+                          International Customers (Card / PayPal)
                         </p>
+                        <PayPalScriptProvider
+                          options={{
+                            clientId: paypalClientID,
+                            currency: 'USD',
+                            intent: 'capture',
+                          }}
+                        >
+                          <PayPalButtons
+                            style={{ layout: 'vertical' }}
+                            createOrder={createPayPalOrder}
+                            onApprove={onPayPalApprove}
+                            onError={onPayPalError}
+                            onClick={handlePayPalClick}
+                            disabled={isProcessing || !isFormValid}
+                          />
+                        </PayPalScriptProvider>
+                        
+                        {isPayPalLoading && (
+                          <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Connecting to PayPal...</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {isPayPalLoading && (
-                      <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Connecting to PayPal...</span>
-                      </div>
-                    )}
-                  </div>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -523,3 +520,5 @@ ${itemsString}
     </div>
   );
 }
+
+    
