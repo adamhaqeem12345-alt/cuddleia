@@ -8,7 +8,7 @@
  */
 async function getAccessToken(): Promise<string> {
     // These variables are read at runtime on the server.
-    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
@@ -45,10 +45,10 @@ async function getAccessToken(): Promise<string> {
  * @returns {Promise<object>} The created order details.
  */
 export async function createOrder(subtotal: number): Promise<any> {
-    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-      throw new Error("PayPal credentials are not configured on the server.");
+      throw new Error("PayPal service is not configured on the server.");
     }
     
     const accessToken = await getAccessToken();
@@ -95,10 +95,10 @@ export async function createOrder(subtotal: number): Promise<any> {
  * @returns {Promise<object>} The capture result.
  */
 export async function captureOrder(orderID: string): Promise<any> {
-    const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
     const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
     if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
-      throw new Error("PayPal credentials are not configured on the server.");
+      throw new Error("PayPal service is not configured on the server.");
     }
 
   const accessToken = await getAccessToken();
