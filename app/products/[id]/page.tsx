@@ -1,3 +1,4 @@
+
 import { products } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -8,6 +9,7 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { AnimateIn } from '@/components/animate-in';
 import { AddToCartButton } from '@/components/add-to-cart-button';
 import { ProductPrice } from '@/components/product-price';
+import { FreeDownloadDialog } from '@/components/free-download-dialog';
 
 type Props = {
   params: { id: string };
@@ -113,12 +115,7 @@ export default function ProductDetailPage({ params }: Props) {
                         </div>
                     </div>
                      {product.price === 0 ? (
-                        <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                            <Link href={product.downloadUrl} target="_blank">
-                                <Download className="mr-2 h-5 w-5" />
-                                Download Now
-                            </Link>
-                        </Button>
+                        <FreeDownloadDialog product={product} />
                     ) : (
                         <AddToCartButton product={product} />
                     )}

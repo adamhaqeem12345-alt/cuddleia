@@ -12,6 +12,7 @@ import { ProductPrice } from './product-price';
 import { AddToCartButton } from './add-to-cart-button';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { FreeDownloadDialog } from './free-download-dialog';
 
 interface ProductCardProps {
     product: Product;
@@ -54,12 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
             <div className="pt-6">
             {product.price === 0 ? (
-                <Button asChild size="rounded" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                <Link href={product.downloadUrl} target="_blank">
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Now
-                </Link>
-                </Button>
+                <FreeDownloadDialog product={product} size="rounded" className="w-full" />
             ) : (
                 <AddToCartButton product={product} size="rounded" className="w-full"/>
             )}
