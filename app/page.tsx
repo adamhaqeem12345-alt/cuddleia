@@ -7,9 +7,10 @@ import { FeaturedProducts } from '@/components/featured-products';
 import { MadeWithHeart } from '@/components/made-with-heart';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Download, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import { ProductCard } from '@/components/product-card';
+import { FreeDownloadDialog } from '@/components/free-download-dialog';
 
 const BarakahBlueprintSection = () => {
     const vol1 = products.find(p => p.id === '001');
@@ -40,17 +41,12 @@ const BarakahBlueprintSection = () => {
                                 A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.
                                 </p>
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                                <Button asChild size="lg" className="font-bold">
-                                    <Link href={vol1.downloadUrl} target="_blank">
-                                        <Download className="mr-2 h-5 w-5" />
-                                        Get volume 1 for free
-                                    </Link>
-                                </Button>
-                                <Button asChild size="lg" variant="outline">
-                                    <Link href="/products">
-                                        Explore the Series
-                                    </Link>
-                                </Button>
+                                    <FreeDownloadDialog product={vol1} size="lg" />
+                                    <Button asChild size="lg" variant="outline">
+                                        <Link href="/products">
+                                            Explore the Series
+                                        </Link>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
