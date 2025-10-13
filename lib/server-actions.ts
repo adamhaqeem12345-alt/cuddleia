@@ -127,7 +127,7 @@ function createEmailBody(name: string, items: Product[]): string {
 
             <div style="margin-top: 30px; padding: 20px; text-align: center; background-color: #fff0f5; border-radius: 8px;">
                 <h3 style="margin-top: 0; font-size: 20px; color: #333;">Join Our Community!</h3>
-                <p>Connect with other sisters, share inspiration, and get updates by joining our cozy corner on Telegram.</p>
+                <p>Connect with fellow creators, share your journey, and get updates by joining our supportive corner on Telegram.</p>
                 <a href="https://t.me/+Tt1wP2OgPBE1NjU1" style="display: inline-block; padding: 12px 20px; background-color: #0088cc; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">Join on Telegram</a>
             </div>
 
