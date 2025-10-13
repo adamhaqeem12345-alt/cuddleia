@@ -2,9 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products';
 import { z } from 'zod';
-import { sendProductEmail } from '../../email/route';
-import { addOrderToSheet } from '../../add-to-sheet/route';
-import { sendTelegramNotification } from '../../telegram-notify/route';
+import { sendProductEmail, addOrderToSheet, sendTelegramNotification } from '@/lib/server-actions';
 
 export const dynamic = 'force-dynamic';
 
@@ -69,9 +67,11 @@ export async function POST(req: NextRequest) {
 
     console.log(`[ToyyibPay Webhook] Received callback for billcode: ${billcode}, status: ${status}, order_id: ${order_id}`);
 
+    // status '1' means the payment was successful
     if (status === '1' && order_id) {
         console.log(`[Webhook] Payment successful for order ${order_id}. Customer: ${billTo} <${billEmail}>. Preparing to send notifications.`);
 
+        // Get the purchased items using our new decoding function.
         const purchasedItems = await getPurchasedItems(billDescription);
 
         if (purchasedItems.length > 0) {
@@ -91,22 +91,27 @@ ${itemsString}
             
             console.log(`[Webhook] Sending notifications for ${purchasedItems.length} items to ${billEmail}.`);
             
+            // We use Promise.allSettled to ensure we try all operations even if one fails.
             const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
+                // 1. Send the product email by calling the function directly
                 sendProductEmail({
                     to: billEmail,
                     subject: 'Your Cuddleia Order Confirmation',
                     name: billTo,
                     items: purchasedItems,
                 }),
+                // 2. Add the order to the Google Sheet by calling the function directly
                 addOrderToSheet({
                     customerName: billTo,
                     customerEmail: billEmail,
                     products: purchasedItems.map(item => item.name).join(', '),
                     amount: totalAmountMYR,
                 }),
+                // 3. Send Telegram notification by calling the function directly
                 sendTelegramNotification({ message: telegramMessage }),
             ]);
 
+            // Check email result
             if (emailResult.status === 'fulfilled' && emailResult.value.success) {
                 console.log(`[Webhook] Email request sent successfully for order ${order_id} to ${billEmail}.`);
             } else {
@@ -114,6 +119,7 @@ ${itemsString}
                 console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Details: ${errorBody}`);
             }
 
+            // Check sheet result
             if (sheetResult.status === 'fulfilled' && sheetResult.value.success) {
                 console.log(`[Webhook] Successfully added order ${order_id} to Google Sheet.`);
             } else {
@@ -121,6 +127,7 @@ ${itemsString}
                 console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
             }
 
+            // Check Telegram result
             if (telegramResult.status === 'fulfilled' && telegramResult.value.success) {
                 console.log(`[Webhook] Successfully sent Telegram notification for order ${order_id}.`);
             } else {
@@ -136,6 +143,7 @@ ${itemsString}
       console.log(`[Webhook] Payment status for billcode ${billcode} was not successful (status: ${status}) or order_id was missing.`);
     }
 
+    // Always return a 200 OK to ToyyibPay to acknowledge receipt of the webhook.
     return NextResponse.json({ message: 'Webhook received' }, { status: 200 });
   } catch (error) {
     console.error('[ToyyibPay Webhook] Error processing webhook:', error);

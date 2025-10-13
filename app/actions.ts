@@ -3,9 +3,7 @@
 
 import { z } from 'zod';
 import { products } from '@/lib/products';
-import { addOrderToSheet } from '@/api/add-to-sheet/route';
-import { sendProductEmail } from '@/api/email/route';
-import { sendTelegramNotification } from '@/api/telegram-notify/route';
+import { addOrderToSheet, sendProductEmail, sendTelegramNotification } from '@/lib/server-actions';
 
 const freeDownloadSchema = z.object({
   name: z.string().min(1, 'Name is required'),
