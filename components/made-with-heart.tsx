@@ -7,7 +7,7 @@ import { AnimateIn } from './animate-in';
 
 export function MadeWithHeart() {
     return (
-        <section className="bg-accent py-24">
+        <section className="bg-background py-24">
             <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <AnimateIn>
@@ -21,7 +21,7 @@ export function MadeWithHeart() {
                 </div>
                 </AnimateIn>
                 <AnimateIn delay={150}>
-                <h2 className="font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">
+                <h2 className="font-headline text-4xl md:text-5xl text-foreground font-bold mb-4">
                     Made with Heart &amp; Soul
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6">
