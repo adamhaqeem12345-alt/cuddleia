@@ -145,8 +145,8 @@ ${itemsString}
             if (sheetResult.status === 'fulfilled' && sheetResult.value.ok) {
                 console.log(`[Webhook] Successfully added order ${order_id} to Google Sheet.`);
             } else {
-                const errorBody = sheetResult.status === 'fulfilled' ? await sheetResult.value.text() : sheetResult.reason;
-                console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
+                const errorBody = sheetResult.status === 'fulfilled' ? await (sheetResult.value.json().catch(() => sheetResult.value.text())) : sheetResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details:`, errorBody);
             }
 
             // Check Telegram result

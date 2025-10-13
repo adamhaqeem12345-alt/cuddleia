@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
 
   if (!GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEET_ID) {
     console.error('CRITICAL: Missing Google Sheets API credentials in environment variables.');
-    // We return 200 OK so we don't block the checkout flow, but we log the critical error.
-    return NextResponse.json({ message: 'Sheet integration not configured, but proceeding.' }, { status: 200 });
+    // Return a server error because this is a critical configuration issue.
+    return NextResponse.json({ error: 'Sheet integration is not configured on the server.' }, { status: 500 });
   }
 
   try {
@@ -71,8 +71,8 @@ export async function POST(req: NextRequest) {
 
   } catch (error) {
     console.error('Failed to append to Google Sheet:', error);
-    // Again, return 200 OK to not break the user flow, but log the failure.
+    // Return a server error status to indicate that the operation failed.
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: 'Failed to write to sheet', details: errorMessage }, { status: 200 });
+    return NextResponse.json({ error: 'Failed to write to sheet', details: errorMessage }, { status: 500 });
   }
 }

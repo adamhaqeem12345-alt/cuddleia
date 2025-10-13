@@ -235,12 +235,13 @@ ${itemsString}
         ]);
 
         // Log the results of each promise
-        results.forEach((result, index) => {
+        results.forEach(async (result, index) => {
             const taskName = ['Email', 'Google Sheet', 'Telegram'][index];
             if (result.status === 'rejected') {
                 console.error(`[PayPal Post-Purchase] Task '${taskName}' failed for order ${data.orderID}. Reason:`, result.reason);
             } else if (result.value.ok === false) {
-                 console.error(`[PayPal Post-Purchase] Task '${taskName}' failed for order ${data.orderID}. Status: ${result.value.status}`);
+                 const errorBody = await (result.value.json().catch(() => result.value.text()));
+                 console.error(`[PayPal Post-Purchase] CRITICAL: Task '${taskName}' failed for order ${data.orderID}. Status: ${result.value.status}. Details:`, errorBody);
             } else {
                  console.log(`[PayPal Post-Purchase] Task '${taskName}' succeeded for order ${data.orderID}.`);
             }
@@ -520,5 +521,3 @@ ${itemsString}
     </div>
   );
 }
-
-    
