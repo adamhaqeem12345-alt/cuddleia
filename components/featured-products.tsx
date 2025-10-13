@@ -13,7 +13,7 @@ export function FeaturedProducts() {
         <section className="py-24 bg-accent">
             <div className="container mx-auto px-4">
             <AnimateIn>
-                <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4">
+                <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">
                 Cozy Wallpapers
                 </h2>
                 <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">

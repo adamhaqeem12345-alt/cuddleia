@@ -37,7 +37,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex flex-1 flex-col p-6">
             <div className="flex-1">
                 <Link href={`/products/${product.id}`}>
-                    <h3 className="font-semibold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
+                    <h3 className="font-bold tracking-tight mb-2 font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
                     {product.name}
                     </h3>
                 </Link>

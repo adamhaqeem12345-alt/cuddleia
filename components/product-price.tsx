@@ -41,7 +41,7 @@ export function ProductPrice({ price, originalPrice, simple = false }: ProductPr
     if(price === 0) {
         return (
              <div>
-                <p className="text-xl font-headline text-primary">Free</p>
+                <p className="text-xl font-headline font-bold text-primary">Free</p>
             </div>
         )
     }
@@ -49,9 +49,9 @@ export function ProductPrice({ price, originalPrice, simple = false }: ProductPr
     return (
         <div>
             <div className="flex items-center gap-2">
-                <p className="text-xl font-headline text-primary">{displayPrice}</p>
+                <p className="text-xl font-headline font-bold text-primary">{displayPrice}</p>
                 {originalPrice && originalPrice > price && (
-                    <p className="text-lg font-headline text-muted-foreground line-through">{displayOriginalPrice}</p>
+                    <p className="text-lg font-headline font-bold text-muted-foreground line-through">{displayOriginalPrice}</p>
                 )}
             </div>
             {isLoading 

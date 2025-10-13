@@ -15,7 +15,7 @@ export default function AboutPage() {
       <div className="bg-accent">
         <section className="flex h-[40vh] flex-col items-center justify-center">
           <AnimateIn className="container mx-auto px-4 text-center">
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg">
+            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg font-bold">
               Our <span className="text-primary">Story</span>
             </h1>
             <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
@@ -31,7 +31,7 @@ export default function AboutPage() {
           <section className="py-24 sm:py-32">
             <div className="container mx-auto px-4">
               <div className="mx-auto max-w-4xl text-center">
-                <h2 className="font-headline text-4xl leading-tight text-foreground">
+                <h2 className="font-headline text-4xl leading-tight text-foreground font-bold">
                   From a simple idea to a cozy corner of the internet.
                 </h2>
                 <div className="prose prose-lg mt-6 max-w-none font-body text-muted-foreground mx-auto space-y-4">
@@ -79,7 +79,7 @@ export default function AboutPage() {
           <section className="py-24 sm:py-32">
             <div className="container mx-auto px-4">
               <div className="mx-auto max-w-4xl text-center">
-                <h2 className="font-headline text-4xl">What We Cherish</h2>
+                <h2 className="font-headline text-4xl font-bold">What We Cherish</h2>
                 <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
                   Our work is guided by these core principles.
                 </p>
@@ -90,7 +90,7 @@ export default function AboutPage() {
                     <Heart />
                   </div>
                   <div>
-                    <h3 className="font-headline text-xl">Made with Love</h3>
+                    <h3 className="font-headline text-xl font-bold">Made with Love</h3>
                     <p className="mt-1 text-muted-foreground">
                       Every product is created with intention and care. From the
                       words shaped with AI to the design crafted by human hands,
@@ -103,7 +103,7 @@ export default function AboutPage() {
                     <Feather />
                   </div>
                   <div>
-                    <h3 className="font-headline text-xl">Gentle &amp; Uplifting</h3>
+                    <h3 className="font-headline text-xl font-bold">Gentle &amp; Uplifting</h3>
                     <p className="mt-1 text-muted-foreground">
                       Our goal is to bring peace, positivity, and faith-driven
                       encouragement into your everyday digital life.
@@ -115,7 +115,7 @@ export default function AboutPage() {
                     <Sparkles />
                   </div>
                   <div>
-                    <h3 className="font-headline text-xl">
+                    <h3 className="font-headline text-xl font-bold">
                       Aesthetic &amp; Functional
                     </h3>
                     <p className="mt-1 text-muted-foreground">
@@ -130,7 +130,7 @@ export default function AboutPage() {
                     <ShieldCheck />
                   </div>
                   <div>
-                    <h3 className="font-headline text-xl">Built on Honesty</h3>
+                    <h3 className="font-headline text-xl font-bold">Built on Honesty</h3>
                     <p className="mt-1 text-muted-foreground">
                       We’re transparent about how we create. Our process
                       combines faith, human creativity, and the support of AI in
@@ -148,7 +148,7 @@ export default function AboutPage() {
         <AnimateIn>
           <section className="bg-accent/30 py-24 sm:py-32">
             <div className="container mx-auto px-4 text-center">
-              <h2 className="font-headline text-4xl">Meet the Founder</h2>
+              <h2 className="font-headline text-4xl font-bold">Meet the Founder</h2>
               <div className="mx-auto mt-12 flex max-w-xl flex-col items-center gap-8 sm:flex-row">
                 <div className="relative h-40 w-40 flex-shrink-0">
                   <Image
@@ -159,7 +159,7 @@ export default function AboutPage() {
                   />
                 </div>
                 <div className="text-left">
-                  <h3 className="font-headline text-2xl">Adam Haqeem</h3>
+                  <h3 className="font-headline text-2xl font-bold">Adam Haqeem</h3>
                   <p className="text-primary">Founder &amp; Creator</p>
                   <p className="mt-2 text-muted-foreground">
                     Adam Haqeem is the heart and soul behind Cuddleia. With a deep

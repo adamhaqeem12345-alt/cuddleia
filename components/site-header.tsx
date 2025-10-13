@@ -35,7 +35,7 @@ export function SiteHeader() {
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
             <Flower2 className="h-8 w-8 text-primary" />
-            <span className="font-headline text-3xl tracking-tight text-foreground">
+            <span className="font-headline text-3xl tracking-tight text-foreground font-bold">
               cuddleia
             </span>
           </div>
@@ -46,7 +46,7 @@ export function SiteHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary"
+                className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold"
               >
                 {link.label}
               </Link>
@@ -80,7 +80,7 @@ export function SiteHeader() {
                   <Link href="/" onClick={closeSheet} className="mb-8">
                     <div className="flex items-center gap-2">
                       <Flower2 className="h-8 w-8 text-primary" />
-                      <span className="font-headline text-3xl tracking-tight text-foreground">
+                      <span className="font-headline text-3xl tracking-tight text-foreground font-bold">
                         cuddleia
                       </span>
                     </div>
@@ -92,7 +92,7 @@ export function SiteHeader() {
                       key={link.href}
                       href={link.href}
                       onClick={closeSheet}
-                      className="font-headline text-xl text-foreground/80 transition-colors hover:text-primary"
+                      className="font-headline text-xl text-foreground/80 transition-colors hover:text-primary font-bold"
                     >
                       {link.label}
                     </Link>

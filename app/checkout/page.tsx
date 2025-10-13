@@ -285,7 +285,7 @@ ${itemsString}
         <div className="container mx-auto px-4">
           <AnimateIn>
             <div className="relative z-10 text-center">
-              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg font-bold">
                 Checkout
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
@@ -301,12 +301,12 @@ ${itemsString}
           <AnimateIn>
             <div className="bg-card p-8 rounded-2xl shadow-lg space-y-8">
               <div>
-                <h2 className="font-headline text-2xl border-b pb-4 mb-6">
+                <h2 className="font-headline text-2xl border-b pb-4 mb-6 font-bold">
                   Order Summary
                 </h2>
                 
                 <div className="pb-6 border-b">
-                  <h3 className="font-headline text-lg mb-2 flex items-center gap-2">
+                  <h3 className="font-headline text-lg mb-2 flex items-center gap-2 font-bold">
                     <Tags className="h-5 w-5"/>
                     Have a discount code?
                   </h3>
@@ -363,7 +363,7 @@ ${itemsString}
           </AnimateIn>
           <AnimateIn delay={150}>
             <div className="bg-card p-8 rounded-2xl shadow-lg">
-              <h2 className="font-headline text-2xl mb-6">
+              <h2 className="font-headline text-2xl mb-6 font-bold">
                 Your Details
               </h2>
               <div className="space-y-4 mb-8">
@@ -397,7 +397,7 @@ ${itemsString}
                 )}
               </div>
 
-              <h2 className="font-headline text-2xl mb-6 pt-6 border-t">
+              <h2 className="font-headline text-2xl mb-6 pt-6 border-t font-bold">
                 Payment Method
               </h2>
 
