@@ -18,7 +18,7 @@ export default function CartPage() {
         <div className="container mx-auto px-4">
           <AnimateIn>
             <div className="relative z-10 text-center">
-              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+              <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg">
                 Your Cart
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
@@ -44,7 +44,7 @@ export default function CartPage() {
                                         </div>
                                         <div>
                                             <Link href={`/products/${item.id}`} className="hover:text-primary transition-colors">
-                                                <h3 className="font-headline text-xl font-semibold">{item.name}</h3>
+                                                <h3 className="font-headline text-xl">{item.name}</h3>
                                             </Link>
                                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
                                         </div>
@@ -65,7 +65,7 @@ export default function CartPage() {
             <div className="md:col-span-1">
                 <AnimateIn delay={items.length * 100}>
                     <div className="sticky top-28 bg-card p-8 rounded-2xl shadow-lg">
-                        <h2 className="font-headline text-2xl font-bold border-b pb-4">Order Summary</h2>
+                        <h2 className="font-headline text-2xl border-b pb-4">Order Summary</h2>
                         <div className="flex justify-between items-center font-bold text-lg my-4">
                             <span>Subtotal</span>
                              <ProductPrice price={subtotal} />
@@ -89,7 +89,7 @@ export default function CartPage() {
         ) : (
           <AnimateIn>
             <div className="text-center py-16">
-              <h2 className="font-headline text-3xl font-bold text-foreground">Your cart is empty</h2>
+              <h2 className="font-headline text-3xl text-foreground">Your cart is empty</h2>
               <p className="mt-4 text-lg text-muted-foreground">Looks like you haven't added any products yet.</p>
               <Button asChild size="lg" className="mt-8 font-bold">
                 <Link href="/products">Browse Products</Link>

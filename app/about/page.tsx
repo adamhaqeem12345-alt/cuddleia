@@ -15,7 +15,7 @@ export default function AboutPage() {
       <div className="bg-accent">
         <section className="flex h-[40vh] flex-col items-center justify-center">
           <AnimateIn className="container mx-auto px-4 text-center">
-            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+            <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg">
               Our <span className="text-primary">Story</span>
             </h1>
             <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">

@@ -29,11 +29,11 @@ const BarakahBlueprintSection = () => {
                                     src={vol1.imageUrl}
                                     alt={vol1.name}
                                     fill
-                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                    className="object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
                                 />
                             </div>
                             <div className="text-center md:text-left">
-                                <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                                <h2 className="font-headline text-4xl md:text-5xl text-foreground mb-4">
                                 The Barakah Business Blueprint
                                 </h2>
                                 <p className="text-lg text-muted-foreground mb-8">
@@ -62,7 +62,7 @@ const BarakahBlueprintSection = () => {
                  <section className="bg-accent py-24 sm:py-32">
                     <div className="container mx-auto px-4">
                          <AnimateIn>
-                            <h2 className="text-center font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                            <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4">
                                 Get The Complete 5-Volume Series
                             </h2>
                             <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
@@ -96,7 +96,7 @@ export default function HomePage() {
     <>
       <section className="h-[75vh] bg-accent flex flex-col items-center justify-center text-center px-4">
         <AnimateIn>
-          <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+          <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg">
             Where Creativity Meets Barakah
           </h1>
           <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">

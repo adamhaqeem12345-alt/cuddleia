@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -34,7 +35,7 @@ export function SiteHeader() {
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
             <Flower2 className="h-8 w-8 text-primary" />
-            <span className="font-headline text-3xl font-bold tracking-tight text-foreground">
+            <span className="font-headline text-3xl tracking-tight text-foreground">
               cuddleia
             </span>
           </div>
@@ -79,7 +80,7 @@ export function SiteHeader() {
                   <Link href="/" onClick={closeSheet} className="mb-8">
                     <div className="flex items-center gap-2">
                       <Flower2 className="h-8 w-8 text-primary" />
-                      <span className="font-headline text-3xl font-bold tracking-tight text-foreground">
+                      <span className="font-headline text-3xl tracking-tight text-foreground">
                         cuddleia
                       </span>
                     </div>

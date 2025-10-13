@@ -20,7 +20,7 @@ export function MadeWithHeart() {
                 </div>
                 </AnimateIn>
                 <AnimateIn delay={150}>
-                <h2 className="font-headline text-4xl md:text-5xl font-bold text-foreground mb-4">
+                <h2 className="font-headline text-4xl md:text-5xl text-foreground mb-4">
                     Made with Heart &amp; Soul
                 </h2>
                 <p className="text-lg text-muted-foreground mb-6">

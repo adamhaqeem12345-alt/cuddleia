@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -25,7 +26,7 @@ export default function CheckoutSuccessPage() {
                 <div className="flex justify-center mb-4">
                     <CheckCircle className="h-24 w-24 text-green-500" />
                 </div>
-              <h1 className="font-headline text-5xl md:text-7xl font-bold text-foreground drop-shadow-lg">
+              <h1 className="font-headline text-5xl md:text-7xl text-foreground drop-shadow-lg">
                 Payment Successful!
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
@@ -38,7 +39,7 @@ export default function CheckoutSuccessPage() {
       
       <AnimateIn>
         <div className="container mx-auto px-4 py-16 text-center">
-            <h2 className="font-headline text-3xl font-bold">What's Next?</h2>
+            <h2 className="font-headline text-3xl">What's Next?</h2>
             <div className="max-w-2xl mx-auto mt-6 space-y-4 text-muted-foreground">
                 <p>
                     You will receive an email shortly containing the download links for your purchased items. If you don't see it within a few minutes, please check your spam or junk folder.

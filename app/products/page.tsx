@@ -18,7 +18,7 @@ export default function ProductsPage() {
             <div className="bg-accent">
                 <section className="flex h-[40vh] flex-col items-center justify-center">
                     <AnimateIn className="container mx-auto px-4 text-center">
-                        <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl font-bold text-foreground drop-shadow-lg">
+                        <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg">
                             All Products
                         </h1>
                         <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
@@ -31,7 +31,7 @@ export default function ProductsPage() {
                 <section key="Booklets" className="mb-20">
                     <AnimateIn>
                         <div className="border-b pb-4 mb-10">
-                            <h2 className="font-headline text-4xl font-bold text-foreground">
+                            <h2 className="font-headline text-4xl text-foreground">
                                 Booklets
                             </h2>
                             <p className="mt-2 text-lg text-muted-foreground">The Barakah Blueprint Series</p>
@@ -47,7 +47,7 @@ export default function ProductsPage() {
                 </section>
                 <section key="Wallpapers" className="mb-20">
                     <AnimateIn>
-                        <h2 className="font-headline text-4xl font-bold text-foreground mb-10 border-b pb-4">
+                        <h2 className="font-headline text-4xl text-foreground mb-10 border-b pb-4">
                             Wallpapers
                         </h2>
                     </AnimateIn>

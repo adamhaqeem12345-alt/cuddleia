@@ -10,7 +10,7 @@ export function SiteFooter() {
             <Link href="/" className="transition-transform hover:scale-105">
               <div className="flex items-center gap-2">
                 <Flower2 className="h-7 w-7 text-primary" />
-                <span className="font-headline text-2xl font-bold tracking-tight text-foreground">
+                <span className="font-headline text-2xl tracking-tight text-foreground">
                   cuddleia
                 </span>
               </div>
@@ -21,7 +21,7 @@ export function SiteFooter() {
             </p>
           </div>
           <div>
-            <h3 className="font-headline text-xl font-semibold text-foreground">
+            <h3 className="font-headline text-xl text-foreground">
               Quick Links
             </h3>
             <ul className="mt-4 flex items-center justify-center md:justify-start gap-6">
@@ -52,7 +52,7 @@ export function SiteFooter() {
             </ul>
           </div>
           <div>
-            <h3 className="font-headline text-xl font-semibold text-foreground">
+            <h3 className="font-headline text-xl text-foreground">
               Connect With Us
             </h3>
             <div className="mt-4 flex justify-center md:justify-start items-center gap-4">

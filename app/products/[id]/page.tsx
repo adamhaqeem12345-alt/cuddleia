@@ -89,7 +89,7 @@ export default function ProductDetailPage({ params }: Props) {
 
           <AnimateIn delay={150}>
             <div className="flex flex-col h-full">
-                <h1 className="font-headline text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                <h1 className="font-headline text-4xl lg:text-5xl text-foreground mb-4">
                 {product.name}
                 </h1>
                 
