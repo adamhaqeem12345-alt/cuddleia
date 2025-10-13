@@ -104,24 +104,34 @@ export type EmailData = z.infer<typeof emailRequestSchema>;
 
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `
-        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px;">
-            <h3 style="margin-top: 0; font-size: 18px; color: #333;">${item.name}</h3>
-            <p style="font-size: 14px; color: #555;">${item.description.substring(0,150)}...</p>
-            <a href="${item.downloadUrl}" style="display: inline-block; padding: 10px 15px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
+        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px; display: flex; align-items: center; gap: 20px;">
+            <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
+            <div>
+                <h3 style="margin-top: 0; font-size: 18px; color: #333;">${item.name}</h3>
+                <p style="font-size: 14px; color: #555; margin-bottom: 15px;">${item.description.substring(0,120)}...</p>
+                <a href="${item.downloadUrl}" style="display: inline-block; padding: 10px 15px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
+            </div>
         </div>
     `).join('');
 
     return `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff9f9;">
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #e83e8c; font-size: 28px;">Cuddleia</h1>
+                <img src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png" alt="Cuddleia Logo" style="width: 80px; height: 80px; border-radius: 50%;">
+                <h1 style="color: #e83e8c; font-size: 28px; margin-top: 10px;">Cuddleia</h1>
             </div>
             <h2 style="font-size: 24px; color: #333;">Thank you for your order, ${name}!</h2>
             <p>We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:</p>
             
             ${productsHtml}
 
-            <p>If you have any questions or need assistance, please don't hesitate to reply to this email.</p>
+            <div style="margin-top: 30px; padding: 20px; text-align: center; background-color: #fff0f5; border-radius: 8px;">
+                <h3 style="margin-top: 0; font-size: 20px; color: #333;">Join Our Community!</h3>
+                <p>Connect with other sisters, share inspiration, and get updates by joining our cozy corner on Telegram.</p>
+                <a href="https://t.me/+Tt1wP2OgPBE1NjU1" style="display: inline-block; padding: 12px 20px; background-color: #0088cc; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; margin-top: 10px;">Join on Telegram</a>
+            </div>
+
+            <p style="margin-top: 30px;">If you have any questions or need assistance, please don't hesitate to reply to this email.</p>
             <p>With love,<br>The Cuddleia Team</p>
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #aaa;">
@@ -132,6 +142,7 @@ function createEmailBody(name: string, items: Product[]): string {
         </div>
     `;
 }
+
 
 export async function sendProductEmail(data: EmailData): Promise<{ success: boolean; error?: string }> {
   const ZOHO_EMAIL = process.env.ZOHO_MAIL_USER;
