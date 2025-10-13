@@ -184,8 +184,6 @@ export default function CheckoutPage() {
 
       const responseData = await response.json();
       
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
       if (response.ok && responseData.success) {
         console.log(`[PayPal] Successfully captured order ${data.orderID}. Preparing to send notifications.`);
         const itemsString = items.map(item => `  - ${item.name}`).join('\n');

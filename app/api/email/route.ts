@@ -17,6 +17,9 @@ const productSchema = z.object({
   category: z.union([z.literal('Booklets'), z.literal('Wallpapers')]),
   downloadUrl: z.string().url(),
   disclaimer: z.string(),
+  bundleIncludes: z.optional(z.array(z.string())),
+  includedInBundle: z.optional(z.array(z.string())),
+  originalPrice: z.optional(z.number()),
 });
 
 const emailRequestSchema = z.object({
@@ -64,13 +67,15 @@ export async function sendProductEmail(data: EmailData): Promise<{ success: bool
   const ZOHO_PASSWORD = process.env.ZOHO_MAIL_PASS;
 
   if (!ZOHO_EMAIL || !ZOHO_PASSWORD) {
-      console.error('CRITICAL: Missing Zoho Mail credentials in environment variables.');
+      console.error('[Email] CRITICAL: Missing Zoho Mail credentials in environment variables.');
       return { success: false, error: 'Email server is not configured.' };
   }
 
   const validation = emailRequestSchema.safeParse(data);
   if (!validation.success) {
-      return { success: false, error: 'Invalid email data.' };
+      const errorDetails = JSON.stringify(validation.error.flatten().fieldErrors);
+      console.error(`[Email] Invalid email data: ${errorDetails}`);
+      return { success: false, error: `Invalid email data. ${errorDetails}` };
   }
 
   const { to, subject, name, items } = validation.data;
@@ -97,26 +102,26 @@ export async function sendProductEmail(data: EmailData): Promise<{ success: bool
     return { success: true };
 
   } catch (error) {
-    console.error('Email sending error:', error);
+    console.error('[Email] Email sending error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return { success: false, error: `Failed to send email: ${errorMessage}` };
   }
 }
 
-
+// The POST handler is now just a wrapper for the exported function.
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const result = await sendProductEmail(body);
     
     if (!result.success) {
-        return NextResponse.json({ error: result.error }, { status: 500 });
+        return NextResponse.json({ error: result.error || 'Failed to send email' }, { status: 500 });
     }
 
     return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
 
   } catch (error) {
-    console.error('Email API error:', error);
+    console.error('[Email API] Invalid JSON body:', error);
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 }

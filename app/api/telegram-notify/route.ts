@@ -40,8 +40,9 @@ export async function sendTelegramNotification(data: TelegramData): Promise<{ su
 
     if (!response.ok) {
         const errorData = await response.json();
-        console.error('[Telegram Notify] Failed to send Telegram message. API Response:', errorData);
-        return { success: false, error: `Failed to send Telegram message: ${JSON.stringify(errorData)}`};
+        const errorMessage = `API Error: ${JSON.stringify(errorData)}`;
+        console.error(`[Telegram Notify] Failed to send Telegram message. ${errorMessage}`);
+        return { success: false, error: `Failed to send Telegram message: ${errorMessage}`};
     }
     
     console.log('[Telegram Notify] Successfully sent Telegram message.');
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'Telegram notification sent' }, { status: 200 });
   } catch (e) {
-    console.error('[Telegram Notify] Invalid JSON body:', e);
+    console.error('[Telegram Notify API] Invalid JSON body:', e);
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 }
