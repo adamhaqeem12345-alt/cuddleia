@@ -1,9 +1,8 @@
-
 import { products } from '@/lib/products';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Info } from 'lucide-react';
+import { ArrowLeft, Download, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Metadata, ResolvingMetadata } from 'next';
 import { AnimateIn } from '@/components/animate-in';
@@ -113,7 +112,16 @@ export default function ProductDetailPage({ params }: Props) {
                             </div>
                         </div>
                     </div>
-                    <AddToCartButton product={product} />
+                     {product.price === 0 ? (
+                        <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
+                            <Link href={product.downloadUrl} target="_blank">
+                                <Download className="mr-2 h-5 w-5" />
+                                Download Now
+                            </Link>
+                        </Button>
+                    ) : (
+                        <AddToCartButton product={product} />
+                    )}
                 </div>
             </div>
           </AnimateIn>
