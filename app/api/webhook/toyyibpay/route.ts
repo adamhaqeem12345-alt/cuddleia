@@ -86,11 +86,23 @@ export async function POST(req: NextRequest) {
         if (purchasedItems.length > 0) {
             const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
             const totalAmountMYR = parseFloat(amount) / 100;
+            const itemsString = purchasedItems.map(item => `  - ${item.name}`).join('\n');
+            const telegramMessage = `
+🎉 *New ToyyibPay Sale!* 🎉
+
+*Customer:* ${billTo}
+*Email:* ${billEmail}
+
+*Items Purchased:*
+${itemsString}
+
+*Total Amount:* RM${totalAmountMYR.toFixed(2)}
+            `;
             
             console.log(`[Webhook] Sending notifications for ${purchasedItems.length} items to ${billEmail}.`);
             
             // We use Promise.allSettled to ensure we try all operations even if one fails.
-            const [emailResult, sheetResult] = await Promise.allSettled([
+            const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
                 // 1. Send the product email
                 fetch(`${appUrl}/api/email`, {
                     method: 'POST',
@@ -113,6 +125,12 @@ export async function POST(req: NextRequest) {
                         amount: totalAmountMYR,
                     }),
                 }),
+                // 3. Send Telegram notification
+                fetch(`${appUrl}/api/telegram-notify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: telegramMessage }),
+                }),
             ]);
 
             // Check email result
@@ -131,6 +149,14 @@ export async function POST(req: NextRequest) {
                 console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
             }
 
+            // Check Telegram result
+            if (telegramResult.status === 'fulfilled' && telegramResult.value.ok) {
+                console.log(`[Webhook] Successfully sent Telegram notification for order ${order_id}.`);
+            } else {
+                const errorBody = telegramResult.status === 'fulfilled' ? await telegramResult.value.text() : telegramResult.reason;
+                console.error(`[Webhook] FAILED TO SEND TELEGRAM NOTIFICATION for order ${order_id}. Details: ${errorBody}`);
+            }
+
         } else {
              console.warn(`[Webhook] Did not send email for order ${order_id} because no purchased items could be determined from the bill description.`);
         }
@@ -146,5 +172,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to process webhook' }, { status: 500 });
   }
 }
-
-    

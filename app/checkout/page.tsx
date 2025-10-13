@@ -188,6 +188,7 @@ export default function CheckoutPage() {
       const responseData = await response.json();
 
       if (response.ok && responseData.success) {
+        console.log(`[PayPal] Successfully captured order ${data.orderID}. Preparing to send notifications.`);
         const itemsString = items.map(item => `  - ${item.name}`).join('\n');
         const telegramMessage = `
 🎉 *New PayPal Sale!* 🎉
@@ -201,9 +202,9 @@ ${itemsString}
 *Total Amount:* $${finalTotal.toFixed(2)} USD
             `;
         
-        // Use Promise.all to run non-dependent tasks concurrently
-        await Promise.all([
-            // 1. Send the product email
+        // Use Promise.allSettled to ensure all tasks run, even if some fail.
+        const results = await Promise.allSettled([
+            // 1. Send the product email (Critical)
             fetch('/api/email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -232,6 +233,25 @@ ${itemsString}
                 body: JSON.stringify({ message: telegramMessage }),
             }),
         ]);
+
+        // Log the results of each promise
+        results.forEach((result, index) => {
+            const taskName = ['Email', 'Google Sheet', 'Telegram'][index];
+            if (result.status === 'rejected') {
+                console.error(`[PayPal Post-Purchase] Task '${taskName}' failed for order ${data.orderID}. Reason:`, result.reason);
+            } else if (result.value.ok === false) {
+                 console.error(`[PayPal Post-Purchase] Task '${taskName}' failed for order ${data.orderID}. Status: ${result.value.status}`);
+            } else {
+                 console.log(`[PayPal Post-Purchase] Task '${taskName}' succeeded for order ${data.orderID}.`);
+            }
+        });
+
+        // The most critical task is the email. If it failed, we should know.
+        if (results[0].status === 'rejected' || (results[0].status === 'fulfilled' && !results[0].value.ok)) {
+            console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO SEND EMAIL for order ${data.orderID} to ${email}.`);
+            // You might want to set an error state for the user here, even on the success page,
+            // or trigger a different kind of alert for yourself.
+        }
 
         clearCart();
         router.push('/checkout/success');

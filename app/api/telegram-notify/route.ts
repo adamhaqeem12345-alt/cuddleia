@@ -15,10 +15,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validation = telegramRequestSchema.safeParse(body);
     if (!validation.success) {
+      console.error('[Telegram Notify] Invalid input:', validation.error.flatten().fieldErrors);
       return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
     }
     validatedData = validation.data;
   } catch (e) {
+    console.error('[Telegram Notify] Invalid JSON body:', e);
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
@@ -26,7 +28,7 @@ export async function POST(req: NextRequest) {
   const { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } = process.env;
 
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.error('CRITICAL: Missing Telegram Bot Token or Chat ID in environment variables.');
+    console.error('[Telegram Notify] CRITICAL: Missing Telegram Bot Token or Chat ID in environment variables.');
     // We return 200 OK so we don't block the main purchase flow, but we log the critical error.
     return NextResponse.json({ message: 'Telegram integration not configured, but proceeding.' }, { status: 200 });
   }
@@ -50,15 +52,18 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
         const errorData = await response.json();
-        console.error('Failed to send Telegram message:', errorData);
-        return NextResponse.json({ error: 'Failed to send Telegram message', details: errorData }, { status: 200 }); // Return 200 to not break flow
+        console.error('[Telegram Notify] Failed to send Telegram message. API Response:', errorData);
+        // Still return 200 so we don't break the main purchase flow for a failed notification.
+        return NextResponse.json({ error: 'Failed to send Telegram message', details: errorData }, { status: 200 });
     }
-
+    
+    console.log('[Telegram Notify] Successfully sent Telegram message.');
     return NextResponse.json({ message: 'Successfully sent Telegram message' }, { status: 200 });
 
   } catch (error) {
-    console.error('Error sending Telegram notification:', error);
+    console.error('[Telegram Notify] Error sending Telegram notification:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: 'Failed to send notification', details: errorMessage }, { status: 200 }); // Return 200 to not break flow
+    // Still return 200 so we don't break the main purchase flow for a failed notification.
+    return NextResponse.json({ error: 'Failed to send notification', details: errorMessage }, { status: 200 });
   }
 }
