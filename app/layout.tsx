@@ -1,11 +1,12 @@
+
 import type { Metadata } from 'next';
-import { Tenor_Sans, Alegreya } from 'next/font/google';
+import { Belleza, Alegreya } from 'next/font/google';
 import './globals.css';
 import { cn } from '../lib/utils';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 
-const fontHeadline = Tenor_Sans({
+const fontHeadline = Belleza({
   subsets: ['latin'],
   weight: '400',
   variable: '--font-headline',
