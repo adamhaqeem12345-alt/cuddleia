@@ -29,7 +29,7 @@ export function ProductCard({ product }: ProductCardProps) {
                     src={product.imageUrl}
                     alt={product.name}
                     fill
-                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
             </div>

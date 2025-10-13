@@ -81,7 +81,7 @@ export default function ProductDetailPage({ params }: Props) {
                 alt={product.name}
                 width={product.imageWidth}
                 height={product.imageHeight}
-                className="w-full max-w-md h-auto object-contain"
+                className="w-full max-w-md h-auto object-contain pointer-events-none"
                 priority
               />
             </div>
