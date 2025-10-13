@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Product, products } from '@/lib/products';
+import { addOrderToSheet } from '../add-to-sheet/route';
+import { sendProductEmail } from '../email/route';
+import { sendTelegramNotification } from '../telegram-notify/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,8 +14,7 @@ const freeDownloadRequestSchema = z.object({
   productId: z.string().min(1, { message: 'Product ID is required' }),
 });
 
-async function sendTelegramNotification(customerName: string, customerEmail: string, product: Product) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+async function notifyTelegram(customerName: string, customerEmail: string, product: Product) {
     const telegramMessage = `
 🎉 *New Free Download!* 🎉
 
@@ -23,19 +25,11 @@ async function sendTelegramNotification(customerName: string, customerEmail: str
   - ${product.name}
     `;
     
-    try {
-        const res = await fetch(`${appUrl}/api/telegram-notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: telegramMessage }),
-        });
-        if (res.ok) {
-            console.log(`[Free Download] Successfully sent Telegram notification.`);
-        } else {
-            console.error(`[Free Download] FAILED TO SEND TELEGRAM NOTIFICATION.`);
-        }
-    } catch (e) {
-        console.error(`[Free Download] FAILED TO SEND TELEGRAM NOTIFICATION.`, e);
+    const result = await sendTelegramNotification({ message: telegramMessage });
+    if (result.success) {
+        console.log(`[Free Download] Successfully sent Telegram notification.`);
+    } else {
+        console.error(`[Free Download] FAILED TO SEND TELEGRAM NOTIFICATION: ${result.error}`);
     }
 }
 
@@ -57,58 +51,36 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Product not found or is not free.' }, { status: 404 });
         }
 
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-
-        // Perform critical actions and wait for them to complete.
         const [emailResult, sheetResult] = await Promise.all([
-             // 1. Send the product email (Critical)
-            fetch(`${appUrl}/api/email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: email,
-                    subject: 'Your Free Download from Cuddleia',
-                    name: name,
-                    items: [product], // Send as an array
-                }),
+            sendProductEmail({
+                to: email,
+                subject: 'Your Free Download from Cuddleia',
+                name: name,
+                items: [product],
             }),
-            // 2. Add the download to the Google Sheet (Critical)
-            fetch(`${appUrl}/api/add-to-sheet`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerName: name,
-                    customerEmail: email,
-                    products: product.name,
-                    amount: 0.00, // It's a free product
-                }),
+            addOrderToSheet({
+                customerName: name,
+                customerEmail: email,
+                products: product.name,
+                amount: 0.00,
             }),
         ]);
         
-        // Check results of critical actions
-        if (!emailResult.ok) {
-            console.error(`[Free Download] CRITICAL: FAILED TO SEND EMAIL to ${email}.`);
-            const errorBody = await emailResult.text();
-            // Even if it fails, we should still try to give the user the URL if possible, but the error is logged.
-            // In a more robust system, you might stop here and return an error.
-             return NextResponse.json({ error: 'Failed to send your download email. Please try again or contact support.' }, { status: 500 });
+        if (!emailResult.success) {
+            console.error(`[Free Download] CRITICAL: FAILED TO SEND EMAIL to ${email}. Details: ${emailResult.error}`);
+            return NextResponse.json({ error: 'Failed to send your download email. Please try again or contact support.' }, { status: 500 });
         } else {
              console.log(`[Free Download] Email sent successfully to ${email}.`);
         }
 
-        if (!sheetResult.ok) {
-            const errorBody = await sheetResult.text();
-            console.error(`[Free Download] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for ${email}. Details: ${errorBody}`);
-             // This is a server-side failure, but we don't want to penalize the user.
-             // We log it critically but still proceed.
+        if (!sheetResult.success) {
+            console.error(`[Free Download] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for ${email}. Details: ${sheetResult.error}`);
         } else {
              console.log(`[Free Download] Successfully added to Google Sheet for ${email}.`);
         }
         
-        // Asynchronously perform non-critical notifications without waiting
-        sendTelegramNotification(name, email, product);
+        notifyTelegram(name, email, product);
         
-        // Immediately respond to the user with the download URL
         return NextResponse.json({
             message: 'Success! Your download link has been sent to your email.',
             downloadUrl: product.downloadUrl 

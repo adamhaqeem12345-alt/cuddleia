@@ -2,33 +2,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products';
 import { z } from 'zod';
+import { addOrderToSheet } from '../../add-to-sheet/route';
+import { sendProductEmail } from '../../email/route';
+import { sendTelegramNotification } from '../../telegram-notify/route';
+
 
 export const dynamic = 'force-dynamic';
 
-// This schema defines the expected product structure that would have been saved with an order.
 const productSchema = z.object({
   id: z.string(),
   name: z.string(),
   downloadUrl: z.string().url(),
 });
 
-// This schema validates the incoming webhook data from ToyyibPay.
 const toyyibpayWebhookSchema = z.object({
     status: z.string(),
-    order_id: z.string(), // Our billExternalReferenceNo
+    order_id: z.string(),
     billcode: z.string(),
-    billTo: z.string(), // Customer's Name
-    billEmail: z.string().email(), // Customer's Email
-    billDescription: z.string(), // Contains the encoded product IDs
-    amount: z.string(), // Amount in cents
+    billTo: z.string(),
+    billEmail: z.string().email(),
+    billDescription: z.string(),
+    amount: z.string(),
 });
 
-// This function now decodes the purchased item IDs from the bill description.
-// This is the workaround for not having a database.
 async function getPurchasedItems(billDescription: string): Promise<Product[]> {
     console.log(`[Webhook] Extracting product IDs from description: "${billDescription}"`);
     
-    // Expected format: "Items:001,002,003"
     const prefix = "Items:";
     if (!billDescription.startsWith(prefix)) {
         console.error(`[Webhook] CRITICAL: billDescription does not have the expected "Items:" prefix.`);
@@ -43,7 +42,6 @@ async function getPurchasedItems(billDescription: string): Promise<Product[]> {
          return [];
     }
     
-    // Find the full product details from our main products list
     const purchasedItems = products.filter(p => purchasedIds.includes(p.id));
 
     console.log(`[Webhook] Found ${purchasedItems.length} purchased items for order.`);
@@ -57,12 +55,12 @@ export async function POST(req: NextRequest) {
     
     const webhookData = {
         status: data.get('status'),
-        order_id: data.get('order_id'), // This is our billExternalReferenceNo
+        order_id: data.get('order_id'),
         billcode: data.get('billcode'),
         billTo: data.get('billTo'),
         billEmail: data.get('billEmail'),
-        billDescription: data.get('billDescription'), // This now contains our product IDs
-        amount: data.get('amount'), // Amount in cents
+        billDescription: data.get('billDescription'),
+        amount: data.get('amount'),
     };
     
     const validation = toyyibpayWebhookSchema.safeParse(webhookData);
@@ -76,15 +74,12 @@ export async function POST(req: NextRequest) {
 
     console.log(`[ToyyibPay Webhook] Received callback for billcode: ${billcode}, status: ${status}, order_id: ${order_id}`);
 
-    // status '1' means the payment was successful
     if (status === '1' && order_id) {
         console.log(`[Webhook] Payment successful for order ${order_id}. Customer: ${billTo} <${billEmail}>. Preparing to send notifications.`);
 
-        // Get the purchased items using our new decoding function.
         const purchasedItems = await getPurchasedItems(billDescription);
 
         if (purchasedItems.length > 0) {
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
             const totalAmountMYR = parseFloat(amount) / 100;
             const itemsString = purchasedItems.map(item => `  - ${item.name}`).join('\n');
             const telegramMessage = `
@@ -101,60 +96,41 @@ ${itemsString}
             
             console.log(`[Webhook] Sending notifications for ${purchasedItems.length} items to ${billEmail}.`);
             
-            // We use Promise.allSettled to ensure we try all operations even if one fails.
             const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
-                // 1. Send the product email
-                fetch(`${appUrl}/api/email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        to: billEmail,
-                        subject: 'Your Cuddleia Order Confirmation',
-                        name: billTo,
-                        items: purchasedItems,
-                    }),
+                sendProductEmail({
+                    to: billEmail,
+                    subject: 'Your Cuddleia Order Confirmation',
+                    name: billTo,
+                    items: purchasedItems,
                 }),
-                // 2. Add the order to the Google Sheet
-                fetch(`${appUrl}/api/add-to-sheet`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        customerName: billTo,
-                        customerEmail: billEmail,
-                        products: purchasedItems.map(item => item.name).join(', '),
-                        amount: totalAmountMYR,
-                    }),
+                addOrderToSheet({
+                    customerName: billTo,
+                    customerEmail: billEmail,
+                    products: purchasedItems.map(item => item.name).join(', '),
+                    amount: totalAmountMYR,
                 }),
-                // 3. Send Telegram notification
-                fetch(`${appUrl}/api/telegram-notify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: telegramMessage }),
-                }),
+                sendTelegramNotification({ message: telegramMessage }),
             ]);
 
-            // Check email result
-            if (emailResult.status === 'fulfilled' && emailResult.value.ok) {
+            if (emailResult.status === 'fulfilled' && emailResult.value.success) {
                 console.log(`[Webhook] Email request sent successfully for order ${order_id} to ${billEmail}.`);
             } else {
-                 const errorBody = emailResult.status === 'fulfilled' ? await emailResult.value.text() : emailResult.reason;
-                console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Details: ${errorBody}`);
+                const errorDetails = emailResult.status === 'fulfilled' ? emailResult.value.error : emailResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Details: ${errorDetails}`);
             }
 
-            // Check sheet result
-            if (sheetResult.status === 'fulfilled' && sheetResult.value.ok) {
+            if (sheetResult.status === 'fulfilled' && sheetResult.value.success) {
                 console.log(`[Webhook] Successfully added order ${order_id} to Google Sheet.`);
             } else {
-                const errorBody = sheetResult.status === 'fulfilled' ? await (sheetResult.value.json().catch(() => sheetResult.value.text())) : sheetResult.reason;
-                console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details:`, errorBody);
+                const errorDetails = sheetResult.status === 'fulfilled' ? sheetResult.value.error : sheetResult.reason;
+                console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details:`, errorDetails);
             }
 
-            // Check Telegram result
-            if (telegramResult.status === 'fulfilled' && telegramResult.value.ok) {
+            if (telegramResult.status === 'fulfilled' && telegramResult.value.success) {
                 console.log(`[Webhook] Successfully sent Telegram notification for order ${order_id}.`);
             } else {
-                const errorBody = telegramResult.status === 'fulfilled' ? await telegramResult.value.text() : telegramResult.reason;
-                console.error(`[Webhook] FAILED TO SEND TELEGRAM NOTIFICATION for order ${order_id}. Details: ${errorBody}`);
+                const errorDetails = telegramResult.status === 'fulfilled' ? telegramResult.value.error : telegramResult.reason;
+                console.error(`[Webhook] FAILED TO SEND TELEGRAM NOTIFICATION for order ${order_id}. Details: ${errorDetails}`);
             }
 
         } else {
@@ -165,7 +141,6 @@ ${itemsString}
       console.log(`[Webhook] Payment status for billcode ${billcode} was not successful (status: ${status}) or order_id was missing.`);
     }
 
-    // Always return a 200 OK to ToyyibPay to acknowledge receipt of the webhook.
     return NextResponse.json({ message: 'Webhook received' }, { status: 200 });
   } catch (error) {
     console.error('[ToyyibPay Webhook] Error processing webhook:', error);

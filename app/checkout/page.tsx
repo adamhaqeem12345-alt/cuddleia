@@ -19,6 +19,10 @@ import type {
 } from '@paypal/paypal-js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { sendProductEmail } from '../api/email/route';
+import { addOrderToSheet } from '../api/add-to-sheet/route';
+import { sendTelegramNotification } from '../api/telegram-notify/route';
+
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -129,8 +133,6 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        // We don't clear the cart here anymore. It's cleared on the success page.
-        // If the user cancels, the cart remains intact.
         window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
@@ -145,7 +147,6 @@ export default function CheckoutPage() {
 
   const createPayPalOrder = (data: any, actions: CreateOrderActions) => {
     if (!validateForm()) {
-      // Prevent PayPal modal from opening if form is invalid
       return Promise.reject(new Error('Form is not valid.'));
     }
     if (finalTotal < 0) {
@@ -202,56 +203,36 @@ ${itemsString}
 *Total Amount:* $${finalTotal.toFixed(2)} USD
             `;
         
-        // Use Promise.allSettled to ensure all tasks run, even if some fail.
         const results = await Promise.allSettled([
-            // 1. Send the product email (Critical)
-            fetch('/api/email', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: email,
-                    subject: 'Your Cuddleia Order Confirmation',
-                    name: name,
-                    items: items,
-                }),
+            sendProductEmail({
+                to: email,
+                subject: 'Your Cuddleia Order Confirmation',
+                name: name,
+                items: items,
             }),
-            // 2. Add the order to the Google Sheet
-            fetch('/api/add-to-sheet', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerName: name,
-                    customerEmail: email,
-                    products: items.map(item => item.name).join(', '),
-                    amount: finalTotal,
-                }),
+            addOrderToSheet({
+                customerName: name,
+                customerEmail: email,
+                products: items.map(item => item.name).join(', '),
+                amount: finalTotal,
             }),
-            // 3. Send Telegram Notification
-            fetch('/api/telegram-notify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: telegramMessage }),
-            }),
+            sendTelegramNotification({ message: telegramMessage }),
         ]);
 
-        // Log the results of each promise
         results.forEach(async (result, index) => {
             const taskName = ['Email', 'Google Sheet', 'Telegram'][index];
             if (result.status === 'rejected') {
                 console.error(`[PayPal Post-Purchase] Task '${taskName}' failed for order ${data.orderID}. Reason:`, result.reason);
-            } else if (result.value.ok === false) {
-                 const errorBody = await (result.value.json().catch(() => result.value.text()));
-                 console.error(`[PayPal Post-Purchase] CRITICAL: Task '${taskName}' failed for order ${data.orderID}. Status: ${result.value.status}. Details:`, errorBody);
+            } else if (result.value.success === false) {
+                 console.error(`[PayPal Post-Purchase] CRITICAL: Task '${taskName}' failed for order ${data.orderID}. Details:`, result.value.error);
             } else {
                  console.log(`[PayPal Post-Purchase] Task '${taskName}' succeeded for order ${data.orderID}.`);
             }
         });
 
-        // The most critical task is the email. If it failed, we should know.
-        if (results[0].status === 'rejected' || (results[0].status === 'fulfilled' && !results[0].value.ok)) {
+        const emailResult = results[0];
+        if (emailResult.status === 'rejected' || (emailResult.status === 'fulfilled' && !emailResult.value.success)) {
             console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO SEND EMAIL for order ${data.orderID} to ${email}.`);
-            // You might want to set an error state for the user here, even on the success page,
-            // or trigger a different kind of alert for yourself.
         }
 
         clearCart();
@@ -284,7 +265,6 @@ ${itemsString}
     if (!validateForm()) return;
     setError(null);
     setIsPayPalLoading(true);
-    // Hide loading indicator after a few seconds if PayPal modal doesn't open
     setTimeout(() => {
       setIsPayPalLoading(false);
     }, 3000);

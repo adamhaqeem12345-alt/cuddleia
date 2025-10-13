@@ -26,6 +26,7 @@ const emailRequestSchema = z.object({
   items: z.array(productSchema).min(1, { message: 'At least one item is required' }),
 });
 
+type EmailData = z.infer<typeof emailRequestSchema>;
 
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `
@@ -58,31 +59,27 @@ function createEmailBody(name: string, items: Product[]): string {
     `;
 }
 
-export async function POST(req: NextRequest) {
-  // Read environment variables inside the function to ensure they are available at runtime.
+export async function sendProductEmail(data: EmailData): Promise<{ success: boolean; error?: string }> {
   const ZOHO_EMAIL = process.env.ZOHO_MAIL_USER;
   const ZOHO_PASSWORD = process.env.ZOHO_MAIL_PASS;
 
   if (!ZOHO_EMAIL || !ZOHO_PASSWORD) {
       console.error('CRITICAL: Missing Zoho Mail credentials in environment variables.');
-      return NextResponse.json({ error: 'Email server is not configured. Please contact support.' }, { status: 500 });
+      return { success: false, error: 'Email server is not configured.' };
   }
-    
+
+  const validation = emailRequestSchema.safeParse(data);
+  if (!validation.success) {
+      return { success: false, error: 'Invalid email data.' };
+  }
+
+  const { to, subject, name, items } = validation.data;
+
   try {
-    const body = await req.json();
-
-    const validation = emailRequestSchema.safeParse(body);
-
-    if (!validation.success) {
-        return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
-    }
-
-    const { to, subject, name, items } = validation.data;
-
     const transporter = nodemailer.createTransport({
         host: 'smtp.zoho.com',
         port: 465,
-        secure: true, // use SSL
+        secure: true,
         auth: {
             user: ZOHO_EMAIL,
             pass: ZOHO_PASSWORD,
@@ -97,10 +94,29 @@ export async function POST(req: NextRequest) {
     };
 
     await transporter.sendMail(mailOptions);
-    return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
+    return { success: true };
+
   } catch (error) {
     console.error('Email sending error:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: 'Failed to send email', details: errorMessage }, { status: 500 });
+    return { success: false, error: `Failed to send email: ${errorMessage}` };
+  }
+}
+
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const result = await sendProductEmail(body);
+    
+    if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Email sent successfully' }, { status: 200 });
+
+  } catch (error) {
+    console.error('Email API error:', error);
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 }

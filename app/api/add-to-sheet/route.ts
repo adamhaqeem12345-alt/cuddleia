@@ -12,43 +12,33 @@ const sheetRequestSchema = z.object({
   amount: z.number(),
 });
 
-export async function POST(req: NextRequest) {
-  // 1. Validate Input
-  let validatedData;
-  try {
-    const body = await req.json();
-    const validation = sheetRequestSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json({ error: 'Invalid input', details: validation.error.flatten().fieldErrors }, { status: 400 });
-    }
-    validatedData = validation.data;
-  } catch (e) {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+type SheetData = z.infer<typeof sheetRequestSchema>;
+
+export async function addOrderToSheet(data: SheetData): Promise<{ success: boolean; error?: string }> {
+  const validation = sheetRequestSchema.safeParse(data);
+  if (!validation.success) {
+    return { success: false, error: 'Invalid input data for sheet.' };
   }
 
-  // 2. Check for environment variables
   const { GOOGLE_SHEETS_CLIENT_EMAIL, GOOGLE_SHEETS_PRIVATE_KEY, GOOGLE_SHEET_ID } = process.env;
 
   if (!GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEET_ID) {
     console.error('CRITICAL: Missing Google Sheets API credentials in environment variables.');
-    // Return a server error because this is a critical configuration issue.
-    return NextResponse.json({ error: 'Sheet integration is not configured on the server.' }, { status: 500 });
+    return { success: false, error: 'Sheet integration is not configured on the server.' };
   }
 
   try {
-    // 3. Authenticate with Google
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: GOOGLE_SHEETS_CLIENT_EMAIL,
-        private_key: GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'), // Important for Vercel env vars
+        private_key: GOOGLE_SHEETS_PRIVATE_KEY.replace(/\\n/g, '\n'),
       },
       scopes: ['https://www.googleapis.com/auth/spreadsheets'],
     });
 
     const sheets = google.sheets({ version: 'v4', auth });
 
-    // 4. Prepare data for the new row
-    const { customerName, customerEmail, products, amount } = validatedData;
+    const { customerName, customerEmail, products, amount } = validation.data;
     const newRow = [
       new Date().toISOString(),
       customerName,
@@ -57,22 +47,36 @@ export async function POST(req: NextRequest) {
       amount.toFixed(2),
     ];
     
-    // 5. Append the new row to the sheet
     await sheets.spreadsheets.values.append({
       spreadsheetId: GOOGLE_SHEET_ID,
-      range: 'Sheet1!A:E', // The name of your sheet and the columns to append to
+      range: 'Sheet1!A:E',
       valueInputOption: 'USER_ENTERED',
       requestBody: {
         values: [newRow],
       },
     });
 
-    return NextResponse.json({ message: 'Successfully added to sheet' }, { status: 200 });
+    return { success: true };
 
   } catch (error) {
     console.error('Failed to append to Google Sheet:', error);
-    // Return a server error status to indicate that the operation failed.
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: 'Failed to write to sheet', details: errorMessage }, { status: 500 });
+    return { success: false, error: `Failed to write to sheet: ${errorMessage}` };
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const result = await addOrderToSheet(body);
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Successfully added to sheet' }, { status: 200 });
+
+  } catch (e) {
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 }
