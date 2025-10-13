@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Product, products } from '@/lib/products';
+import { sendProductEmail } from '../email/route';
+import { addOrderToSheet } from '../add-to-sheet/route';
+import { sendTelegramNotification } from '../telegram-notify/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,11 +26,8 @@ async function notifyTelegram(customerName: string, customerEmail: string, produ
     `;
     
     // We don't await this, let it run in the background
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/telegram-notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: telegramMessage }),
-    }).catch(err => console.error('[Free Download] Failed to send Telegram notification in background:', err));
+    sendTelegramNotification({ message: telegramMessage })
+      .catch(err => console.error('[Free Download] Failed to send Telegram notification in background:', err));
 }
 
 
@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
         }
 
         const { name, email, productId } = validation.data;
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
         const product = products.find(p => p.id === productId);
 
@@ -50,52 +49,43 @@ export async function POST(req: NextRequest) {
         }
 
         // We use Promise.allSettled to ensure we try all operations even if one fails.
-        const [emailResult, sheetResult] = await Promise.allSettled([
+        const [emailResult, sheetResult] = await Promise.all([
             // 1. Send the product email
-            fetch(`${appUrl}/api/email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    to: email,
-                    subject: 'Your Free Download from Cuddleia',
-                    name: name,
-                    items: [product],
-                }),
+            sendProductEmail({
+                to: email,
+                subject: 'Your Free Download from Cuddleia',
+                name: name,
+                items: [product],
             }),
             // 2. Add the order to the Google Sheet
-            fetch(`${appUrl}/api/add-to-sheet`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customerName: name,
-                    customerEmail: email,
-                    products: product.name,
-                    amount: 0.00,
-                }),
+            addOrderToSheet({
+                customerName: name,
+                customerEmail: email,
+                products: product.name,
+                amount: 0.00,
             }),
         ]);
 
         let emailSuccess = false;
         
         // Check email result
-        if (emailResult.status === 'fulfilled' && emailResult.value.ok) {
+        if (emailResult.success) {
             console.log(`[Free Download] Email sent successfully to ${email}.`);
             emailSuccess = true;
         } else {
-            const errorBody = emailResult.status === 'fulfilled' ? await emailResult.value.text() : emailResult.reason;
-            console.error(`[Free Download] CRITICAL: FAILED TO SEND EMAIL to ${email}. Details: ${errorBody}`);
+            console.error(`[Free Download] CRITICAL: FAILED TO SEND EMAIL to ${email}. Details: ${emailResult.error}`);
         }
 
         // Check sheet result
-        if (sheetResult.status === 'fulfilled' && sheetResult.value.ok) {
+        if (sheetResult.success) {
             console.log(`[Free Download] Successfully added to Google Sheet for ${email}.`);
         } else {
-            const errorBody = sheetResult.status === 'fulfilled' ? await sheetResult.value.text() : sheetResult.reason;
-            console.error(`[Free Download] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for ${email}. Details: ${errorBody}`);
+            console.error(`[Free Download] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for ${email}. Details: ${sheetResult.error}`);
         }
 
         if (!emailSuccess) {
-            return NextResponse.json({ error: 'Failed to send your download email. Please try again or contact support.' }, { status: 500 });
+            // Prioritize telling the user the email failed, as that's how they get the product.
+             return NextResponse.json({ error: 'Failed to send your download email. Please try again or contact support.' }, { status: 500 });
         }
         
         // Send Telegram notification in the background

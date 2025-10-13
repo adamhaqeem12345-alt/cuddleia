@@ -2,6 +2,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products';
 import { z } from 'zod';
+import { sendProductEmail } from '../../email/route';
+import { addOrderToSheet } from '../../add-to-sheet/route';
+import { sendTelegramNotification } from '../../telegram-notify/route';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,7 +87,6 @@ export async function POST(req: NextRequest) {
         const purchasedItems = await getPurchasedItems(billDescription);
 
         if (purchasedItems.length > 0) {
-            const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
             const totalAmountMYR = parseFloat(amount) / 100;
             const itemsString = purchasedItems.map(item => `  - ${item.name}`).join('\n');
             const telegramMessage = `
@@ -104,56 +106,44 @@ ${itemsString}
             // We use Promise.allSettled to ensure we try all operations even if one fails.
             const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
                 // 1. Send the product email
-                fetch(`${appUrl}/api/email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        to: billEmail,
-                        subject: 'Your Cuddleia Order Confirmation',
-                        name: billTo,
-                        items: purchasedItems,
-                    }),
+                sendProductEmail({
+                    to: billEmail,
+                    subject: 'Your Cuddleia Order Confirmation',
+                    name: billTo,
+                    items: purchasedItems,
                 }),
                 // 2. Add the order to the Google Sheet
-                fetch(`${appUrl}/api/add-to-sheet`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        customerName: billTo,
-                        customerEmail: billEmail,
-                        products: purchasedItems.map(item => item.name).join(', '),
-                        amount: totalAmountMYR,
-                    }),
+                addOrderToSheet({
+                    customerName: billTo,
+                    customerEmail: billEmail,
+                    products: purchasedItems.map(item => item.name).join(', '),
+                    amount: totalAmountMYR,
                 }),
                 // 3. Send Telegram notification
-                fetch(`${appUrl}/api/telegram-notify`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: telegramMessage }),
-                }),
+                sendTelegramNotification({ message: telegramMessage }),
             ]);
 
             // Check email result
-            if (emailResult.status === 'fulfilled' && emailResult.value.ok) {
+            if (emailResult.status === 'fulfilled' && emailResult.value.success) {
                 console.log(`[Webhook] Email request sent successfully for order ${order_id} to ${billEmail}.`);
             } else {
-                 const errorBody = emailResult.status === 'fulfilled' ? await emailResult.value.text() : emailResult.reason;
+                 const errorBody = emailResult.status === 'fulfilled' ? emailResult.value.error : emailResult.reason;
                 console.error(`[Webhook] CRITICAL: FAILED TO SEND EMAIL for order ${order_id}. Details: ${errorBody}`);
             }
 
             // Check sheet result
-            if (sheetResult.status === 'fulfilled' && sheetResult.value.ok) {
+            if (sheetResult.status === 'fulfilled' && sheetResult.value.success) {
                 console.log(`[Webhook] Successfully added order ${order_id} to Google Sheet.`);
             } else {
-                const errorBody = sheetResult.status === 'fulfilled' ? await sheetResult.value.text() : sheetResult.reason;
+                const errorBody = sheetResult.status === 'fulfilled' ? sheetResult.value.error : sheetResult.reason;
                 console.error(`[Webhook] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${order_id}. Details: ${errorBody}`);
             }
 
             // Check Telegram result
-            if (telegramResult.status === 'fulfilled' && telegramResult.value.ok) {
+            if (telegramResult.status === 'fulfilled' && telegramResult.value.success) {
                 console.log(`[Webhook] Successfully sent Telegram notification for order ${order_id}.`);
             } else {
-                const errorBody = telegramResult.status === 'fulfilled' ? await telegramResult.value.text() : telegramResult.reason;
+                const errorBody = telegramResult.status === 'fulfilled' ? telegramResult.value.error : telegramResult.reason;
                 console.error(`[Webhook] FAILED TO SEND TELEGRAM NOTIFICATION for order ${order_id}. Details: ${errorBody}`);
             }
 

@@ -203,19 +203,19 @@ ${itemsString}
         
         const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
             // 1. Send Email
-            fetch(`${appUrl}/api/email`, {
+            fetch(`/api/email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ to: email, subject: 'Your Cuddleia Order Confirmation', name, items }),
             }),
             // 2. Add to Sheet
-            fetch(`${appUrl}/api/add-to-sheet`, {
+            fetch(`/api/add-to-sheet`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ customerName: name, customerEmail: email, products: items.map(item => item.name).join(', '), amount: finalTotal }),
             }),
             // 3. Send Telegram notification
-            fetch(`${appUrl}/api/telegram-notify`, {
+            fetch(`/api/telegram-notify`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message: telegramMessage }),

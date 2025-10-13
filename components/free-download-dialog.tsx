@@ -20,7 +20,7 @@ import { Download, Loader2, PartyPopper } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VariantProps, cva } from 'class-variance-authority';
 import { buttonVariants } from './ui/button';
-import Link from 'next/link';
+import { handleFreeDownload } from '@/app/actions';
 
 interface FreeDownloadDialogProps extends VariantProps<typeof buttonVariants> {
   product: Product;
@@ -52,16 +52,10 @@ export function FreeDownloadDialog({
     setError('');
 
     try {
-      const response = await fetch('/api/free-download', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, productId: product.id }),
-      });
+      const result = await handleFreeDownload({ name, email, productId: product.id });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Something went wrong.');
+      if (!result.success) {
+        throw new Error(result.error || 'Something went wrong.');
       }
 
       setIsSuccess(true);

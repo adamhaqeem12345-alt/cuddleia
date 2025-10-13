@@ -26,7 +26,7 @@ const emailRequestSchema = z.object({
   items: z.array(productSchema).min(1, { message: 'At least one item is required' }),
 });
 
-type EmailData = z.infer<typeof emailRequestSchema>;
+export type EmailData = z.infer<typeof emailRequestSchema>;
 
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `

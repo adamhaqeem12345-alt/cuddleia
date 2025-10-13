@@ -14,7 +14,7 @@ const sheetRequestSchema = z.object({
 
 type SheetData = z.infer<typeof sheetRequestSchema>;
 
-async function addOrderToSheet(data: SheetData): Promise<{ success: boolean; error?: string }> {
+export async function addOrderToSheet(data: SheetData): Promise<{ success: boolean; error?: string }> {
   const validation = sheetRequestSchema.safeParse(data);
   if (!validation.success) {
     return { success: false, error: 'Invalid input data for sheet.' };
@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
     const result = await addOrderToSheet(body);
 
     if (!result.success) {
+      // Now returns a 500 status on failure, which is more accurate.
       return NextResponse.json({ error: result.error }, { status: 500 });
     }
 

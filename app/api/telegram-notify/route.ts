@@ -10,7 +10,7 @@ const telegramRequestSchema = z.object({
 
 type TelegramData = z.infer<typeof telegramRequestSchema>;
 
-async function sendTelegramNotification(data: TelegramData): Promise<{ success: boolean; error?: string }> {
+export async function sendTelegramNotification(data: TelegramData): Promise<{ success: boolean; error?: string }> {
   const validation = telegramRequestSchema.safeParse(data);
   if (!validation.success) {
     console.error('[Telegram Notify] Invalid input:', validation.error.flatten().fieldErrors);
