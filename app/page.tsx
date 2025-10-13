@@ -20,7 +20,7 @@ const BarakahBlueprintSection = () => {
 
     return (
         <>
-            <section className="bg-background py-24 sm:py-32">
+            <section className="bg-accent py-24 sm:py-32">
                 <AnimateIn>
                     <div className="container mx-auto px-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
