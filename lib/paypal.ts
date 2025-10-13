@@ -45,6 +45,12 @@ async function getAccessToken(): Promise<string> {
  * @returns {Promise<object>} The created order details.
  */
 export async function createOrder(subtotal: number): Promise<any> {
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+      throw new Error("PayPal credentials are not configured on the server.");
+    }
+    
     const accessToken = await getAccessToken();
     const base = process.env.NODE_ENV === 'production' 
         ? "https://api-m.paypal.com" 
@@ -89,6 +95,12 @@ export async function createOrder(subtotal: number): Promise<any> {
  * @returns {Promise<object>} The capture result.
  */
 export async function captureOrder(orderID: string): Promise<any> {
+    const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+    const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+      throw new Error("PayPal credentials are not configured on the server.");
+    }
+
   const accessToken = await getAccessToken();
   const base = process.env.NODE_ENV === 'production' 
         ? "https://api-m.paypal.com" 
