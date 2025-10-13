@@ -19,10 +19,6 @@ import type {
 } from '@paypal/paypal-js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { sendProductEmail } from '../api/email/route';
-import { addOrderToSheet } from '../api/add-to-sheet/route';
-import { sendTelegramNotification } from '../api/telegram-notify/route';
-
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -187,6 +183,8 @@ export default function CheckoutPage() {
       });
 
       const responseData = await response.json();
+      
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
       if (response.ok && responseData.success) {
         console.log(`[PayPal] Successfully captured order ${data.orderID}. Preparing to send notifications.`);
@@ -203,36 +201,35 @@ ${itemsString}
 *Total Amount:* $${finalTotal.toFixed(2)} USD
             `;
         
-        const results = await Promise.allSettled([
-            sendProductEmail({
-                to: email,
-                subject: 'Your Cuddleia Order Confirmation',
-                name: name,
-                items: items,
+        const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
+            // 1. Send Email
+            fetch(`${appUrl}/api/email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: email, subject: 'Your Cuddleia Order Confirmation', name, items }),
             }),
-            addOrderToSheet({
-                customerName: name,
-                customerEmail: email,
-                products: items.map(item => item.name).join(', '),
-                amount: finalTotal,
+            // 2. Add to Sheet
+            fetch(`${appUrl}/api/add-to-sheet`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ customerName: name, customerEmail: email, products: items.map(item => item.name).join(', '), amount: finalTotal }),
             }),
-            sendTelegramNotification({ message: telegramMessage }),
+            // 3. Send Telegram notification
+            fetch(`${appUrl}/api/telegram-notify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: telegramMessage }),
+            }),
         ]);
 
-        results.forEach(async (result, index) => {
-            const taskName = ['Email', 'Google Sheet', 'Telegram'][index];
-            if (result.status === 'rejected') {
-                console.error(`[PayPal Post-Purchase] Task '${taskName}' failed for order ${data.orderID}. Reason:`, result.reason);
-            } else if (result.value.success === false) {
-                 console.error(`[PayPal Post-Purchase] CRITICAL: Task '${taskName}' failed for order ${data.orderID}. Details:`, result.value.error);
-            } else {
-                 console.log(`[PayPal Post-Purchase] Task '${taskName}' succeeded for order ${data.orderID}.`);
-            }
-        });
-
-        const emailResult = results[0];
-        if (emailResult.status === 'rejected' || (emailResult.status === 'fulfilled' && !emailResult.value.success)) {
-            console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO SEND EMAIL for order ${data.orderID} to ${email}.`);
+        if (emailResult.status === 'fulfilled' && !emailResult.value.ok) {
+            console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO SEND EMAIL for order ${data.orderID}.`);
+        }
+        if (sheetResult.status === 'fulfilled' && !sheetResult.value.ok) {
+            console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${data.orderID}.`);
+        }
+        if (telegramResult.status === 'fulfilled' && !telegramResult.value.ok) {
+            console.error(`[PayPal Post-Purchase] FAILED TO SEND TELEGRAM NOTIFICATION for order ${data.orderID}.`);
         }
 
         clearCart();

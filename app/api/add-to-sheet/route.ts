@@ -14,7 +14,7 @@ const sheetRequestSchema = z.object({
 
 type SheetData = z.infer<typeof sheetRequestSchema>;
 
-export async function addOrderToSheet(data: SheetData): Promise<{ success: boolean; error?: string }> {
+async function addOrderToSheet(data: SheetData): Promise<{ success: boolean; error?: string }> {
   const validation = sheetRequestSchema.safeParse(data);
   if (!validation.success) {
     return { success: false, error: 'Invalid input data for sheet.' };

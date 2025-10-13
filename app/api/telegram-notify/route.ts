@@ -10,7 +10,7 @@ const telegramRequestSchema = z.object({
 
 type TelegramData = z.infer<typeof telegramRequestSchema>;
 
-export async function sendTelegramNotification(data: TelegramData): Promise<{ success: boolean; error?: string }> {
+async function sendTelegramNotification(data: TelegramData): Promise<{ success: boolean; error?: string }> {
   const validation = telegramRequestSchema.safeParse(data);
   if (!validation.success) {
     console.error('[Telegram Notify] Invalid input:', validation.error.flatten().fieldErrors);
@@ -58,10 +58,13 @@ export async function sendTelegramNotification(data: TelegramData): Promise<{ su
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    // In this route, we don't want to block the main purchase flow, so we don't await the result.
-    // The main webhook handlers will call the exported function directly and handle logging.
-    sendTelegramNotification(body);
-    return NextResponse.json({ message: 'Telegram notification initiated' }, { status: 202 });
+    const result = await sendTelegramNotification(body);
+
+    if (!result.success) {
+        return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Telegram notification sent' }, { status: 200 });
   } catch (e) {
     console.error('[Telegram Notify] Invalid JSON body:', e);
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
