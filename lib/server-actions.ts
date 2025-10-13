@@ -104,13 +104,11 @@ export type EmailData = z.infer<typeof emailRequestSchema>;
 
 function createEmailBody(name: string, items: Product[]): string {
     const productsHtml = items.map(item => `
-        <div style="margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px; display: flex; align-items: center; gap: 20px;">
-            <img src="${item.imageUrl}" alt="${item.name}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;">
-            <div>
-                <h3 style="margin-top: 0; font-size: 18px; color: #333;">${item.name}</h3>
-                <p style="font-size: 14px; color: #555; margin-bottom: 15px;">${item.description.substring(0,120)}...</p>
-                <a href="${item.downloadUrl}" style="display: inline-block; padding: 10px 15px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
-            </div>
+        <div style="margin-bottom: 30px; padding: 20px; border: 1px solid #eee; border-radius: 8px; text-align: center;">
+            <img src="${item.imageUrl}" alt="${item.name}" style="max-width: 80%; height: auto; object-fit: cover; border-radius: 4px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; font-size: 20px; color: #333;">${item.name}</h3>
+            <p style="font-size: 14px; color: #555; margin-bottom: 20px;">${item.description.substring(0,150)}...</p>
+            <a href="${item.downloadUrl}" style="display: inline-block; padding: 12px 25px; background-color: #e83e8c; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold;">Download Now</a>
         </div>
     `).join('');
 
@@ -123,7 +121,9 @@ function createEmailBody(name: string, items: Product[]): string {
             <h2 style="font-size: 24px; color: #333;">Thank you for your order, ${name}!</h2>
             <p>We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:</p>
             
-            ${productsHtml}
+            <div style="margin-top: 20px;">
+                ${productsHtml}
+            </div>
 
             <div style="margin-top: 30px; padding: 20px; text-align: center; background-color: #fff0f5; border-radius: 8px;">
                 <h3 style="margin-top: 0; font-size: 20px; color: #333;">Join Our Community!</h3>
