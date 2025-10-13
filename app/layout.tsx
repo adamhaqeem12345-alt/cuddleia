@@ -49,9 +49,6 @@ export const metadata: Metadata = {
       'Discover cozy digital wallpapers, and thoughtfully designed Islamic booklets that bring warmth, beauty, and serenity to your day.',
     images: ['https://www.cuddleia.com/og-image.png'],
   },
-  icons: {
-    icon: '/favicon.ico',
-  },
 };
 
 export default function RootLayout({
