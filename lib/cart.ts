@@ -1,4 +1,3 @@
-
 'use client';
 
 import { create } from 'zustand';
@@ -28,15 +27,15 @@ export const useCart = create<CartState>()(
                  currentItems.push(product);
             }
             
-            const newSubtotal = currentItems.reduce((acc, item) => acc + item.price, 0);
-            return { items: currentItems, subtotal: newSubtotal };
+            // Since all products are free, subtotal will always be 0
+            return { items: currentItems, subtotal: 0 };
         });
       },
       removeFromCart: (productId) => {
         set((state) => {
             const newItems = state.items.filter((item) => item.id !== productId);
-            const newSubtotal = newItems.reduce((acc, item) => acc + item.price, 0);
-            return { items: newItems, subtotal: newSubtotal };
+            // Since all products are free, subtotal will always be 0
+            return { items: newItems, subtotal: 0 };
         });
       },
       clearCart: () => {
@@ -46,11 +45,10 @@ export const useCart = create<CartState>()(
     {
       name: 'cart-storage',
       storage: createJSONStorage(() => localStorage),
-      onRehydrateStorage: () => (state) => {
+       onRehydrateStorage: () => (state) => {
         if (state) {
-            // Recalculate subtotal on rehydration, as product prices might change.
-            const newSubtotal = state.items.reduce((acc, item) => acc + item.price, 0);
-            state.subtotal = newSubtotal;
+            // Recalculate subtotal on rehydration, just in case.
+            state.subtotal = 0;
         }
       }
     }

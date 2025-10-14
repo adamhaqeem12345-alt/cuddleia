@@ -49,7 +49,7 @@ export async function addOrderToSheet(data: SheetData): Promise<{ success: boole
       customerName,
       customerEmail,
       products,
-      amount.toFixed(2),
+      amount.toFixed(2), // Storing amount as 0.00 for free downloads
     ];
     
     await sheets.spreadsheets.values.append({
@@ -103,8 +103,6 @@ const emailRequestSchema = z.object({
 export type EmailData = z.infer<typeof emailRequestSchema>;
 
 function createEmailBody(name: string, items: Product[]): string {
-    const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
-
     const productsHtml = items.map(item => `
         <div style="margin-bottom: 20px; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
             <table width="100%" cellspacing="0" cellpadding="0">
@@ -122,41 +120,18 @@ function createEmailBody(name: string, items: Product[]): string {
         </div>
     `).join('');
 
-    const summaryItemsHtml = items.map(item => `
-        <tr>
-            <td style="padding: 10px 0;">${item.name}</td>
-            <td style="padding: 10px 0; text-align: right;">${item.price === 0 ? 'Free' : `$${item.price.toFixed(2)}`}</td>
-        </tr>
-    `).join('');
-
-    const orderSummaryHtml = `
-      <div style="margin-top: 30px; margin-bottom: 30px; padding: 20px; background-color: #f9f9f9; border-radius: 8px;">
-          <h3 style="margin-top: 0; font-size: 20px; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Order Summary</h3>
-          <table width="100%" cellspacing="0" cellpadding="0" style="font-size: 14px; color: #555;">
-              ${summaryItemsHtml}
-              <tr>
-                  <td style="padding: 15px 0; border-top: 1px solid #eee; font-weight: bold;">Total</td>
-                  <td style="padding: 15px 0; border-top: 1px solid #eee; text-align: right; font-weight: bold;">${totalAmount === 0 ? 'Free' : `$${totalAmount.toFixed(2)} USD`}</td>
-              </tr>
-          </table>
-      </div>
-    `;
-
-
     return `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #fff9f9;">
             <div style="text-align: center; margin-bottom: 30px;">
                 <img src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png" alt="Cuddleia Logo" style="width: 80px; height: 80px; border-radius: 50%;">
                 <h1 style="color: #e83e8c; font-size: 28px; margin-top: 10px;">Cuddleia</h1>
             </div>
-            <h2 style="font-size: 24px; color: #333;">Thank you for your order, ${name}!</h2>
-            <p>We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:</p>
+            <h2 style="font-size: 24px; color: #333;">Thank you, ${name}!</h2>
+            <p>We're so excited for you to enjoy your new digital goodies. Here are the download links for your items:</p>
             
             <div style="margin-top: 20px;">
                 ${productsHtml}
             </div>
-            
-            ${totalAmount > 0 ? orderSummaryHtml : ''}
 
             <div style="margin-top: 30px; padding: 20px; text-align: center; background-color: #fff0f5; border-radius: 8px;">
                 <h3 style="margin-top: 0; font-size: 20px; color: #333;">Join Our Community!</h3>
@@ -169,7 +144,7 @@ function createEmailBody(name: string, items: Product[]): string {
 
             <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #aaa;">
                 <p style="font-weight: bold; color: #888;">Terms of Use:</p>
-                <p>All digital products purchased from Cuddleia are for personal use only. You are not permitted to resell, redistribute, or share these files in any form. All rights are reserved by Cuddleia.</p>
+                <p>All digital products from Cuddleia are for personal use only. You are not permitted to resell, redistribute, or share these files in any form. All rights are reserved by Cuddleia.</p>
                 <p style="margin-top: 20px;">Cuddleia | Cozy Digital Goods with Heart</p>
             </div>
         </div>
