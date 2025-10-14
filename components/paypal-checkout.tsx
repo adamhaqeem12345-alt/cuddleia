@@ -5,6 +5,7 @@ import { PayPalButtons, PayPalScriptProvider, OnApproveData, CreateOrderData } f
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/products";
+import { Button } from "./ui/button";
 
 interface PaypalCheckoutProps {
     total: number;
@@ -84,16 +85,44 @@ export function PaypalCheckout({ total, items, customerName, customerEmail, orde
         setError("An error occurred with the PayPal transaction. Please try again or use a different payment method.");
     };
 
+    // Custom button styles to match the desired look
+    const customStyle: any = {
+        label: 'pay',
+        color: 'white', // This will be overridden by the custom class
+        shape: 'rect',
+        layout: 'vertical',
+    };
+    
     return (
         <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
             {error && <p className="text-destructive text-sm text-center mb-2">{error}</p>}
             <PayPalButtons
-                style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
+                style={customStyle}
+                className="paypal-buttons-container"
                 createOrder={createOrder}
                 onApprove={onApprove}
                 onError={onError}
                 disabled={disabled}
             />
+            <style jsx global>{`
+                .paypal-buttons-container .paypal-button {
+                    background-color: #ffc439 !important; /* PayPal Gold */
+                    border-radius: 0.5rem !important;
+                }
+                .paypal-buttons-container .paypal-button:hover {
+                    filter: brightness(1.05);
+                }
+                .paypal-buttons-container .paypal-button-label-container {
+                    color: #003087 !important; /* PayPal Blue */
+                }
+                .paypal-buttons-container .paypal-button-color-white:nth-child(2) {
+                    background: #f0f0f0 !important; /* Custom color for Debit/Credit */
+                    border: 1px solid #e0e0e0;
+                }
+                 .paypal-buttons-container .paypal-button-color-white:nth-child(2) .paypal-button-label-container {
+                    color: #5a5a5a !important;
+                }
+            `}</style>
         </PayPalScriptProvider>
     );
 }

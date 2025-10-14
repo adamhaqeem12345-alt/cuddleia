@@ -4,21 +4,21 @@
 
 @layer base {
   :root {
-    /* Main content background - a slightly lighter, softer pink */
-    --background: 340 100% 96%;
+    /* Main page background - very light pink */
+    --background: 340 100% 98%;
     /* Dark maroon for headlines and main text. */
     --foreground: 350 45% 30%;
 
-    /* Cards will use the same soft pink as the background */
-    --card: 340 100% 96%;
+    /* Cards will use a slightly off-white/pink */
+    --card: 340 100% 99%;
     /* The headline color - a rich, dark maroon */
     --card-foreground: 350 45% 30%;
 
-    --popover: 340 100% 96%;
+    --popover: 340 100% 99%;
     --popover-foreground: 350 45% 30%;
 
     /* A more saturated pink for highlights, buttons, and icons */
-    --primary: 340 90% 65%;
+    --primary: 340 90% 70%;
     --primary-foreground: 350 60% 15%;
 
     --secondary: 340 100% 94%;
@@ -26,17 +26,17 @@
 
     --muted: 340 100% 94%;
     /* Softer, richer brown for body text to create hierarchy */
-    --muted-foreground: 30 35% 25%;
+    --muted-foreground: 30 35% 35%;
 
-    /* Hero section background - the richer pink */
-    --accent: 340 100% 92%;
+    /* Hero section background - a slightly more saturated pink */
+    --accent: 340 100% 96%;
     --accent-foreground: 350 45% 30%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 340 100% 88%;
-    --input: 340 100% 88%;
+    --border: 340 100% 92%;
+    --input: 340 100% 92%;
     --ring: 340 90% 65%;
 
     --radius: 0.75rem;
