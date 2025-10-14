@@ -7,10 +7,19 @@ import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
+import dynamic from 'next/dynamic';
+
+const PayPalCheckoutButtons = dynamic(
+  () => import('@/components/paypal-checkout-buttons'),
+  { 
+    ssr: false,
+    loading: () => <div className="flex justify-center items-center p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
+  }
+);
+
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -29,8 +38,6 @@ export default function CheckoutPage() {
   const [discount, setDiscount] = useState(0);
   const [discountMessage, setDiscountMessage] = useState('');
   
-  const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
-
   useEffect(() => {
     setIsClient(true);
     // Fetch the exchange rate
@@ -57,7 +64,7 @@ export default function CheckoutPage() {
     };
   }, []);
 
-  const finalTotal = subtotal - discount;
+  const finalTotal = useMemo(() => subtotal - discount, [subtotal, discount]);
   const totalMYR = exchangeRate ? finalTotal * exchangeRate : null;
 
   useEffect(() => {
@@ -107,7 +114,7 @@ export default function CheckoutPage() {
     }
   };
   
-  const handlePayPalApprove = async (data: any, actions: any) => {
+  const handlePayPalApprove = async (orderID: string) => {
     setIsProcessing(true);
     setError(null);
     try {
@@ -115,7 +122,7 @@ export default function CheckoutPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-              orderID: data.orderID,
+              orderID: orderID,
               customerName: name,
               customerEmail: email,
               purchasedItems: items,
@@ -260,30 +267,13 @@ export default function CheckoutPage() {
 
                   <div>
                      <p className="text-muted-foreground mb-4 text-sm font-semibold">Pay with PayPal or Credit/Debit Card</p>
-                      <PayPalScriptProvider options={{ clientId: paypalClientID, currency: 'USD', intent: 'capture' }}>
-                          <PayPalButtons 
-                              style={{ layout: "vertical", label: "pay" }}
-                              disabled={!isFormValid || finalTotal <= 0 || isProcessing}
-                              createOrder={(data, actions) => {
-                                  if (finalTotal <= 0) {
-                                    setError("PayPal does not support payments of $0.00. Please use the free download option if available.");
-                                    return Promise.reject(new Error("Amount is zero"));
-                                  }
-                                  return actions.order.create({
-                                      purchase_units: [{
-                                          amount: {
-                                              value: finalTotal.toFixed(2),
-                                          },
-                                      }],
-                                  });
-                              }}
-                              onApprove={handlePayPalApprove}
-                              onError={(err) => {
-                                  console.error("PayPal Error:", err);
-                                  setError("An error occurred with PayPal. Please try again.");
-                              }}
-                          />
-                      </PayPalScriptProvider>
+                     <PayPalCheckoutButtons
+                        isFormValid={isFormValid}
+                        isProcessing={isProcessing}
+                        total={finalTotal}
+                        onApprove={handlePayPalApprove}
+                        onError={(err: any) => setError(err.message || "An error occurred with PayPal.")}
+                     />
                   </div>
                 </div>
               )}
