@@ -1,10 +1,13 @@
+// Secrets are in .env.local — do not hardcode here.
 'use client';
 
-// Secrets are in .env.local — do not hardcode here.
 import { PayPalScriptProvider, PayPalButtons, type OnApproveData, type CreateOrderData } from '@paypal/react-paypal-js';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/products';
+import { Loader2 } from 'lucide-react';
 
+// Get the PayPal Client ID from environment variables. It's safe to expose this.
+// This variable MUST be prefixed with NEXT_PUBLIC_ to be available in the browser.
 const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
 interface PaypalCheckoutProps {
@@ -33,10 +36,10 @@ export function PaypalCheckout({
     const router = useRouter();
 
     if (!paypalClientID) {
-        console.error("PayPal Client ID is not configured. The PayPal button will not be rendered.");
+        console.error("PayPal Client ID is not configured. Ensure NEXT_PUBLIC_PAYPAL_CLIENT_ID is in your .env.local file.");
         return (
             <div className="bg-muted/50 p-4 rounded-lg text-center">
-                <p className="text-muted-foreground text-sm">International payment is currently unavailable. We are working to restore it.</p>
+                <p className="text-muted-foreground text-sm">International payment is currently unavailable.</p>
             </div>
         );
     }
@@ -67,7 +70,7 @@ export function PaypalCheckout({
             console.error("PayPal: Error in createOrder.", err);
             setError(message);
             setIsProcessing(false);
-            return Promise.reject(err);
+            throw err; // Propagate error to PayPal SDK
         }
     };
     
