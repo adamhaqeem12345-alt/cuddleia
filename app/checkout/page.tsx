@@ -10,10 +10,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { PayPalButtons, PayPalScriptProvider, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 export default function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal } = useCart();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -94,7 +94,7 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        clearCart();
+        // clearCart is not called here to prevent issues on redirect
         window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
@@ -105,60 +105,6 @@ export default function CheckoutPage() {
       setError('An unexpected error occurred. Please try again.');
       setIsProcessing(false);
     }
-  };
-  
-  // ----- PayPal Logic -----
-  const createPayPalOrder = (data: CreateOrderData, actions: any) => {
-    const purchaseAmount = finalTotal.toFixed(2);
-    if (parseFloat(purchaseAmount) <= 0) {
-        setError('Your cart total must be greater than $0.00 for a PayPal transaction.');
-        return Promise.reject(new Error('Invalid total for PayPal'));
-    }
-    
-    return actions.order.create({
-      purchase_units: [{
-        amount: {
-          value: purchaseAmount,
-          currency_code: 'USD',
-        },
-      }],
-    });
-  };
-
-  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
-    setIsProcessing(true);
-    setError(null);
-    try {
-        const response = await fetch('/api/paypal/capture-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                orderID: data.orderID,
-                customerName: name,
-                customerEmail: email,
-                purchasedItems: items.map(item => ({ id: item.id, name: item.name, price: item.price })),
-                totalAmount: finalTotal.toFixed(2)
-            }),
-        });
-
-        const result = await response.json();
-        
-        if (response.ok && result.success) {
-            clearCart();
-            router.push('/checkout/success');
-        } else {
-            throw new Error(result.error || 'Failed to finalize PayPal payment on the server.');
-        }
-    } catch (err: any) {
-        setError(err.message || 'An error occurred while processing your PayPal payment.');
-        setIsProcessing(false); // Allow user to try again
-    }
-  };
-
-  const onPayPalError = (err: any) => {
-    console.error('PayPal Button Error:', err);
-    setError('An error occurred with the PayPal button. Please refresh the page or try another payment method.');
-    setIsProcessing(false);
   };
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
@@ -286,10 +232,28 @@ export default function CheckoutPage() {
                       <PayPalScriptProvider options={{ clientId: paypalClientID, currency: 'USD', intent: 'capture' }}>
                           <PayPalButtons 
                               style={{ layout: "vertical", label: "pay" }}
-                              createOrder={createPayPalOrder}
-                              onApprove={onPayPalApprove}
-                              onError={onPayPalError}
-                              disabled={isProcessing || !isFormValid || finalTotal <= 0}
+                              disabled={!isFormValid || finalTotal <= 0}
+                              // The following functions are placeholders and will need to be implemented
+                              // for the button to be fully functional.
+                              createOrder={(data, actions) => {
+                                  return actions.order.create({
+                                      purchase_units: [{
+                                          amount: {
+                                              value: finalTotal.toFixed(2),
+                                          },
+                                      }],
+                                  });
+                              }}
+                              onApprove={(data, actions) => {
+                                  // This is where you would capture the order
+                                  console.log("Order approved:", data);
+                                  alert("Payment approved! (Note: This is a placeholder.)");
+                                  return Promise.resolve();
+                              }}
+                              onError={(err) => {
+                                  console.error("PayPal Error:", err);
+                                  setError("An error occurred with PayPal. Please try again.");
+                              }}
                           />
                       </PayPalScriptProvider>
                   </div>
