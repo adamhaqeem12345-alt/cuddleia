@@ -67,8 +67,7 @@ export default function AboutPage() {
           <div className="relative aspect-video w-full">
             <Image
               alt="Pastel floral graphics background"
-              data-ai-hint="pastel flowers"
-              src="https://picsum.photos/seed/about/1200/675"
+              src="https://i.postimg.cc/d1fQ3b3w/image.png"
               fill
               className="rounded-2xl object-cover shadow-lg"
             />
@@ -153,8 +152,7 @@ export default function AboutPage() {
                 <div className="relative h-40 w-40 flex-shrink-0">
                   <Image
                     alt="Adam Haqeem"
-                    data-ai-hint="founder portrait"
-                    src="https://picsum.photos/seed/founder/400/400"
+                    src="https://i.postimg.cc/wMP50yL4/image.png"
                     fill
                     className="rounded-full object-cover shadow-lg"
                   />
