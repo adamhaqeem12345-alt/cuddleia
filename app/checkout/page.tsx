@@ -265,6 +265,10 @@ export default function CheckoutPage() {
                               style={{ layout: "vertical", label: "pay" }}
                               disabled={!isFormValid || finalTotal <= 0 || isProcessing}
                               createOrder={(data, actions) => {
+                                  if (finalTotal <= 0) {
+                                    setError("PayPal does not support payments of $0.00. Please use the free download option if available.");
+                                    return Promise.reject(new Error("Amount is zero"));
+                                  }
                                   return actions.order.create({
                                       purchase_units: [{
                                           amount: {
