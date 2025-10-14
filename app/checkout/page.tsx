@@ -112,8 +112,7 @@ export default function CheckoutPage() {
   const createPayPalOrder = (data: CreateOrderData, actions: any) => {
     const purchaseAmount = finalTotal.toFixed(2);
     if (parseFloat(purchaseAmount) <= 0) {
-        // This check is important to prevent PayPal errors on $0.00 orders
-        setError('Your cart total is too low for a PayPal transaction.');
+        setError('Your cart total must be greater than $0.00 for a PayPal transaction.');
         return Promise.reject(new Error('Invalid total for PayPal'));
     }
     
@@ -320,5 +319,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    

@@ -122,5 +122,3 @@ ${itemsString}
         return NextResponse.json({ error: 'Failed to process PayPal payment.', details: errorMessage }, { status: 500 });
     }
 }
-
-    
