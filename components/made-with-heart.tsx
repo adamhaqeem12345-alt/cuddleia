@@ -13,8 +13,9 @@ export function MadeWithHeart() {
                 <AnimateIn>
                 <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
                     <Image
-                    src="https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png"
+                    src="https://picsum.photos/seed/heart/800/600"
                     alt="Founder of Cuddleia"
+                    data-ai-hint="desk flatlay"
                     fill
                     className="object-cover"
                     />

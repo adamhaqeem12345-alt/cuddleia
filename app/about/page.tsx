@@ -68,7 +68,7 @@ export default function AboutPage() {
             <Image
               alt="Pastel floral graphics background"
               data-ai-hint="pastel flowers"
-              src="https://i.postimg.cc/0rg91k8k/IMG-0426.png"
+              src="https://picsum.photos/seed/about/1200/675"
               fill
               className="rounded-2xl object-cover shadow-lg"
             />
@@ -153,7 +153,8 @@ export default function AboutPage() {
                 <div className="relative h-40 w-40 flex-shrink-0">
                   <Image
                     alt="Adam Haqeem"
-                    src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png"
+                    data-ai-hint="founder portrait"
+                    src="https://picsum.photos/seed/founder/400/400"
                     fill
                     className="rounded-full object-cover shadow-lg"
                   />
