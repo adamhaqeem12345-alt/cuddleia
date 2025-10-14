@@ -114,7 +114,11 @@ export default function ProductDetailPage({ params }: Props) {
                             </div>
                         </div>
                     </div>
-                     <FreeDownloadDialog product={product} />
+                    {product.price > 0 ? (
+                        <AddToCartButton product={product} />
+                    ) : (
+                        <FreeDownloadDialog product={product} />
+                    )}
                 </div>
             </div>
           </AnimateIn>

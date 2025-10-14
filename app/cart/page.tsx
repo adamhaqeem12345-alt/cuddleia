@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/lib/cart';
@@ -23,7 +24,7 @@ export default function CartPage() {
                 Your Cart
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                Review your items.
+                Review your items and proceed to checkout.
               </p>
             </div>
           </AnimateIn>
@@ -71,9 +72,17 @@ export default function CartPage() {
                             <span>Subtotal</span>
                              <ProductPrice price={subtotal} />
                         </div>
-                        <p className="text-sm text-muted-foreground mb-6">All items are currently free.</p>
+                        <p className="text-sm text-muted-foreground mb-6">Taxes and shipping calculated at checkout.</p>
                         
-                        <p className="text-center text-muted-foreground">Free items can be downloaded directly from the product page.</p>
+                        {hasPaidItems ? (
+                            <Button asChild size="lg" className="w-full font-bold">
+                                <Link href="/checkout">Proceed to Checkout</Link>
+                            </Button>
+                        ) : (
+                            <>
+                                <p className="text-center text-muted-foreground">Free items can be downloaded directly from the product page.</p>
+                            </>
+                        )}
                        
                         <div className="mt-6">
                              <Button asChild variant="ghost" className="w-full">

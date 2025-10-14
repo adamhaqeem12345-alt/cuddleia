@@ -1,8 +1,9 @@
+
 'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Download, Info } from 'lucide-react';
+import { Download, Info, ShoppingCart } from 'lucide-react';
 import {
   Card
 } from './ui/card';
@@ -11,6 +12,7 @@ import { ProductPrice } from './product-price';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { FreeDownloadDialog } from './free-download-dialog';
+import { AddToCartButton } from './add-to-cart-button';
 
 interface ProductCardProps {
     product: Product;
@@ -22,7 +24,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/products/${product.id}`} className="block p-0">
             <div className={cn(
                 "relative w-full overflow-hidden",
-                product.category === 'Wallpapers' ? 'aspect-[4/3]' : 'aspect-[3/or]'
+                product.category === 'Wallpapers' ? 'aspect-[9/16]' : 'aspect-[3/4]'
             )}>
                 <Image
                     src={product.imageUrl}
@@ -52,7 +54,11 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
             </div>
             <div className="pt-6">
-                <FreeDownloadDialog product={product} size="rounded" className="w-full" />
+                {product.price > 0 ? (
+                    <AddToCartButton product={product} size="rounded" className="w-full" />
+                ) : (
+                    <FreeDownloadDialog product={product} size="rounded" className="w-full" />
+                )}
             </div>
         </div>
     </Card>
