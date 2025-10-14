@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { PayPalButtons, PayPalScriptProvider } from '@paypal/react-paypal-js';
 
 export default function CheckoutPage() {
-  const { items, subtotal } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -106,6 +106,37 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
+  
+  const handlePayPalApprove = async (data: any, actions: any) => {
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/paypal/capture-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+              orderID: data.orderID,
+              customerName: name,
+              customerEmail: email,
+              purchasedItems: items,
+              totalAmount: finalTotal.toFixed(2),
+          }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+          throw new Error(result.error || 'Failed to capture PayPal order.');
+      }
+      
+      clearCart();
+      router.push('/checkout/success');
+
+    } catch (err: any) {
+        setError(err.message || "An error occurred during the PayPal transaction.");
+        setIsProcessing(false);
+    }
+  }
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
     return (
@@ -232,9 +263,7 @@ export default function CheckoutPage() {
                       <PayPalScriptProvider options={{ clientId: paypalClientID, currency: 'USD', intent: 'capture' }}>
                           <PayPalButtons 
                               style={{ layout: "vertical", label: "pay" }}
-                              disabled={!isFormValid || finalTotal <= 0}
-                              // The following functions are placeholders and will need to be implemented
-                              // for the button to be fully functional.
+                              disabled={!isFormValid || finalTotal <= 0 || isProcessing}
                               createOrder={(data, actions) => {
                                   return actions.order.create({
                                       purchase_units: [{
@@ -244,12 +273,7 @@ export default function CheckoutPage() {
                                       }],
                                   });
                               }}
-                              onApprove={(data, actions) => {
-                                  // This is where you would capture the order
-                                  console.log("Order approved:", data);
-                                  alert("Payment approved! (Note: This is a placeholder.)");
-                                  return Promise.resolve();
-                              }}
+                              onApprove={handlePayPalApprove}
                               onError={(err) => {
                                   console.error("PayPal Error:", err);
                                   setError("An error occurred with PayPal. Please try again.");
