@@ -3,19 +3,13 @@
 import { useCart } from '@/lib/cart';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
-import Link from 'next/link';
-import {
-  Loader2,
-  Tag,
-} from 'lucide-react';
+import { Loader2, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import dynamic from 'next/dynamic';
 import { v4 as uuidv4 } from 'uuid';
-import { ProductPrice } from '@/components/product-price';
-
 
 // Dynamically import the PayPal component with SSR disabled
 const PaypalCheckout = dynamic(
@@ -32,7 +26,7 @@ const PaypalCheckout = dynamic(
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal } = useCart();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
