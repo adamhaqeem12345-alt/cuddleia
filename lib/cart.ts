@@ -12,6 +12,10 @@ interface CartState {
   subtotal: number;
 }
 
+// Function to calculate subtotal
+const calculateSubtotal = (items: Product[]) => {
+  return items.reduce((total, item) => total + item.price, 0);
+};
 
 export const useCart = create<CartState>()(
   persist(
@@ -27,15 +31,15 @@ export const useCart = create<CartState>()(
                  currentItems.push(product);
             }
             
-            // Since all products are free, subtotal will always be 0
-            return { items: currentItems, subtotal: 0 };
+            const newSubtotal = calculateSubtotal(currentItems);
+            return { items: currentItems, subtotal: newSubtotal };
         });
       },
       removeFromCart: (productId) => {
         set((state) => {
             const newItems = state.items.filter((item) => item.id !== productId);
-            // Since all products are free, subtotal will always be 0
-            return { items: newItems, subtotal: 0 };
+            const newSubtotal = calculateSubtotal(newItems);
+            return { items: newItems, subtotal: newSubtotal };
         });
       },
       clearCart: () => {
@@ -47,8 +51,8 @@ export const useCart = create<CartState>()(
       storage: createJSONStorage(() => localStorage),
        onRehydrateStorage: () => (state) => {
         if (state) {
-            // Recalculate subtotal on rehydration, just in case.
-            state.subtotal = 0;
+            // Recalculate subtotal on rehydration to ensure it's always correct
+            state.subtotal = calculateSubtotal(state.items);
         }
       }
     }

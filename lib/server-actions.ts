@@ -49,7 +49,7 @@ export async function addOrderToSheet(data: SheetData): Promise<{ success: boole
       customerName,
       customerEmail,
       products,
-      amount.toFixed(2), // Storing amount as 0.00 for free downloads
+      amount.toFixed(2), // Storing amount
     ];
     
     await sheets.spreadsheets.values.append({

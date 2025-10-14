@@ -23,7 +23,7 @@ export default function CartPage() {
                 Your Cart
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                Review your items.
+                Review your items and proceed to checkout.
               </p>
             </div>
           </AnimateIn>
@@ -69,11 +69,17 @@ export default function CartPage() {
                         <h2 className="font-headline text-2xl border-b pb-4 font-bold">Order Summary</h2>
                         <div className="flex justify-between items-center font-bold text-lg my-4">
                             <span>Subtotal</span>
-                             <ProductPrice price={subtotal} />
+                             <ProductPrice price={subtotal} simple={true} />
                         </div>
-                        <p className="text-sm text-muted-foreground mb-6">This is a summary of the items in your cart.</p>
+                        <p className="text-sm text-muted-foreground mb-6">Shipping and taxes will be calculated at checkout if applicable.</p>
                         
-                        <p className="text-center text-muted-foreground">All items are free and can be downloaded directly from their product page.</p>
+                        {hasPaidItems ? (
+                             <Button asChild size="lg" className="w-full font-bold">
+                                <Link href="/checkout">Proceed to Checkout</Link>
+                            </Button>
+                        ) : (
+                            <p className="text-center text-muted-foreground">All items are free and can be downloaded directly from their product page.</p>
+                        )}
                        
                         <div className="mt-6">
                              <Button asChild variant="ghost" className="w-full">
