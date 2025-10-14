@@ -283,21 +283,15 @@ export default function CheckoutPage() {
 
                   <div>
                      <p className="text-muted-foreground mb-4 text-sm font-semibold">Pay with PayPal or Credit/Debit Card</p>
-                    {paypalClientID ? (
-                        <PayPalScriptProvider options={{ clientId: paypalClientID, currency: 'USD', intent: 'capture' }}>
-                            <PayPalButtons 
-                                style={{ layout: "vertical", label: "pay" }}
-                                createOrder={createPayPalOrder}
-                                onApprove={onPayPalApprove}
-                                onError={onPayPalError}
-                                disabled={isProcessing || !isFormValid || finalTotal <= 0}
-                            />
-                        </PayPalScriptProvider>
-                    ) : (
-                        <div className="text-center p-4 bg-muted rounded-md">
-                           <p className="text-muted-foreground text-sm">PayPal is currently unavailable.</p>
-                        </div>
-                    )}
+                      <PayPalScriptProvider options={{ clientId: paypalClientID, currency: 'USD', intent: 'capture' }}>
+                          <PayPalButtons 
+                              style={{ layout: "vertical", label: "pay" }}
+                              createOrder={createPayPalOrder}
+                              onApprove={onPayPalApprove}
+                              onError={onPayPalError}
+                              disabled={isProcessing || !isFormValid || finalTotal <= 0}
+                          />
+                      </PayPalScriptProvider>
                   </div>
                 </div>
               )}
@@ -318,5 +312,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
