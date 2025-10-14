@@ -1,4 +1,3 @@
-
 'use client';
 
 // Secrets are in .env.local — do not hardcode here.
