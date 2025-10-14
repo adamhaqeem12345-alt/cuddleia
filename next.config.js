@@ -17,7 +17,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups', // This is a more permissive policy that allows popups.
+            value: 'same-origin-allow-popups',
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
@@ -30,3 +30,5 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
+    

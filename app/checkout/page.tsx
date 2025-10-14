@@ -10,10 +10,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalScriptProvider, PayPalButtons, type OnApproveData, type CreateOrderData } from '@paypal/react-paypal-js';
 
 // Get the PayPal Client ID from environment variables. It's safe to expose this.
-// Secrets are in .env.local — do not hardcode here.
 const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
 
@@ -297,11 +296,11 @@ export default function CheckoutPage() {
                           <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
                               <PayPalButtons
                                   style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                                  disabled={!isFormValid || finalTotal <= 0}
+                                  disabled={!isFormValid || finalTotal <= 0 || isProcessing}
                                   createOrder={createOrder}
                                   onApprove={onApprove}
                                   onError={onError}
-                                  forceReRender={[finalTotal]} // Re-render buttons if the total amount changes
+                                  forceReRender={[finalTotal, name, email]} // Re-render buttons if these details change
                               />
                           </PayPalScriptProvider>
                       ) : (
@@ -329,3 +328,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
