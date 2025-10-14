@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { products, Product } from '@/lib/products';
@@ -122,3 +121,5 @@ ${itemsString}
         return NextResponse.json({ error: 'Failed to process PayPal payment.', details: errorMessage }, { status: 500 });
     }
 }
+
+    
