@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -12,13 +11,13 @@ import { ProductPrice } from '@/components/product-price';
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 
 // Force this page to be dynamically rendered on the server
 export const dynamic = 'force-dynamic';
 
 // Dynamically import the PayPal component with SSR disabled
-const PaypalCheckout = dynamic(() => import('@/components/paypal-checkout').then(mod => mod.PaypalCheckout), {
+const PaypalCheckout = dynamicImport(() => import('@/components/paypal-checkout').then(mod => mod.PaypalCheckout), {
   ssr: false,
   loading: () => <div className="flex justify-center items-center p-4"><Loader2 className="h-8 w-8 animate-spin" /></div>,
 });
@@ -270,7 +269,7 @@ export default function CheckoutPage() {
                                 )}
 
                                 {!isProcessing && finalTotal === 0 && (
-                                    <p className="text-center p-4 bg-secondary rounded-lg">Your order is free. Please proceed to download from the product pages.</p>
+                                    <p className="text-center p-4 bg-secondary rounded-lg">Your order is free. Please click the button below to confirm.</p>
                                 )}
                             </div>
                         </div>
