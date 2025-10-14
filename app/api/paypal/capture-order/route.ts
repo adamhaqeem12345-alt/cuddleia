@@ -1,8 +1,9 @@
+
 // Secrets are in .env.local — do not hardcode here.
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendProductEmail, addOrderToSheet, sendTelegramNotification } from '@/lib/server-actions';
-import { Product, products } from '@/lib/products';
+import { Product } from '@/lib/products';
 
 const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
@@ -142,5 +143,3 @@ ${itemsString}
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
-
-    

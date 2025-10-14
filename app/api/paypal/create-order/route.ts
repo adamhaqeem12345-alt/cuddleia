@@ -1,3 +1,4 @@
+
 // Secrets are in .env.local — do not hardcode here.
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -95,5 +96,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
-
-    

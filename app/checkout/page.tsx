@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useCart } from '@/lib/cart';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Tags, Info } from 'lucide-react';
+import { ArrowLeft, Loader2, Tags } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
@@ -10,10 +11,20 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { PayPalScriptProvider, PayPalButtons, type OnApproveData, type CreateOrderData } from '@paypal/react-paypal-js';
+import dynamic from 'next/dynamic';
 
-// Get the PayPal Client ID from environment variables. It's safe to expose this.
-const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+// Dynamically import the PayPal component with SSR disabled
+const PaypalCheckout = dynamic(
+  () => import('@/components/paypal-checkout').then((mod) => mod.PaypalCheckout),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="flex justify-center items-center h-[52px]">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    )
+  }
+);
 
 
 export default function CheckoutPage() {
@@ -103,75 +114,6 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-  
-    // This function is called when the user clicks the PayPal button.
-    const createOrder = async (data: CreateOrderData) => {
-        setIsProcessing(true);
-        setError(null);
-        try {
-            const response = await fetch('/api/paypal/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    total: finalTotal.toFixed(2),
-                }),
-            });
-            const order = await response.json();
-            if (response.ok && order.id) {
-                return order.id;
-            } else {
-                throw new Error(order.error || 'Failed to create PayPal order.');
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
-            setError(message);
-            setIsProcessing(false);
-            // It's important to return a rejected promise to the PayPal SDK
-            return Promise.reject(err);
-        }
-    };
-    
-    // This function is called after the user approves the payment on PayPal.
-    const onApprove = async (data: OnApproveData) => {
-        try {
-            const response = await fetch('/api/paypal/capture-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderID: data.orderID,
-                    customerName: name,
-                    customerEmail: email,
-                    items: items,
-                }),
-            });
-    
-            const details = await response.json();
-    
-            if (response.ok && details.success) {
-                clearCart();
-                router.push('/checkout/success');
-            } else {
-                throw new Error(details.error || 'Failed to capture payment.');
-            }
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
-            setError(message);
-        } finally {
-            // Keep isProcessing true on success to allow for redirection
-            // but set to false on error to allow user to retry.
-            if (error) {
-                setIsProcessing(false);
-            }
-        }
-    };
-
-    // This function handles errors from the PayPal button.
-    const onError = (err: any) => {
-        console.error("PayPal button error:", err);
-        setError("An error occurred with the PayPal transaction. Please try again or use a different payment method.");
-        setIsProcessing(false);
-    };
-
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
     return (
@@ -292,22 +234,17 @@ export default function CheckoutPage() {
                       </div>
                     <div>
                       <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers (Credit/Debit Card, PayPal)</p>
-                      {paypalClientID ? (
-                          <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
-                              <PayPalButtons
-                                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                                  disabled={!isFormValid || finalTotal <= 0 || isProcessing}
-                                  createOrder={createOrder}
-                                  onApprove={onApprove}
-                                  onError={onError}
-                                  forceReRender={[finalTotal, name, email]} // Re-render buttons if these details change
-                              />
-                          </PayPalScriptProvider>
-                      ) : (
-                          <div className="bg-muted/50 p-4 rounded-lg text-center">
-                              <p className="text-muted-foreground text-sm">International payment is currently unavailable. We are working to restore it.</p>
-                          </div>
-                      )}
+                      <PaypalCheckout 
+                        isFormValid={isFormValid}
+                        isProcessing={isProcessing}
+                        setIsProcessing={setIsProcessing}
+                        setError={setError}
+                        finalTotal={finalTotal}
+                        customerEmail={email}
+                        customerName={name}
+                        items={items}
+                        clearCart={clearCart}
+                      />
                     </div>
                   </div>
               </div>
@@ -328,5 +265,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
