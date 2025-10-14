@@ -1,9 +1,44 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { captureOrder, generateAccessToken } from '@/lib/paypal';
-import { products, Product } from '@/lib/products';
 import { z } from 'zod';
+import { products, Product } from '@/lib/products';
 import { sendProductEmail, addOrderToSheet, sendTelegramNotification } from '@/lib/server-actions';
+
+const PAYPAL_API_BASE = process.env.NODE_ENV === 'production' 
+  ? 'https://api-m.paypal.com' 
+  : 'https://api-m.sandbox.paypal.com';
+
+const CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+
+async function generateAccessToken() {
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+        throw new Error('MISSING_API_CREDENTIALS');
+    }
+    const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
+    const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+        method: 'POST',
+        body: 'grant_type=client_credentials',
+        headers: { 'Authorization': `Basic ${auth}` },
+    });
+    const data = await response.json();
+    return data.access_token;
+}
+
+async function captureOrder(accessToken: string, orderID: string) {
+    const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderID}/capture`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+        },
+    });
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`Failed to capture PayPal order. Status: ${response.status}. Body: ${errorBody}`);
+    }
+    return response.json();
+}
 
 const captureRequestSchema = z.object({
   orderID: z.string(),
@@ -14,7 +49,7 @@ const captureRequestSchema = z.object({
       name: z.string(),
       price: z.number(),
   })),
-  totalAmount: z.string(), // The final total amount as a string
+  totalAmount: z.string(),
 });
 
 async function getProductsFromIds(itemIds: string[]): Promise<Product[]> {
@@ -24,7 +59,6 @@ async function getProductsFromIds(itemIds: string[]): Promise<Product[]> {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-
         const validation = captureRequestSchema.safeParse(body);
 
         if (!validation.success) {
@@ -34,11 +68,9 @@ export async function POST(req: NextRequest) {
         
         const { orderID, customerName, customerEmail, purchasedItems, totalAmount } = validation.data;
 
-        // 1. Capture the order with PayPal
         const accessToken = await generateAccessToken();
         const captureData = await captureOrder(accessToken, orderID);
 
-        // Check if payment was successfully completed
         if (captureData.status !== 'COMPLETED') {
             console.error(`[PayPal Capture] Order ${orderID} not completed. Status: ${captureData.status}`);
             return NextResponse.json({ error: 'Payment could not be completed.' }, { status: 400 });
@@ -46,7 +78,6 @@ export async function POST(req: NextRequest) {
         
         console.log(`[PayPal Capture] Successfully captured order ${orderID} for ${customerName}.`);
 
-        // 2. Fulfill the order (send email, add to sheet, etc.)
         const itemsString = purchasedItems.map(item => `  - ${item.name}`).join('\n');
         const telegramMessage = `
 🎉 *New PayPal Sale!* 🎉
@@ -64,11 +95,10 @@ ${itemsString}
 
         if(purchasedProducts.length === 0) {
             console.error(`[PayPal Capture] CRITICAL: No products found for order ${orderID} after successful payment.`);
-            // Still return success to the client, but log this severe issue.
             return NextResponse.json({ success: true, message: 'Payment captured, but product fulfillment failed internally.' });
         }
 
-        const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
+        await Promise.allSettled([
             sendProductEmail({
                 to: customerEmail,
                 subject: 'Your Cuddleia Order Confirmation',
@@ -83,21 +113,6 @@ ${itemsString}
             }),
             sendTelegramNotification({ message: telegramMessage }),
         ]);
-        
-        if (emailResult.status === 'rejected' || (emailResult.status === 'fulfilled' && !emailResult.value.success)) {
-            const errorReason = emailResult.status === 'rejected' ? emailResult.reason : emailResult.value.error;
-            console.error(`[PayPal Capture] CRITICAL: FAILED TO SEND EMAIL for order ${orderID}. Details:`, errorReason);
-        }
-        
-        if (sheetResult.status === 'rejected' || (sheetResult.status === 'fulfilled' && !sheetResult.value.success)) {
-            const errorReason = sheetResult.status === 'rejected' ? sheetResult.reason : sheetResult.value.error;
-            console.error(`[PayPal Capture] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${orderID}. Details:`, errorReason);
-        }
-
-        if (telegramResult.status === 'rejected' || (telegramResult.status === 'fulfilled' && !telegramResult.value.success)) {
-             const errorReason = telegramResult.status === 'rejected' ? telegramResult.reason : telegramResult.value.error;
-            console.error(`[PayPal Capture] FAILED TO SEND TELEGRAM NOTIFICATION for order ${orderID}. Details:`, errorReason);
-        }
 
         return NextResponse.json({ success: true, message: 'Payment captured and order processed.' });
 
@@ -107,3 +122,5 @@ ${itemsString}
         return NextResponse.json({ error: 'Failed to process PayPal payment.', details: errorMessage }, { status: 500 });
     }
 }
+
+    

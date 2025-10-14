@@ -11,8 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { PayPalButtons, PayPalScriptProvider, ReactPayPalScriptOptions, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
-
+import { PayPalButtons, PayPalScriptProvider, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -25,20 +24,13 @@ export default function CheckoutPage() {
   // Form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [formError, setFormError] = useState('');
-
+  
   // Discount state
   const [discountCode, setDiscountCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [discountMessage, setDiscountMessage] = useState('');
   
   const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
-
-  const paypalScriptOptions: ReactPayPalScriptOptions = {
-    clientId: paypalClientID,
-    currency: 'USD',
-    intent: 'capture',
-  };
 
   useEffect(() => {
     setIsClient(true);
@@ -69,30 +61,15 @@ export default function CheckoutPage() {
   const finalTotal = subtotal - discount;
   const totalMYR = exchangeRate ? finalTotal * exchangeRate : null;
 
-
   useEffect(() => {
     // This effect should only run if the page is not in a processing state.
     if (isClient && items.length === 0 && !isProcessing) {
       router.push('/products');
     }
   }, [items, router, isClient, isProcessing]);
-
-  const validateForm = () => {
-    if (!name.trim()) {
-      setFormError('Please enter your name.');
-      return false;
-    }
-    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) {
-      setFormError('Please enter a valid email address.');
-      return false;
-    }
-    setFormError('');
-    return true;
-  };
   
   const handleApplyDiscount = () => {
-    // For now, we'll hardcode a single discount code.
-    // In a real app, this would involve an API call to a database.
+    // In a real app, this would involve an API call.
     if (discountCode.toUpperCase() === 'CUDDLE10') {
       const discountAmount = subtotal * 0.10;
       setDiscount(discountAmount);
@@ -103,14 +80,9 @@ export default function CheckoutPage() {
     }
   };
 
-
   const handleToyyibPay = async () => {
-    if (!validateForm()) return;
-
     if (!totalMYR) {
-      setError(
-        'Could not determine the exchange rate. Please try again in a moment.'
-      );
+      setError('Could not determine the exchange rate. Please try again in a moment.');
       return;
     }
     setIsProcessing(true);
@@ -119,16 +91,10 @@ export default function CheckoutPage() {
       const response = await fetch('/api/toyyibpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items,
-          total: totalMYR,
-          customerName: name,
-          customerEmail: email,
-        }),
+        body: JSON.stringify({ items, total: totalMYR, customerName: name, customerEmail: email }),
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        // On successful creation, we clear the cart and redirect.
         clearCart();
         window.location.href = data.paymentUrl;
       } else {
@@ -145,21 +111,19 @@ export default function CheckoutPage() {
   // ----- PayPal Logic -----
   const createPayPalOrder = (data: CreateOrderData, actions: any) => {
     const purchaseAmount = finalTotal.toFixed(2);
-    // Basic validation to prevent creating a $0.00 order
     if (parseFloat(purchaseAmount) <= 0) {
+        // This check is important to prevent PayPal errors on $0.00 orders
         setError('Your cart total is too low for a PayPal transaction.');
         return Promise.reject(new Error('Invalid total for PayPal'));
     }
     
     return actions.order.create({
-      purchase_units: [
-        {
-          amount: {
-            value: purchaseAmount,
-            currency_code: 'USD',
-          },
+      purchase_units: [{
+        amount: {
+          value: purchaseAmount,
+          currency_code: 'USD',
         },
-      ],
+      }],
     });
   };
 
@@ -187,26 +151,16 @@ export default function CheckoutPage() {
         } else {
             throw new Error(result.error || 'Failed to finalize PayPal payment on the server.');
         }
-
     } catch (err: any) {
         setError(err.message || 'An error occurred while processing your PayPal payment.');
-        setIsProcessing(false);
+        setIsProcessing(false); // Allow user to try again
     }
-};
+  };
 
   const onPayPalError = (err: any) => {
     console.error('PayPal Button Error:', err);
     setError('An error occurred with the PayPal button. Please refresh the page or try another payment method.');
     setIsProcessing(false);
-  };
-  
-  const handlePayPalClick = (data: Record<string, unknown>, actions: { reject: () => Promise<void>; resolve: () => Promise<void> }) => {
-    if (!validateForm()) {
-      // The form is invalid, so we reject the payment initiation.
-      return actions.reject();
-    }
-    // The form is valid, so we resolve and allow the payment to proceed.
-    return actions.resolve();
   };
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
@@ -241,42 +195,24 @@ export default function CheckoutPage() {
           <AnimateIn>
             <div className="bg-card p-8 rounded-2xl shadow-lg space-y-8">
               <div>
-                <h2 className="font-headline text-2xl border-b pb-4 mb-6 font-bold">
-                  Order Summary
-                </h2>
-                
+                <h2 className="font-headline text-2xl border-b pb-4 mb-6 font-bold">Order Summary</h2>
                 <div className="pb-6 border-b">
                   <h3 className="font-headline text-lg mb-2 flex items-center gap-2 font-bold">
-                    <Tags className="h-5 w-5"/>
-                    Have a discount code?
+                    <Tags className="h-5 w-5"/> Have a discount code?
                   </h3>
-                   <p className="text-sm text-muted-foreground mb-4">Please apply your discount code (if any) before entering your name and email to ensure the correct total is calculated.</p>
+                  <p className="text-sm text-muted-foreground mb-4">Please apply your discount code (if any) before entering your name and email to ensure the correct total is calculated.</p>
                   <div className="flex gap-2">
-                      <Input 
-                        type="text"
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value)}
-                        className="flex-grow"
-                        placeholder='Enter code here'
-                      />
+                      <Input type="text" value={discountCode} onChange={(e) => setDiscountCode(e.target.value)} className="flex-grow" placeholder='Enter code here' />
                       <Button onClick={handleApplyDiscount} disabled={!discountCode}>Apply</Button>
                   </div>
-                  {discountMessage && (
-                    <p className={`text-sm mt-2 ${discount > 0 ? 'text-green-600' : 'text-destructive'}`}>{discountMessage}</p>
-                  )}
+                  {discountMessage && <p className={`text-sm mt-2 ${discount > 0 ? 'text-green-600' : 'text-destructive'}`}>{discountMessage}</p>}
                 </div>
-
                 <div className="space-y-4 mb-6 pt-6">
                   {items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center"
-                    >
+                    <div key={item.id} className="flex justify-between items-center">
                       <div>
                         <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Quantity: 1
-                        </p>
+                        <p className="text-sm text-muted-foreground">Quantity: 1</p>
                       </div>
                       <ProductPrice price={item.price} />
                     </div>
@@ -303,49 +239,22 @@ export default function CheckoutPage() {
           </AnimateIn>
           <AnimateIn delay={150}>
             <div className="bg-card p-8 rounded-2xl shadow-lg">
-              <h2 className="font-headline text-2xl mb-6 font-bold">
-                Your Details
-              </h2>
+              <h2 className="font-headline text-2xl mb-6 font-bold">Your Details</h2>
               <div className="space-y-4 mb-8">
                 <div>
                   <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="First and Last Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
+                  <Input id="name" type="text" placeholder="First and Last Name" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Your email for product delivery"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Your digital products will be sent to this email address.
-                  </p>
+                  <Input id="email" type="email" placeholder="Your email for product delivery" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  <p className="text-xs text-muted-foreground mt-2">Your digital products will be sent to this email address.</p>
                 </div>
-                {formError && (
-                  <p className="text-sm text-destructive">{formError}</p>
-                )}
               </div>
 
-              <h2 className="font-headline text-2xl mb-6 pt-6 border-t font-bold">
-                Payment Method
-              </h2>
-
+              <h2 className="font-headline text-2xl mb-6 pt-6 border-t font-bold">Payment Method</h2>
               {error && (
-                <div
-                  className="bg-destructive/10 border-l-4 border-destructive text-destructive-foreground p-4 mb-6 rounded-md"
-                  role="alert"
-                >
+                <div className="bg-destructive/10 border-l-4 border-destructive text-destructive-foreground p-4 mb-6 rounded-md" role="alert">
                   <p className="font-bold">Payment Error</p>
                   <p>{error}</p>
                 </div>
@@ -355,35 +264,17 @@ export default function CheckoutPage() {
                 <div className="text-center p-8">
                   <div className="flex items-center justify-center gap-4">
                     <Loader2 className="h-6 w-6 animate-spin" />
-                    <span className="font-semibold text-muted-foreground">
-                      Processing your payment...
-                    </span>
+                    <span className="font-semibold text-muted-foreground">Processing your payment...</span>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-6">
                   <div>
-                    <p className="text-muted-foreground mb-4 text-sm font-semibold">
-                      Payment via Malaysian Online Banking (FPX)
-                    </p>
-                    <Button
-                      onClick={handleToyyibPay}
-                      disabled={isProcessing || !totalMYR || !isFormValid}
-                      size="lg"
-                      className="w-full font-bold"
-                    >
-                      {totalMYR ? (
-                        'Pay with ToyyibPay'
-                      ) : (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
-                          Loading Rate
-                        </>
-                      )}
+                    <p className="text-muted-foreground mb-4 text-sm font-semibold">Payment via Malaysian Online Banking (FPX)</p>
+                    <Button onClick={handleToyyibPay} disabled={isProcessing || !totalMYR || !isFormValid} size="lg" className="w-full font-bold">
+                      {totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Rate</>}
                     </Button>
-                     <p className="text-xs text-muted-foreground mt-2 text-center">
-                        You will be redirected to complete your payment.
-                     </p>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">You will be redirected to complete your payment.</p>
                   </div>
                   
                   <div className="relative flex py-5 items-center">
@@ -393,17 +284,14 @@ export default function CheckoutPage() {
                   </div>
 
                   <div>
-                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
-                      Pay with PayPal or Credit/Debit Card
-                    </p>
+                     <p className="text-muted-foreground mb-4 text-sm font-semibold">Pay with PayPal or Credit/Debit Card</p>
                     {paypalClientID ? (
-                        <PayPalScriptProvider options={paypalScriptOptions}>
+                        <PayPalScriptProvider options={{ clientId: paypalClientID, currency: 'USD', intent: 'capture' }}>
                             <PayPalButtons 
                                 style={{ layout: "vertical", label: "pay" }}
                                 createOrder={createPayPalOrder}
                                 onApprove={onPayPalApprove}
                                 onError={onPayPalError}
-                                onClick={handlePayPalClick}
                                 disabled={isProcessing || !isFormValid || finalTotal <= 0}
                             />
                         </PayPalScriptProvider>
@@ -413,7 +301,6 @@ export default function CheckoutPage() {
                         </div>
                     )}
                   </div>
-
                 </div>
               )}
             </div>
@@ -433,3 +320,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
