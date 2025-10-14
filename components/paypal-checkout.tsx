@@ -3,7 +3,6 @@
 
 import { PayPalButtons, PayPalScriptProvider, OnApproveData, CreateOrderData } from "@paypal/react-paypal-js";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Product } from "@/lib/products";
 
@@ -17,7 +16,6 @@ interface PaypalCheckoutProps {
 }
 
 export function PaypalCheckout({ total, items, customerName, customerEmail, orderId, disabled = false }: PaypalCheckoutProps) {
-    const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
@@ -28,7 +26,6 @@ export function PaypalCheckout({ total, items, customerName, customerEmail, orde
     }
 
     const createOrder = async (data: CreateOrderData) => {
-        setIsProcessing(true);
         setError(null);
         try {
             const response = await fetch('/api/paypal/create-order', {
@@ -37,7 +34,7 @@ export function PaypalCheckout({ total, items, customerName, customerEmail, orde
                 body: JSON.stringify({ 
                     total: total.toFixed(2),
                     items,
-                    orderId, // Pass the unique order ID
+                    orderId,
                 }),
             });
             const order = await response.json();
@@ -50,8 +47,7 @@ export function PaypalCheckout({ total, items, customerName, customerEmail, orde
         } catch (err: any) {
             console.error("Create Order Error:", err);
             setError(err.message);
-            setIsProcessing(false);
-            return ''; // Return an empty string on failure
+            throw err; // Re-throw to let PayPal SDK handle it
         }
     };
 
@@ -79,40 +75,24 @@ export function PaypalCheckout({ total, items, customerName, customerEmail, orde
         } catch (err: any) {
             console.error("Capture Order Error:", err);
             setError(err.message);
-        } finally {
-            setIsProcessing(false);
+            throw err; // Re-throw to let PayPal SDK handle it
         }
     };
 
     const onError = (err: any) => {
         console.error("PayPal Button Error:", err);
-        setError("An error occurred with the PayPal transaction. Please try again.");
-        setIsProcessing(false);
+        setError("An error occurred with the PayPal transaction. Please try again or use a different payment method.");
     };
-
-    const onCancel = () => {
-        setIsProcessing(false);
-    }
-    
-    if(disabled) {
-        return (
-             <div className="w-full h-14 bg-gray-200 rounded-lg flex items-center justify-center text-gray-500 font-semibold cursor-not-allowed">
-                Enter your details first
-            </div>
-        )
-    }
 
     return (
         <PayPalScriptProvider options={{ clientId: PAYPAL_CLIENT_ID, currency: "USD", intent: "capture" }}>
-             {isProcessing && <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-lg"><Loader2 className="h-8 w-8 animate-spin" /></div>}
             {error && <p className="text-destructive text-sm text-center mb-2">{error}</p>}
             <PayPalButtons
                 style={{ layout: "vertical", color: "blue", shape: "rect", label: "pay" }}
                 createOrder={createOrder}
                 onApprove={onApprove}
                 onError={onError}
-                onCancel={onCancel}
-                disabled={disabled || isProcessing}
+                disabled={disabled}
             />
         </PayPalScriptProvider>
     );
