@@ -118,7 +118,7 @@ export default function CheckoutPage() {
                 }),
             });
             const order = await response.json();
-            if (order.id) {
+            if (response.ok && order.id) {
                 return order.id;
             } else {
                 throw new Error(order.error || 'Failed to create PayPal order.');
@@ -127,7 +127,8 @@ export default function CheckoutPage() {
             const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
             setError(message);
             setIsProcessing(false);
-            throw err; // Propagate error to PayPal SDK
+            // It's important to return a rejected promise to the PayPal SDK
+            return Promise.reject(err);
         }
     };
     
@@ -157,14 +158,18 @@ export default function CheckoutPage() {
             const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
             setError(message);
         } finally {
-            setIsProcessing(false);
+            // Keep isProcessing true on success to allow for redirection
+            // but set to false on error to allow user to retry.
+            if (error) {
+                setIsProcessing(false);
+            }
         }
     };
 
     // This function handles errors from the PayPal button.
     const onError = (err: any) => {
         console.error("PayPal button error:", err);
-        setError("An error occurred with PayPal. Please try again or use a different payment method.");
+        setError("An error occurred with the PayPal transaction. Please try again or use a different payment method.");
         setIsProcessing(false);
     };
 
@@ -244,64 +249,69 @@ export default function CheckoutPage() {
             </div>
           </AnimateIn>
           <AnimateIn delay={150}>
-            <div className="bg-card p-8 rounded-2xl shadow-lg">
-              <h2 className="font-headline text-2xl mb-6 font-bold">Your Details</h2>
-              <div className="space-y-4 mb-8">
-                <div>
-                  <Label htmlFor="name">Name</Label>
-                  <Input id="name" type="text" placeholder="First and Last Name" value={name} onChange={(e) => setName(e.target.value)} required />
-                </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="Your email for product delivery" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                  <p className="text-xs text-muted-foreground mt-2">Your digital products will be sent to this email address.</p>
-                </div>
-              </div>
-
-              <h2 className="font-headline text-2xl mb-6 pt-6 border-t font-bold">Payment Method</h2>
-              {error && (
-                <div className="bg-destructive/10 border-l-4 border-destructive text-destructive-foreground p-4 mb-6 rounded-md" role="alert">
-                  <p className="font-bold">Payment Error</p>
-                  <p>{error}</p>
+            <div className="bg-card p-8 rounded-2xl shadow-lg relative">
+               {isProcessing && (
+                 <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center rounded-2xl z-20">
+                    <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                    <p className="font-bold text-lg">Processing your payment...</p>
+                    <p className="text-muted-foreground">Please do not close this window.</p>
                 </div>
               )}
-                <div className="space-y-6">
-                  <div className="relative">
-                    <p className="text-muted-foreground mb-4 text-sm font-semibold">Payment via Malaysian Online Banking (FPX)</p>
-                    <Button onClick={handleToyyibPay} disabled={isProcessing || !totalMYR || !isFormValid} size="lg" className="w-full font-bold">
-                      {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : (totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Rate</>)}
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-2 text-center">You will be redirected to complete your payment.</p>
-                  </div>
-                    <div className="relative flex items-center my-6">
-                        <div className="flex-grow border-t border-muted"></div>
-                        <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
-                        <div className="flex-grow border-t border-muted"></div>
-                    </div>
+              <div className={isProcessing ? 'blur-sm' : ''}>
+                <h2 className="font-headline text-2xl mb-6 font-bold">Your Details</h2>
+                <div className="space-y-4 mb-8">
                   <div>
-                    <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
-                    {paypalClientID ? (
-                        <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD' }}>
-                            <PayPalButtons
-                                style={{ layout: 'vertical', color: 'blue' }}
-                                disabled={isProcessing || !isFormValid || finalTotal <= 0}
-                                createOrder={createOrder}
-                                onApprove={onApprove}
-                                onError={onError}
-                            />
-                        </PayPalScriptProvider>
-                    ) : (
-                        <div className="bg-muted/50 p-4 rounded-lg text-center">
-                            <p className="text-muted-foreground text-sm">PayPal is currently unavailable. Please try again later.</p>
-                        </div>
-                    )}
-                     {isProcessing && (
-                         <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
-                            <Loader2 className="h-8 w-8 animate-spin" />
-                        </div>
-                    )}
+                    <Label htmlFor="name">Name</Label>
+                    <Input id="name" type="text" placeholder="First and Last Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="Your email for product delivery" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <p className="text-xs text-muted-foreground mt-2">Your digital products will be sent to this email address.</p>
                   </div>
                 </div>
+
+                <h2 className="font-headline text-2xl mb-6 pt-6 border-t font-bold">Payment Method</h2>
+                {error && (
+                  <div className="bg-destructive/10 border-l-4 border-destructive text-destructive-foreground p-4 mb-6 rounded-md" role="alert">
+                    <p className="font-bold">Payment Error</p>
+                    <p>{error}</p>
+                  </div>
+                )}
+                  <div className="space-y-6">
+                    <div className="relative">
+                      <p className="text-muted-foreground mb-4 text-sm font-semibold">Payment via Malaysian Online Banking (FPX)</p>
+                      <Button onClick={handleToyyibPay} disabled={isProcessing || !totalMYR || !isFormValid} size="lg" className="w-full font-bold">
+                        {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : (totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Rate</>)}
+                      </Button>
+                      <p className="text-xs text-muted-foreground mt-2 text-center">You will be redirected to complete your payment.</p>
+                    </div>
+                      <div className="relative flex items-center my-6">
+                          <div className="flex-grow border-t border-muted"></div>
+                          <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+                          <div className="flex-grow border-t border-muted"></div>
+                      </div>
+                    <div>
+                      <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers (Credit/Debit Card, PayPal)</p>
+                      {paypalClientID ? (
+                          <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD', intent: 'capture' }}>
+                              <PayPalButtons
+                                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                                  disabled={!isFormValid || finalTotal <= 0}
+                                  createOrder={createOrder}
+                                  onApprove={onApprove}
+                                  onError={onError}
+                                  forceReRender={[finalTotal]} // Re-render buttons if the total amount changes
+                              />
+                          </PayPalScriptProvider>
+                      ) : (
+                          <div className="bg-muted/50 p-4 rounded-lg text-center">
+                              <p className="text-muted-foreground text-sm">International payment is currently unavailable. We are working to restore it.</p>
+                          </div>
+                      )}
+                    </div>
+                  </div>
+              </div>
             </div>
           </AnimateIn>
         </div>

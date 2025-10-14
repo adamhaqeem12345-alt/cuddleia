@@ -50,6 +50,12 @@ async function getAccessToken() {
     body: 'grant_type=client_credentials',
   });
 
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`[PayPal Auth] Failed to get access token. Status: ${response.status}. Body: ${errorBody}`);
+    throw new Error('Failed to authenticate with PayPal.');
+  }
+
   const data = await response.json();
   return data.access_token;
 }
@@ -111,12 +117,15 @@ ${itemsString}
             sendTelegramNotification({ message: telegramMessage }),
         ]);
         
-        // You can add more detailed logging for each promise result if needed
+        // Log critical failures for fulfillment.
         if (emailResult.status === 'rejected' || (emailResult.status === 'fulfilled' && !emailResult.value.success)) {
              console.error(`[PayPal Capture] CRITICAL: FAILED TO SEND EMAIL for order ${orderID}.`);
         }
         if (sheetResult.status === 'rejected' || (sheetResult.status === 'fulfilled' && !sheetResult.value.success)) {
             console.error(`[PayPal Capture] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${orderID}.`);
+        }
+        if (telegramResult.status === 'rejected' || (telegramResult.status === 'fulfilled' && !telegramResult.value.success)) {
+            console.error(`[PayPal Capture] FAILED TO SEND TELEGRAM NOTIFICATION for order ${orderID}.`);
         }
 
         return NextResponse.json({ success: true, order: data });

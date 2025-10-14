@@ -29,6 +29,12 @@ async function getAccessToken() {
     body: 'grant_type=client_credentials',
   });
 
+  if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`[PayPal Auth] Failed to get access token. Status: ${response.status}. Body: ${errorBody}`);
+    throw new Error('Failed to authenticate with PayPal.');
+  }
+
   const data = await response.json();
   return data.access_token;
 }
@@ -51,7 +57,7 @@ export async function POST(req: Request) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
-        // It's a good practice to use a new ID for each API call.
+        // It's a good practice to use a new ID for each API call for idempotency.
         'PayPal-Request-Id': `cuddleia-order-${Date.now()}`,
       },
       body: JSON.stringify({
