@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { PayPalButtons, PayPalScriptProvider, ReactPayPalScriptOptions, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+
 
 export default function CheckoutPage() {
   const { items, subtotal, clearCart } = useCart();
@@ -29,6 +31,14 @@ export default function CheckoutPage() {
   const [discountCode, setDiscountCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [discountMessage, setDiscountMessage] = useState('');
+  
+  const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+
+  const paypalScriptOptions: ReactPayPalScriptOptions = {
+    clientId: paypalClientID,
+    currency: 'USD',
+    intent: 'capture',
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -130,6 +140,73 @@ export default function CheckoutPage() {
       setError('An unexpected error occurred. Please try again.');
       setIsProcessing(false);
     }
+  };
+  
+  // ----- PayPal Logic -----
+  const createPayPalOrder = (data: CreateOrderData, actions: any) => {
+    const purchaseAmount = finalTotal.toFixed(2);
+    // Basic validation to prevent creating a $0.00 order
+    if (parseFloat(purchaseAmount) <= 0) {
+        setError('Your cart total is too low for a PayPal transaction.');
+        return Promise.reject(new Error('Invalid total for PayPal'));
+    }
+    
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: purchaseAmount,
+            currency_code: 'USD',
+          },
+        },
+      ],
+    });
+  };
+
+  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
+    setIsProcessing(true);
+    setError(null);
+    try {
+        const response = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                orderID: data.orderID,
+                customerName: name,
+                customerEmail: email,
+                purchasedItems: items.map(item => ({ id: item.id, name: item.name, price: item.price })),
+                totalAmount: finalTotal.toFixed(2)
+            }),
+        });
+
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            clearCart();
+            router.push('/checkout/success');
+        } else {
+            throw new Error(result.error || 'Failed to finalize PayPal payment on the server.');
+        }
+
+    } catch (err: any) {
+        setError(err.message || 'An error occurred while processing your PayPal payment.');
+        setIsProcessing(false);
+    }
+};
+
+  const onPayPalError = (err: any) => {
+    console.error('PayPal Button Error:', err);
+    setError('An error occurred with the PayPal button. Please refresh the page or try another payment method.');
+    setIsProcessing(false);
+  };
+  
+  const handlePayPalClick = (data: Record<string, unknown>, actions: { reject: () => Promise<void>; resolve: () => Promise<void> }) => {
+    if (!validateForm()) {
+      // The form is invalid, so we reject the payment initiation.
+      return actions.reject();
+    }
+    // The form is valid, so we resolve and allow the payment to proceed.
+    return actions.resolve();
   };
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
@@ -308,6 +385,35 @@ export default function CheckoutPage() {
                         You will be redirected to complete your payment.
                      </p>
                   </div>
+                  
+                  <div className="relative flex py-5 items-center">
+                      <div className="flex-grow border-t border-muted-foreground/20"></div>
+                      <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+                      <div className="flex-grow border-t border-muted-foreground/20"></div>
+                  </div>
+
+                  <div>
+                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
+                      Pay with PayPal or Credit/Debit Card
+                    </p>
+                    {paypalClientID ? (
+                        <PayPalScriptProvider options={paypalScriptOptions}>
+                            <PayPalButtons 
+                                style={{ layout: "vertical", label: "pay" }}
+                                createOrder={createPayPalOrder}
+                                onApprove={onPayPalApprove}
+                                onError={onPayPalError}
+                                onClick={handlePayPalClick}
+                                disabled={isProcessing || !isFormValid || finalTotal <= 0}
+                            />
+                        </PayPalScriptProvider>
+                    ) : (
+                        <div className="text-center p-4 bg-muted rounded-md">
+                           <p className="text-muted-foreground text-sm">PayPal is currently unavailable.</p>
+                        </div>
+                    )}
+                  </div>
+
                 </div>
               )}
             </div>
@@ -327,5 +433,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
