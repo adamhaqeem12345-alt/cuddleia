@@ -2,7 +2,7 @@
 
 import { useCart } from '@/lib/cart';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Tags } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
@@ -10,19 +10,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import dynamic from 'next/dynamic';
-
-const PayPalCheckoutButtons = dynamic(
-  () => import('@/components/paypal-checkout-buttons'),
-  { 
-    ssr: false,
-    loading: () => <div className="flex justify-center items-center p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>
-  }
-);
-
+import { Tags } from 'lucide-react';
 
 export default function CheckoutPage() {
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal } = useCart();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -113,37 +104,6 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
-  
-  const handlePayPalApprove = async (orderID: string) => {
-    setIsProcessing(true);
-    setError(null);
-    try {
-      const response = await fetch('/api/paypal/capture-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-              orderID: orderID,
-              customerName: name,
-              customerEmail: email,
-              purchasedItems: items,
-              totalAmount: finalTotal.toFixed(2),
-          }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-          throw new Error(result.error || 'Failed to capture PayPal order.');
-      }
-      
-      clearCart();
-      router.push('/checkout/success');
-
-    } catch (err: any) {
-        setError(err.message || "An error occurred during the PayPal transaction.");
-        setIsProcessing(false);
-    }
-  }
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
     return (
@@ -257,23 +217,6 @@ export default function CheckoutPage() {
                       {totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Rate</>}
                     </Button>
                     <p className="text-xs text-muted-foreground mt-2 text-center">You will be redirected to complete your payment.</p>
-                  </div>
-                  
-                  <div className="relative flex py-5 items-center">
-                      <div className="flex-grow border-t border-muted-foreground/20"></div>
-                      <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
-                      <div className="flex-grow border-t border-muted-foreground/20"></div>
-                  </div>
-
-                  <div>
-                     <p className="text-muted-foreground mb-4 text-sm font-semibold">Pay with PayPal or Credit/Debit Card</p>
-                     <PayPalCheckoutButtons
-                        isFormValid={isFormValid}
-                        isProcessing={isProcessing}
-                        total={finalTotal}
-                        onApprove={handlePayPalApprove}
-                        onError={(err: any) => setError(err.message || "An error occurred with PayPal.")}
-                     />
                   </div>
                 </div>
               )}
