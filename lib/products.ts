@@ -89,5 +89,17 @@ What you’ll learn:
     downloadUrl: 'https://drive.google.com/drive/folders/1-H-M_G1gqVd-NSS4gMXCTsNP42ca_2C0L?usp=sharing',
     disclaimer: 'This is a digital product. You will receive a link to download the files after purchase.',
     includedInBundle: ['002'],
+  },
+  {
+    id: 'test-product-01',
+    name: 'Test Payment Product',
+    description: 'This is a test product with a minimal price to allow for testing the complete payment gateway checkout flow. Use this product to verify that PayPal and ToyyibPay are functioning correctly.',
+    price: 1.00,
+    imageUrl: 'https://i.postimg.cc/q7LzB1S5/image.png',
+    imageWidth: 1080,
+    imageHeight: 810,
+    category: 'Booklets',
+    downloadUrl: 'https://drive.google.com/file/d/1-v2_zgCQDfpNjByZgD3IzzCla5XbO_lz/view?usp=drivesdk',
+    disclaimer: 'This is a test product for payment gateway verification. The download link is a placeholder.',
   }
 ];
