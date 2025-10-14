@@ -4,7 +4,6 @@
 import { PayPalScriptProvider, PayPalButtons, type OnApproveData, type CreateOrderData } from '@paypal/react-paypal-js';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/lib/products';
-import { Loader2 } from 'lucide-react';
 
 // Get the PayPal Client ID from environment variables. It's safe to expose this.
 // This variable MUST be prefixed with NEXT_PUBLIC_ to be available in the browser.

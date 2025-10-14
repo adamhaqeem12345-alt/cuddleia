@@ -12,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import dynamic from 'next/dynamic';
 
+// Force this page to be dynamically rendered on the server
+export const dynamic = 'force-dynamic';
+
 // Dynamically import the PayPal component with SSR disabled
 const PaypalCheckout = dynamic(
   () => import('@/components/paypal-checkout').then((mod) => mod.PaypalCheckout),
