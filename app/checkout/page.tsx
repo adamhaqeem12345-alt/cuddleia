@@ -9,14 +9,6 @@ import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import {
-  PayPalScriptProvider,
-  PayPalButtons,
-} from '@paypal/react-paypal-js';
-import type {
-  CreateOrderActions,
-  OnApproveActions,
-} from '@paypal/paypal-js';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
@@ -26,7 +18,6 @@ export default function CheckoutPage() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [isPayPalLoading, setIsPayPalLoading] = useState(false);
   const [exchangeRate, setExchangeRate] = useState<number | null>(null);
 
   // Form state
@@ -64,8 +55,6 @@ export default function CheckoutPage() {
       window.removeEventListener('pageshow', handlePageShow);
     };
   }, []);
-
-  const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
 
   const finalTotal = subtotal - discount;
   const totalMYR = exchangeRate ? finalTotal * exchangeRate : null;
@@ -129,6 +118,8 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
+        // On successful creation, we clear the cart and redirect.
+        clearCart();
         window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
@@ -139,130 +130,6 @@ export default function CheckoutPage() {
       setError('An unexpected error occurred. Please try again.');
       setIsProcessing(false);
     }
-  };
-
-  const createPayPalOrder = (data: any, actions: CreateOrderActions) => {
-    if (!validateForm()) {
-      return Promise.reject(new Error('Form is not valid.'));
-    }
-    if (finalTotal < 0) {
-      setError('The total amount is invalid after the discount.');
-      return Promise.reject(new Error('Invalid total'));
-    }
-
-    const purchaseAmount = finalTotal.toFixed(2);
-
-    return actions.order.create({
-      intent: 'CAPTURE',
-      purchase_units: [
-        {
-          amount: {
-            value: purchaseAmount,
-            currency_code: 'USD',
-          },
-        },
-      ],
-      application_context: {
-        shipping_preference: 'NO_SHIPPING',
-      },
-    });
-  };
-
-  const onPayPalApprove = async (data: any, actions: OnApproveActions) => {
-    setIsProcessing(true);
-    setError(null);
-    try {
-      if (!actions.order) {
-        throw new Error('PayPal order details are not available.');
-      }
-
-      const response = await fetch('/api/paypal/capture-order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderID: data.orderID }),
-      });
-
-      const responseData = await response.json();
-      
-      if (response.ok && responseData.success) {
-        console.log(`[PayPal] Successfully captured order ${data.orderID}. Preparing to send notifications.`);
-        const itemsString = items.map(item => `  - ${item.name}`).join('\n');
-        const telegramMessage = `
-🎉 *New PayPal Sale!* 🎉
-
-*Customer:* ${name}
-*Email:* ${email}
-
-*Items Purchased:*
-${itemsString}
-
-*Total Amount:* $${finalTotal.toFixed(2)} USD
-            `;
-        
-        const [emailResult, sheetResult, telegramResult] = await Promise.allSettled([
-            // 1. Send Email
-            fetch(`/api/email`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: email, subject: 'Your Cuddleia Order Confirmation', name, items }),
-            }),
-            // 2. Add to Sheet
-            fetch(`/api/add-to-sheet`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ customerName: name, customerEmail: email, products: items.map(item => item.name).join(', '), amount: finalTotal }),
-            }),
-            // 3. Send Telegram notification
-            fetch(`/api/telegram-notify`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: telegramMessage }),
-            }),
-        ]);
-
-        if (emailResult.status === 'fulfilled' && !emailResult.value.ok) {
-            console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO SEND EMAIL for order ${data.orderID}.`);
-        }
-        if (sheetResult.status === 'fulfilled' && !sheetResult.value.ok) {
-            console.error(`[PayPal Post-Purchase] CRITICAL: FAILED TO ADD TO GOOGLE SHEET for order ${data.orderID}.`);
-        }
-        if (telegramResult.status === 'fulfilled' && !telegramResult.value.ok) {
-            console.error(`[PayPal Post-Purchase] FAILED TO SEND TELEGRAM NOTIFICATION for order ${data.orderID}.`);
-        }
-
-        clearCart();
-        router.push('/checkout/success');
-      } else {
-        throw new Error(
-          responseData.error || 'Failed to finalize PayPal payment.'
-        );
-      }
-    } catch (err) {
-      let message = 'Could not finalize your payment. Please contact support.';
-      if (err instanceof Error) {
-        message = err.message;
-      }
-      setError(message);
-      setIsProcessing(false);
-    }
-  };
-
-  const onPayPalError = (err: any) => {
-    console.error('PayPal button error:', err);
-    setError(
-      'An error occurred with PayPal. Please try refreshing the page or use a different payment method.'
-    );
-    setIsProcessing(false);
-    setIsPayPalLoading(false);
-  };
-
-  const handlePayPalClick = () => {
-    if (!validateForm()) return;
-    setError(null);
-    setIsPayPalLoading(true);
-    setTimeout(() => {
-      setIsPayPalLoading(false);
-    }, 3000);
   };
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
@@ -420,7 +287,7 @@ ${itemsString}
                 <div className="space-y-6">
                   <div>
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">
-                      Malaysian Customers (FPX)
+                      Payment via Malaysian Online Banking (FPX)
                     </p>
                     <Button
                       onClick={handleToyyibPay}
@@ -437,46 +304,10 @@ ${itemsString}
                         </>
                       )}
                     </Button>
+                     <p className="text-xs text-muted-foreground mt-2 text-center">
+                        You will be redirected to complete your payment.
+                     </p>
                   </div>
-                  {paypalClientID && (
-                    <>
-                      <div className="relative flex py-2 items-center">
-                        <div className="flex-grow border-t border-muted"></div>
-                        <span className="flex-shrink mx-4 text-muted-foreground">
-                          OR
-                        </span>
-                        <div className="flex-grow border-t border-muted"></div>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground mb-4 text-sm font-semibold">
-                          International Customers (Card / PayPal)
-                        </p>
-                        <PayPalScriptProvider
-                          options={{
-                            clientId: paypalClientID,
-                            currency: 'USD',
-                            intent: 'capture',
-                          }}
-                        >
-                          <PayPalButtons
-                            style={{ layout: 'vertical' }}
-                            createOrder={createPayPalOrder}
-                            onApprove={onPayPalApprove}
-                            onError={onPayPalError}
-                            onClick={handlePayPalClick}
-                            disabled={isProcessing || !isFormValid}
-                          />
-                        </PayPalScriptProvider>
-                        
-                        {isPayPalLoading && (
-                          <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Connecting to PayPal...</span>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
                 </div>
               )}
             </div>
@@ -496,3 +327,5 @@ ${itemsString}
     </div>
   );
 }
+
+    
