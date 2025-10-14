@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -9,7 +8,6 @@ import {
 } from './ui/card';
 import type { Product } from '@/lib/products';
 import { ProductPrice } from './product-price';
-import { AddToCartButton } from './add-to-cart-button';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { FreeDownloadDialog } from './free-download-dialog';
@@ -24,7 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/products/${product.id}`} className="block p-0">
             <div className={cn(
                 "relative w-full overflow-hidden",
-                product.category === 'Wallpapers' ? 'aspect-[4/3]' : 'aspect-[3/4]'
+                product.category === 'Wallpapers' ? 'aspect-[4/3]' : 'aspect-[3/or]'
             )}>
                 <Image
                     src={product.imageUrl}
@@ -54,11 +52,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
             </div>
             <div className="pt-6">
-            {product.price === 0 ? (
                 <FreeDownloadDialog product={product} size="rounded" className="w-full" />
-            ) : (
-                <AddToCartButton product={product} size="rounded" className="w-full"/>
-            )}
             </div>
         </div>
     </Card>

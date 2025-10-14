@@ -71,14 +71,10 @@ export default function CartPage() {
                             <span>Subtotal</span>
                              <ProductPrice price={subtotal} />
                         </div>
-                        <p className="text-sm text-muted-foreground mb-6">All digital items.</p>
-                        {hasPaidItems ? (
-                             <Button asChild size="lg" className="w-full font-bold">
-                                <Link href="/checkout">Proceed to Checkout</Link>
-                            </Button>
-                        ) : (
-                             <p className="text-center text-muted-foreground">Free items can be downloaded directly from the product page.</p>
-                        )}
+                        <p className="text-sm text-muted-foreground mb-6">All items are currently free.</p>
+                        
+                        <p className="text-center text-muted-foreground">Free items can be downloaded directly from the product page.</p>
+                       
                         <div className="mt-6">
                              <Button asChild variant="ghost" className="w-full">
                                 <Link href="/products">
