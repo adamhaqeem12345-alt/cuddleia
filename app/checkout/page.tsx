@@ -2,7 +2,7 @@
 
 import { useCart } from '@/lib/cart';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Tags, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AnimateIn } from '@/components/animate-in';
 import { ProductPrice } from '@/components/product-price';
@@ -10,10 +10,15 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Tags } from 'lucide-react';
+import { PayPalScriptProvider, PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+
+// Get the PayPal Client ID from environment variables. It's safe to expose this.
+// Secrets are in .env.local — do not hardcode here.
+const paypalClientID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '';
+
 
 export default function CheckoutPage() {
-  const { items, subtotal } = useCart();
+  const { items, subtotal, clearCart } = useCart();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,9 +46,7 @@ export default function CheckoutPage() {
       })
       .catch(console.error);
 
-    // Add a pageshow event listener to reset processing state
     const handlePageShow = (event: PageTransitionEvent) => {
-      // event.persisted is true if the page is from back/forward cache
       if (event.persisted) {
         setIsProcessing(false);
       }
@@ -59,14 +62,12 @@ export default function CheckoutPage() {
   const totalMYR = exchangeRate ? finalTotal * exchangeRate : null;
 
   useEffect(() => {
-    // This effect should only run if the page is not in a processing state.
     if (isClient && items.length === 0 && !isProcessing) {
       router.push('/products');
     }
   }, [items, router, isClient, isProcessing]);
   
   const handleApplyDiscount = () => {
-    // In a real app, this would involve an API call.
     if (discountCode.toUpperCase() === 'CUDDLE10') {
       const discountAmount = subtotal * 0.10;
       setDiscount(discountAmount);
@@ -92,7 +93,6 @@ export default function CheckoutPage() {
       });
       const data = await response.json();
       if (response.ok && data.paymentUrl) {
-        // clearCart is not called here to prevent issues on redirect
         window.location.href = data.paymentUrl;
       } else {
         setError(data.error || 'Could not initiate ToyyibPay payment.');
@@ -104,6 +104,70 @@ export default function CheckoutPage() {
       setIsProcessing(false);
     }
   };
+  
+    // This function is called when the user clicks the PayPal button.
+    const createOrder = async (data: CreateOrderData) => {
+        setIsProcessing(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/paypal/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    total: finalTotal.toFixed(2),
+                }),
+            });
+            const order = await response.json();
+            if (order.id) {
+                return order.id;
+            } else {
+                throw new Error(order.error || 'Failed to create PayPal order.');
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
+            setError(message);
+            setIsProcessing(false);
+            throw err; // Propagate error to PayPal SDK
+        }
+    };
+    
+    // This function is called after the user approves the payment on PayPal.
+    const onApprove = async (data: OnApproveData) => {
+        try {
+            const response = await fetch('/api/paypal/capture-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderID: data.orderID,
+                    customerName: name,
+                    customerEmail: email,
+                    items: items,
+                }),
+            });
+    
+            const details = await response.json();
+    
+            if (response.ok && details.success) {
+                clearCart();
+                router.push('/checkout/success');
+            } else {
+                throw new Error(details.error || 'Failed to capture payment.');
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'An unexpected error occurred.';
+            setError(message);
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // This function handles errors from the PayPal button.
+    const onError = (err: any) => {
+        console.error("PayPal button error:", err);
+        setError("An error occurred with PayPal. Please try again or use a different payment method.");
+        setIsProcessing(false);
+    };
+
 
   if (!isClient || (items.length === 0 && !isProcessing)) {
     return (
@@ -201,25 +265,43 @@ export default function CheckoutPage() {
                   <p>{error}</p>
                 </div>
               )}
-
-              {isProcessing ? (
-                <div className="text-center p-8">
-                  <div className="flex items-center justify-center gap-4">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                    <span className="font-semibold text-muted-foreground">Processing your payment...</span>
-                  </div>
-                </div>
-              ) : (
                 <div className="space-y-6">
-                  <div>
+                  <div className="relative">
                     <p className="text-muted-foreground mb-4 text-sm font-semibold">Payment via Malaysian Online Banking (FPX)</p>
                     <Button onClick={handleToyyibPay} disabled={isProcessing || !totalMYR || !isFormValid} size="lg" className="w-full font-bold">
-                      {totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Rate</>}
+                      {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : (totalMYR ? 'Pay with ToyyibPay' : <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading Rate</>)}
                     </Button>
                     <p className="text-xs text-muted-foreground mt-2 text-center">You will be redirected to complete your payment.</p>
                   </div>
+                    <div className="relative flex items-center my-6">
+                        <div className="flex-grow border-t border-muted"></div>
+                        <span className="flex-shrink mx-4 text-muted-foreground text-sm">OR</span>
+                        <div className="flex-grow border-t border-muted"></div>
+                    </div>
+                  <div>
+                    <p className="text-muted-foreground mb-4 text-sm font-semibold">International Customers</p>
+                    {paypalClientID ? (
+                        <PayPalScriptProvider options={{ 'client-id': paypalClientID, currency: 'USD' }}>
+                            <PayPalButtons
+                                style={{ layout: 'vertical', color: 'blue' }}
+                                disabled={isProcessing || !isFormValid || finalTotal <= 0}
+                                createOrder={createOrder}
+                                onApprove={onApprove}
+                                onError={onError}
+                            />
+                        </PayPalScriptProvider>
+                    ) : (
+                        <div className="bg-muted/50 p-4 rounded-lg text-center">
+                            <p className="text-muted-foreground text-sm">PayPal is currently unavailable. Please try again later.</p>
+                        </div>
+                    )}
+                     {isProcessing && (
+                         <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                        </div>
+                    )}
+                  </div>
                 </div>
-              )}
             </div>
           </AnimateIn>
         </div>
