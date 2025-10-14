@@ -9,13 +9,10 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import { ProductCard } from '@/components/product-card';
 import { FreeDownloadDialog } from '@/components/free-download-dialog';
 
 const BarakahBlueprintSection = () => {
     const vol1 = products.find(p => p.id === '001');
-    // Find the new bundle product
-    const seriesBundle = products.find(p => p.id === '010');
 
     if (!vol1) return null;
 
@@ -44,7 +41,7 @@ const BarakahBlueprintSection = () => {
                                     <FreeDownloadDialog product={vol1} size="lg" />
                                     <Button asChild size="lg" variant="outline">
                                         <Link href="/products">
-                                            Explore the Series
+                                            Explore Other Products
                                         </Link>
                                     </Button>
                                 </div>
@@ -53,35 +50,6 @@ const BarakahBlueprintSection = () => {
                     </div>
                 </AnimateIn>
             </section>
-            
-            {seriesBundle && (
-                 <section className="bg-accent py-24 sm:py-32">
-                    <div className="container mx-auto px-4">
-                         <AnimateIn>
-                            <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">
-                                Get The Complete 5-Volume Series
-                            </h2>
-                            <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">
-                                Purchase the entire Barakah Blueprint series in one bundle and save! Get all five volumes covering everything from branding and marketing to automation and scaling with Iman.
-                            </p>
-                        </AnimateIn>
-                        <div className="flex justify-center">
-                            <AnimateIn>
-                                <div className="max-w-sm w-full">
-                                    <ProductCard product={seriesBundle} />
-                                </div>
-                            </AnimateIn>
-                        </div>
-                        <AnimateIn>
-                            <div className="mt-20 text-center">
-                                <Button asChild size="lg" variant="secondary" className="font-bold shadow-lg transition-transform hover:scale-105">
-                                    <Link href="/products">View All Products <ArrowRight className="ml-2 h-5 w-5"/></Link>
-                                </Button>
-                            </div>
-                        </AnimateIn>
-                    </div>
-                </section>
-            )}
         </>
     )
 }
@@ -100,7 +68,7 @@ export default function HomePage() {
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="font-bold">
-              <Link href="/products">Shop Now</Link>
+              <Link href="/products">Browse Products</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="/about">Learn More</Link>

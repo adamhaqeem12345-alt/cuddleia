@@ -11,7 +11,6 @@ export const metadata: Metadata = {
 
 export default function ProductsPage() {
     const booklets = products.filter((p) => p.category === 'Booklets');
-    const wallpapers = products.filter((p) => p.category === 'Wallpapers');
 
     return (
         <div className="bg-background">
@@ -40,20 +39,6 @@ export default function ProductsPage() {
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
                        {booklets.map((product, index) => (
                             <AnimateIn key={product.id} delay={index * 150}>
-                                <ProductCard product={product} />
-                            </AnimateIn>
-                        ))}
-                    </div>
-                </section>
-                <section key="Wallpapers" className="mb-20">
-                    <AnimateIn>
-                        <h2 className="font-headline text-4xl text-foreground mb-10 border-b pb-4 font-bold">
-                            Wallpapers
-                        </h2>
-                    </AnimateIn>
-                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-                        {wallpapers.map((product, index) => (
-                           <AnimateIn key={product.id} delay={index * 150}>
                                 <ProductCard product={product} />
                             </AnimateIn>
                         ))}

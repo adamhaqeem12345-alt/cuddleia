@@ -3,7 +3,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Product, products } from './products';
+import { Product } from './products';
 
 interface CartState {
   items: Product[];
@@ -13,8 +13,6 @@ interface CartState {
   subtotal: number;
 }
 
-const bundleProduct = products.find(p => p.id === '010');
-const bundleItemIds = bundleProduct?.bundleIncludes || [];
 
 export const useCart = create<CartState>()(
   persist(
@@ -24,28 +22,10 @@ export const useCart = create<CartState>()(
       addToCart: (product) => {
         set((state) => {
             let currentItems = [...state.items];
-
-            // If the added product is the bundle
-            if (product.id === bundleProduct?.id) {
-                // Remove individual items that are in the bundle
-                currentItems = currentItems.filter(item => !bundleItemIds.includes(item.id));
-            }
             
-            // Add the new product
+            // Add the new product if it's not already in the cart
             if (!currentItems.some(item => item.id === product.id)) {
                  currentItems.push(product);
-            }
-
-            // Check if all individual bundle items are now in the cart
-            const hasAllBundleItems = bundleItemIds.every(id => currentItems.some(item => item.id === id));
-
-            if (bundleProduct && hasAllBundleItems) {
-                // Remove individual items
-                currentItems = currentItems.filter(item => !bundleItemIds.includes(item.id));
-                // Add the bundle if it's not already there
-                if (!currentItems.some(item => item.id === bundleProduct.id)) {
-                    currentItems.push(bundleProduct);
-                }
             }
             
             const newSubtotal = currentItems.reduce((acc, item) => acc + item.price, 0);
@@ -68,6 +48,7 @@ export const useCart = create<CartState>()(
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
+            // Recalculate subtotal on rehydration, as product prices might change.
             const newSubtotal = state.items.reduce((acc, item) => acc + item.price, 0);
             state.subtotal = newSubtotal;
         }

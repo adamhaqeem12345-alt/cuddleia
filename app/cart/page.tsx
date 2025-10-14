@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useCart } from '@/lib/cart';
@@ -12,6 +11,8 @@ import { ProductPrice } from '@/components/product-price';
 export default function CartPage() {
   const { items, removeFromCart, subtotal } = useCart();
 
+  const hasPaidItems = items.some(item => item.price > 0);
+
   return (
     <div className="bg-background">
       <section className="bg-accent py-20 md:py-28 flex items-center justify-center">
@@ -22,7 +23,7 @@ export default function CartPage() {
                 Your Cart
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                Review your items before proceeding to checkout.
+                Review your items.
               </p>
             </div>
           </AnimateIn>
@@ -70,10 +71,14 @@ export default function CartPage() {
                             <span>Subtotal</span>
                              <ProductPrice price={subtotal} />
                         </div>
-                        <p className="text-sm text-muted-foreground mb-6">Your final price. All digital items.</p>
-                        <Button asChild size="lg" className="w-full font-bold">
-                            <Link href="/checkout">Proceed to Checkout</Link>
-                        </Button>
+                        <p className="text-sm text-muted-foreground mb-6">All digital items.</p>
+                        {hasPaidItems ? (
+                             <Button asChild size="lg" className="w-full font-bold">
+                                <Link href="/checkout">Proceed to Checkout</Link>
+                            </Button>
+                        ) : (
+                             <p className="text-center text-muted-foreground">Free items can be downloaded directly from the product page.</p>
+                        )}
                         <div className="mt-6">
                              <Button asChild variant="ghost" className="w-full">
                                 <Link href="/products">

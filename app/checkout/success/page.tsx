@@ -27,10 +27,10 @@ export default function CheckoutSuccessPage() {
                     <CheckCircle className="h-24 w-24 text-green-500" />
                 </div>
               <h1 className="font-headline text-5xl md:text-7xl text-foreground drop-shadow-lg font-bold">
-                Payment Successful!
+                Order Successful!
               </h1>
               <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">
-                Thank you for your purchase. Your digital goods are on their way to your email inbox.
+                Thank you for your order. Your digital goods are on their way to your email inbox.
               </p>
             </div>
           </AnimateIn>
@@ -42,7 +42,7 @@ export default function CheckoutSuccessPage() {
             <h2 className="font-headline text-3xl font-bold">What's Next?</h2>
             <div className="max-w-2xl mx-auto mt-6 space-y-4 text-muted-foreground">
                 <p>
-                    You will receive an email shortly containing the download links for your purchased items. If you don't see it within a few minutes, please check your spam or junk folder.
+                    You will receive an email shortly containing the download links for your items. If you don't see it within a few minutes, please check your spam or junk folder.
                 </p>
                 <p>
                     If you encounter any issues or have any questions, please don't hesitate to reply to the order email or contact us at <a href="mailto:hello@cuddleia.com" className="text-primary hover:underline">hello@cuddleia.com</a>.
