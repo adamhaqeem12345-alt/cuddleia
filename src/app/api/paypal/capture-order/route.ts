@@ -3,6 +3,7 @@ import { captureOrder } from '@/lib/paypal';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { products } from '@/lib/products';
 import { appendToSheet } from '@/lib/google-sheets';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 export async function POST(req: Request) {
   try {
@@ -34,24 +35,35 @@ export async function POST(req: Request) {
                 };
             })
         };
-
-        // This can run in parallel, no need to await
-        sendPurchaseConfirmationEmail(customer, orderDetails).catch(emailError => {
-            console.error("Failed to send purchase email after PayPal capture:", emailError);
-        });
-
-        // Log to Google Sheets, can also run in parallel
+        
         const productNames = orderDetails.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
-        appendToSheet({
-            date: new Date().toISOString(),
-            name: customer.name,
-            email: customer.email,
-            product: productNames,
-            total: orderDetails.total,
-            paymentMethod: orderDetails.paymentMethod,
-        }).catch(sheetError => {
-            console.error("Failed to log to Google Sheets after PayPal capture:", sheetError);
-        });
+
+        // Run integrations in parallel
+        Promise.all([
+            sendPurchaseConfirmationEmail(customer, orderDetails).catch(emailError => {
+                console.error("Failed to send purchase email after PayPal capture:", emailError);
+            }),
+            appendToSheet({
+                date: new Date().toISOString(),
+                name: customer.name,
+                email: customer.email,
+                product: productNames,
+                total: orderDetails.total,
+                paymentMethod: orderDetails.paymentMethod,
+            }).catch(sheetError => {
+                console.error("Failed to log to Google Sheets after PayPal capture:", sheetError);
+            }),
+            sendTelegramNotification(
+`*New Sale! 🎉*
+*Customer:* ${customer.name}
+*Email:* ${customer.email}
+*Product(s):* ${productNames}
+*Total:* ${orderDetails.total}
+*Payment Method:* ${orderDetails.paymentMethod}`
+            ).catch(telegramError => {
+                console.error("Failed to send Telegram notification after PayPal capture:", telegramError);
+            })
+        ]);
     }
 
 

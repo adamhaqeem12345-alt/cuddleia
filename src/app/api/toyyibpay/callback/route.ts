@@ -4,6 +4,7 @@ import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { getOrderDetails, deleteOrderDetails } from '@/lib/order-cache';
 import { products } from '@/lib/products';
 import { appendToSheet } from '@/lib/google-sheets';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 export async function POST(req: Request) {
   try {
@@ -52,23 +53,34 @@ export async function POST(req: Request) {
                 })
             };
 
-            // Using .catch to not block the response
-            sendPurchaseConfirmationEmail(customer, orderDetails).catch(emailError => {
-                 console.error("Failed to send purchase email after ToyyibPay callback:", emailError);
-            });
-            
-            // Log to Google Sheets
             const productNames = orderDetails.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
-            appendToSheet({
-                date: new Date().toISOString(),
-                name: customer.name,
-                email: customer.email,
-                product: productNames,
-                total: orderDetails.total,
-                paymentMethod: orderDetails.paymentMethod,
-            }).catch(sheetError => {
-                console.error("Failed to log to Google Sheets after ToyyibPay callback:", sheetError);
-            });
+
+            // Run integrations in parallel
+            Promise.all([
+                sendPurchaseConfirmationEmail(customer, orderDetails).catch(emailError => {
+                    console.error("Failed to send purchase email after ToyyibPay callback:", emailError);
+                }),
+                appendToSheet({
+                    date: new Date().toISOString(),
+                    name: customer.name,
+                    email: customer.email,
+                    product: productNames,
+                    total: orderDetails.total,
+                    paymentMethod: orderDetails.paymentMethod,
+                }).catch(sheetError => {
+                    console.error("Failed to log to Google Sheets after ToyyibPay callback:", sheetError);
+                }),
+                sendTelegramNotification(
+`*New Sale! 🎉*
+*Customer:* ${customer.name}
+*Email:* ${customer.email}
+*Product(s):* ${productNames}
+*Total:* ${orderDetails.total}
+*Payment Method:* ${orderDetails.paymentMethod}`
+                ).catch(telegramError => {
+                    console.error("Failed to send Telegram notification after ToyyibPay callback:", telegramError);
+                })
+            ]);
 
             // Clean up the cached order details after processing
             deleteOrderDetails(order_id);
