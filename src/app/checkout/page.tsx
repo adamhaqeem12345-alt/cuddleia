@@ -1,35 +1,46 @@
 'use client';
 
-import { useContext, useState, useEffect } from 'react';
+import { useContext } from 'react';
 import Link from 'next/link';
 import { CartContext } from '@/context/cart-context';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
-import { PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalButtons, FUNDING } from '@paypal/react-paypal-js';
 
 const CheckoutPage = () => {
-  const { cartItems, cartTotal, clearCart } = useContext(CartContext);
-  const [isClient, setIsClient] = useState(false);
+  const { cartItems, cartTotal } = useContext(CartContext);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const createOrder = (data: CreateOrderData, actions: any) => {
-    return actions.order.create({
-      purchase_units: [
-        {
-          amount: {
-            value: cartTotal.toFixed(2),
-          },
+  const createOrder = async () => {
+    try {
+      const res = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ],
-    });
+        body: JSON.stringify({
+          cart: cartItems.map(item => ({
+            id: item.id,
+            quantity: item.quantity,
+          })),
+        }),
+      });
+      const order = await res.json();
+      if (order.id) {
+        return order.id;
+      } else {
+        throw new Error(order.error || 'Failed to create order.');
+      }
+    } catch (err: any) {
+      console.error("Create Order Error:", err);
+      alert(`Could not initiate PayPal Checkout. Error: ${err.message}`);
+      return '';
+    }
   };
 
-  const onApprove = (data: OnApproveData, actions: any) => {
-    return actions.order.capture().then((details: any) => {
-      alert('Transaction completed by ' + details.payer.name.given_name);
-      clearCart();
+  const onApprove = async (data: any) => {
+    // Redirects to PayPal's approval URL
+    window.location.href = data.links.find((link: any) => link.rel === 'approve').href;
+    return new Promise((resolve) => {
+      // This promise may not resolve as we are redirecting
     });
   };
 
@@ -84,14 +95,20 @@ const CheckoutPage = () => {
             <div className='bg-card p-8 rounded-2xl shadow-lg'>
               <h2 className="font-headline text-3xl font-bold text-foreground mb-6">Payment</h2>
               <p className='text-muted-foreground mb-6'>Complete your purchase using PayPal.</p>
-              {isClient && cartTotal > 0 ? (
-                <PayPalButtons
+               <PayPalButtons
                   style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' }}
+                  fundingSource={FUNDING.PAYPAL}
                   createOrder={createOrder}
                   onApprove={onApprove}
                   onError={onError}
                 />
-              ) : null}
+                <PayPalButtons
+                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                  fundingSource={FUNDING.CARD}
+                  createOrder={createOrder}
+                  onApprove={onApprove}
+                  onError={onError}
+                />
             </div>
           </div>
         )}
