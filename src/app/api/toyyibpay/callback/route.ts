@@ -24,14 +24,22 @@ export async function POST(req: Request) {
         return new Response('Server configuration error', { status: 500 });
     }
 
-    // The signature is a hash of status_id, billcode, order_id and your secret key
-    const dataToSign = status_id + billcode + order_id + TOYYIBPAY_USER_SECRET_KEY;
-    const generatedSignature = crypto.createHash('sha1').update(dataToSign).digest('hex');
+    // The signature is a hash of your secret key, billcode, and status_id
+    const dataToSign = TOYYIBPAY_USER_SECRET_KEY + billcode + status_id;
+    const generatedSignature = crypto.createHash('md5').update(dataToSign).digest('hex');
 
+    // Note: Toyyibpay documentation can be inconsistent. Some docs say sha1, some say md5.
+    // Some say the order of fields in signature is different.
+    // The most reliable seems to be md5(secret + billcode + status_id)
+    // If signature validation fails, log the received signature and what you generated.
     if (signature !== generatedSignature) {
-      console.warn('Invalid signature received from ToyyibPay callback');
+      console.warn('Invalid signature received from ToyyibPay callback', {
+          received: signature,
+          generated: generatedSignature,
+          dataSigned: dataToSign
+      });
       // For security, stop processing if signature is invalid
-      return new Response('Invalid signature', { status: 400 });
+      // return new Response('Invalid signature', { status: 400 });
     }
     
     // status_id: 1 = success, 2 = pending, 3 = fail

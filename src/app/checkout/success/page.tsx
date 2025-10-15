@@ -10,7 +10,7 @@ function SuccessContent() {
   const { clearCart } = useContext(CartContext);
 
   useEffect(() => {
-    // The payment has already been verified by the backend callback (PayPal onApprove or ToyyibPay callback).
+    // The payment has already been verified by the backend (PayPal onApprove or ToyyibPay callback).
     // This page's only responsibility is to show a success message and clear the cart from local storage.
     clearCart();
   }, [clearCart]);
