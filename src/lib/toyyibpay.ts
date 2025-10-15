@@ -1,5 +1,8 @@
 // This is a server-side file. It should not be exposed to the client.
 import { products } from './products';
+import { cacheOrderDetails } from './order-cache';
+import crypto from 'crypto';
+
 
 const TOYYIBPAY_API_URL = process.env.NEXT_PUBLIC_TOYYIBPAY_API_URL || 'https://dev.toyyibpay.com';
 const TOYYIBPAY_USER_SECRET_KEY = process.env.TOYYIBPAY_USER_SECRET_KEY || 'YOUR_SECRET_KEY';
@@ -22,6 +25,10 @@ export async function createToyyibpayBill(cart: CartItem[], total: number, user:
     // ToyyibPay requires amount in cents
     const billAmount = Math.round(total * 100);
 
+    // Create a unique internal order ID to cache details
+    const internalOrderId = crypto.randomBytes(16).toString('hex');
+    cacheOrderDetails(internalOrderId, { cart, user, total: billAmount });
+
     const params = new URLSearchParams();
     params.append('userSecretKey', TOYYIBPAY_USER_SECRET_KEY);
     params.append('categoryCode', TOYYIBPAY_CATEGORY_CODE);
@@ -38,6 +45,9 @@ export async function createToyyibpayBill(cart: CartItem[], total: number, user:
     params.append('billpaymentAmount', billAmount.toString());
     params.append('billpaymentChannel', '0'); // 0 for FPX, 1 for Credit Card, 2 for both
     
+    // Pass our internal ID to ToyyibPay to get it back in the callback
+    params.append('billExternalReferenceNo', internalOrderId);
+
     const returnUrl = `${process.env.NEXT_PUBLIC_URL}/checkout/toyyibpay-status`;
     const callbackUrl = `${process.env.NEXT_PUBLIC_URL}/api/toyyibpay/callback`;
 
@@ -61,6 +71,8 @@ export async function createToyyibpayBill(cart: CartItem[], total: number, user:
         };
     } else {
         console.error('ToyyibPay API Error:', data);
+        // If bill creation fails, remove the cached order
+        deleteOrderDetails(internalOrderId);
         throw new Error(data.msg || 'Failed to create ToyyibPay bill.');
     }
 }
