@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Info, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Info, ShoppingCart, Download } from 'lucide-react';
 import type { Metadata } from 'next';
 
 type Props = {
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${product.name} | Cuddleia`;
-  const description = product.description.split('\\n')[0];
+  const description = product.description.split('\n')[0];
 
   return {
     title,
@@ -62,6 +62,8 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
     notFound();
   }
 
+  const isFree = product.price === 0;
+
   return (
     <div className="bg-rose-50/30">
       <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -91,7 +93,7 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
             <div className="mb-6">
                 <div className="flex items-center gap-2">
                     <p className="text-xl font-headline font-bold text-primary">
-                        {product.price === 0 ? "Free" : `$${product.price.toFixed(2)} USD`}
+                        {isFree ? "Free" : `$${product.price.toFixed(2)} USD`}
                     </p>
                     {product.originalPrice && (
                         <p className="text-lg font-headline font-bold text-muted-foreground line-through">
@@ -99,7 +101,7 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
                         </p>
                     )}
                 </div>
-                {product.price !== 0 && <p className="text-xs text-muted-foreground">Loading conversion...</p>}
+                {!isFree && <p className="text-xs text-muted-foreground">Loading conversion...</p>}
             </div>
 
             <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
@@ -119,10 +121,19 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
                         </div>
                     </div>
                 )}
-                <Button size="lg" className="font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Cart
-                </Button>
+                {isFree ? (
+                    <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
+                        <a href={product.downloadUrl} target="_blank">
+                            <Download className="h-5 w-5 mr-2" />
+                            Download Now
+                        </a>
+                    </Button>
+                ) : (
+                    <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
+                        <ShoppingCart className="h-5 w-5 mr-2" />
+                        Add to Cart
+                    </Button>
+                )}
             </div>
           </div>
         </div>
