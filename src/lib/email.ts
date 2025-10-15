@@ -20,7 +20,7 @@ interface OrderDetails {
 }
 
 const transporter = nodemailer.createTransport({
-    host: process.env.ZOHO_MAIL_HOST,
+    host: 'smtp.zoho.com',
     port: 465,
     secure: true, // use SSL
     auth: {
