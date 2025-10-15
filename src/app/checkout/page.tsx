@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { CartContext } from '@/context/cart-context';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
 import { PayPalButtons, FUNDING } from '@paypal/react-paypal-js';
+import { ToyyibpayButton } from '@/components/toyyibpay-button';
 
 const CheckoutPage = () => {
   const { cartItems, cartTotal } = useContext(CartContext);
@@ -37,9 +38,30 @@ const CheckoutPage = () => {
   };
 
   const onApprove = async (data: any) => {
-    // Redirects to PayPal's approval URL
-    window.location.href = data.links.find((link: any) => link.rel === 'approve').href;
-    return new Promise((resolve) => {
+    // This function is designed for a server-side redirect flow.
+    // It captures the approval and redirects the user to PayPal.
+    try {
+      const res = await fetch('/api/paypal/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+             cart: cartItems.map(item => ({
+                id: item.id,
+                quantity: item.quantity,
+             })),
+        }),
+      });
+      const order = await res.json();
+      if (order.links && order.links.find((link: any) => link.rel === 'approve')) {
+         window.location.href = order.links.find((link: any) => link.rel === 'approve').href;
+      } else {
+        throw new Error('No approval link found');
+      }
+    } catch (err: any) {
+        console.error("onApprove Error:", err);
+        alert(`Could not initiate PayPal Checkout. Error: ${err.message}`);
+    }
+     return new Promise((resolve) => {
       // This promise may not resolve as we are redirecting
     });
   };
@@ -92,23 +114,40 @@ const CheckoutPage = () => {
                 </div>
               </div>
             </div>
-            <div className='bg-card p-8 rounded-2xl shadow-lg'>
-              <h2 className="font-headline text-3xl font-bold text-foreground mb-6">Payment</h2>
-              <p className='text-muted-foreground mb-6'>Complete your purchase using PayPal.</p>
-               <PayPalButtons
-                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' }}
-                  fundingSource={FUNDING.PAYPAL}
-                  createOrder={createOrder}
-                  onApprove={onApprove}
-                  onError={onError}
-                />
-                <PayPalButtons
-                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
-                  fundingSource={FUNDING.CARD}
-                  createOrder={createOrder}
-                  onApprove={onApprove}
-                  onError={onError}
-                />
+            <div className='bg-card p-8 rounded-2xl shadow-lg space-y-8'>
+              <div>
+                <h2 className="font-headline text-2xl font-bold text-foreground mb-4">Pay with PayPal or Card</h2>
+                <p className='text-muted-foreground mb-6 text-sm'>Select your preferred payment method below. You can pay with your PayPal account or directly with a debit/credit card.</p>
+                 <PayPalButtons
+                    style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' }}
+                    fundingSource={FUNDING.PAYPAL}
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                  />
+                  <PayPalButtons
+                    style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'pay' }}
+                    fundingSource={FUNDING.CARD}
+                    createOrder={createOrder}
+                    onApprove={onApprove}
+                    onError={onError}
+                  />
+              </div>
+              <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-card px-2 text-muted-foreground">
+                      Or pay with
+                      </span>
+                  </div>
+              </div>
+              <div>
+                <h2 className="font-headline text-2xl font-bold text-foreground mb-4">Pay with FPX (Malaysia)</h2>
+                <p className='text-muted-foreground mb-6 text-sm'>For Malaysian customers, you can pay using your local bank account via FPX. Please provide your details below.</p>
+                <ToyyibpayButton />
+              </div>
             </div>
           </div>
         )}
