@@ -103,7 +103,9 @@ export default function ProductsPage() {
         </section>
 
         <section id="wallpapers" className="mb-20">
-          <h2 className="font-headline text-4xl text-foreground mb-10 border-b pb-4 font-bold">Wallpapers</h2>
+          <div className="border-b pb-4 mb-10">
+            <h2 className="font-headline text-4xl text-foreground font-bold">Wallpapers</h2>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
             {wallpapers.map(product => (
               <ProductCard key={product.id} product={product} />
