@@ -111,7 +111,7 @@ export default function ProductsPage() {
             ))}
           </div>
         </section>
-      </main>.
+      </main>
     </div>
   );
 }
