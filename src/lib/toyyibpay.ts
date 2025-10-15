@@ -1,6 +1,6 @@
 // This is a server-side file. It should not be exposed to the client.
 import { products } from './products';
-import { cacheOrderDetails } from './order-cache';
+import { cacheOrderDetails, deleteOrderDetails } from './order-cache';
 import crypto from 'crypto';
 
 

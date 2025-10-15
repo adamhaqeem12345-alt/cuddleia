@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     
     const TOYYIBPAY_USER_SECRET_KEY = process.env.TOYYIBPAY_USER_SECRET_KEY || 'YOUR_SECRET_KEY';
 
+    // The signature is a hash of status_id, billcode, order_id and your secret key
     const dataToSign = status_id + billcode + order_id + TOYYIBPAY_USER_SECRET_KEY;
     const generatedSignature = crypto.createHash('sha1').update(dataToSign).digest('hex');
 
