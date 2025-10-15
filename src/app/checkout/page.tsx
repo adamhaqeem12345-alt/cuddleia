@@ -1,39 +1,13 @@
 'use client';
 
 import { useContext } from 'react';
-import { CartContext } from '@/context/cart-context';
-import { PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
-import { ArrowRight, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
+import { CartContext } from '@/context/cart-context';
+import { ArrowRight, ShoppingCart } from 'lucide-react';
+import { PayPalButtonWrapper } from '@/components/paypal-button-wrapper';
 
 const CheckoutPage = () => {
-  const { cartItems, cartTotal, clearCart } = useContext(CartContext);
-
-  const createOrder = (data: CreateOrderData, actions: any) => {
-    return actions.order.create({
-      purchase_units: [
-        {
-          amount: {
-            value: cartTotal.toFixed(2),
-          },
-        },
-      ],
-    });
-  };
-
-  const onApprove = (data: OnApproveData, actions: any) => {
-    return actions.order.capture().then((details: any) => {
-      alert('Transaction completed by ' + details.payer.name.given_name);
-      // Here you would typically handle the digital product delivery,
-      // e.g., by sending an email with download links.
-      clearCart();
-    });
-  };
-
-  const onError = (err: any) => {
-    console.error("PayPal Checkout onError", err);
-    alert('An error occurred during the checkout process. Please try again.');
-  };
+  const { cartItems, cartTotal } = useContext(CartContext);
 
   return (
     <div className="bg-background">
@@ -81,12 +55,7 @@ const CheckoutPage = () => {
             <div className='bg-card p-8 rounded-2xl shadow-lg'>
               <h2 className="font-headline text-3xl font-bold text-foreground mb-6">Payment</h2>
               <p className='text-muted-foreground mb-6'>Complete your purchase using PayPal.</p>
-              <PayPalButtons
-                style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' }}
-                createOrder={createOrder}
-                onApprove={onApprove}
-                onError={onError}
-              />
+              <PayPalButtonWrapper />
             </div>
           </div>
         )}
