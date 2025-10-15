@@ -1,14 +1,42 @@
-
 'use client';
 
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CartContext } from '@/context/cart-context';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
-import { PayPalButtonWrapper } from '@/components/paypal-button-wrapper';
+import { PayPalButtons, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
 
 const CheckoutPage = () => {
-  const { cartItems, cartTotal } = useContext(CartContext);
+  const { cartItems, cartTotal, clearCart } = useContext(CartContext);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const createOrder = (data: CreateOrderData, actions: any) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: cartTotal.toFixed(2),
+          },
+        },
+      ],
+    });
+  };
+
+  const onApprove = (data: OnApproveData, actions: any) => {
+    return actions.order.capture().then((details: any) => {
+      alert('Transaction completed by ' + details.payer.name.given_name);
+      clearCart();
+    });
+  };
+
+  const onError = (err: any) => {
+    console.error("PayPal Checkout onError", err);
+    alert('An error occurred during the checkout process. Please try again.');
+  };
 
   return (
     <div className="bg-background">
@@ -56,7 +84,14 @@ const CheckoutPage = () => {
             <div className='bg-card p-8 rounded-2xl shadow-lg'>
               <h2 className="font-headline text-3xl font-bold text-foreground mb-6">Payment</h2>
               <p className='text-muted-foreground mb-6'>Complete your purchase using PayPal.</p>
-              <PayPalButtonWrapper />
+              {isClient && cartTotal > 0 ? (
+                <PayPalButtons
+                  style={{ layout: 'vertical', color: 'blue', shape: 'rect', label: 'paypal' }}
+                  createOrder={createOrder}
+                  onApprove={onApprove}
+                  onError={onError}
+                />
+              ) : null}
             </div>
           </div>
         )}
