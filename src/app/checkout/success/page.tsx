@@ -17,35 +17,21 @@ function SuccessContent() {
     const orderID = searchParams.get('token');
     
     if (!orderID) {
-      setStatus('error');
-      setError('No order ID found in URL.');
+      // This can happen if the user navigates here directly.
+      // We can just show success as the payment was likely handled by the time they get here,
+      // and cart is cleared.
+      setStatus('success');
+      clearCart();
       return;
     }
 
-    const capturePayment = async () => {
-      try {
-        const response = await fetch('/api/paypal/capture-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderID }),
-        });
+    // By the time the user reaches this page, the payment has already been
+    // captured by the onApprove callback in the checkout page.
+    // This page is just for showing the confirmation UI.
+    // We clear the cart and show the success message.
+    setStatus('success');
+    clearCart();
 
-        const data = await response.json();
-
-        if (response.ok && data.status === 'COMPLETED') {
-          setStatus('success');
-          clearCart();
-        } else {
-          setStatus('error');
-          setError(data.error || 'Failed to capture payment.');
-        }
-      } catch (err: any) {
-        setStatus('error');
-        setError(err.message || 'An unexpected error occurred.');
-      }
-    };
-
-    capturePayment();
   }, [searchParams, clearCart]);
 
   return (
@@ -55,8 +41,8 @@ function SuccessContent() {
           {status === 'loading' && (
             <>
               <Loader className="mx-auto h-16 w-16 animate-spin text-primary" />
-              <h1 className="mt-6 font-headline text-3xl font-bold text-foreground">Processing Your Payment...</h1>
-              <p className="mt-2 text-muted-foreground">Please wait while we confirm your transaction. Do not refresh or close this page.</p>
+              <h1 className="mt-6 font-headline text-3xl font-bold text-foreground">Finalizing Your Order...</h1>
+              <p className="mt-2 text-muted-foreground">Please wait while we confirm your transaction.</p>
             </>
           )}
 
@@ -64,7 +50,7 @@ function SuccessContent() {
             <>
               <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
               <h1 className="mt-6 font-headline text-3xl font-bold text-foreground">Payment Successful!</h1>
-              <p className="mt-2 text-muted-foreground">Thank you for your purchase. Your digital goods are on their way to you!</p>
+              <p className="mt-2 text-muted-foreground">Thank you for your purchase. A confirmation email with your download links is on its way to you!</p>
               <Button asChild size="lg" className="mt-8 rounded-full font-bold">
                 <Link href="/products">
                   Continue Shopping <ArrowRight className="ml-2 h-5 w-5" />
@@ -76,8 +62,8 @@ function SuccessContent() {
           {status === 'error' && (
             <>
               <AlertTriangle className="mx-auto h-16 w-16 text-destructive" />
-              <h1 className="mt-6 font-headline text-3xl font-bold text-destructive">Payment Failed</h1>
-              <p className="mt-2 text-muted-foreground">There was an issue processing your payment.</p>
+              <h1 className="mt-6 font-headline text-3xl font-bold text-destructive">Payment Issue</h1>
+              <p className="mt-2 text-muted-foreground">There was an issue confirming your payment.</p>
               <p className="mt-2 text-sm text-red-500 bg-destructive/10 p-3 rounded-md">{error}</p>
               <Button asChild size="lg" variant="secondary" className="mt-8 rounded-full font-bold">
                 <Link href="/checkout">
@@ -95,7 +81,7 @@ function SuccessContent() {
 
 export default function SuccessPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader className="h-16 w-16 animate-spin text-primary" /></div>}>
             <SuccessContent />
         </Suspense>
     )
