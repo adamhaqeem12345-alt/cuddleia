@@ -38,8 +38,8 @@ export function PayPalButtonWrapper() {
     alert('An error occurred during the checkout process. Please try again.');
   };
 
-  if (!isClient) {
-    return null; // Render nothing on the server
+  if (!isClient || cartTotal <= 0) {
+    return null; // Render nothing on the server or if cart is empty
   }
 
   return (
