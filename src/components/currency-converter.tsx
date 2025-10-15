@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// import { convertCurrency } from '@/ai/flows/currency-converter-flow';
+import { convertCurrency } from '@/ai/flows/currency-converter-flow';
 
 export const CurrencyConverter = ({ usdPrice }: { usdPrice: number }) => {
-  /*
   const [myrPrice, setMyrPrice] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -41,13 +40,6 @@ export const CurrencyConverter = ({ usdPrice }: { usdPrice: number }) => {
   if (!myrPrice) {
     return null; // Don't render anything if conversion fails or not applicable
   }
-  */
-
-  if (usdPrice === 0) {
-    return null;
-  }
-
-  const myrPrice = `approx. RM ${(usdPrice * 4.7).toFixed(2)}`;
 
   return <p className="text-xs text-muted-foreground">{myrPrice}</p>;
 };
