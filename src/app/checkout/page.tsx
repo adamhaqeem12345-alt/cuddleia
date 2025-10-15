@@ -1,6 +1,7 @@
 'use client';
 
 import { useContext } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CartContext } from '@/context/cart-context';
 import { ArrowRight, ShoppingCart } from 'lucide-react';
@@ -9,6 +10,7 @@ import { ToyyibpayButton } from '@/components/toyyibpay-button';
 
 const CheckoutPage = () => {
   const { cartItems, cartTotal } = useContext(CartContext);
+  const router = useRouter();
 
   const createOrder = async () => {
     try {
@@ -38,32 +40,29 @@ const CheckoutPage = () => {
   };
 
   const onApprove = async (data: any) => {
-    // This function is designed for a server-side redirect flow.
-    // It captures the approval and redirects the user to PayPal.
     try {
-      const res = await fetch('/api/paypal/create-order', {
+      // The data object contains the orderID, payerID, and paymentID
+      // We only need the orderID to capture the order
+      const res = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-             cart: cartItems.map(item => ({
-                id: item.id,
-                quantity: item.quantity,
-             })),
-        }),
+        body: JSON.stringify({ orderID: data.orderID }),
       });
-      const order = await res.json();
-      if (order.links && order.links.find((link: any) => link.rel === 'approve')) {
-         window.location.href = order.links.find((link: any) => link.rel === 'approve').href;
+
+      const orderDetails = await res.json();
+      
+      if (res.ok && orderDetails.status === 'COMPLETED') {
+        // Payment successful, redirect to a success page
+        // We pass the orderID (which is the 'token' in the success page)
+        router.push(`/checkout/success?token=${data.orderID}`);
       } else {
-        throw new Error('No approval link found');
+        // Handle failed capture
+        throw new Error(orderDetails.error || 'Failed to capture payment.');
       }
     } catch (err: any) {
         console.error("onApprove Error:", err);
-        alert(`Could not initiate PayPal Checkout. Error: ${err.message}`);
+        alert(`Could not complete your PayPal payment. Error: ${err.message}`);
     }
-     return new Promise((resolve) => {
-      // This promise may not resolve as we are redirecting
-    });
   };
 
   const onError = (err: any) => {

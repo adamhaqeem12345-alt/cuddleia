@@ -4,7 +4,7 @@ import { cacheOrderDetails, deleteOrderDetails } from './order-cache';
 import crypto from 'crypto';
 
 
-const TOYYIBPAY_API_URL = process.env.NEXT_PUBLIC_TOYYIBPAY_API_URL || 'https://dev.toyyibpay.com';
+const TOYYIBPAY_API_URL = process.env.TOYYIBPAY_API_URL || 'https://dev.toyyibpay.com';
 const TOYYIBPAY_USER_SECRET_KEY = process.env.TOYYIBPAY_USER_SECRET_KEY || 'YOUR_SECRET_KEY';
 const TOYYIBPAY_CATEGORY_CODE = process.env.TOYYIBPAY_CATEGORY_CODE || 'YOUR_CATEGORY_CODE';
 
