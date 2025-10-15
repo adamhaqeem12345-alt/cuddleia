@@ -4,8 +4,9 @@ import Link from "next/link";
 import { products } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Info, ShoppingCart } from "lucide-react";
+import { Download, Info } from "lucide-react";
 import type { Metadata } from "next";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 
 export const metadata: Metadata = {
   title: "All Products | Cuddleia",
@@ -64,10 +65,7 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
             </a>
           </Button>
         ) : (
-          <Button className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-            <ShoppingCart className="h-5 w-5 mr-2" />
-            Add to Cart
-          </Button>
+          <AddToCartButton product={product} />
         )}
       </CardFooter>
     </Card>
@@ -112,7 +110,7 @@ export default function ProductsPage() {
             ))}
           </div>
         </section>
-      </main>
+      </main>.
     </div>
   );
 }

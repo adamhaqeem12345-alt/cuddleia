@@ -2,9 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Info, ArrowRight, ShoppingCart } from "lucide-react";
+import { Download, Info, ArrowRight } from "lucide-react";
+import { products } from "@/lib/products";
+import { AddToCartButton } from "@/components/add-to-cart-button";
 
 export default function Home() {
+  const completeCollection = products.find(p => p.id === '010');
+  const wallpapers = products.filter(p => p.category === 'Wallpapers').slice(0, 3);
+  
   return (
     <>
       <section className="h-[75vh] bg-accent flex flex-col items-center justify-center text-center px-4">
@@ -46,61 +51,61 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-accent py-24 sm:py-32">
-        <div className="container mx-auto px-4">
-          <div>
-            <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">Get The Complete 5-Volume Series</h2>
-            <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">Purchase the entire Barakah Blueprint series in one bundle and save! Get all five volumes covering everything from branding and marketing to automation and scaling with Iman.</p>
-          </div>
-          <div className="flex justify-center">
-            <div className="max-w-sm w-full">
-              <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
-                <CardHeader className="p-0">
-                  <Link href="/products/010" className="block p-0">
-                    <div className="relative w-full overflow-hidden aspect-[3/4]">
-                      <Image src="https://i.postimg.cc/rsqhc9sF/The-complete-collection-Vol-I.png" alt="Barakah Business Blueprint — The Complete Collection (Vol. 1-5)" fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
-                    </div>
-                  </Link>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col p-6">
-                  <div className="flex-1">
-                    <CardTitle className="mb-2">
-                       <Link href="/products/010" className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
-                        Barakah Business Blueprint — The Complete Collection (Vol. 1-5)
-                      </Link>
-                    </CardTitle>
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2">
-                        <p className="text-xl font-headline font-bold text-primary">$70.00 USD</p>
-                        <p className="text-lg font-headline font-bold text-muted-foreground line-through">$80.00 USD</p>
+      {completeCollection && (
+        <section className="bg-accent py-24 sm:py-32">
+          <div className="container mx-auto px-4">
+            <div>
+              <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">Get The Complete 5-Volume Series</h2>
+              <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">Purchase the entire Barakah Blueprint series in one bundle and save! Get all five volumes covering everything from branding and marketing to automation and scaling with Iman.</p>
+            </div>
+            <div className="flex justify-center">
+              <div className="max-w-sm w-full">
+                <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
+                  <CardHeader className="p-0">
+                    <Link href={`/products/${completeCollection.id}`} className="block p-0">
+                      <div className="relative w-full overflow-hidden aspect-[3/4]">
+                        <Image src={completeCollection.imageUrl} alt={completeCollection.name} fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
                       </div>
-                      <p className="text-xs text-muted-foreground">Loading conversion...</p>
+                    </Link>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col p-6">
+                    <div className="flex-1">
+                      <CardTitle className="mb-2">
+                         <Link href={`/products/${completeCollection.id}`} className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
+                          {completeCollection.name}
+                        </Link>
+                      </CardTitle>
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2">
+                          <p className="text-xl font-headline font-bold text-primary">${completeCollection.price.toFixed(2)} USD</p>
+                          {completeCollection.originalPrice && <p className="text-lg font-headline font-bold text-muted-foreground line-through">${completeCollection.originalPrice.toFixed(2)} USD</p>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Loading conversion...</p>
+                      </div>
+                      <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{completeCollection.description.split('\\n\\n')[0]}</p>
+                       <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
+                        <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        <span>{completeCollection.disclaimer}</span>
+                      </div>
                     </div>
-                    <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">Build your business with integrity, grow it with clarity, and sustain it with barakah. The Barakah Business Blueprint Complete Collection gathers all five volumes into one seamless journey...</p>
-                     <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
-                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                      <span>Written by AI, guided by the author’s ideas and heart, and carefully reviewed for sincerity and truth.</span>
-                    </div>
-                  </div>
-                </CardContent>
-                 <CardFooter>
-                  <Button className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                    <ShoppingCart className="h-5 w-5 mr-2" />Add to Cart
-                  </Button>
-                </CardFooter>
-              </Card>
+                  </CardContent>
+                   <CardFooter>
+                    <AddToCartButton product={completeCollection} />
+                  </CardFooter>
+                </Card>
+              </div>
+            </div>
+             <div className="mt-20 text-center">
+              <Button asChild size="lg" variant="secondary" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
+                <Link href="/products">
+                  View All Products <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
             </div>
           </div>
-           <div className="mt-20 text-center">
-            <Button asChild size="lg" variant="secondary" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">
-              <Link href="/products">
-                View All Products <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
@@ -109,97 +114,36 @@ export default function Home() {
             <p className="text-center text-lg text-muted-foreground mb-16 max-w-3xl mx-auto">Beautify your digital space with our collection of faith-inspired wallpapers for your tablet and desktop.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
-            {/* Repeat for each wallpaper */}
-            <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
-              <CardHeader className="p-0">
-                <Link href="/products/002" className="block p-0">
-                  <div className="relative w-full overflow-hidden aspect-[4/3]">
-                    <Image src="https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png" alt="iPad Wallpaper (Maroon Series)" fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
-                  </div>
-                </Link>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col p-6">
-                <CardTitle className="mb-2">
-                  <Link href="/products/002" className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
-                    iPad Wallpaper (Maroon Series)
+            {wallpapers.map(product => (
+              <Card key={product.id} className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
+                <CardHeader className="p-0">
+                  <Link href={`/products/${product.id}`} className="block p-0">
+                    <div className="relative w-full overflow-hidden aspect-[4/3]">
+                      <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
+                    </div>
                   </Link>
-                </CardTitle>
-                 <div className="mb-4">
-                    <p className="text-xl font-headline font-bold text-primary">$6.00 USD</p>
-                    <p className="text-xs text-muted-foreground">Loading conversion...</p>
+                </CardHeader>
+                <CardContent className="flex flex-1 flex-col p-6">
+                  <CardTitle className="mb-2">
+                    <Link href={`/products/${product.id}`} className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
+                      {product.name}
+                    </Link>
+                  </CardTitle>
+                   <div className="mb-4">
+                      <p className="text-xl font-headline font-bold text-primary">${product.price.toFixed(2)} USD</p>
+                      <p className="text-xs text-muted-foreground">Loading conversion...</p>
+                    </div>
+                  <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
+                  <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
+                      <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                      <span>{product.disclaimer}</span>
                   </div>
-                <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">A digital Islamic wallpaper designed with floral art and Arabic calligraphy...</p>
-                <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
-                    <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>All wallpaper designs are 100% my work.</span>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                  <ShoppingCart className="h-5 w-5 mr-2" />Add to Cart
-                </Button>
-              </CardFooter>
-            </Card>
-             <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
-              <CardHeader className="p-0">
-                <Link href="/products/003" className="block p-0">
-                  <div className="relative w-full overflow-hidden aspect-[4/3]">
-                    <Image src="https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png" alt="iPad Wallpaper (Minimalist Series)" fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
-                  </div>
-                </Link>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col p-6">
-                <CardTitle className="mb-2">
-                  <Link href="/products/003" className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
-                   iPad Wallpaper (Minimalist Series)
-                  </Link>
-                </CardTitle>
-                 <div className="mb-4">
-                    <p className="text-xl font-headline font-bold text-primary">$5.00 USD</p>
-                    <p className="text-xs text-muted-foreground">Loading conversion...</p>
-                  </div>
-                <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">A digital Islamic wallpaper featuring a minimalist floral background...</p>
-                <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
-                    <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>All wallpaper designs are 100% my work.</span>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                  <ShoppingCart className="h-5 w-5 mr-2" />Add to Cart
-                </Button>
-              </CardFooter>
-            </Card>
-             <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
-              <CardHeader className="p-0">
-                <Link href="/products/004" className="block p-0">
-                  <div className="relative w-full overflow-hidden aspect-[4/3]">
-                    <Image src="https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png" alt="iPad Wallpaper (Pink series)" fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
-                  </div>
-                </Link>
-              </CardHeader>
-              <CardContent className="flex flex-1 flex-col p-6">
-                <CardTitle className="mb-2">
-                  <Link href="/products/004" className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
-                   iPad Wallpaper (Pink series)
-                  </Link>
-                </CardTitle>
-                 <div className="mb-4">
-                    <p className="text-xl font-headline font-bold text-primary">$5.00 USD</p>
-                    <p className="text-xs text-muted-foreground">Loading conversion...</p>
-                  </div>
-                <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">A digital iPad wallpaper featuring a beautiful pink floral background...</p>
-                 <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
-                    <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span>All wallpaper designs are 100% my work.</span>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                  <ShoppingCart className="h-5 w-5 mr-2" />Add to Cart
-                </Button>
-              </CardFooter>
-            </Card>
+                </CardContent>
+                <CardFooter>
+                  <AddToCartButton product={product} />
+                </CardFooter>
+              </Card>
+            ))}
           </div>
           <div className="mt-20 text-center">
             <Button asChild size="lg" variant="secondary" className="rounded-full font-bold shadow-lg transition-transform hover:scale-105">

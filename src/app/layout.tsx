@@ -4,6 +4,8 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { CartProvider } from "@/context/cart-context";
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const fontHeadline = Belleza({
   subsets: ["latin"],
@@ -32,11 +34,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn("min-h-screen bg-background font-body antialiased overflow-x-hidden", fontHeadline.variable, fontBody.variable)}>
-        <div className="relative flex min-h-dvh flex-col bg-background">
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </div>
+        <PayPalScriptProvider options={{ clientId: "YOUR_CLIENT_ID" }}>
+          <CartProvider>
+            <div className="relative flex min-h-dvh flex-col bg-background">
+              <SiteHeader />
+              <main className="flex-1">{children}</main>
+              <SiteFooter />
+            </div>
+          </CartProvider>
+        </PayPalScriptProvider>
       </body>
     </html>
   );

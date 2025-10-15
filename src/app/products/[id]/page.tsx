@@ -3,8 +3,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Info, ShoppingCart, Download } from 'lucide-react';
+import { ArrowLeft, Info, Download } from 'lucide-react';
 import type { Metadata } from 'next';
+import { AddToCartButton } from '@/components/add-to-cart-button';
 
 type Props = {
   params: { id: string };
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${product.name} | Cuddleia`;
-  const description = product.description.split('\n')[0];
+  const description = product.description.split('\\n')[0];
 
   return {
     title,
@@ -129,10 +130,7 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
                         </a>
                     </Button>
                 ) : (
-                    <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
-                        <ShoppingCart className="h-5 w-5 mr-2" />
-                        Add to Cart
-                    </Button>
+                    <AddToCartButton product={product} />
                 )}
             </div>
           </div>
