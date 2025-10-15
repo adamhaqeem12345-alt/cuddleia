@@ -10,11 +10,6 @@ const nextConfig = {
       },
     ],
   },
-  env: {
-    PAYPAL_CLIENT_ID: process.env.PAYPAL_CLIENT_ID,
-    PAYPAL_CLIENT_SECRET: process.env.PAYPAL_CLIENT_SECRET,
-    NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
-  }
 };
 
 module.exports = nextConfig;
