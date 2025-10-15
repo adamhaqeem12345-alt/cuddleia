@@ -1,19 +1,17 @@
 'use client';
 
-import { useEffect, useState, useContext, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useContext, Suspense } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CartContext } from '@/context/cart-context';
-import { CheckCircle, Loader, AlertTriangle, ArrowRight } from 'lucide-react';
+import { CheckCircle, Loader, ArrowRight } from 'lucide-react';
 
 function SuccessContent() {
   const { clearCart } = useContext(CartContext);
 
   useEffect(() => {
-    // The payment has already been captured by the onApprove callback or the ToyyibPay callback.
-    // This page is just for showing the confirmation UI.
-    // The primary action is to clear the cart.
+    // The payment has already been verified by the backend callback (PayPal onApprove or ToyyibPay callback).
+    // This page's only responsibility is to show a success message and clear the cart from local storage.
     clearCart();
   }, [clearCart]);
 
@@ -34,7 +32,6 @@ function SuccessContent() {
     </div>
   );
 }
-
 
 export default function SuccessPage() {
     return (

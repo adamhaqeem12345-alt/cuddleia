@@ -34,7 +34,7 @@ export async function createToyyibpayBill(cart: CartItem[], total: number, user:
     params.append('categoryCode', TOYYIBPAY_CATEGORY_CODE);
     params.append('billName', billName);
     params.append('billDescription', billDescription);
-    params.append('billPrice', billAmount.toString());
+    params.append('billPrice', '100');
     params.append('billQuantity', '1');
     params.append('billTo', user.name);
     params.append('billEmail', user.email);

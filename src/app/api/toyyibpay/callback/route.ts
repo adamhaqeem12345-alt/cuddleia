@@ -17,7 +17,12 @@ export async function POST(req: Request) {
     const transaction_id = formData.get('transaction_id') as string;
     const signature = formData.get('signature') as string;
     
-    const TOYYIBPAY_USER_SECRET_KEY = process.env.TOYYIBPAY_USER_SECRET_KEY || 'YOUR_SECRET_KEY';
+    const TOYYIBPAY_USER_SECRET_KEY = process.env.TOYYIBPAY_USER_SECRET_KEY;
+
+    if (!TOYYIBPAY_USER_SECRET_KEY) {
+        console.error('ToyyibPay secret key is not configured.');
+        return new Response('Server configuration error', { status: 500 });
+    }
 
     // The signature is a hash of status_id, billcode, order_id and your secret key
     const dataToSign = status_id + billcode + order_id + TOYYIBPAY_USER_SECRET_KEY;
