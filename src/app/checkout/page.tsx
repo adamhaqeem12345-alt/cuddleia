@@ -41,8 +41,6 @@ const CheckoutPage = () => {
 
   const onApprove = async (data: any) => {
     try {
-      // The data object contains the orderID, payerID, and paymentID
-      // We only need the orderID to capture the order
       const res = await fetch('/api/paypal/capture-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,11 +50,8 @@ const CheckoutPage = () => {
       const orderDetails = await res.json();
       
       if (res.ok && orderDetails.status === 'COMPLETED') {
-        // Payment successful, redirect to a success page
-        // We pass the orderID (which is the 'token' in the success page)
         router.push(`/checkout/success?token=${data.orderID}`);
       } else {
-        // Handle failed capture
         throw new Error(orderDetails.error || 'Failed to capture payment.');
       }
     } catch (err: any) {
