@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { getOrderDetails, deleteOrderDetails } from '@/lib/order-cache';
 import { products } from '@/lib/products';
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: Request) {
   try {
@@ -51,14 +52,27 @@ export async function POST(req: Request) {
                 })
             };
 
-            try {
-                await sendPurchaseConfirmationEmail(customer, orderDetails);
-            } catch (emailError) {
-                console.error("Failed to send purchase email after ToyyibPay callback:", emailError);
-            } finally {
-                // Clean up the cached order details
-                deleteOrderDetails(order_id);
-            }
+            // Using .catch to not block the response
+            sendPurchaseConfirmationEmail(customer, orderDetails).catch(emailError => {
+                 console.error("Failed to send purchase email after ToyyibPay callback:", emailError);
+            });
+            
+            // Log to Google Sheets
+            const productNames = orderDetails.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
+            appendToSheet({
+                date: new Date().toISOString(),
+                name: customer.name,
+                email: customer.email,
+                product: productNames,
+                total: orderDetails.total,
+                paymentMethod: orderDetails.paymentMethod,
+            }).catch(sheetError => {
+                console.error("Failed to log to Google Sheets after ToyyibPay callback:", sheetError);
+            });
+
+            // Clean up the cached order details after processing
+            deleteOrderDetails(order_id);
+
         } else {
             console.error(`Could not find cached order details for ToyyibPay order_id: ${order_id}`);
         }

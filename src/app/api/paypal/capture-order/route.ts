@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { captureOrder } from '@/lib/paypal';
 import { sendPurchaseConfirmationEmail } from '@/lib/email';
 import { products } from '@/lib/products';
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: Request) {
   try {
@@ -34,12 +35,23 @@ export async function POST(req: Request) {
             })
         };
 
-        try {
-            await sendPurchaseConfirmationEmail(customer, orderDetails);
-        } catch (emailError) {
-            // Log the email error but don't fail the entire transaction for the user
+        // This can run in parallel, no need to await
+        sendPurchaseConfirmationEmail(customer, orderDetails).catch(emailError => {
             console.error("Failed to send purchase email after PayPal capture:", emailError);
-        }
+        });
+
+        // Log to Google Sheets, can also run in parallel
+        const productNames = orderDetails.items.map(item => `${item.name} (x${item.quantity})`).join(', ');
+        appendToSheet({
+            date: new Date().toISOString(),
+            name: customer.name,
+            email: customer.email,
+            product: productNames,
+            total: orderDetails.total,
+            paymentMethod: orderDetails.paymentMethod,
+        }).catch(sheetError => {
+            console.error("Failed to log to Google Sheets after PayPal capture:", sheetError);
+        });
     }
 
 
