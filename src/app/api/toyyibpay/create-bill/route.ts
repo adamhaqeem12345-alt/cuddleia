@@ -6,6 +6,29 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+async function getConvertedAmount(usdAmount: number): Promise<number | null> {
+  if (usdAmount === 0) {
+    return 0;
+  }
+  try {
+    const response = await fetch('https://open.er-api.com/v6/latest/USD', {
+      next: { revalidate: 3600 }
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.json();
+    const exchangeRate = data.rates.MYR;
+    if (exchangeRate) {
+      return usdAmount * exchangeRate;
+    }
+    return null;
+  } catch (error) {
+    console.error('Currency conversion failed:', error);
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { cart, name, email } = (await req.json()) as { cart: CartItem[], name: string, email: string };
@@ -25,37 +48,47 @@ export async function POST(req: NextRequest) {
     if (!cart || cart.length === 0) {
         return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
     }
+
+    const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     
-    // --- TROUBLESHOOTING STEP: Hardcode the amount to match the documentation ---
-    const totalAmountInSen = 100; // This is RM 1.00
+    if (totalAmountMYR === null) {
+        throw new Error('Failed to retrieve MYR conversion rate.');
+    }
+    
+    const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    const params = new URLSearchParams();
-    params.append('userSecretKey', secretKey);
-    params.append('categoryCode', categoryCode);
-    params.append('billName', 'Cuddleia Digital Goods');
-    params.append('billDescription', `Order from ${name}`);
-    params.append('billPriceSetting', '1');
-    params.append('billPayorInfo', '1');
-    params.append('billAmount', totalAmountInSen.toString());
-    params.append('billReturnUrl', `${req.nextUrl.origin}/checkout/success`);
-    params.append('billCallbackUrl', `${req.nextUrl.origin}/api/toyyibpay/callback`);
-    params.append('billExternalReferenceNo', `order-${Date.now()}`);
-    params.append('billTo', name);
-    params.append('billEmail', email);
-    params.append('billPhone', ''); // Keep this as per the sample's likely expectation
-    params.append('billSplitPayment', '0');
-    params.append('billSplitPaymentArgs', '');
-    params.append('billPaymentChannel', '0');
-    params.append('billContentEmail', 'Thank you for your purchase! You will receive another email with download links shortly.');
-    params.append('billChargeToCustomer', '1');
+    const bodyParams = {
+        userSecretKey: secretKey,
+        categoryCode: categoryCode,
+        billName: 'Cuddleia Digital Goods',
+        billDescription: `Order from ${name}`,
+        billPriceSetting: '1',
+        billPayorInfo: '1',
+        billAmount: totalAmountInSen.toString(),
+        billReturnUrl: `${req.nextUrl.origin}/checkout/success`,
+        billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
+        billExternalReferenceNo: `order-${Date.now()}`,
+        billTo: name,
+        billEmail: email,
+        billPhone: '',
+        billSplitPayment: '0',
+        billSplitPaymentArgs: '',
+        billPaymentChannel: '0',
+        billContentEmail: 'Thank you for your purchase! You will receive another email with download links shortly.',
+        billChargeToCustomer: '1',
+    };
 
+    const urlEncodedBody = Object.entries(bodyParams)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+      .join('&');
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: params.toString(),
+      body: urlEncodedBody,
     });
 
     const data = await response.json();
