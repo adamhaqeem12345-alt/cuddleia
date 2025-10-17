@@ -25,6 +25,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
       if (result) {
         setMyrAmount(result.myrAmount);
       }
+      // Always stop loading, even if the result is null
       setIsLoading(false);
     }
     fetchConvertedPrice();
