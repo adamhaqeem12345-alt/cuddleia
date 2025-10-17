@@ -62,7 +62,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
             {isLoading ? (
                 <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1"></div>
             ) : convertedPrice !== null ? (
-                <p className="text-sm text-muted-foreground">≈ RM {convertedPrice.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">(approx. RM {convertedPrice.toFixed(2)})</p>
             ) : (
                 <p className="text-sm text-muted-foreground">USD</p>
             )}

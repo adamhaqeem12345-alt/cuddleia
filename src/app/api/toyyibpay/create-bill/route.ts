@@ -1,13 +1,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products';
+import { getConvertedAmount } from '@/app/actions';
 
 interface CartItem extends Product {
   quantity: number;
 }
-
-// Using a fixed rate is more reliable than an external API call for this use case.
-const USD_TO_MYR_RATE = 4.7;
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const totalAmountMYR = totalAmountUSD * USD_TO_MYR_RATE;
+    const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
     if (totalAmountInSen < 100) { // ToyyibPay minimum is RM1.00
@@ -54,7 +52,7 @@ export async function POST(req: NextRequest) {
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
-      billPhone: phone, // This is the fix
+      billPhone: phone,
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
       billPaymentChannel: '2', // 0: FPX, 1: Credit Card, 2: Both
