@@ -2,18 +2,17 @@ import { CartItem } from "@/context/cart-context";
 
 const getPayPalAccessToken = async () => {
     const apiEnv = process.env.PAYPAL_API_ENV || 'sandbox';
-
     const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
     
     if (!clientId || !clientSecret) {
-        throw new Error("Missing PayPal API credentials. Ensure NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are set.");
+        throw new Error("Missing PayPal API credentials. Ensure NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are set in your environment.");
     }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-    const url = apiEnv === 'sandbox' 
-        ? 'https://api-m.sandbox.paypal.com/v1/oauth2/token' 
-        : 'https://api-m.paypal.com/v1/oauth2/token';
+    const url = apiEnv === 'live' 
+        ? 'https://api-m.paypal.com/v1/oauth2/token' 
+        : 'https://api-m.sandbox.paypal.com/v1/oauth2/token';
 
     const response = await fetch(url, {
         method: 'POST',
@@ -26,6 +25,7 @@ const getPayPalAccessToken = async () => {
 
     if (!response.ok) {
         const errorData = await response.json();
+        console.error("PayPal Auth Error Response:", errorData);
         throw new Error(`Failed to get PayPal access token: ${JSON.stringify(errorData)}`);
     }
 
@@ -37,9 +37,9 @@ const getPayPalAccessToken = async () => {
 export const createOrder = async (cart: CartItem[]) => {
     const accessToken = await getPayPalAccessToken();
     const apiEnv = process.env.PAYPAL_API_ENV || 'sandbox';
-    const url = apiEnv === 'sandbox' 
-        ? 'https://api-m.sandbox.paypal.com/v2/checkout/orders' 
-        : 'https://api-m.paypal.com/v2/checkout/orders';
+    const url = apiEnv === 'live' 
+        ? 'https://api-m.paypal.com/v2/checkout/orders' 
+        : 'https://api-m.sandbox.paypal.com/v2/checkout/orders';
 
     const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
 
@@ -81,9 +81,9 @@ export const createOrder = async (cart: CartItem[]) => {
 export const captureOrder = async (orderID: string) => {
     const accessToken = await getPayPalAccessToken();
     const apiEnv = process.env.PAYPAL_API_ENV || 'sandbox';
-    const url = apiEnv === 'sandbox' 
-        ? `https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`
-        : `https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`;
+    const url = apiEnv === 'live' 
+        ? `https://api-m.paypal.com/v2/checkout/orders/${orderID}/capture`
+        : `https://api-m.sandbox.paypal.com/v2/checkout/orders/${orderID}/capture`;
 
     const response = await fetch(url, {
         method: 'POST',
