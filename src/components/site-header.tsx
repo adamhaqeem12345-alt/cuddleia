@@ -4,9 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Flower2, Menu, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
+import { useState, useEffect } from 'react';
 
 export function SiteHeader() {
   const { cart } = useCart();
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
@@ -28,7 +35,7 @@ export function SiteHeader() {
           <Link href="/cart">
               <Button variant="outline" size="icon" className="relative h-14 w-14 rounded-full">
                 <ShoppingCart className="h-7 w-7 text-foreground" />
-                {itemCount > 0 && (
+                {hasMounted && itemCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                     {itemCount}
                   </span>
