@@ -6,7 +6,6 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-// Using a fixed exchange rate to avoid external API failures and ensure a valid amount is always sent.
 const USD_TO_MYR_RATE = 4.7;
 
 export async function POST(req: NextRequest) {
@@ -50,12 +49,12 @@ export async function POST(req: NextRequest) {
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
-      billPhone: '', // Included as per documentation sample
+      billPhone: '',
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
-      billPaymentChannel: '2', // 0 for FPX, 1 for Credit Card, 2 for both
+      billPaymentChannel: '2',
       billContentEmail: 'Thank you for your purchase from Cuddleia! You will receive your download links shortly.',
-      billChargeToCustomer: '1' // 1 to charge transaction fee to customer
+      billChargeToCustomer: '1'
     });
 
     const response = await fetch(toyyibpayUrl, {
@@ -67,17 +66,28 @@ export async function POST(req: NextRequest) {
     });
     
     const responseText = await response.text();
-    // The response is a JSON string inside an array, e.g., '[{"BillCode":"..."}]'
-    const data = JSON.parse(responseText);
 
-    if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
-        const billCode = data[0].BillCode;
-        const paymentUrl = `https://toyyibpay.com/${billCode}`;
-        return NextResponse.json({ paymentUrl });
-    } else {
-        console.error('ToyyibPay API Error. Raw Response:', responseText);
-        const errorMessage = 'Failed to create ToyyibPay bill. The API returned an unexpected response.';
-        throw new Error(errorMessage);
+    if (!response.ok) {
+        console.error('ToyyibPay API Error: Non-OK response received.');
+        console.error('Status:', response.status);
+        console.error('Status Text:', response.statusText);
+        console.error('Response Body:', responseText);
+        throw new Error(`Failed to create ToyyibPay bill. API responded with status ${response.status}.`);
+    }
+
+    try {
+        const data = JSON.parse(responseText);
+        if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
+            const billCode = data[0].BillCode;
+            const paymentUrl = `https://toyyibpay.com/${billCode}`;
+            return NextResponse.json({ paymentUrl });
+        } else {
+            console.error('ToyyibPay API Error: Unexpected JSON structure. Raw Response:', responseText);
+            throw new Error('Failed to create ToyyibPay bill. The API returned an unexpected response format.');
+        }
+    } catch (e) {
+        console.error('ToyyibPay API Error: Failed to parse JSON response. Raw Response:', responseText);
+        throw new Error('Failed to create ToyyibPay bill. The API returned a non-JSON or invalid response.');
     }
 
   } catch (error: any) {
