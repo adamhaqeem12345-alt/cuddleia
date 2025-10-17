@@ -14,7 +14,6 @@ export async function POST(req: NextRequest) {
     const secretKey = process.env.TOYYIBPAY_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
 
-    // Add explicit checks for environment variables and return a clear error.
     if (!secretKey || !categoryCode) {
       console.error('Server configuration error: Missing ToyyibPay Secret Key or Category Code.');
       return NextResponse.json({ 
@@ -38,7 +37,6 @@ export async function POST(req: NextRequest) {
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
     
-    // Construct the request body using URLSearchParams for correct x-www-form-urlencoded format.
     const bodyParams = new URLSearchParams({
       userSecretKey: secretKey,
       categoryCode: categoryCode,
@@ -52,12 +50,12 @@ export async function POST(req: NextRequest) {
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
-      billPhone: '', // Included as it's in the sample, even if empty.
+      billPhone: '', // Included as per documentation sample
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
       billPaymentChannel: '2', // 0 for FPX, 1 for Credit Card, 2 for both
       billContentEmail: 'Thank you for your purchase from Cuddleia! You will receive your download links shortly.',
-      billChargeToCustomer: '1' // Charge transaction fee to customer
+      billChargeToCustomer: '1' // 1 to charge transaction fee to customer
     });
 
     const response = await fetch(toyyibpayUrl, {
@@ -68,8 +66,8 @@ export async function POST(req: NextRequest) {
       body: bodyParams.toString(),
     });
     
-    // The response from ToyyibPay is not JSON, it's a JSON string inside an array.
     const responseText = await response.text();
+    // The response is a JSON string inside an array, e.g., '[{"BillCode":"..."}]'
     const data = JSON.parse(responseText);
 
     if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
@@ -78,8 +76,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ paymentUrl });
     } else {
         console.error('ToyyibPay API Error. Raw Response:', responseText);
-        // Provide a more helpful error message
-        const errorMessage = data[0]?.Status === 'error' && data[0]?.Msg ? data[0].Msg : 'Failed to create ToyyibPay bill. The API returned an unexpected response.';
+        const errorMessage = 'Failed to create ToyyibPay bill. The API returned an unexpected response.';
         throw new Error(errorMessage);
     }
 
