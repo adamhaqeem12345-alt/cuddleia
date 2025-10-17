@@ -1,23 +1,21 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { useEffect } from 'react';
 
-export default function CheckoutSuccessPage() {
+const SuccessContent = () => {
     const { clearCart } = useCart();
-
     useEffect(() => {
-        // Clear the cart once the user lands on the success page.
-        // This is important so they don't see old items if they shop again.
         clearCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
-        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
+        <>
             <div className="flex justify-center mb-6">
                 <CheckCircle className="h-24 w-24 text-green-500" />
             </div>
@@ -28,6 +26,74 @@ export default function CheckoutSuccessPage() {
             <Button asChild size="lg">
                 <Link href="/products">Continue Shopping</Link>
             </Button>
+        </>
+    );
+};
+
+const FailedContent = () => {
+    return (
+        <>
+            <div className="flex justify-center mb-6">
+                <XCircle className="h-24 w-24 text-destructive" />
+            </div>
+            <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">Payment Failed</h1>
+            <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+                Unfortunately, we were unable to process your payment. Please try again or contact us if the problem persists.
+            </p>
+             <div className="flex gap-4 justify-center">
+                <Button asChild size="lg">
+                    <Link href="/checkout">Try Again</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                    <Link href="/products">Continue Shopping</Link>
+                </Button>
+            </div>
+        </>
+    );
+};
+
+const CanceledContent = () => {
+    return (
+        <>
+            <div className="flex justify-center mb-6">
+                <AlertCircle className="h-24 w-24 text-yellow-500" />
+            </div>
+            <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">Payment Canceled</h1>
+            <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+                Your payment process was canceled. Your cart is still waiting for you if you'd like to try again.
+            </p>
+            <div className="flex gap-4 justify-center">
+                <Button asChild size="lg">
+                    <Link href="/checkout">Back to Checkout</Link>
+                </Button>
+                 <Button asChild size="lg" variant="outline">
+                    <Link href="/products">Continue Shopping</Link>
+                </Button>
+            </div>
+        </>
+    );
+}
+
+export default function CheckoutStatusPage() {
+    const searchParams = useSearchParams();
+    const statusId = searchParams.get('status_id');
+
+    const renderContent = () => {
+        switch (statusId) {
+            case '1': // Success
+                return <SuccessContent />;
+            case '3': // Failed
+                return <FailedContent />;
+            case '4': // Canceled by user (if Toyyibpay supports this redirect)
+                return <CanceledContent />;
+            default: // Default to success for safety, e.g. if params are missing
+                return <SuccessContent />;
+        }
+    };
+    
+    return (
+        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
+           {renderContent()}
         </div>
     );
 }
