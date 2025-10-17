@@ -31,17 +31,21 @@ async function getConvertedAmount(usdAmount: number): Promise<number | null> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { cart, name, email } = (await req.json()) as { cart: CartItem[], name: string, email: string };
-
     const secretKey = process.env.TOYYIBPAY_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
-    
-    // Force production URL to avoid environment mismatch issues.
-    const toyyibpayUrl = 'https://toyyibpay.com';
 
+    // --- START: CRITICAL VALIDATION ---
     if (!secretKey || !categoryCode) {
-      throw new Error('ToyyibPay secret key or category code is not configured.');
+      console.error('Missing ToyyibPay environment variables. Please check your .env file.');
+      return NextResponse.json({ 
+        error: 'Server configuration error: ToyyibPay Secret Key or Category Code is missing. Please contact the site administrator.' 
+      }, { status: 500 });
     }
+    // --- END: CRITICAL VALIDATION ---
+
+    const { cart, name, email } = (await req.json()) as { cart: CartItem[], name: string, email: string };
+
+    const toyyibpayUrl = 'https://toyyibpay.com';
 
     if (!cart || cart.length === 0) {
         return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
@@ -56,26 +60,25 @@ export async function POST(req: NextRequest) {
     
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    const bodyParams = new URLSearchParams({
-        userSecretKey: secretKey,
-        categoryCode: categoryCode,
-        billName: 'Cuddleia Digital Goods',
-        billDescription: `Order from ${name}`,
-        billPriceSetting: '1',
-        billPayorInfo: '1',
-        billAmount: totalAmountInSen.toString(),
-        billReturnUrl: `${req.nextUrl.origin}/checkout/success`,
-        billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
-        billExternalReferenceNo: `order-${Date.now()}`,
-        billTo: name,
-        billEmail: email,
-        billPhone: '',
-        billSplitPayment: '0',
-        billSplitPaymentArgs: '',
-        billPaymentChannel: '0',
-        billContentEmail: 'Thank you for your purchase! You will receive another email with download links shortly.',
-        billChargeToCustomer: '1',
-    });
+    const bodyParams = new URLSearchParams();
+    bodyParams.append('userSecretKey', secretKey);
+    bodyParams.append('categoryCode', categoryCode);
+    bodyParams.append('billName', 'Cuddleia Digital Goods');
+    bodyParams.append('billDescription', `Order from ${name}`);
+    bodyParams.append('billPriceSetting', '1');
+    bodyParams.append('billPayorInfo', '1');
+    bodyParams.append('billAmount', totalAmountInSen.toString());
+    bodyParams.append('billReturnUrl', `${req.nextUrl.origin}/checkout/success`);
+    bodyParams.append('billCallbackUrl', `${req.nextUrl.origin}/api/toyyibpay/callback`);
+    bodyParams.append('billExternalReferenceNo', `order-${Date.now()}`);
+    bodyParams.append('billTo', name);
+    bodyParams.append('billEmail', email);
+    bodyParams.append('billPhone', '');
+    bodyParams.append('billSplitPayment', '0');
+    bodyParams.append('billSplitPaymentArgs', '');
+    bodyParams.append('billPaymentChannel', '0');
+    bodyParams.append('billContentEmail', 'Thank you for your purchase! You will receive another email with download links shortly.');
+    bodyParams.append('billChargeToCustomer', '1');
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
