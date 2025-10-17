@@ -27,7 +27,7 @@ export default function CheckoutPage() {
     )
   }
 
-  const createOrder = async (data: CreateOrderData) => {
+  const createOrder = async (data: CreateOrderData): Promise<string> => {
     try {
         const response = await fetch('/api/paypal/create-order', {
             method: 'POST',
@@ -37,22 +37,26 @@ export default function CheckoutPage() {
             body: JSON.stringify({ cart }),
         });
 
+        const order = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to create order.');
+            throw new Error(order.error || 'Failed to create PayPal order.');
         }
 
-        const order = await response.json();
-        return order.orderID;
+        if (order.orderID) {
+            return order.orderID;
+        } else {
+            throw new Error('Did not receive order ID from server.');
+        }
+
     } catch (error) {
-        console.error(error);
-        // It's not recommended to show technical error messages to the user.
-        // A toast notification or a generic error message would be better.
-        return '';
+        console.error("Create Order Error:", error);
+        alert(`Could not initiate PayPal Checkout.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return Promise.reject(error);
     }
   };
 
-  const onApprove = async (data: OnApproveData) => {
+  const onApprove = async (data: OnApproveData): Promise<void> => {
      try {
         const response = await fetch('/api/paypal/capture-order', {
             method: 'POST',
@@ -62,19 +66,20 @@ export default function CheckoutPage() {
             body: JSON.stringify({ orderID: data.orderID }),
         });
 
+        const details = await response.json();
+
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to capture payment.');
+            throw new Error(details.error || 'Failed to capture payment.');
         }
 
-        const details = await response.json();
         console.log("Payment successful:", details);
         clearCart();
         router.push('/checkout/success');
 
     } catch (error) {
-        console.error(error);
-        // Handle the error, e.g., show a notification to the user
+        console.error("On Approve Error:", error);
+        alert(`Payment failed to process.\n\nPlease try again or contact support.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return Promise.reject(error);
     }
   };
 

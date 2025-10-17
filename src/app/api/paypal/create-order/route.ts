@@ -12,13 +12,15 @@ export async function POST(request: Request) {
     
     const { json, status } = await createOrder(cart as CartItem[]);
 
-    if (status === 201) {
+    if (status >= 200 && status < 300) {
         return NextResponse.json({ orderID: json.id });
     } else {
-        return new NextResponse(JSON.stringify(json), { status });
+        console.error("PayPal Create Order API Error:", json);
+        const errorMessage = json.details?.[0]?.description || json.message || 'Failed to create PayPal order.';
+        return new NextResponse(JSON.stringify({ error: errorMessage }), { status });
     }
   } catch (error: any) {
-    console.error("Create Order Error:", error);
+    console.error("Internal Server Error in create-order:", error);
     return new NextResponse(JSON.stringify({ error: error.message || 'Internal Server Error' }), { status: 500 });
   }
 }
