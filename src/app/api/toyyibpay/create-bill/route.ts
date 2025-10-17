@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     formData.append('billExternalReferenceNo', `order-${Date.now()}`);
     formData.append('billTo', name);
     formData.append('billEmail', email);
-    formData.append('billPaymentChannel', '2'); // 0: FPX, 1: Credit Card, 2: Both
+    formData.append('billPaymentChannel', '0'); // 0: FPX, 1: Credit Card, 2: Both. Defaulting to 0 as it's safer.
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
