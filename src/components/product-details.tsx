@@ -7,6 +7,7 @@ import { Product } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Info, Download, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
+import { ProductPrice } from './product-price';
 
 export const ProductDetails = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
@@ -43,16 +44,7 @@ export const ProductDetails = ({ product }: { product: Product }) => {
             <h1 className="font-headline text-4xl lg:text-5xl text-foreground mb-4 font-bold">{product.name}</h1>
             
             <div className="mb-6">
-                <div className="flex items-center gap-2">
-                    <p className="text-xl font-headline font-bold text-primary">
-                        {isFree ? "Free" : `$${product.price.toFixed(2)}`}
-                    </p>
-                    {product.originalPrice && (
-                        <p className="text-lg font-headline font-bold text-muted-foreground line-through">
-                        ${product.originalPrice.toFixed(2)}
-                        </p>
-                    )}
-                </div>
+                <ProductPrice price={product.price} originalPrice={product.originalPrice} />
             </div>
 
             <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
@@ -92,5 +84,3 @@ export const ProductDetails = ({ product }: { product: Product }) => {
     </div>
   );
 };
-
-    

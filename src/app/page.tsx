@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Info, ArrowRight } from "lucide-react";
 import { products } from "@/lib/products";
+import { ProductPrice } from "@/components/product-price";
 
 export default function Home() {
   const completeCollection = products.find(p => p.id === '010');
@@ -77,10 +78,7 @@ export default function Home() {
                         </Link>
                       </CardTitle>
                       <div className="mb-4">
-                        <div className="flex items-center gap-2">
-                          <p className="text-xl font-headline font-bold text-primary">${completeCollection.price.toFixed(2)}</p>
-                          {completeCollection.originalPrice && <p className="text-lg font-headline font-bold text-muted-foreground line-through">${completeCollection.originalPrice.toFixed(2)}</p>}
-                        </div>
+                        <ProductPrice price={completeCollection.price} originalPrice={completeCollection.originalPrice} />
                       </div>
                       <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{completeCollection.description.split('\\n\\n')[0]}</p>
                        <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
@@ -133,7 +131,7 @@ export default function Home() {
                     </Link>
                   </CardTitle>
                    <div className="mb-4">
-                      <p className="text-xl font-headline font-bold text-primary">${product.price.toFixed(2)}</p>
+                      <ProductPrice price={product.price} />
                     </div>
                   <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
                   <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
@@ -180,5 +178,3 @@ export default function Home() {
     </>
   );
 }
-
-    

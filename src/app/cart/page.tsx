@@ -7,6 +7,7 @@ import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Trash2, ArrowLeft } from 'lucide-react';
+import { ProductPrice } from '@/components/product-price';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
@@ -88,7 +89,7 @@ export default function CartPage() {
                     </div>
                      <div className="border-t pt-4 mt-4 flex justify-between text-2xl font-bold">
                         <span>Total</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                         <ProductPrice price={subtotal} isTotal={true}/>
                     </div>
                 </div>
                 <Button asChild size="lg" className="w-full mt-8 rounded-full font-bold">

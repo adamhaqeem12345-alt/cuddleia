@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { ProductPrice } from '@/components/product-price';
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
@@ -109,7 +110,7 @@ export default function CheckoutPage() {
                 </div>
                  <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
                     <span>Total</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <ProductPrice price={subtotal} isTotal={true}/>
                 </div>
               </div>
             </div>

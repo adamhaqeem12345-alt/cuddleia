@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Info, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/cart-context";
+import { ProductPrice } from "@/components/product-price";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const isFree = product.price === 0;
@@ -35,16 +36,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             </Link>
           </CardTitle>
           <div className="mb-4">
-            <div className="flex items-center gap-2">
-              <p className="text-xl font-headline font-bold text-primary">
-                {isFree ? "Free" : `$${product.price.toFixed(2)}`}
-              </p>
-              {product.originalPrice && (
-                <p className="text-lg font-headline font-bold text-muted-foreground line-through">
-                  ${product.originalPrice.toFixed(2)}
-                </p>
-              )}
-            </div>
+            <ProductPrice price={product.price} originalPrice={product.originalPrice} />
           </div>
           <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
           {product.disclaimer && (
@@ -124,5 +116,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-    
