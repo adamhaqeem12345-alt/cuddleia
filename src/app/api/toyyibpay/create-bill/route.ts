@@ -6,27 +6,6 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-async function getMyrRate(): Promise<number> {
-  try {
-    const response = await fetch('https://open.er-api.com/v6/latest/USD', {
-      next: { revalidate: 3600 } 
-    });
-    if (!response.ok) {
-      throw new Error('Failed to fetch exchange rate');
-    }
-    const data = await response.json();
-    const exchangeRate = data.rates.MYR;
-    if (!exchangeRate) {
-      throw new Error('MYR exchange rate not found');
-    }
-    return exchangeRate;
-  } catch (error) {
-    console.error('Exchange rate API failed:', error);
-    // Fallback rate in case of API failure
-    return 4.70; 
-  }
-}
-
 export async function POST(req: NextRequest) {
   try {
     const { cart, name, email } = (await req.json()) as { cart: CartItem[], name: string, email: string };
@@ -47,35 +26,26 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
     }
     
-    const totalAmountUsd = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const myrRate = await getMyrRate();
-    const totalAmountMyr = totalAmountUsd * myrRate;
-    // ToyyibPay requires the amount in sen (integer).
-    const totalAmountInSen = Math.round(totalAmountMyr * 100);
-    
-    const billName = 'Cuddleia Digital Goods';
-    const billDescription = `Order from ${name}`;
-    const returnUrl = `${req.nextUrl.origin}/checkout/success`;
-    const callbackUrl = `${req.nextUrl.origin}/api/toyyibpay/callback`;
+    // --- TROUBLESHOOTING STEP: Hardcode the amount to match the documentation ---
+    const totalAmountInSen = 100; // This is RM 1.00
 
-    // Rebuilding the request from scratch to exactly match the API documentation format.
     const params = new URLSearchParams();
     params.append('userSecretKey', secretKey);
     params.append('categoryCode', categoryCode);
-    params.append('billName', billName);
-    params.append('billDescription', billDescription);
+    params.append('billName', 'Cuddleia Digital Goods');
+    params.append('billDescription', `Order from ${name}`);
     params.append('billPriceSetting', '1');
     params.append('billPayorInfo', '1');
     params.append('billAmount', totalAmountInSen.toString());
-    params.append('billReturnUrl', returnUrl);
-    params.append('billCallbackUrl', callbackUrl);
+    params.append('billReturnUrl', `${req.nextUrl.origin}/checkout/success`);
+    params.append('billCallbackUrl', `${req.nextUrl.origin}/api/toyyibpay/callback`);
     params.append('billExternalReferenceNo', `order-${Date.now()}`);
     params.append('billTo', name);
     params.append('billEmail', email);
-    params.append('billPhone', ''); // Mandatory field, even if empty.
+    params.append('billPhone', ''); // Keep this as per the sample's likely expectation
     params.append('billSplitPayment', '0');
     params.append('billSplitPaymentArgs', '');
-    params.append('billPaymentChannel', '0'); // '0' for FPX, '1' for Credit Card, '2' for both
+    params.append('billPaymentChannel', '0');
     params.append('billContentEmail', 'Thank you for your purchase! You will receive another email with download links shortly.');
     params.append('billChargeToCustomer', '1');
 
