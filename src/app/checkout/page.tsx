@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CreditCard, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
+import { PayPalButtons } from "@paypal/react-paypal-js";
 
 export default function CheckoutPage() {
   const { cart } = useCart();
-  const [paymentMethod, setPaymentMethod] = useState('paypal');
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -24,6 +23,18 @@ export default function CheckoutPage() {
         </div>
     )
   }
+
+  const createOrder = async () => {
+    // Placeholder function
+    console.log("Creating order...");
+    return "ORDER_ID_FROM_SERVER";
+  };
+
+  const onApprove = async (data: any) => {
+    // Placeholder function
+    console.log("Order approved:", data);
+  };
+
 
   return (
     <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -79,32 +90,17 @@ export default function CheckoutPage() {
             <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment</h2>
             <div className="border rounded-2xl shadow-sm bg-card p-8">
                 <h3 className="font-headline text-xl font-bold mb-6">Choose Payment Method</h3>
-                <div className="space-y-4 mb-8">
-                    {/* Payment method options will go here */}
-                    <div 
-                        onClick={() => setPaymentMethod('paypal')}
-                        className={`border rounded-lg p-4 cursor-pointer transition-all ${paymentMethod === 'paypal' ? 'border-primary ring-2 ring-primary' : 'border-input'}`}>
-                        <p className="font-bold text-lg">PayPal</p>
-                        <p className="text-sm text-muted-foreground">Pay with your PayPal balance or credit/debit card.</p>
-                    </div>
-                     <div 
-                        onClick={() => setPaymentMethod('stripe')}
-                        className={`border rounded-lg p-4 cursor-pointer transition-all ${paymentMethod === 'stripe' ? 'border-primary ring-2 ring-primary' : 'border-input'}`}>
-                        <p className="font-bold text-lg">Credit / Debit Card</p>
-                        <p className="text-sm text-muted-foreground">Securely pay with your card.</p>
-                    </div>
-                </div>
-
+                
                 <div className="mt-8">
-                    {/* Placeholder for payment button */}
-                     <Button size="lg" className="w-full font-bold rounded-full h-12 text-lg">
-                        <CreditCard className="mr-2 h-5 w-5" />
-                        Pay ${subtotal.toFixed(2)}
-                    </Button>
+                    <PayPalButtons 
+                      style={{ layout: "vertical" }}
+                      createOrder={createOrder}
+                      onApprove={onApprove}
+                    />
                 </div>
                  <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
                     <ShieldCheck className="h-4 w-4 text-green-600" />
-                    <span>Secure payment powered by trusted providers.</span>
+                    <span>Secure payment powered by PayPal.</span>
                 </div>
             </div>
         </div>
