@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getConvertedAmount } from '@/app/actions';
 
 interface ProductPriceProps {
   price: number;
@@ -11,25 +10,6 @@ interface ProductPriceProps {
 }
 
 export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductPriceProps) => {
-  const [myrAmount, setMyrAmount] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchConvertedPrice() {
-      if (price === 0) {
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(true);
-      const result = await getConvertedAmount(price);
-      if (result && result.myrAmount) {
-        setMyrAmount(result.myrAmount);
-      }
-      // Always stop loading, even if the result is null or doesn't have myrAmount
-      setIsLoading(false);
-    }
-    fetchConvertedPrice();
-  }, [price]);
 
   if (price === 0) {
     return (
@@ -55,13 +35,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
             )}
         </div>
         <div className="h-6">
-            {isLoading ? (
-                 <p className="text-sm text-muted-foreground">Converting...</p>
-            ) : myrAmount !== null ? (
-                <p className="text-sm text-muted-foreground">
-                    Approx. RM{myrAmount.toFixed(2)}
-                </p>
-            ) : null}
+           <p className="text-sm text-muted-foreground">USD</p>
         </div>
     </div>
   );

@@ -6,6 +6,7 @@ interface CartItem extends Product {
   quantity: number;
 }
 
+// Using a fixed rate is more reliable than an external API call for this use case.
 const USD_TO_MYR_RATE = 4.7;
 
 export async function POST(req: NextRequest) {
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     if (!secretKey || !categoryCode) {
       console.error('Server configuration error: Missing ToyyibPay Secret Key or Category Code.');
       return NextResponse.json({ 
-        error: 'Server configuration error: Missing ToyyibPay credentials. Please contact support.' 
+        error: 'Server configuration error. Please contact support.' 
       }, { status: 500 });
     }
 
@@ -30,8 +31,8 @@ export async function POST(req: NextRequest) {
     const totalAmountMYR = totalAmountUSD * USD_TO_MYR_RATE;
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    if (totalAmountInSen <= 0) {
-        return NextResponse.json({ error: 'Total amount must be greater than zero.' }, { status: 400 });
+    if (totalAmountInSen <= 100) { // ToyyibPay minimum is RM1.00
+        return NextResponse.json({ error: 'Total amount must be greater than RM1.00.' }, { status: 400 });
     }
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
@@ -52,9 +53,9 @@ export async function POST(req: NextRequest) {
       billPhone: '',
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
-      billPaymentChannel: '2',
+      billPaymentChannel: '2', // 0: FPX, 1: Credit Card, 2: Both
       billContentEmail: 'Thank you for your purchase from Cuddleia! You will receive your download links shortly.',
-      billChargeToCustomer: '1'
+      billChargeToCustomer: '1' // 1: Pass transaction charges to customer
     });
 
     const response = await fetch(toyyibpayUrl, {
