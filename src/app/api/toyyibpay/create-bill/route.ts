@@ -68,12 +68,15 @@ export async function POST(req: NextRequest) {
     params.append('categoryCode', categoryCode);
     params.append('billName', billName);
     params.append('billDescription', billDescription);
-    params.append('billPrice', totalAmountInSen.toString());
+    params.append('billPriceSetting', '1');
+    params.append('billPayorInfo', '1');
+    params.append('billAmount', totalAmountInSen.toString());
     params.append('billReturnUrl', returnUrl);
     params.append('billCallbackUrl', callbackUrl);
     params.append('billExternalReferenceNo', `order-${Date.now()}`);
     params.append('billTo', name);
     params.append('billEmail', email);
+    params.append('billPaymentChannel', '2'); // 0: FPX, 1: Credit Card, 2: Both
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
