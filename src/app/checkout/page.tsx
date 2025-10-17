@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
-import { PayPalButtons } from "@paypal/react-paypal-js";
-import type { OnApproveData, CreateOrderData } from "@paypal/paypal-js";
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
@@ -26,63 +24,6 @@ export default function CheckoutPage() {
         </div>
     )
   }
-
-  const createOrder = async (data: CreateOrderData): Promise<string> => {
-    try {
-        const response = await fetch('/api/paypal/create-order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ cart }),
-        });
-
-        const order = await response.json();
-
-        if (!response.ok) {
-            throw new Error(order.error || 'Failed to create PayPal order.');
-        }
-
-        if (order.orderID) {
-            return order.orderID;
-        } else {
-            throw new Error('Did not receive order ID from server.');
-        }
-
-    } catch (error) {
-        console.error("Create Order Error:", error);
-        alert(`Could not initiate PayPal Checkout.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        return Promise.reject(error);
-    }
-  };
-
-  const onApprove = async (data: OnApproveData): Promise<void> => {
-     try {
-        const response = await fetch('/api/paypal/capture-order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ orderID: data.orderID }),
-        });
-
-        const details = await response.json();
-
-        if (!response.ok) {
-            throw new Error(details.error || 'Failed to capture payment.');
-        }
-
-        console.log("Payment successful:", details);
-        clearCart();
-        router.push('/checkout/success');
-
-    } catch (error) {
-        console.error("On Approve Error:", error);
-        alert(`Payment failed to process.\n\nPlease try again or contact support.\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        return Promise.reject(error);
-    }
-  };
-
 
   return (
     <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -139,16 +80,9 @@ export default function CheckoutPage() {
             <div className="border rounded-2xl shadow-sm bg-card p-8">
                 <h3 className="font-headline text-xl font-bold mb-6">Choose Payment Method</h3>
                 
-                <div className="mt-8">
-                    <PayPalButtons 
-                      style={{ layout: "vertical" }}
-                      createOrder={createOrder}
-                      onApprove={onApprove}
-                    />
-                </div>
                  <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
                     <ShieldCheck className="h-4 w-4 text-green-600" />
-                    <span>Secure payment powered by PayPal.</span>
+                    <span>Secure payment processing.</span>
                 </div>
             </div>
         </div>
