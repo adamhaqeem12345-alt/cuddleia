@@ -7,12 +7,24 @@ export async function getConvertedAmount(usdAmount: number) {
   }
   
   try {
-    // Per your request, using a fixed exchange rate for accuracy.
-    const fixedExchangeRate = 4.23;
-    const myrAmount = usdAmount * fixedExchangeRate;
-    
-    // Using Promise.resolve to maintain the async function structure.
-    return await Promise.resolve({ myrAmount });
+    // Using a reliable, key-less API.
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD', {
+      next: { revalidate: 3600 } // Revalidate every hour
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch exchange rate');
+    }
+
+    const data = await response.json();
+    const exchangeRate = data.rates.MYR;
+
+    if (exchangeRate) {
+        const myrAmount = usdAmount * exchangeRate;
+        return { myrAmount };
+    }
+    // Return null if the rate isn't available
+    return null;
 
   } catch (error) {
     console.error('Currency conversion failed:', error);
