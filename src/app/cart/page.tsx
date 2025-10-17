@@ -53,7 +53,7 @@ export default function CartPage() {
                       <h3 className="font-bold font-headline text-lg hover:text-primary">
                         <Link href={`/products/${item.id}`}>{item.name}</Link>
                       </h3>
-                       <p className="text-sm text-muted-foreground">Price: ${item.price.toFixed(2)}</p>
+                       <p className="text-sm text-muted-foreground">Price: RM{item.price.toFixed(2)}</p>
                     </div>
                     <div className="flex items-center gap-4">
                       <Input
@@ -67,7 +67,7 @@ export default function CartPage() {
                         <Trash2 className="h-5 w-5 text-muted-foreground" />
                       </Button>
                     </div>
-                     <p className="font-bold text-lg w-24 text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                     <p className="font-bold text-lg w-24 text-right">RM{(item.price * item.quantity).toFixed(2)}</p>
                   </li>
                 ))}
               </ul>
@@ -79,15 +79,15 @@ export default function CartPage() {
                 <div className="space-y-4">
                     <div className="flex justify-between text-lg">
                         <span>Subtotal</span>
-                        <span className="font-bold">${subtotal.toFixed(2)}</span>
+                        <span className="font-bold">RM{subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-lg">
                         <span>Taxes</span>
-                        <span className="font-bold">$0.00</span>
+                        <span className="font-bold">RM0.00</span>
                     </div>
                      <div className="border-t pt-4 mt-4 flex justify-between text-2xl font-bold">
                         <span>Total</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                        <span>RM{subtotal.toFixed(2)}</span>
                     </div>
                 </div>
                 <Button asChild size="lg" className="w-full mt-8 rounded-full font-bold">

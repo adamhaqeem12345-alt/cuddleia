@@ -44,11 +44,11 @@ export const ProductDetails = ({ product }: { product: Product }) => {
             <div className="mb-6">
                 <div className="flex items-center gap-2">
                     <p className="text-xl font-headline font-bold text-primary">
-                        {isFree ? "Free" : `$${product.price.toFixed(2)} USD`}
+                        {isFree ? "Free" : `RM${product.price.toFixed(2)}`}
                     </p>
                     {product.originalPrice && (
                         <p className="text-lg font-headline font-bold text-muted-foreground line-through">
-                        ${product.originalPrice.toFixed(2)} USD
+                        RM${product.originalPrice.toFixed(2)}
                         </p>
                     )}
                 </div>
