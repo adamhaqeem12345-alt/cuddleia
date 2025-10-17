@@ -8,10 +8,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const [paypalClientId, setPaypalClientId] = useState("sb");
     
     useEffect(() => {
-        const apiEnv = process.env.NEXT_PUBLIC_PAYPAL_API_ENV || 'sandbox';
-        const clientId = apiEnv === 'sandbox' 
-            ? process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_CLIENT_ID
-            : process.env.NEXT_PUBLIC_PAYPAL_LIVE_CLIENT_ID;
+        const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
         
         if (clientId) {
             setPaypalClientId(clientId);

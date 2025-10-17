@@ -3,16 +3,11 @@ import { CartItem } from "@/context/cart-context";
 const getPayPalAccessToken = async () => {
     const apiEnv = process.env.PAYPAL_API_ENV || 'sandbox';
 
-    const clientId = apiEnv === 'sandbox' 
-        ? process.env.NEXT_PUBLIC_PAYPAL_SANDBOX_CLIENT_ID 
-        : process.env.NEXT_PUBLIC_PAYPAL_LIVE_CLIENT_ID;
-
-    const clientSecret = apiEnv === 'sandbox'
-        ? process.env.PAYPAL_SANDBOX_CLIENT_SECRET
-        : process.env.PAYPAL_LIVE_CLIENT_SECRET;
+    const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
     
     if (!clientId || !clientSecret) {
-        throw new Error("Missing PayPal API credentials for the current environment.");
+        throw new Error("Missing PayPal API credentials. Ensure NEXT_PUBLIC_PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are set.");
     }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
