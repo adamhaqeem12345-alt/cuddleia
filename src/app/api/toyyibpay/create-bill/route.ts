@@ -35,11 +35,9 @@ export async function POST(req: NextRequest) {
 
     const secretKey = process.env.TOYYIBPAY_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
-    const apiEnv = process.env.TOYYIBPAY_API_ENV || 'dev';
     
-    const toyyibpayUrl = apiEnv === 'live' 
-        ? 'https://toyyibpay.com' 
-        : 'https://dev.toyyibpay.com';
+    // Force production URL to avoid environment mismatch issues.
+    const toyyibpayUrl = 'https://toyyibpay.com';
 
     if (!secretKey || !categoryCode) {
       throw new Error('ToyyibPay secret key or category code is not configured.');
@@ -58,7 +56,7 @@ export async function POST(req: NextRequest) {
     
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    const bodyParams = {
+    const bodyParams = new URLSearchParams({
         userSecretKey: secretKey,
         categoryCode: categoryCode,
         billName: 'Cuddleia Digital Goods',
@@ -77,18 +75,14 @@ export async function POST(req: NextRequest) {
         billPaymentChannel: '0',
         billContentEmail: 'Thank you for your purchase! You will receive another email with download links shortly.',
         billChargeToCustomer: '1',
-    };
-
-    const urlEncodedBody = Object.entries(bodyParams)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
+    });
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: urlEncodedBody,
+      body: bodyParams.toString(),
     });
 
     const data = await response.json();
