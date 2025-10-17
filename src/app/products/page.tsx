@@ -1,19 +1,20 @@
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
-import { products } from "@/lib/products";
+import { products, Product } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Info } from "lucide-react";
-import type { Metadata } from "next";
+import { Download, Info, ShoppingCart } from "lucide-react";
+import { useCart } from "@/context/cart-context";
 
-export const metadata: Metadata = {
-  title: "All Products | Cuddleia",
-  description: "Browse our full collection of cozy digital wallpapers and thoughtfully designed Islamic booklets.",
-  keywords: "islamic digital products,ipad wallpaper,digital booklets,muslim lifestyle,cuddleia,cozy digital goods,barakah business",
-};
-
-const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
+const ProductCard = ({ product }: { product: Product }) => {
   const isFree = product.price === 0;
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(product);
+  };
 
   return (
     <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
@@ -62,11 +63,18 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
             </a>
           </Button>
         ) : (
-          <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
-            <Link href={`/products/${product.id}`}>
-                View Details
-            </Link>
-          </Button>
+          product.bundleIncludes ? (
+            <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
+              <Link href={`/products/${product.id}`}>
+                  View Bundle
+              </Link>
+            </Button>
+          ) : (
+            <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full" onClick={handleAddToCart}>
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Add to Cart
+            </Button>
+          )
         )}
       </CardFooter>
     </Card>

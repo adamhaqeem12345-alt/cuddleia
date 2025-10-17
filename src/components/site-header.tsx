@@ -2,9 +2,12 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Flower2, Menu } from 'lucide-react';
+import { Flower2, Menu, ShoppingCart } from 'lucide-react';
+import { useCart } from '@/context/cart-context';
 
 export function SiteHeader() {
+  const { cart } = useCart();
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <header className="w-full sticky top-0 z-40 bg-accent">
@@ -21,6 +24,19 @@ export function SiteHeader() {
             <Link href="/products" className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold">Products</Link>
             <Link href="/about" className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold">About</Link>
           </nav>
+          
+          <Link href="/cart">
+              <Button variant="outline" size="icon" className="relative h-14 w-14 rounded-full">
+                <ShoppingCart className="h-7 w-7 text-foreground" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                    {itemCount}
+                  </span>
+                )}
+                <span className="sr-only">Open Cart</span>
+              </Button>
+          </Link>
+
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>

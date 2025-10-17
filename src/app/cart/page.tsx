@@ -1,0 +1,102 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useCart } from '@/context/cart-context';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Trash2, ArrowLeft } from 'lucide-react';
+
+export default function CartPage() {
+  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  return (
+    <div className="container mx-auto px-4 py-16 sm:py-24">
+      <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-12 text-center font-bold">Your Cart</h1>
+      
+      {cart.length === 0 ? (
+        <div className="text-center">
+          <p className="text-muted-foreground text-lg mb-8">Your cart is empty.</p>
+          <Button asChild>
+            <Link href="/products">Continue Shopping</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2">
+            <div className="flex justify-between items-center mb-6">
+                <Button asChild variant="ghost" className='rounded-full'>
+                    <Link href="/products">
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Continue Shopping
+                    </Link>
+                </Button>
+                <Button variant="outline" onClick={clearCart} className="rounded-full">
+                    Clear Cart
+                </Button>
+            </div>
+            <div className="border rounded-2xl shadow-sm">
+              <ul className="divide-y">
+                {cart.map(item => (
+                  <li key={item.id} className="flex items-center gap-6 p-6">
+                    <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg">
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold font-headline text-lg hover:text-primary">
+                        <Link href={`/products/${item.id}`}>{item.name}</Link>
+                      </h3>
+                       <p className="text-sm text-muted-foreground">Price: ${item.price.toFixed(2)}</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={e => updateQuantity(item.id, parseInt(e.target.value))}
+                        className="w-20 text-center"
+                      />
+                      <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
+                        <Trash2 className="h-5 w-5 text-muted-foreground" />
+                      </Button>
+                    </div>
+                     <p className="font-bold text-lg w-24 text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="lg:col-span-1">
+            <div className="sticky top-28 border rounded-2xl shadow-sm p-8 bg-card">
+                <h2 className="font-headline text-2xl font-bold mb-6">Order Summary</h2>
+                <div className="space-y-4">
+                    <div className="flex justify-between text-lg">
+                        <span>Subtotal</span>
+                        <span className="font-bold">${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-lg">
+                        <span>Taxes</span>
+                        <span className="font-bold">$0.00</span>
+                    </div>
+                     <div className="border-t pt-4 mt-4 flex justify-between text-2xl font-bold">
+                        <span>Total</span>
+                        <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                </div>
+                <Button size="lg" className="w-full mt-8 rounded-full font-bold">
+                    Proceed to Checkout
+                </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

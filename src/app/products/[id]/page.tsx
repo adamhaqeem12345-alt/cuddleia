@@ -1,68 +1,37 @@
+'use client';
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { products } from '@/lib/products';
+import { products, Product } from '@/lib/products';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Info, Download } from 'lucide-react';
-import type { Metadata } from 'next';
-
-type Props = {
-  params: { id: string };
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const product = products.find(p => p.id === params.id);
-
-  if (!product) {
-    return {
-      title: 'Product Not Found | Cuddleia',
-    };
-  }
-
-  const title = `${product.name} | Cuddleia`;
-  const description = product.description.split('\\n')[0];
-
-  return {
-    title,
-    description,
-    keywords: "islamic digital products,ipad wallpaper,digital booklets,muslim lifestyle,cuddleia,cozy digital goods,barakah business",
-    openGraph: {
-      title: title,
-      description: description,
-      images: [
-        {
-          url: product.imageUrl,
-          width: product.imageWidth,
-          height: product.imageHeight,
-          alt: product.name,
-        },
-        // Including the main site OG image as a fallback
-        {
-          url: 'https://www.cuddleia.com/og-image.png',
-          width: 1200,
-          height: 630,
-          alt: 'Cuddleia - Cozy Digital Goods',
-        }
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: title,
-      description: description,
-      images: [product.imageUrl],
-    },
-  };
-}
-
+import { ArrowLeft, Info, Download, ShoppingCart } from 'lucide-react';
+import { useCart } from '@/context/cart-context';
+import { useEffect, useState } from 'react';
 
 const ProductPage = ({ params }: { params: { id: string } }) => {
-  const product = products.find(p => p.id === params.id);
+  const [product, setProduct] = useState<Product | undefined>(undefined);
+  const { addToCart } = useCart();
 
+  useEffect(() => {
+    const foundProduct = products.find(p => p.id === params.id);
+    setProduct(foundProduct);
+  }, [params.id]);
+  
   if (!product) {
-    notFound();
+    // This will be caught by the notFound() in the metadata generation if it's a server component
+    // For client component, we can show a loading state or handle it similarly.
+    // In this case, we'll let the metadata handle the 404 for the initial load.
+    return <div>Loading...</div>;
   }
 
   const isFree = product.price === 0;
+
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product);
+    }
+  };
 
   return (
     <div className="bg-rose-50/30">
@@ -128,9 +97,10 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
                         </a>
                     </Button>
                 ) : (
-                   <div className='text-center text-muted-foreground'>
-                     This product is not available for purchase at this time.
-                   </div>
+                   <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full" onClick={handleAddToCart}>
+                        <ShoppingCart className="h-5 w-5 mr-2" />
+                        Add to Cart
+                    </Button>
                 )}
             </div>
           </div>
