@@ -7,10 +7,9 @@ export async function getConvertedAmount(usdAmount: number) {
   }
   
   try {
-    // Switched to a different provider for potentially more accurate rates.
-    // This API does not require an API key for basic use.
-    const response = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json', {
-      // Revalidate every 6 hours to get reasonably fresh rates
+    // Reverting to a previously stable API to fix display issue.
+    const response = await fetch('https://open.er-api.com/v6/latest/USD', {
+      // Revalidate every 6 hours
       next: { revalidate: 21600 } 
     });
 
@@ -20,8 +19,7 @@ export async function getConvertedAmount(usdAmount: number) {
 
     const data = await response.json();
     
-    // This API nests the rates under a 'usd' key.
-    const exchangeRate = data.usd?.MYR;
+    const exchangeRate = data.rates?.MYR;
 
     if (!exchangeRate) {
       throw new Error('MYR exchange rate not found in API response.');
