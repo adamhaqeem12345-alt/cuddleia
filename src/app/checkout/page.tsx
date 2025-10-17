@@ -7,6 +7,7 @@ import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import type { OnApproveData, CreateOrderData } from "@paypal/paypal-js";
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
@@ -26,7 +27,7 @@ export default function CheckoutPage() {
     )
   }
 
-  const createOrder = async () => {
+  const createOrder = async (data: CreateOrderData) => {
     try {
         const response = await fetch('/api/paypal/create-order', {
             method: 'POST',
@@ -41,16 +42,17 @@ export default function CheckoutPage() {
             throw new Error(errorData.error || 'Failed to create order.');
         }
 
-        const data = await response.json();
-        return data.orderID;
+        const order = await response.json();
+        return order.orderID;
     } catch (error) {
         console.error(error);
-        alert('Could not create order. Please try again.');
+        // It's not recommended to show technical error messages to the user.
+        // A toast notification or a generic error message would be better.
         return '';
     }
   };
 
-  const onApprove = async (data: any) => {
+  const onApprove = async (data: OnApproveData) => {
      try {
         const response = await fetch('/api/paypal/capture-order', {
             method: 'POST',
@@ -72,7 +74,7 @@ export default function CheckoutPage() {
 
     } catch (error) {
         console.error(error);
-        alert('Payment failed. Please try again.');
+        // Handle the error, e.g., show a notification to the user
     }
   };
 
