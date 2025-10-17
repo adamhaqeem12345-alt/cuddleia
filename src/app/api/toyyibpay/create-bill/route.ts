@@ -21,18 +21,22 @@ export async function POST(req: NextRequest) {
       }, { status: 500 });
     }
 
-    const { cart, name, email } = (await req.json()) as { cart: CartItem[], name: string, email: string };
+    const { cart, name, email, phone } = (await req.json()) as { cart: CartItem[], name: string, email: string, phone: string };
     
     if (!cart || cart.length === 0) {
         return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
+    }
+    
+    if (!name || !email || !phone) {
+        return NextResponse.json({ error: 'Name, email, and phone are required.' }, { status: 400 });
     }
 
     const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const totalAmountMYR = totalAmountUSD * USD_TO_MYR_RATE;
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    if (totalAmountInSen <= 100) { // ToyyibPay minimum is RM1.00
-        return NextResponse.json({ error: 'Total amount must be greater than RM1.00.' }, { status: 400 });
+    if (totalAmountInSen < 100) { // ToyyibPay minimum is RM1.00
+        return NextResponse.json({ error: 'Total amount must be at least RM1.00.' }, { status: 400 });
     }
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
@@ -50,7 +54,7 @@ export async function POST(req: NextRequest) {
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
-      billPhone: '',
+      billPhone: phone, // This is the fix
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
       billPaymentChannel: '2', // 0: FPX, 1: Credit Card, 2: Both

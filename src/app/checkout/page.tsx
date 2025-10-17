@@ -16,14 +16,15 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handlePayment = async () => {
-    if (!name || !email) {
-      setError('Please enter your name and email.');
+    if (!name || !email || !phone) {
+      setError('Please fill in all fields: Name, Email, and Phone Number.');
       return;
     }
     setError('');
@@ -35,7 +36,7 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cart, name, email }),
+        body: JSON.stringify({ cart, name, email, phone }),
       });
 
       const data = await response.json();
@@ -139,6 +140,18 @@ export default function CheckoutPage() {
                          value={email}
                          onChange={(e) => setEmail(e.target.value)}
                          placeholder="your@email.com" 
+                         required 
+                         className="rounded-full"
+                        />
+                   </div>
+                   <div>
+                       <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                       <Input 
+                         id="phone" 
+                         type="tel"
+                         value={phone}
+                         onChange={(e) => setPhone(e.target.value)}
+                         placeholder="e.g., 60123456789" 
                          required 
                          className="rounded-full"
                         />
