@@ -63,24 +63,25 @@ export async function POST(req: NextRequest) {
     const returnUrl = `${req.nextUrl.origin}/checkout/success`;
     const callbackUrl = `${req.nextUrl.origin}/api/toyyibpay/callback`;
 
-    const params = new URLSearchParams();
-    params.append('userSecretKey', secretKey);
-    params.append('categoryCode', categoryCode);
-    params.append('billName', billName);
-    params.append('billDescription', billDescription);
-    params.append('billPriceSetting', '1');
-    params.append('billPayorInfo', '1');
-    params.append('billAmount', totalAmountInSen.toString());
-    params.append('billReturnUrl', returnUrl);
-    params.append('billCallbackUrl', callbackUrl);
-    params.append('billExternalReferenceNo', `order-${Date.now()}`);
-    params.append('billTo', name);
-    params.append('billEmail', email);
-    params.append('billPaymentChannel', '2'); // 0: FPX, 1: Credit Card, 2: Both
+    // Use a FormData object to ensure correct content-type header
+    const formData = new FormData();
+    formData.append('userSecretKey', secretKey);
+    formData.append('categoryCode', categoryCode);
+    formData.append('billName', billName);
+    formData.append('billDescription', billDescription);
+    formData.append('billPriceSetting', '1');
+    formData.append('billPayorInfo', '1');
+    formData.append('billAmount', totalAmountInSen.toString());
+    formData.append('billReturnUrl', returnUrl);
+    formData.append('billCallbackUrl', callbackUrl);
+    formData.append('billExternalReferenceNo', `order-${Date.now()}`);
+    formData.append('billTo', name);
+    formData.append('billEmail', email);
+    formData.append('billPaymentChannel', '2'); // 0: FPX, 1: Credit Card, 2: Both
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
-      body: params,
+      body: formData,
     });
 
     const data = await response.json();
