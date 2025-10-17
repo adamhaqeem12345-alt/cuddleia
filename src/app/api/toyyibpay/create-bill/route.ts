@@ -6,42 +6,20 @@ interface CartItem extends Product {
   quantity: number;
 }
 
-async function getConvertedAmount(usdAmount: number): Promise<number | null> {
-  if (usdAmount === 0) {
-    return 0;
-  }
-  try {
-    const response = await fetch('https://open.er-api.com/v6/latest/USD', {
-      next: { revalidate: 3600 }
-    });
-    if (!response.ok) {
-      return null;
-    }
-    const data = await response.json();
-    const exchangeRate = data.rates.MYR;
-    if (exchangeRate) {
-      return usdAmount * exchangeRate;
-    }
-    return null;
-  } catch (error) {
-    console.error('Currency conversion failed:', error);
-    return null;
-  }
-}
+// Using a fixed exchange rate to avoid external API failures.
+const USD_TO_MYR_RATE = 4.7;
 
 export async function POST(req: NextRequest) {
   try {
     const secretKey = process.env.TOYYIBPAY_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
 
-    // --- START: CRITICAL VALIDATION ---
     if (!secretKey || !categoryCode) {
-      console.error('Missing ToyyibPay environment variables. Please check your .env file.');
+      console.error('Missing ToyyibPay environment variables.');
       return NextResponse.json({ 
-        error: 'Server configuration error: ToyyibPay Secret Key or Category Code is missing. Please contact the site administrator.' 
+        error: 'Server configuration error: Missing ToyyibPay Secret Key or Category Code.' 
       }, { status: 500 });
     }
-    // --- END: CRITICAL VALIDATION ---
 
     const { cart, name, email } = (await req.json()) as { cart: CartItem[], name: string, email: string };
 
@@ -52,13 +30,12 @@ export async function POST(req: NextRequest) {
     }
 
     const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
-    
-    if (totalAmountMYR === null) {
-        throw new Error('Failed to retrieve MYR conversion rate.');
-    }
-    
+    const totalAmountMYR = totalAmountUSD * USD_TO_MYR_RATE;
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
+
+    if (totalAmountInSen <= 0) {
+        return NextResponse.json({ error: 'Total amount must be greater than zero.' }, { status: 400 });
+    }
 
     const bodyParams = new URLSearchParams({
       userSecretKey: secretKey,
@@ -73,10 +50,10 @@ export async function POST(req: NextRequest) {
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
-      billPhone: '',
+      billPhone: '', // Included as per documentation sample
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
-      billPaymentChannel: '0',
+      billPaymentChannel: '2', // 0 for FPX, 1 for Credit Card, 2 for both
       billContentEmail: 'Thank you for your purchase! You will receive another email with download links shortly.',
       billChargeToCustomer: '1',
     });
