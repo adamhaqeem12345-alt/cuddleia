@@ -22,10 +22,10 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
       }
       setIsLoading(true);
       const result = await getConvertedAmount(price);
-      if (result) {
+      if (result && result.myrAmount) {
         setMyrAmount(result.myrAmount);
       }
-      // Always stop loading, even if the result is null
+      // Always stop loading, even if the result is null or doesn't have myrAmount
       setIsLoading(false);
     }
     fetchConvertedPrice();
