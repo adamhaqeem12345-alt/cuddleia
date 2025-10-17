@@ -90,8 +90,8 @@ export default function CartPage() {
                         <span>${subtotal.toFixed(2)}</span>
                     </div>
                 </div>
-                <Button size="lg" className="w-full mt-8 rounded-full font-bold">
-                    Proceed to Checkout
+                <Button asChild size="lg" className="w-full mt-8 rounded-full font-bold">
+                    <Link href="/checkout">Proceed to Checkout</Link>
                 </Button>
             </div>
           </div>
