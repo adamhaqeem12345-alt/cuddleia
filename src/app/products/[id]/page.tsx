@@ -5,8 +5,6 @@ import { products } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Info, Download } from 'lucide-react';
 import type { Metadata } from 'next';
-import { AddToCartButton } from '@/components/add-to-cart-button';
-import { CurrencyConverter } from '@/components/currency-converter';
 
 type Props = {
   params: { id: string };
@@ -103,7 +101,6 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
                         </p>
                     )}
                 </div>
-                {!isFree && <CurrencyConverter usdPrice={product.price} />}
             </div>
 
             <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
@@ -131,7 +128,9 @@ const ProductPage = ({ params }: { params: { id: string } }) => {
                         </a>
                     </Button>
                 ) : (
-                    <AddToCartButton product={product} />
+                   <div className='text-center text-muted-foreground'>
+                     This product is not available for purchase at this time.
+                   </div>
                 )}
             </div>
           </div>

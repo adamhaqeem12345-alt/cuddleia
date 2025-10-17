@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Info } from "lucide-react";
 import type { Metadata } from "next";
-import { AddToCartButton } from "@/components/add-to-cart-button";
-import { CurrencyConverter } from "@/components/currency-converter";
 
 export const metadata: Metadata = {
   title: "All Products | Cuddleia",
@@ -45,7 +43,6 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
                 </p>
               )}
             </div>
-            {!isFree && <CurrencyConverter usdPrice={product.price} />}
           </div>
           <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
           {product.disclaimer && (
@@ -65,7 +62,11 @@ const ProductCard = ({ product }: { product: (typeof products)[0] }) => {
             </a>
           </Button>
         ) : (
-          <AddToCartButton product={product} />
+          <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
+            <Link href={`/products/${product.id}`}>
+                View Details
+            </Link>
+          </Button>
         )}
       </CardFooter>
     </Card>

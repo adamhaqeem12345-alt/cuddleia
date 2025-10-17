@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Info, ArrowRight } from "lucide-react";
 import { products } from "@/lib/products";
-import { AddToCartButton } from "@/components/add-to-cart-button";
-import { CurrencyConverter } from "@/components/currency-converter";
 
 export default function Home() {
   const completeCollection = products.find(p => p.id === '010');
@@ -82,7 +80,6 @@ export default function Home() {
                           <p className="text-xl font-headline font-bold text-primary">${completeCollection.price.toFixed(2)} USD</p>
                           {completeCollection.originalPrice && <p className="text-lg font-headline font-bold text-muted-foreground line-through">${completeCollection.originalPrice.toFixed(2)} USD</p>}
                         </div>
-                        <CurrencyConverter usdPrice={completeCollection.price} />
                       </div>
                       <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{completeCollection.description.split('\\n\\n')[0]}</p>
                        <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
@@ -92,7 +89,11 @@ export default function Home() {
                     </div>
                   </CardContent>
                    <CardFooter>
-                    <AddToCartButton product={completeCollection} />
+                     <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
+                        <Link href={`/products/${completeCollection.id}`}>
+                           View Details
+                        </Link>
+                    </Button>
                   </CardFooter>
                 </Card>
               </div>
@@ -132,7 +133,6 @@ export default function Home() {
                   </CardTitle>
                    <div className="mb-4">
                       <p className="text-xl font-headline font-bold text-primary">${product.price.toFixed(2)} USD</p>
-                      <CurrencyConverter usdPrice={product.price} />
                     </div>
                   <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
                   <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
@@ -141,7 +141,11 @@ export default function Home() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  <AddToCartButton product={product} />
+                  <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
+                        <Link href={`/products/${product.id}`}>
+                           View Details
+                        </Link>
+                    </Button>
                 </CardFooter>
               </Card>
             ))}
