@@ -36,4 +36,3 @@ export async function getConvertedAmount(usdAmount: number) {
     return null;
   }
 }
-
