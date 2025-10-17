@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getConvertedAmount } from '@/app/actions';
 
 interface ProductPriceProps {
   price: number;
@@ -10,6 +11,29 @@ interface ProductPriceProps {
 }
 
 export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductPriceProps) => {
+  const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchConvertedPrice = async () => {
+      if (price > 0) {
+        try {
+          setIsLoading(true);
+          const myrAmount = await getConvertedAmount(price);
+          setConvertedPrice(myrAmount);
+        } catch (error) {
+          console.error("Failed to fetch converted price:", error);
+          setConvertedPrice(null);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConvertedPrice();
+  }, [price]);
 
   if (price === 0) {
     return (
@@ -35,7 +59,13 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
             )}
         </div>
         <div className="h-6">
-           <p className="text-sm text-muted-foreground">USD</p>
+            {isLoading ? (
+                <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1"></div>
+            ) : convertedPrice !== null ? (
+                <p className="text-sm text-muted-foreground">≈ RM {convertedPrice.toFixed(2)}</p>
+            ) : (
+                <p className="text-sm text-muted-foreground">USD</p>
+            )}
         </div>
     </div>
   );
