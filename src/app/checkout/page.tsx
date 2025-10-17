@@ -5,13 +5,51 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
   const router = useRouter();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const handlePayment = async () => {
+    if (!name || !email) {
+      setError('Please enter your name and email.');
+      return;
+    }
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/toyyibpay/create-bill', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cart, name, email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create payment bill.');
+      }
+
+      // Redirect to ToyyibPay payment page
+      router.push(data.paymentUrl);
+
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
+    }
+  };
 
   if (cart.length === 0) {
     return (
@@ -78,11 +116,48 @@ export default function CheckoutPage() {
         <div>
             <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment</h2>
             <div className="border rounded-2xl shadow-sm bg-card p-8">
-                <h3 className="font-headline text-xl font-bold mb-6">Choose Payment Method</h3>
+                <div className="space-y-6">
+                   <div>
+                       <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                       <Input 
+                         id="name" 
+                         type="text"
+                         value={name}
+                         onChange={(e) => setName(e.target.value)}
+                         placeholder="Your Full Name" 
+                         required 
+                         className="rounded-full"
+                        />
+                   </div>
+                   <div>
+                       <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
+                       <Input 
+                         id="email" 
+                         type="email"
+                         value={email}
+                         onChange={(e) => setEmail(e.target.value)}
+                         placeholder="your@email.com" 
+                         required 
+                         className="rounded-full"
+                        />
+                   </div>
+                </div>
+
+                <div className="mt-8">
+                  <Button onClick={handlePayment} disabled={isLoading} size="lg" className="w-full font-bold rounded-full">
+                    {isLoading ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
+                    ) : (
+                      'Proceed to Payment'
+                    )}
+                  </Button>
+                </div>
                 
-                 <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                 {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
+
+                 <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                     <ShieldCheck className="h-4 w-4 text-green-600" />
-                    <span>Secure payment processing.</span>
+                    <span>Secure payment via ToyyibPay.</span>
                 </div>
             </div>
         </div>
