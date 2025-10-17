@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { products, Product } from '@/lib/products';
+import { Product } from '@/lib/products';
 import { getConvertedAmount } from '@/app/actions';
 
 interface CartItem extends Product {
