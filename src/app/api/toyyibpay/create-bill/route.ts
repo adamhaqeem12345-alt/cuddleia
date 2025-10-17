@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     const returnUrl = `${req.nextUrl.origin}/checkout/success`;
     const callbackUrl = `${req.nextUrl.origin}/api/toyyibpay/callback`;
 
-    // Use a FormData object to ensure correct content-type header
+    // Use a FormData object to ensure correct content-type header and parameter encoding
     const formData = new FormData();
     formData.append('userSecretKey', secretKey);
     formData.append('categoryCode', categoryCode);
@@ -77,7 +77,8 @@ export async function POST(req: NextRequest) {
     formData.append('billExternalReferenceNo', `order-${Date.now()}`);
     formData.append('billTo', name);
     formData.append('billEmail', email);
-    formData.append('billPaymentChannel', '0'); // 0: FPX, 1: Credit Card, 2: Both. Defaulting to 0 as it's safer.
+    formData.append('billPhone', ''); // Adding the missing billPhone parameter
+    formData.append('billPaymentChannel', '0'); // Defaulting to 0 (FPX) for maximum compatibility
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
       method: 'POST',
@@ -86,7 +87,8 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json();
     
-    if (data && data[0]?.BillCode) {
+    // The response is an array with a single object.
+    if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
         const billCode = data[0].BillCode;
         const paymentUrl = `${toyyibpayUrl}/${billCode}`;
         return NextResponse.json({ paymentUrl });
