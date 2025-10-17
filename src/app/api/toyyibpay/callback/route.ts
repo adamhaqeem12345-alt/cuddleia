@@ -1,21 +1,28 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const formData = await req.formData();
+    const bodyText = await req.text();
+    const formData = new URLSearchParams(bodyText);
+    
     const billcode = formData.get('billcode');
-    const status_id = formData.get('status'); // In callback, the status is usually under the key 'status'
+    const status_id = formData.get('status'); // 'status' for server callback
     const order_id = formData.get('order_id');
     const msg = formData.get('msg');
     const transaction_id = formData.get('transaction_id');
+    const refno = formData.get('refno');
+    const amount = formData.get('amount');
 
-    console.log('--- ToyyibPay Callback Received ---');
+    console.log('--- ToyyibPay Server-to-Server Callback (POST) ---');
     console.log('Bill Code:', billcode);
     console.log('Status ID:', status_id);
     console.log('Order ID:', order_id);
     console.log('Message:', msg);
     console.log('Transaction ID:', transaction_id);
-    console.log('------------------------------------');
+    console.log('Reference No:', refno);
+    console.log('Amount:', amount);
+    console.log('---------------------------------------------------');
 
     // status_id '1' means payment successful
     // status_id '2' means pending
@@ -45,14 +52,19 @@ export async function GET(req: NextRequest) {
     const billcode = searchParams.get('billcode');
     const order_id = searchParams.get('order_id');
 
-    console.log('--- ToyyibPay GET request on callback URL ---');
-    console.log('This is likely a user redirect, not a server-to-server callback.');
+    console.log('--- ToyyibPay User Redirect (GET on callback URL) ---');
+    console.log('This is a user being redirected from the payment page.');
     console.log('Status ID:', status_id);
     console.log('Bill Code:', billcode);
     console.log('Order ID:', order_id);
-    console.log('---------------------------------------------');
+    console.log('----------------------------------------------------');
     
     // Redirect to success page as this is a browser redirect
     const origin = req.nextUrl.origin;
-    return NextResponse.redirect(`${origin}/checkout/success?status_id=${status_id}&billcode=${billcode}&order_id=${order_id}`);
+    const redirectUrl = new URL('/checkout/success', origin);
+    if(status_id) redirectUrl.searchParams.set('status_id', status_id);
+    if(billcode) redirectUrl.searchParams.set('billcode', billcode);
+    if(order_id) redirectUrl.searchParams.set('order_id', order_id);
+    
+    return NextResponse.redirect(redirectUrl);
 }
