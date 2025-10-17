@@ -67,11 +67,14 @@ export async function POST(req: NextRequest) {
     
     const responseText = await response.text();
 
+    // CRITICAL: Log the raw response text from ToyyibPay for debugging
+    console.log('--- ToyyibPay Raw Response ---');
+    console.log('Status:', response.status);
+    console.log('Status Text:', response.statusText);
+    console.log('Body:', responseText);
+    console.log('------------------------------');
+
     if (!response.ok) {
-        console.error('ToyyibPay API Error: Non-OK response received.');
-        console.error('Status:', response.status);
-        console.error('Status Text:', response.statusText);
-        console.error('Response Body:', responseText);
         throw new Error(`Failed to create ToyyibPay bill. API responded with status ${response.status}.`);
     }
 
@@ -82,11 +85,11 @@ export async function POST(req: NextRequest) {
             const paymentUrl = `https://toyyibpay.com/${billCode}`;
             return NextResponse.json({ paymentUrl });
         } else {
-            console.error('ToyyibPay API Error: Unexpected JSON structure. Raw Response:', responseText);
+            console.error('ToyyibPay API Error: Unexpected JSON structure.');
             throw new Error('Failed to create ToyyibPay bill. The API returned an unexpected response format.');
         }
     } catch (e) {
-        console.error('ToyyibPay API Error: Failed to parse JSON response. Raw Response:', responseText);
+        console.error('ToyyibPay API Error: Failed to parse JSON response.');
         throw new Error('Failed to create ToyyibPay bill. The API returned a non-JSON or invalid response.');
     }
 
