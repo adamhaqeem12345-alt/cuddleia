@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -44,11 +45,11 @@ export const ProductDetails = ({ product }: { product: Product }) => {
             <div className="mb-6">
                 <div className="flex items-center gap-2">
                     <p className="text-xl font-headline font-bold text-primary">
-                        {isFree ? "Free" : `RM${product.price.toFixed(2)}`}
+                        {isFree ? "Free" : `$${product.price.toFixed(2)}`}
                     </p>
                     {product.originalPrice && (
                         <p className="text-lg font-headline font-bold text-muted-foreground line-through">
-                        RM${product.originalPrice.toFixed(2)}
+                        ${product.originalPrice.toFixed(2)}
                         </p>
                     )}
                 </div>
@@ -91,3 +92,5 @@ export const ProductDetails = ({ product }: { product: Product }) => {
     </div>
   );
 };
+
+    

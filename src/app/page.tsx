@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -77,8 +78,8 @@ export default function Home() {
                       </CardTitle>
                       <div className="mb-4">
                         <div className="flex items-center gap-2">
-                          <p className="text-xl font-headline font-bold text-primary">RM{completeCollection.price.toFixed(2)}</p>
-                          {completeCollection.originalPrice && <p className="text-lg font-headline font-bold text-muted-foreground line-through">RM{completeCollection.originalPrice.toFixed(2)}</p>}
+                          <p className="text-xl font-headline font-bold text-primary">${completeCollection.price.toFixed(2)}</p>
+                          {completeCollection.originalPrice && <p className="text-lg font-headline font-bold text-muted-foreground line-through">${completeCollection.originalPrice.toFixed(2)}</p>}
                         </div>
                       </div>
                       <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{completeCollection.description.split('\\n\\n')[0]}</p>
@@ -132,7 +133,7 @@ export default function Home() {
                     </Link>
                   </CardTitle>
                    <div className="mb-4">
-                      <p className="text-xl font-headline font-bold text-primary">RM{product.price.toFixed(2)}</p>
+                      <p className="text-xl font-headline font-bold text-primary">${product.price.toFixed(2)}</p>
                     </div>
                   <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
                   <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
@@ -179,3 +180,5 @@ export default function Home() {
     </>
   );
 }
+
+    

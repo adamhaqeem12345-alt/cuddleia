@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -93,22 +94,22 @@ export default function CheckoutPage() {
                       <h3 className="font-bold font-headline text-lg">{item.name}</h3>
                        <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                     </div>
-                     <p className="font-bold text-lg w-24 text-right">RM{(item.price * item.quantity).toFixed(2)}</p>
+                     <p className="font-bold text-lg w-24 text-right">${(item.price * item.quantity).toFixed(2)}</p>
                   </li>
                 ))}
               </ul>
               <div className="border-t p-6 space-y-3">
                  <div className="flex justify-between text-lg">
                     <span>Subtotal</span>
-                    <span className="font-bold">RM{subtotal.toFixed(2)}</span>
+                    <span className="font-bold">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-lg">
                     <span>Taxes</span>
-                    <span className="font-bold">RM0.00</span>
+                    <span className="font-bold">$0.00</span>
                 </div>
                  <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
                     <span>Total</span>
-                    <span>RM{subtotal.toFixed(2)}</span>
+                    <span>${subtotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -165,3 +166,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
