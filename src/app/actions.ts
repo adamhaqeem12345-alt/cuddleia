@@ -7,21 +7,20 @@ export async function getConvertedAmount(usdAmount: number) {
   }
   
   try {
-    // Switched to a new provider for potentially better accuracy.
-    // This endpoint uses a community-managed proxy for a popular service.
-    const response = await fetch('https://latest.currency-api.pages.dev/v1/currencies/usd.json', {
+    // Switched to a new provider for better accuracy.
+    const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD', {
       // Revalidate every 6 hours
       next: { revalidate: 21600 } 
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch exchange rates.');
+      throw new Error('Failed to fetch exchange rates from new provider.');
     }
 
     const data = await response.json();
     
-    // Carefully handle the new API's JSON structure: { "usd": { "myr": 4.7... } }
-    const exchangeRate = data?.usd?.myr;
+    // Carefully handle the new API's JSON structure: { "rates": { "MYR": 4.7... } }
+    const exchangeRate = data?.rates?.MYR;
 
     if (!exchangeRate) {
       throw new Error('MYR exchange rate not found in API response.');
@@ -36,3 +35,4 @@ export async function getConvertedAmount(usdAmount: number) {
     return null;
   }
 }
+
