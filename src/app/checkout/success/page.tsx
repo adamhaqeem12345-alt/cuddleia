@@ -1,8 +1,21 @@
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
+import { useCart } from '@/context/cart-context';
+import { useEffect } from 'react';
 
 export default function CheckoutSuccessPage() {
+    const { clearCart } = useCart();
+
+    useEffect(() => {
+        // Clear the cart once the user lands on the success page.
+        // This is important so they don't see old items if they shop again.
+        clearCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
             <div className="flex justify-center mb-6">
