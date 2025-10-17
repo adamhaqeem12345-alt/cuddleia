@@ -2,13 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CreditCard, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { PayPalButtons } from "@paypal/react-paypal-js";
 
 export default function CheckoutPage() {
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
+  const router = useRouter();
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -25,14 +27,53 @@ export default function CheckoutPage() {
   }
 
   const createOrder = async () => {
-    // Placeholder function
-    console.log("Creating order...");
-    return "ORDER_ID_FROM_SERVER";
+    try {
+        const response = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cart }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to create order.');
+        }
+
+        const data = await response.json();
+        return data.orderID;
+    } catch (error) {
+        console.error(error);
+        alert('Could not create order. Please try again.');
+        return '';
+    }
   };
 
   const onApprove = async (data: any) => {
-    // Placeholder function
-    console.log("Order approved:", data);
+     try {
+        const response = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderID: data.orderID }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to capture payment.');
+        }
+
+        const details = await response.json();
+        console.log("Payment successful:", details);
+        clearCart();
+        router.push('/checkout/success');
+
+    } catch (error) {
+        console.error(error);
+        alert('Payment failed. Please try again.');
+    }
   };
 
 
