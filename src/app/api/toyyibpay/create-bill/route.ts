@@ -1,8 +1,29 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { products, Product } from '@/lib/products';
 
 interface CartItem extends Product {
   quantity: number;
+}
+
+async function getMyrRate(): Promise<number> {
+  // Using a reliable, key-less API.
+  const response = await fetch('https://open.er-api.com/v6/latest/USD', {
+    next: { revalidate: 3600 } // Revalidate every hour
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch exchange rate');
+  }
+
+  const data = await response.json();
+  const exchangeRate = data.rates.MYR;
+
+  if (!exchangeRate) {
+    throw new Error('MYR exchange rate not found in API response');
+  }
+
+  return exchangeRate;
 }
 
 export async function POST(req: NextRequest) {
@@ -25,9 +46,15 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
     }
     
-    // Calculate total amount in sen (MYR cents)
-    const totalAmount = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const totalAmountInSen = Math.round(totalAmount * 100);
+    // Calculate total amount in USD
+    const totalAmountUsd = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    // Get the conversion rate and calculate MYR amount
+    const myrRate = await getMyrRate();
+    const totalAmountMyr = totalAmountUsd * myrRate;
+    
+    // Convert final MYR amount to sen (cents) for ToyyibPay
+    const totalAmountInSen = Math.round(totalAmountMyr * 100);
     
     const billName = 'Cuddleia Digital Goods';
     const billDescription = `Order from ${name}`;
