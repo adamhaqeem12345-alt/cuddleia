@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     if (!secretKey || !categoryCode) {
       console.error('Missing ToyyibPay environment variables.');
       return NextResponse.json({ 
-        error: 'Server configuration error: Missing ToyyibPay Secret Key or Category Code.' 
+        error: 'Server configuration error: Missing ToyyibPay Secret Key or Category Code. Please ensure they are set in your .env file.' 
       }, { status: 500 });
     }
 
@@ -50,12 +50,12 @@ export async function POST(req: NextRequest) {
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
-      billPhone: '', // Included as per documentation sample
+      billPhone: '',
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
-      billPaymentChannel: '2', // 0 for FPX, 1 for Credit Card, 2 for both
+      billPaymentChannel: '2',
       billContentEmail: 'Thank you for your purchase! You will receive another email with download links shortly.',
-      billChargeToCustomer: '1',
+      billChargeToCustomer: '1', // Set to '1' to charge customer as per docs, not '0'
     });
 
     const response = await fetch(`${toyyibpayUrl}/index.php/api/createBill`, {
