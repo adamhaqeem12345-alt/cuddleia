@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
     const totalAmountMyr = totalAmountUsd * myrRate;
     
     // Convert final MYR amount to sen (cents) for ToyyibPay
+    // The amount must be an integer. Example: RM10.50 should be 1050.
     const totalAmountInSen = Math.round(totalAmountMyr * 100);
     
     const billName = 'Cuddleia Digital Goods';
