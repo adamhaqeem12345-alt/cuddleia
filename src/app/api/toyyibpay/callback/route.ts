@@ -55,7 +55,9 @@ export async function POST(req: NextRequest) {
 
             // Send Telegram notification
             const telegramMessage = `
-*New ToyyibPay Order*
+🛍️ *New ToyyibPay Order!* 🛍️
+
+Alhamdulillah, a new order has come in!
 
 *Order ID:* ${billcode}
 *Name:* ${billDetails.name}
@@ -64,6 +66,8 @@ export async function POST(req: NextRequest) {
 
 *Items:*
 ${order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n')}
+
+Let's celebrate this barakah! ✨
             `;
             await sendTelegramNotification(telegramMessage);
             

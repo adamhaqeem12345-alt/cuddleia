@@ -31,11 +31,17 @@ export async function POST(req: NextRequest) {
 
     // Send Telegram notification
     const telegramMessage = `
-*New Freebie Download*
+🎉 *New Free Download!* 🎉
+
+Someone just grabbed a freebie! Here are the details:
 
 *Name:* ${name}
 *Email:* ${email}
-*Product:* ${product.name}
+
+*Item Downloaded:*
+- ${product.name}
+
+Another heart touched by Cuddleia! 💖
     `;
     await sendTelegramNotification(telegramMessage);
     

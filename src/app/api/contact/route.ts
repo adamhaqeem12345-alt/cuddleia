@@ -15,13 +15,18 @@ export async function POST(req: NextRequest) {
 
     // Send Telegram notification
     const telegramMessage = `
-*New Contact Form Submission*
+💌 *New Message from Cuddleia!* 💌
 
-*Name:* ${name}
+You've received a new message from your website. Here are the details:
+
+*From:* ${name}
 *Email:* ${email}
 *Subject:* ${subject}
+
 *Message:*
 ${message}
+
+Time to reply and spread some joy! ✨
     `;
     await sendTelegramNotification(telegramMessage);
     
