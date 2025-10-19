@@ -5,14 +5,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Product } from '@/lib/products';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Info, Download, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Info, Download, ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { ProductPrice } from './product-price';
 import { FreebieFormDialog } from './freebie-form-dialog';
 
 export const ProductDetails = ({ product }: { product: Product }) => {
-  const { addToCart } = useCart();
+  const { addToCart, isProductInCart } = useCart();
   const isFree = product.price === 0;
+  const isInCart = isProductInCart(product.id);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -66,6 +67,11 @@ export const ProductDetails = ({ product }: { product: Product }) => {
                 )}
                 {isFree ? (
                    <FreebieFormDialog product={product} />
+                ) : isInCart ? (
+                    <Button size="lg" className="w-full font-bold rounded-full" disabled>
+                        <Check className="h-5 w-5 mr-2" />
+                        Added to Cart
+                    </Button>
                 ) : (
                    <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full" onClick={handleAddToCart}>
                         <ShoppingCart className="h-5 w-5 mr-2" />

@@ -6,14 +6,15 @@ import Link from "next/link";
 import { products, Product } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Info, ShoppingCart } from "lucide-react";
+import { Download, Info, ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { ProductPrice } from "@/components/product-price";
 import { FreebieFormDialog } from "@/components/freebie-form-dialog";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const isFree = product.price === 0;
-  const { addToCart } = useCart();
+  const { addToCart, isProductInCart } = useCart();
+  const isInCart = isProductInCart(product.id);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -51,19 +52,22 @@ const ProductCard = ({ product }: { product: Product }) => {
       <CardFooter>
         {isFree ? (
           <FreebieFormDialog product={product} />
-        ) : (
-          product.bundleIncludes ? (
+        ) : product.bundleIncludes ? (
             <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
               <Link href={`/products/${product.id}`}>
                   View Bundle
               </Link>
             </Button>
-          ) : (
-            <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full" onClick={handleAddToCart}>
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Add to Cart
+        ) : isInCart ? (
+             <Button size="lg" className="w-full font-bold rounded-full" disabled>
+              <Check className="h-5 w-5 mr-2" />
+              Added to Cart
             </Button>
-          )
+        ) : (
+          <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full" onClick={handleAddToCart}>
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            Add to Cart
+          </Button>
         )}
       </CardFooter>
     </Card>

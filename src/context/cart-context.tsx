@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Product } from '@/lib/products';
+import { Product, products } from '@/lib/products';
 
 export interface CartItem extends Product {
   quantity: number;
@@ -14,6 +14,7 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  isProductInCart: (productId: string) => boolean;
   discountCode: string;
   appliedDiscount: number;
   discountMessage: { success?: string; error?: string };
@@ -71,13 +72,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevCart.map(item =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
+      let newCart = [...prevCart];
+      
+      // If the added product is a bundle
+      if (product.bundleIncludes && product.bundleIncludes.length > 0) {
+        // Remove individual items that are part of the bundle
+        newCart = newCart.filter(item => !product.bundleIncludes!.includes(item.id));
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+
+      const existingItemIndex = newCart.findIndex(item => item.id === product.id);
+
+      if (existingItemIndex > -1) {
+        // If item already exists, update its quantity
+        newCart[existingItemIndex] = {
+          ...newCart[existingItemIndex],
+          quantity: newCart[existingItemIndex].quantity + 1,
+        };
+      } else {
+        // Otherwise, add the new product
+        newCart.push({ ...product, quantity: 1 });
+      }
+
+      return newCart;
     });
   };
 
@@ -121,8 +137,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setDiscountMessage({});
   };
 
+  const isProductInCart = (productId: string): boolean => {
+    // Is the product directly in the cart?
+    if (cart.some(item => item.id === productId)) {
+      return true;
+    }
+    
+    // Is the product part of a bundle that's in the cart?
+    const parentBundle = products.find(p => p.bundleIncludes?.includes(productId));
+    if (parentBundle && cart.some(item => item.id === parentBundle.id)) {
+      return true;
+    }
+
+    return false;
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, discountCode, appliedDiscount, discountMessage, applyDiscount, removeDiscount }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, isProductInCart, discountCode, appliedDiscount, discountMessage, applyDiscount, removeDiscount }}>
       {children}
     </CartContext.Provider>
   );
