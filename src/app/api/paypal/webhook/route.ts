@@ -126,6 +126,7 @@ Let's get this packed with love and duas! 💖
                     const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
                     const amount = parseFloat(purchaseUnit.amount.value);
                     // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+                    // PayPal does not provide a phone number, so we leave it empty.
                     await appendToSheet('Cuddleia Sales Log', [timestamp, order.customerName, order.customerEmail, '', itemsString, amount]);
                 } catch (sheetError) {
                     console.error("Failed to append PayPal order to Google Sheet:", sheetError);

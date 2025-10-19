@@ -15,7 +15,7 @@ export async function appendToSheet(sheetName: string, row: SheetRow) {
 
     if (!process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !privateKey) {
       console.warn('Google Sheets environment variables are not fully configured. Skipping sheet append.');
-      return;
+      return; // Return silently if not configured
     }
 
     // Authenticate with the Google Sheets API
@@ -41,7 +41,7 @@ export async function appendToSheet(sheetName: string, row: SheetRow) {
 
   } catch (error) {
     console.error('Error appending to Google Sheet:', error);
-    // Depending on requirements, you might want to throw the error
-    // or handle it silently. For now, we log it.
+    // Throw the error so the calling function can decide how to handle it.
+    throw new Error('Failed to write to Google Sheet.');
   }
 }
