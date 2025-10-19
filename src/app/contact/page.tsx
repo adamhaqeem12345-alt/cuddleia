@@ -2,17 +2,10 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Mail, Send, Loader2, CheckCircle, XCircle } from 'lucide-react';
-
-// Metadata is still supported in client components
-export const metadata: Metadata = {
-  title: 'Contact Us | Cuddleia',
-  description: 'Get in touch with the Cuddleia team. We\'d love to hear from you!',
-};
 
 type SubmissionStatus = 'idle' | 'sending' | 'success' | 'error';
 
