@@ -56,15 +56,14 @@ export default function CartPage() {
                         <Link href={`/products/${item.id}`}>{item.name}</Link>
                       </h3>
                        <p className="text-sm text-muted-foreground">Price: ${item.price.toFixed(2)}</p>
-                       <p className="text-sm text-muted-foreground md:hidden">Qty: {item.quantity}</p>
                     </div>
-                    <div className="hidden md:flex items-center gap-4">
-                      <p className='text-muted-foreground'>Qty: {item.quantity}</p>
-                      <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
-                        <Trash2 className="h-5 w-5 text-muted-foreground" />
+                    <div className="flex flex-col items-end gap-2">
+                      <p className="font-bold text-lg text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                      <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Remove
                       </Button>
                     </div>
-                     <p className="font-bold text-lg w-24 text-right">${(item.price * item.quantity).toFixed(2)}</p>
                   </li>
                 ))}
               </ul>
@@ -76,11 +75,11 @@ export default function CartPage() {
                 <div className="space-y-4">
                     <div className="flex justify-between text-lg">
                         <span>Subtotal</span>
-                        <span className="font-bold">${subtotal.toFixed(2)}</span>
+                        <span className="font-bold text-right">${subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-lg">
-                        <span>Taxes</span>
-                        <span className="font-bold">$0.00</span>
+                        <span>Taxes & Fees</span>
+                        <span className="font-bold text-right">$0.00</span>
                     </div>
                      <div className="border-t pt-4 mt-4 flex justify-between items-start text-2xl font-bold">
                         <span>Total</span>
