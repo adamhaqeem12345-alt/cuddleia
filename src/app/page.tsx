@@ -25,7 +25,7 @@ export default function Home() {
             <Button asChild size="lg" className="rounded-full font-bold">
               <Link href="/products">Shop Now</Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="rounded-full">
+            <Button asChild size="lg" variant="secondary" className="rounded-full">
               <Link href="/about">Learn More</Link>
             </Button>
           </div>
@@ -43,7 +43,7 @@ export default function Home() {
               <p className="text-lg text-muted-foreground mb-8">A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 {freeBook && <FreebieFormDialog product={freeBook} />}
-                <Button asChild size="lg" variant="outline" className="rounded-full">
+                <Button asChild size="lg" variant="secondary" className="rounded-full">
                   <Link href="/products">Explore the Series</Link>
                 </Button>
               </div>
