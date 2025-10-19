@@ -20,18 +20,22 @@ export async function POST(req: NextRequest) {
     }
     
     // Append to Google Sheet first
-    const timestamp = new Date().toISOString();
-    // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-    const sheetRow = [timestamp, name, email, phone || '', product.name, 0];
-    console.log("Attempting to append to 'Sheet1' sheet for freebie:", sheetRow);
-    const sheetResult = await appendToSheet('Sheet1', sheetRow);
-    
-    if (!sheetResult.success) {
-      console.error("Failed to append freebie download to Google Sheet:", sheetResult.error);
-      // IMPORTANT: Even if sheet fails, proceed with sending the email to the user.
-      // The error is logged on the server for debugging.
-    } else {
-      console.log("Successfully appended freebie download to 'Sheet1' sheet.");
+    try {
+        const timestamp = new Date().toISOString();
+        // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+        const sheetRow = [timestamp, name, email, phone || '', product.name, 0];
+        console.log("Attempting to append to 'Cuddleia Sales Log' sheet for freebie:", sheetRow);
+        const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
+        
+        if (!sheetResult.success) {
+          console.error("Failed to append freebie download to Google Sheet:", sheetResult.error);
+          // IMPORTANT: Even if sheet fails, proceed with sending the email to the user.
+          // The error is logged on the server for debugging.
+        } else {
+          console.log("Successfully appended freebie download to 'Cuddleia Sales Log' sheet.");
+        }
+    } catch (sheetError: any) {
+        console.error("Caught an exception while trying to append freebie to Google Sheet:", sheetError.message);
     }
 
 

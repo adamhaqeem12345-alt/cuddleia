@@ -54,7 +54,7 @@ export async function appendToSheet(sheetName: string, row: SheetRow): Promise<A
         console.log(`[Google Sheets] Append successful.`);
         return { success: true };
     } else {
-        const errorMsg = `Google Sheets API responded with status: ${response.status}`;
+        const errorMsg = `Google Sheets API responded with status: ${response.status} - ${response.statusText}`;
         console.error(`[Google Sheets] ${errorMsg}`);
         return { success: false, error: errorMsg };
     }
