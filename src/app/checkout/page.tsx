@@ -11,7 +11,7 @@ import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-re
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
 
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
@@ -60,18 +60,63 @@ export default function CheckoutPage() {
     }
   };
   
-  // Will be implemented in the next steps
-  const createPayPalOrder = async () => {
-    // Placeholder function
-    return "TEST_ORDER_ID";
-  }
+  const createPayPalOrder = async (data: CreateOrderData, actions: any) => {
+    setIsLoading(true);
+    try {
+        const response = await fetch('/api/paypal/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ cart }),
+        });
 
-  const onPayPalApprove = async (data: any) => {
-    // Placeholder function
-     console.log('Payment approved:', data);
-     clearCart();
-     router.push('/checkout/success');
-  }
+        const order = await response.json();
+
+        if (!response.ok) {
+            throw new Error(order.error || 'Failed to create PayPal order.');
+        }
+
+        if (order.orderID) {
+            setError('');
+            setIsLoading(false);
+            return order.orderID;
+        } else {
+            throw new Error('Could not retrieve order ID.');
+        }
+    } catch (err: any) {
+        setError(err.message);
+        setIsLoading(false);
+        return '';
+    }
+  };
+
+  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
+    setIsLoading(true);
+    try {
+        const response = await fetch('/api/paypal/capture-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ orderID: data.orderID }),
+        });
+
+        const capturedData = await response.json();
+
+        if (!response.ok || !capturedData.success) {
+            throw new Error(capturedData.error || 'Failed to capture payment.');
+        }
+        
+        // Payment is successful
+        clearCart();
+        router.push('/checkout/success');
+
+    } catch (err: any) {
+        setError(err.message);
+        setIsLoading(false);
+    }
+  };
 
   if (cart.length === 0 && !isPending) {
     return (
