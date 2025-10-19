@@ -1,5 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
+import { sendOrderConfirmationEmail } from '@/lib/email';
+import { getProductById, Product } from '@/lib/products';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -53,10 +55,11 @@ const verifyWebhook = async (req: NextRequest, rawBody: string) => {
         body: JSON.stringify(verificationData),
     });
 
-    const verifyResult = await response.json();
+    const verifyResult = await verifyResponse.json();
 
     return verifyResult.verification_status === 'SUCCESS';
 };
+
 
 export async function POST(req: NextRequest) {
     const rawBody = await req.text();
@@ -76,23 +79,35 @@ export async function POST(req: NextRequest) {
 
         switch (eventType) {
             case 'CHECKOUT.ORDER.COMPLETED':
-                const order = event.resource;
-                console.log('Order completed:', order.id);
-                // This is where you would fulfill the order:
-                // 1. Check if you've already processed this order ID to prevent duplication.
-                // 2. Look up the order in your database using order.purchase_units[0].custom_id (if you set one).
-                // 3. Grant access to the digital product(s).
-                // 4. Send a confirmation email to the customer.
+                const orderData = event.resource;
+                const purchaseUnit = orderData.purchase_units[0];
+                const customId = purchaseUnit.custom_id; // Expecting cart items as JSON string
+
+                try {
+                    const cartItems = JSON.parse(customId);
+                     const order = {
+                        id: orderData.id,
+                        customerName: `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`,
+                        customerEmail: orderData.payer.email_address,
+                        items: cartItems.map((item: any) => ({
+                            product: getProductById(item.id)!,
+                            quantity: item.quantity,
+                        })).filter((item: any) => item.product),
+                        total: `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`,
+                    };
+
+                    await sendOrderConfirmationEmail(order);
+                    console.log(`Order confirmation email sent for order ${orderData.id}`);
+
+                } catch (e) {
+                     console.error('Error parsing custom_id or sending email for PayPal webhook:', e);
+                }
+                
                 break;
-            // You can add more cases for other events like:
-            // case 'PAYMENT.SALE.REFUNDED':
-            //     // Handle refunds
-            //     break;
             default:
                 console.log(`Unhandled event type: ${eventType}`);
         }
 
-        // Return a 200 OK response to acknowledge receipt of the webhook
         return NextResponse.json({ received: true }, { status: 200 });
 
     } catch (error: any) {

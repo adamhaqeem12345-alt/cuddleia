@@ -8,7 +8,7 @@ export interface Product {
     imageUrl: string;
     imageWidth: number;
     imageHeight: number;
-    category: string;
+    category: 'Booklets' | 'Wallpapers';
     downloadUrl?: string;
     disclaimer: string;
     includedInBundle?: string[];
@@ -144,5 +144,26 @@ disclaimer: "Written by AI, guided by the author’s ideas and heart, and carefu
     disclaimer: "All wallpaper designs are 100% my work.",
   }
 ];
+
+// Helper function to find a product by its ID
+export const getProductById = (id: string): Product | undefined => {
+    const product = products.find(p => p.id === id);
+
+    if (product?.bundleIncludes) {
+        const includedProducts = product.bundleIncludes
+            .map(bundleId => products.find(p => p.id === bundleId))
+            .filter((p): p is Product => p !== undefined);
+        return {
+            ...product,
+            bundleProducts: includedProducts,
+        };
+    }
+    return product;
+}
+
+// Extend Product interface to include resolved bundle products
+export interface ProductWithBundled extends Product {
+    bundleProducts?: Product[];
+}
 
     

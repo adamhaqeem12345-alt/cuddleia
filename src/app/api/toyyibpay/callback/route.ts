@@ -1,54 +1,70 @@
 
 import { NextRequest, NextResponse } from 'next/server';
+import { sendOrderConfirmationEmail, Order } from '@/lib/email';
+import { getProductById } from '@/lib/products';
+
+// This is a temporary in-memory store. In production, you'd use a database.
+const billStore: { [billCode: string]: any } = {};
+
+// Helper to store bill details when created
+export const storeBillDetails = (billCode: string, details: any) => {
+    billStore[billCode] = details;
+};
+
+// Helper to retrieve bill details
+const getBillDetails = (billCode: string) => {
+    return billStore[billCode];
+};
+
 
 /**
  * Handles the server-to-server callback (webhook) from ToyyibPay.
- * This is triggered when a payment status changes.
  */
 export async function POST(req: NextRequest) {
   try {
-    const bodyText = await req.text();
-    const formData = new URLSearchParams(bodyText);
+    const formData = await req.formData();
     
-    // ToyyibPay sends callback data as form-urlencoded
-    const billcode = formData.get('billcode');
-    const status = formData.get('status'); // 'status' is used for server callback
-    const order_id = formData.get('order_id');
-    const msg = formData.get('msg');
-    const transaction_id = formData.get('transaction_id');
-    const refno = formData.get('refno');
-    const amount = formData.get('amount');
+    const billcode = formData.get('billcode') as string;
+    const status = formData.get('status') as string;
+    const order_id = formData.get('order_id') as string;
+    const transaction_id = formData.get('transaction_id') as string;
 
     console.log('--- ToyyibPay Server-to-Server Webhook (POST) ---');
-    console.log({
-      billcode,
-      status,
-      order_id,
-      msg,
-      transaction_id,
-      refno,
-      amount
-    });
+    console.log({ billcode, status, order_id, transaction_id });
 
-    // status '1' means payment successful
-    // status '2' means pending
-    // status '3' means failed
     if (status === '1') {
-      // SUCCESS: Payment was successful.
-      // This is where you should handle order fulfillment.
-      // For example:
-      // 1. Verify the transaction amount against the order in your database.
-      // 2. Mark the order as paid.
-      // 3. Send a confirmation email with download links.
-      console.log(`Webhook: Payment for bill ${billcode} was successful.`);
-      
+      const billDetails = getBillDetails(billcode);
+
+      if (billDetails) {
+        try {
+            const order: Order = {
+                id: billcode,
+                customerName: billDetails.name,
+                customerEmail: billDetails.email,
+                items: billDetails.cart.map((item: any) => ({
+                    product: getProductById(item.id)!,
+                    quantity: item.quantity
+                })).filter((i: any) => i.product),
+                total: `RM${(billDetails.totalAmountInSen / 100).toFixed(2)}`,
+            };
+            
+            await sendOrderConfirmationEmail(order);
+            console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
+            
+            // Clean up the stored details
+            delete billStore[billcode];
+
+        } catch (e) {
+            console.error(`Failed to send confirmation email for bill ${billcode}:`, e);
+        }
+      } else {
+        console.warn(`Could not find details for ToyyibPay bill ${billcode} to send email.`);
+      }
     } else {
-      // FAILED/PENDING: Log the status for monitoring.
-      console.log(`Webhook: Payment for bill ${billcode} has status: ${status} (${msg})`);
+      console.log(`Webhook: Payment for bill ${billcode} has status: ${status}.`);
     }
 
-    // ToyyibPay's server expects a 200 OK response to acknowledge receipt.
-    return NextResponse.json({ message: 'Callback received' }, { status: 200 });
+    return new Response(null, { status: 200 });
 
   } catch (error: any) {
     console.error('ToyyibPay Webhook Error:', error);
@@ -58,27 +74,19 @@ export async function POST(req: NextRequest) {
 
 /**
  * Handles the user redirect from the ToyyibPay payment page.
- * This is where the user's browser is sent after payment.
  */
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
-    const status_id = searchParams.get('status_id'); // 'status_id' for browser redirect
+    const status_id = searchParams.get('status_id');
     const billcode = searchParams.get('billcode');
     const order_id = searchParams.get('order_id');
 
     console.log('--- ToyyibPay User Redirect (GET) ---');
-    console.log('User has been redirected from the payment page.');
-    console.log({
-      status_id,
-      billcode,
-      order_id
-    });
+    console.log({ status_id, billcode, order_id });
     
-    // Redirect the user to the appropriate status page on your site.
     const origin = req.nextUrl.origin;
     const redirectUrl = new URL('/checkout/success', origin);
 
-    // Pass the parameters to the success page to display the correct status.
     if(status_id) redirectUrl.searchParams.set('status_id', status_id);
     if(billcode) redirectUrl.searchParams.set('billcode', billcode);
     if(order_id) redirectUrl.searchParams.set('order_id', order_id);

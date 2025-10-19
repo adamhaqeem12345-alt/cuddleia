@@ -62,6 +62,8 @@ export async function POST(req: NextRequest) {
                         currency_code: 'USD',
                         value: totalAmountUSD,
                     },
+                    // Pass cart details for webhook fulfillment
+                    custom_id: JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity }))),
                 },
             ],
             application_context: {
@@ -79,14 +81,13 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify(orderPayload),
         });
-
-        if (!response.ok) {
-            const errorBody = await response.json();
-            console.error('Failed to create PayPal order:', errorBody);
-            throw new Error(`PayPal API responded with status ${response.status}.`);
-        }
         
         const data = await response.json();
+
+        if (!response.ok) {
+            console.error('Failed to create PayPal order:', data);
+            throw new Error(data.message || `PayPal API responded with status ${response.status}.`);
+        }
         
         return NextResponse.json({ orderID: data.id });
 

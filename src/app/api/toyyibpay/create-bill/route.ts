@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
 import { getConvertedAmount } from '@/app/actions';
+import { storeBillDetails } from '../callback/route';
 
 interface CartItem extends Product {
   quantity: number;
@@ -14,87 +15,70 @@ export async function POST(req: NextRequest) {
 
     if (!secretKey || !categoryCode) {
       console.error('Server configuration error: Missing TOYYIBPAY_SECRET_KEY or TOYYIBPAY_CATEGORY_CODE.');
-      return NextResponse.json({ 
-        error: 'Server configuration error. Please contact support.' 
-      }, { status: 500 });
+      return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
     }
 
     const { cart, name, email, phone } = (await req.json()) as { cart: CartItem[], name: string, email: string, phone: string };
     
-    if (!cart || cart.length === 0) {
-        return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
-    }
-    
-    if (!name || !email || !phone) {
-        return NextResponse.json({ error: 'Name, email, and phone are required.' }, { status: 400 });
+    if (!cart || cart.length === 0 || !name || !email || !phone) {
+        return NextResponse.json({ error: 'Cart and user details are required.' }, { status: 400 });
     }
 
     const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    if (totalAmountInSen < 100) { // ToyyibPay minimum is RM1.00
+    if (totalAmountInSen < 100) {
         return NextResponse.json({ error: 'Total amount must be at least RM1.00.' }, { status: 400 });
     }
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
+    const externalReferenceNo = `order-${Date.now()}`;
     
     const bodyParams = new URLSearchParams({
       userSecretKey: secretKey,
       categoryCode: categoryCode,
       billName: 'Cuddleia Digital Goods',
-      billDescription: `Your order from Cuddleia`,
+      billDescription: `Your order from Cuddleia (${externalReferenceNo})`,
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
-      billReturnUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`, // This is the user redirect URL
-      billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`, // This is the server webhook URL
-      billExternalReferenceNo: `order-${Date.now()}`,
+      billReturnUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
+      billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
+      billExternalReferenceNo: externalReferenceNo,
       billTo: name,
       billEmail: email,
       billPhone: phone,
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
-      billPaymentChannel: '0', // 0: FPX Only
+      billPaymentChannel: '0',
       billContentEmail: 'Thank you for your purchase from Cuddleia! You will receive your download links shortly.',
-      billChargeToCustomer: '1' // 1: Pass transaction charges to customer
+      billChargeToCustomer: '1'
     });
 
     const response = await fetch(toyyibpayUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: bodyParams.toString(),
     });
     
-    const responseText = await response.text();
+    const data = await response.json();
 
-    if (!response.ok) {
-        console.error('ToyyibPay API Error: Request failed with status', response.status, response.statusText);
-        console.error('Raw Response:', responseText);
-        throw new Error(`Failed to create ToyyibPay bill. API responded with status ${response.status}.`);
-    }
+    if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
+        const billCode = data[0].BillCode;
 
-    try {
-        const data = JSON.parse(responseText);
-        if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
-            const billCode = data[0].BillCode;
-            const paymentUrl = `https://toyyibpay.com/${billCode}`;
-            return NextResponse.json({ paymentUrl });
-        } else {
-            console.error('ToyyibPay API Error: Unexpected JSON structure.');
-            console.error('Raw Response:', responseText);
-            throw new Error('Failed to create ToyyibPay bill. The API returned an unexpected response format.');
-        }
-    } catch (e) {
-        console.error('ToyyibPay API Error: Failed to parse JSON response.');
-        console.error('Raw Response:', responseText);
-        throw new Error('Failed to create ToyyibPay bill. The API returned a non-JSON or invalid response.');
+        // Store details for the webhook to use later
+        storeBillDetails(billCode, { name, email, cart, totalAmountInSen });
+
+        const paymentUrl = `https://toyyibpay.com/${billCode}`;
+        return NextResponse.json({ paymentUrl });
+    } else {
+        console.error('ToyyibPay API Error:', data);
+        throw new Error('Failed to create ToyyibPay bill. Unexpected response.');
     }
 
   } catch (error: any) {
     console.error('Create Bill Endpoint Error:', error);
-    return NextResponse.json({ error: error.message || 'An internal server error occurred.' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Internal server error.' }, { status: 500 });
   }
 }
