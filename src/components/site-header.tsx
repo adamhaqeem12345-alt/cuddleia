@@ -30,6 +30,7 @@ export function SiteHeader() {
             <Link href="/" className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold">Home</Link>
             <Link href="/products" className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold">Products</Link>
             <Link href="/about" className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold">About</Link>
+            <Link href="/contact" className="font-headline text-lg text-foreground/80 transition-colors hover:text-primary font-bold">Contact</Link>
           </nav>
           
           <Link href="/cart">
@@ -57,6 +58,7 @@ export function SiteHeader() {
                    <Link href="/" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Home</Link>
                   <Link href="/products" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Products</Link>
                   <Link href="/about" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">About</Link>
+                  <Link href="/contact" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Contact</Link>
                 </nav>
               </SheetContent>
             </Sheet>

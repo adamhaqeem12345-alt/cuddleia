@@ -19,10 +19,11 @@ export function SiteFooter() {
           </div>
           <div>
             <h3 className="font-headline text-xl text-foreground font-bold">Quick Links</h3>
-            <ul className="mt-4 flex items-center justify-center md:justify-start gap-6">
+            <ul className="mt-4 flex items-center justify-center md:justify-start flex-wrap gap-x-6 gap-y-2">
               <li><Link className="text-muted-foreground hover:text-primary transition-colors" href="/">Home</Link></li>
               <li><Link className="text-muted-foreground hover:text-primary transition-colors" href="/products">Products</Link></li>
               <li><Link className="text-muted-foreground hover:text-primary transition-colors" href="/about">About</Link></li>
+              <li><Link className="text-muted-foreground hover:text-primary transition-colors" href="/contact">Contact</Link></li>
             </ul>
           </div>
           <div>
