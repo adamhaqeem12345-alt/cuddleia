@@ -47,7 +47,7 @@ export default function CartPage() {
                         Continue Shopping
                     </Link>
                 </Button>
-                <Button variant="outline" onClick={clearCart} className="rounded-full">
+                <Button variant="outline" onClick={clearCart} className="rounded-full bg-card">
                     Clear Cart
                 </Button>
             </div>
