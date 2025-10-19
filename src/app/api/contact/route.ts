@@ -39,15 +39,11 @@ Time to reply and spread some joy! ✨
     
     if (!sheetResult.success) {
       console.error("Failed to append to Google Sheet in /api/contact:", sheetResult.error);
-      // Still return success to the user, but include the sheet error for debugging
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Message sent, but failed to log to sheet.',
-        sheetError: sheetResult.error 
-      }, { status: 200 });
+      // Still return success to the user, as the email was sent. Log the error server-side.
+    } else {
+      console.log("Successfully appended to 'Contact Form Submissions' sheet.");
     }
     
-    console.log("Successfully appended to 'Contact Form Submissions' sheet.");
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });
 
   } catch (error: any) {

@@ -23,7 +23,7 @@ export async function appendToSheet(sheetName: string, row: SheetRow): Promise<A
 
     if (!sheetId || !serviceAccountEmail || !privateKey) {
       const errorMsg = 'Google Sheets environment variables are not fully configured.';
-      console.warn(`[Google Sheets] ${errorMsg}`);
+      console.error(`[Google Sheets] ${errorMsg}`);
       return { success: false, error: errorMsg };
     }
 

@@ -133,7 +133,7 @@ export async function GET(req: NextRequest) {
 
     if(status_id) redirectUrl.searchParams.set('status_id', status_id);
     if(billcode) redirectUrl.searchParams.set('billcode', billcode);
-    if(order_id) redirectUrl.search_params.set('order_id', order_id);
+    if(order_id) redirectUrl.searchParams.set('order_id', order_id);
     
     return NextResponse.redirect(redirectUrl);
 }
