@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,6 +28,16 @@ export async function POST(req: NextRequest) {
     };
     
     await sendOrderConfirmationEmail(order);
+
+    // Send Telegram notification
+    const telegramMessage = `
+*New Freebie Download*
+
+*Name:* ${name}
+*Email:* ${email}
+*Product:* ${product.name}
+    `;
+    await sendTelegramNotification(telegramMessage);
     
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });
 

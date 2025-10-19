@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
 
                 try {
                     const cartItems = JSON.parse(customId);
+                     const orderTotal = `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`;
                      const order = {
                         id: orderData.id,
                         customerName: `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`,
@@ -93,14 +95,28 @@ export async function POST(req: NextRequest) {
                             product: getProductById(item.id)!,
                             quantity: item.quantity,
                         })).filter((item: any) => item.product),
-                        total: `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`,
+                        total: orderTotal,
                     };
 
                     await sendOrderConfirmationEmail(order);
                     console.log(`Order confirmation email sent for order ${orderData.id}`);
 
+                    // Send Telegram notification
+                    const telegramMessage = `
+*New PayPal Order*
+
+*Order ID:* ${order.id}
+*Name:* ${order.customerName}
+*Email:* ${order.customerEmail}
+*Total:* ${order.total}
+
+*Items:*
+${order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n')}
+                    `;
+                    await sendTelegramNotification(telegramMessage);
+
                 } catch (e) {
-                     console.error('Error parsing custom_id or sending email for PayPal webhook:', e);
+                     console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e);
                 }
                 
                 break;

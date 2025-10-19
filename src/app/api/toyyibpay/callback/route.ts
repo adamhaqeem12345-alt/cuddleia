@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 // This is a temporary in-memory store. In production, you'd use a database.
 const billStore: { [billCode: string]: any } = {};
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
 
       if (billDetails) {
         try {
+            const orderTotal = `RM${(billDetails.totalAmountInSen / 100).toFixed(2)}`;
             const order: Order = {
                 id: billcode,
                 customerName: billDetails.name,
@@ -45,20 +47,34 @@ export async function POST(req: NextRequest) {
                     product: getProductById(item.id)!,
                     quantity: item.quantity
                 })).filter((i: any) => i.product),
-                total: `RM${(billDetails.totalAmountInSen / 100).toFixed(2)}`,
+                total: orderTotal,
             };
             
             await sendOrderConfirmationEmail(order);
             console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
+
+            // Send Telegram notification
+            const telegramMessage = `
+*New ToyyibPay Order*
+
+*Order ID:* ${billcode}
+*Name:* ${billDetails.name}
+*Email:* ${billDetails.email}
+*Total:* ${orderTotal}
+
+*Items:*
+${order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n')}
+            `;
+            await sendTelegramNotification(telegramMessage);
             
             // Clean up the stored details
             delete billStore[billcode];
 
         } catch (e) {
-            console.error(`Failed to send confirmation email for bill ${billcode}:`, e);
+            console.error(`Failed to process confirmation for bill ${billcode}:`, e);
         }
       } else {
-        console.warn(`Could not find details for ToyyibPay bill ${billcode} to send email.`);
+        console.warn(`Could not find details for ToyyibPay bill ${billcode} to send confirmation.`);
       }
     } else {
       console.log(`Webhook: Payment for bill ${billcode} has status: ${status}.`);
