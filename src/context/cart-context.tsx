@@ -61,6 +61,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [cart, discountCode, appliedDiscount, isInitialLoad]);
 
+  // Effect to clear discount when cart becomes empty
+  useEffect(() => {
+    if (!isInitialLoad && cart.length === 0) {
+      removeDiscount();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart, isInitialLoad]);
+
   const addToCart = (product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
@@ -91,12 +99,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const clearCart = () => {
     setCart([]);
-    setDiscountCode('');
-    setAppliedDiscount(0);
-    setDiscountMessage({});
-    localStorage.removeItem('cart');
-    localStorage.removeItem('discountCode');
-    localStorage.removeItem('appliedDiscount');
+    // The useEffect hook will take care of resetting the discount
   }
 
   const applyDiscount = (code: string) => {
