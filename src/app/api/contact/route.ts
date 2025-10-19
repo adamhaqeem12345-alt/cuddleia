@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sendContactFormEmail } from '@/lib/email';
+import { sendTelegramNotification } from '@/lib/telegram';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +12,18 @@ export async function POST(req: NextRequest) {
     }
     
     await sendContactFormEmail(name, email, subject, message);
+
+    // Send Telegram notification
+    const telegramMessage = `
+*New Contact Form Submission*
+
+*Name:* ${name}
+*Email:* ${email}
+*Subject:* ${subject}
+*Message:*
+${message}
+    `;
+    await sendTelegramNotification(telegramMessage);
     
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });
 
