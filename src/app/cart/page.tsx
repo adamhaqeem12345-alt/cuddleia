@@ -121,7 +121,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="mt-8">
-                  <h3 className="font-headline text-lg font-bold mb-4">Discount Code</h3>
+                  <h3 className="font-headline text-lg font-bold mb-4">Discount Code (if any)</h3>
                   <div className="flex gap-2">
                     <Input 
                       type="text" 
