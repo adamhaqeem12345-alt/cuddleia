@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         const billCode = data[0].BillCode;
 
         // Store details for the webhook to use later
-        storeBillDetails(billCode, { name, email, cart, totalAmountInSen });
+        storeBillDetails(billCode, { name, email, phone, cart, totalAmountInSen, totalAmountUSD });
 
         const paymentUrl = `https://toyyibpay.com/${billCode}`;
         return NextResponse.json({ paymentUrl });

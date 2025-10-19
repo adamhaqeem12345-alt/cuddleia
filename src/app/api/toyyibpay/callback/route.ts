@@ -4,6 +4,7 @@ import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
+import { getConvertedAmount } from '@/app/actions';
 
 // This is a temporary in-memory store. In production, you'd use a database.
 const billStore: { [billCode: string]: any } = {};
@@ -77,7 +78,9 @@ Let's get this packed with love and duas! 💖
             try {
                 const timestamp = new Date().toISOString();
                 const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
-                await appendToSheet('Orders', [timestamp, order.id, order.customerName, order.customerEmail, order.total, itemsString, 'ToyyibPay']);
+                const totalInUSD = billDetails.totalAmountUSD;
+                // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+                await appendToSheet('Cuddleia Sales Log', [timestamp, billDetails.name, billDetails.email, billDetails.phone, itemsString, totalInUSD]);
             } catch (sheetError) {
                 console.error("Failed to append ToyyibPay order to Google Sheet:", sheetError);
             }

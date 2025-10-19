@@ -7,7 +7,7 @@ import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, productId } = await req.json();
+    const { name, email, phone, productId } = await req.json();
 
     if (!name || !email || !productId) {
       return NextResponse.json({ error: 'Name, email, and productId are required.' }, { status: 400 });
@@ -49,7 +49,8 @@ Another heart touched by Cuddleia! 💖
     // Append to Google Sheet
     try {
       const timestamp = new Date().toISOString();
-      await appendToSheet('Freebie Downloads', [timestamp, name, email, product.name]);
+      // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+      await appendToSheet('Cuddleia Sales Log', [timestamp, name, email, phone || '', product.name, 0]);
     } catch (sheetError) {
         console.error("Failed to append to Google Sheet:", sheetError);
     }
