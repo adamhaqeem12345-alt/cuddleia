@@ -17,7 +17,7 @@ export default function Home() {
   
   return (
     <>
-      <section className="h-[75vh] bg-background flex flex-col items-center justify-center text-center px-4">
+      <section className="h-[75vh] bg-rose-50/30 flex flex-col items-center justify-center text-center px-4">
         <div>
           <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg font-bold">Where Creativity Meets Barakah</h1>
           <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">Discover cozy wallpapers and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.</p>
