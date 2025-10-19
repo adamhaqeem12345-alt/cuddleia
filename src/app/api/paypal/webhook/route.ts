@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -32,7 +33,6 @@ const getPayPalAccessToken = async (): Promise<string> => {
     return data.access_token;
 };
 
-// Function to verify the webhook signature
 const verifyWebhook = async (req: NextRequest, rawBody: string) => {
     const accessToken = await getPayPalAccessToken();
     const url = 'https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature';
@@ -81,11 +81,12 @@ export async function POST(req: NextRequest) {
         if (eventType === 'CHECKOUT.ORDER.COMPLETED') {
             const orderData = event.resource;
             const purchaseUnit = orderData.purchase_units[0];
-            const customId = purchaseUnit.custom_id; // Expecting cart items as JSON string
+            const customId = purchaseUnit.custom_id;
 
             try {
                 const cartItems = JSON.parse(customId);
-                 const orderTotal = `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`;
+                 const orderTotalValue = purchaseUnit.amount.value;
+                 const orderTotal = `${orderTotalValue} ${purchaseUnit.amount.currency_code}`;
                  const order = {
                     id: orderData.id,
                     customerName: `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`,
@@ -100,7 +101,6 @@ export async function POST(req: NextRequest) {
                 await sendOrderConfirmationEmail(order);
                 console.log(`Order confirmation email sent for order ${orderData.id}`);
 
-                // Send Telegram notification
                 const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
                 const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
@@ -119,6 +119,20 @@ Let's get this packed with love and duas! 💖
                 `;
                 await sendTelegramNotification(telegramMessage);
 
+                // Log to Google Sheet
+                try {
+                  const sheetData = [
+                    new Date().toISOString(),
+                    order.customerName,
+                    order.customerEmail,
+                    orderData.payer.phone?.phone_number?.national_number || '', // PayPal may not provide phone number
+                    order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', '),
+                    orderTotalValue
+                  ];
+                  await appendToSheet('Cuddleia Sales Log', sheetData);
+                } catch (sheetError) {
+                  console.error("Failed to log PayPal order to sheet:", sheetError);
+                }
 
             } catch (e: any) {
                  console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e.message);

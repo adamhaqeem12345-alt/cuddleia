@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 // This is a temporary in-memory store. In a serverless environment, this is not reliable.
 // A more robust solution would use a database (e.g., Firestore) or cache (e.g., Redis).
@@ -39,7 +40,8 @@ export async function POST(req: NextRequest) {
 
       if (billDetails) {
         try {
-            const orderTotal = `RM${(billDetails.totalAmountInSen / 100).toFixed(2)}`;
+            const orderTotalMYR = (billDetails.totalAmountInSen / 100).toFixed(2);
+            const orderTotal = `RM${orderTotalMYR}`;
             const order: Order = {
                 id: billcode,
                 customerName: billDetails.name,
@@ -54,7 +56,6 @@ export async function POST(req: NextRequest) {
             await sendOrderConfirmationEmail(order);
             console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
 
-            // Send Telegram notification
             const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
             const telegramMessage = `
 🛍️ *New ToyyibPay Order!* 🛍️
@@ -73,10 +74,24 @@ ${itemsList}
 Let's get this packed with love and duas! 💖
             `;
             await sendTelegramNotification(telegramMessage);
+
+            // Log to Google Sheet
+            try {
+              const sheetData = [
+                new Date().toISOString(),
+                billDetails.name,
+                billDetails.email,
+                billDetails.phone,
+                order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', '),
+                billDetails.totalAmountUSD.toFixed(2)
+              ];
+              await appendToSheet('Cuddleia Sales Log', sheetData);
+            } catch (sheetError) {
+              console.error("Failed to log ToyyibPay order to sheet:", sheetError);
+            }
             
-            // Clean up the stored details
-            delete billStore[billcode];
-            console.log(`Cleaned up stored details for bill: ${billcode}`);
+            delete billStore[billCode];
+            console.log(`Cleaned up stored details for bill: ${billCode}`);
 
         } catch (e: any) {
             console.error(`Failed to process confirmation for bill ${billcode}:`, e.message);
@@ -88,7 +103,6 @@ Let's get this packed with love and duas! 💖
       console.log(`Webhook: Payment for bill ${billcode} has status: ${status}.`);
     }
 
-    // ToyyibPay requires a 200 OK response, regardless of processing outcome.
     return new Response(null, { status: 200 });
 
   } catch (error: any) {
@@ -110,8 +124,6 @@ export async function GET(req: NextRequest) {
     console.log({ status_id, billcode, order_id });
     
     const origin = req.nextUrl.origin;
-    // Always redirect to the success page, as the webhook is the source of truth for payment status.
-    // The success page will show a generic success message, and the email confirmation is what matters.
     const redirectUrl = new URL('/checkout/success', origin);
 
     if(status_id) redirectUrl.searchParams.set('status_id', status_id);

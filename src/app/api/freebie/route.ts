@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +19,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Product not found or is not free.' }, { status: 404 });
     }
 
-    // Create a mock order object to use the existing email service
     const order: Order = {
         id: `FREE-${Date.now()}`,
         customerName: name,
@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
     
     await sendOrderConfirmationEmail(order);
 
-    // Send Telegram notification
     const telegramMessage = `
 🎉 *New Free Download!* 🎉
 
@@ -45,6 +44,21 @@ Someone just grabbed a freebie! Here are the details:
 Another heart touched by Cuddleia! 💖
     `;
     await sendTelegramNotification(telegramMessage);
+
+    // Log to Google Sheet
+    try {
+      const sheetData = [
+        new Date().toISOString(),
+        name,
+        email,
+        phone || '',
+        product.name,
+        '0.00'
+      ];
+      await appendToSheet('Cuddleia Sales Log', sheetData);
+    } catch (sheetError) {
+      console.error("Failed to log freebie to sheet:", sheetError);
+    }
 
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });
 
