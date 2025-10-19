@@ -6,13 +6,38 @@ import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, ArrowLeft } from 'lucide-react';
+import { Trash2, ArrowLeft, XCircle, CheckCircle } from 'lucide-react';
 import { ProductPrice } from '@/components/product-price';
+import { useState } from 'react';
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [discountError, setDiscountError] = useState('');
+  const [discountSuccess, setDiscountSuccess] = useState('');
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = subtotal - (subtotal * appliedDiscount);
+
+  const handleApplyDiscount = () => {
+    setDiscountError('');
+    setDiscountSuccess('');
+    if (discountCode.toUpperCase() === 'CUDDLE10') {
+      setAppliedDiscount(0.10);
+      setDiscountSuccess('Discount code applied! You get 10% off.');
+    } else {
+      setAppliedDiscount(0);
+      setDiscountError('Invalid discount code. Please try again.');
+    }
+  };
+  
+  const handleRemoveDiscount = () => {
+    setAppliedDiscount(0);
+    setDiscountCode('');
+    setDiscountError('');
+    setDiscountSuccess('');
+  }
 
   return (
     <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -58,11 +83,11 @@ export default function CartPage() {
                        <p className="text-sm text-muted-foreground">Price: ${item.price.toFixed(2)}</p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <p className="font-bold text-lg text-right">${(item.price * item.quantity).toFixed(2)}</p>
-                      <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Remove
-                      </Button>
+                       <p className="font-bold text-lg text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                       <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-destructive">
+                         <Trash2 className="h-4 w-4 mr-1" />
+                         Remove
+                       </Button>
                     </div>
                   </li>
                 ))}
@@ -77,15 +102,52 @@ export default function CartPage() {
                         <span>Subtotal</span>
                         <span className="font-bold text-right">${subtotal.toFixed(2)}</span>
                     </div>
+
+                    {appliedDiscount > 0 && (
+                      <div className="flex justify-between text-lg text-green-600">
+                        <span>Discount (10%)</span>
+                        <span className="font-bold text-right">-${(subtotal * appliedDiscount).toFixed(2)}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-lg">
                         <span>Taxes & Fees</span>
                         <span className="font-bold text-right">$0.00</span>
                     </div>
                      <div className="border-t pt-4 mt-4 flex justify-between items-start text-2xl font-bold">
                         <span>Total</span>
-                         <ProductPrice price={subtotal} isTotal={true}/>
+                         <ProductPrice price={total} isTotal={true}/>
                     </div>
                 </div>
+
+                <div className="mt-8">
+                  <h3 className="font-headline text-lg font-bold mb-4">Discount Code</h3>
+                  <div className="flex gap-2">
+                    <Input 
+                      type="text" 
+                      placeholder="Enter code" 
+                      value={discountCode} 
+                      onChange={(e) => setDiscountCode(e.target.value)}
+                      disabled={appliedDiscount > 0}
+                      className="rounded-full"
+                    />
+                    <Button onClick={handleApplyDiscount} disabled={appliedDiscount > 0} className="rounded-full">Apply</Button>
+                  </div>
+                  {discountSuccess && (
+                    <div className="flex items-center gap-2 mt-3 text-sm text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span>{discountSuccess}</span>
+                      <button onClick={handleRemoveDiscount} className="ml-auto text-xs font-bold underline">Remove</button>
+                    </div>
+                  )}
+                  {discountError && (
+                    <div className="flex items-center gap-2 mt-3 text-sm text-destructive">
+                      <XCircle className="h-4 w-4" />
+                      <span>{discountError}</span>
+                    </div>
+                  )}
+                </div>
+
                 <Button asChild size="lg" className="w-full mt-8 rounded-full font-bold">
                     <Link href="/checkout">Proceed to Checkout</Link>
                 </Button>
