@@ -12,7 +12,7 @@
     --popover-foreground: 345 10% 25%;
     --primary: 340 82% 64%; /* #EC5C8C */
     --primary-foreground: 345 10% 25%;
-    --secondary: 260 70% 90%; /* #D0B4F4 - Pale lavender */
+    --secondary: 348 60% 94%; /* #F6DEE4 - Off Pink */
     --secondary-foreground: 345 10% 25%;
     --muted: 348 30% 90%;
     --muted-foreground: 345 10% 45%;
@@ -35,7 +35,7 @@
     --popover-foreground: 348 60% 97%;
     --primary: 340 82% 64%;
     --primary-foreground: 345 10% 15%;
-    --secondary: 260 70% 90%;
+    --secondary: 348 60% 94%;
     --secondary-foreground: 345 10% 15%;
     --muted: 345 10% 25%;
     --muted-foreground: 348 30% 90%;
