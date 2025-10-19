@@ -38,6 +38,7 @@ Someone just grabbed a freebie! Here are the details:
 
 *Name:* ${name}
 *Email:* ${email}
+*Phone:* ${phone || 'N/A'}
 
 *Item Downloaded:*
 - ${product.name}
@@ -52,7 +53,8 @@ Another heart touched by Cuddleia! 💖
       // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
       await appendToSheet('Cuddleia Sales Log', [timestamp, name, email, phone || '', product.name, 0]);
     } catch (sheetError) {
-        console.error("Failed to append to Google Sheet:", sheetError);
+        console.error("Failed to append freebie download to Google Sheet:", sheetError);
+        // We log the error but do not fail the request
     }
     
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });

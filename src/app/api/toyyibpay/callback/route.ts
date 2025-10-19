@@ -62,6 +62,7 @@ Alhamdulillah, a new order has come in! So much barakah! âœ¨ Let's celebrate! ðŸ
 *Order ID:* ${billcode}
 *Name:* ${billDetails.name}
 *Email:* ${billDetails.email}
+*Phone:* ${billDetails.phone}
 *Total:* ${orderTotal}
 
 *Items:*
