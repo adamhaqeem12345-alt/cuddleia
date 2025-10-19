@@ -83,7 +83,7 @@ export default function ContactPage() {
                   <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
                   <h3 className="font-headline text-2xl font-bold mb-2">Message Sent!</h3>
                   <p className="text-muted-foreground mb-6">Thank you for reaching out. We'll get back to you soon.</p>
-                  <Button onClick={() => setStatus('idle')} variant="outline">Send Another Message</Button>
+                  <Button onClick={() => setStatus('idle')} variant="secondary" className="rounded-full">Send Another Message</Button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
