@@ -19,6 +19,21 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Product not found or is not free.' }, { status: 404 });
     }
     
+    // Append to Google Sheet first to get any errors
+    const timestamp = new Date().toISOString();
+    // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+    const sheetRow = [timestamp, name, email, phone || '', product.name, 0];
+    console.log("Attempting to append to 'Cuddleia Sales Log' sheet for freebie:", sheetRow);
+    const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
+    
+    if (!sheetResult.success) {
+      console.error("Failed to append freebie download to Google Sheet:", sheetResult.error);
+      // IMPORTANT: Return the specific error to the client for debugging
+      return NextResponse.json({ error: `Failed to log to sheet: ${sheetResult.error}` }, { status: 500 });
+    }
+
+    console.log("Successfully appended freebie download to 'Cuddleia Sales Log' sheet.");
+
     // Create a mock order object to use the existing email service
     const order: Order = {
         id: `FREE-${Date.now()}`,
@@ -47,19 +62,6 @@ Another heart touched by Cuddleia! 💖
     `;
     await sendTelegramNotification(telegramMessage);
 
-    // Append to Google Sheet
-    try {
-      const timestamp = new Date().toISOString();
-      // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-      const sheetRow = [timestamp, name, email, phone || '', product.name, 0];
-      console.log("Attempting to append to 'Cuddleia Sales Log' sheet for freebie:", sheetRow);
-      await appendToSheet('Cuddleia Sales Log', sheetRow);
-      console.log("Successfully appended freebie download to 'Cuddleia Sales Log' sheet.");
-    } catch (sheetError: any) {
-        console.error("Failed to append freebie download to Google Sheet:", sheetError.message);
-        // We log the error but do not fail the request
-    }
-    
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });
 
   } catch (error: any) {

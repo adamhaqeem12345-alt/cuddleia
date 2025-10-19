@@ -115,9 +115,9 @@ export const FreebieFormDialog = ({ product }: FreebieFormDialogProps) => {
                 </Button>
               </DialogFooter>
               {status === 'error' && (
-                 <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg flex items-center gap-2">
-                    <XCircle className="h-5 w-5"/>
-                    <span>{error || 'An unexpected error occurred.'}</span>
+                 <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg flex items-start gap-2 mt-4">
+                    <XCircle className="h-5 w-5 flex-shrink-0 mt-0.5"/>
+                    <span className="break-all">{error || 'An unexpected error occurred.'}</span>
                  </div>
               )}
             </form>

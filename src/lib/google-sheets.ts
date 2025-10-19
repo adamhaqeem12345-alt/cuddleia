@@ -4,21 +4,27 @@ import { google } from 'googleapis';
 // Define the shape of the data that can be appended
 export type SheetRow = (string | number | null)[];
 
+interface AppendResult {
+  success: boolean;
+  error?: string;
+}
+
 /**
  * Appends a new row of data to the specified Google Sheet.
  * @param sheetName - The name of the sheet (tab) to append to.
  * @param row - An array of values to append as a new row.
+ * @returns An object indicating success or failure with an error message.
  */
-export async function appendToSheet(sheetName: string, row: SheetRow) {
+export async function appendToSheet(sheetName: string, row: SheetRow): Promise<AppendResult> {
   try {
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
     const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const sheetId = process.env.GOOGLE_SHEET_ID;
 
     if (!sheetId || !serviceAccountEmail || !privateKey) {
-      console.warn('Google Sheets environment variables are not fully configured. Skipping sheet append.');
-      // Throw an error to be caught by the calling function
-      throw new Error('Google Sheets environment variables not configured.');
+      const errorMsg = 'Google Sheets environment variables are not fully configured.';
+      console.warn(`[Google Sheets] ${errorMsg}`);
+      return { success: false, error: errorMsg };
     }
 
     // Authenticate with the Google Sheets API using JWT
@@ -44,11 +50,19 @@ export async function appendToSheet(sheetName: string, row: SheetRow) {
       },
     });
 
-    console.log(`[Google Sheets] Append successful. Status: ${response.status}`);
+    if (response.status === 200) {
+        console.log(`[Google Sheets] Append successful.`);
+        return { success: true };
+    } else {
+        const errorMsg = `Google Sheets API responded with status: ${response.status}`;
+        console.error(`[Google Sheets] ${errorMsg}`);
+        return { success: false, error: errorMsg };
+    }
 
   } catch (error: any) {
-    console.error('[Google Sheets] Error appending to sheet:', error.message);
-    // Re-throw the error so the calling function knows the operation failed.
-    throw new Error(`Failed to write to Google Sheet: ${error.message}`);
+    const errorMsg = `Failed to write to Google Sheet: ${error.message}`;
+    console.error('[Google Sheets] Error appending to sheet:', error);
+    // Return the specific error message
+    return { success: false, error: errorMsg };
   }
 }
