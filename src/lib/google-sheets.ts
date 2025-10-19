@@ -12,26 +12,27 @@ export type SheetRow = (string | number | null)[];
 export async function appendToSheet(sheetName: string, row: SheetRow) {
   try {
     const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+    const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+    const sheetId = process.env.GOOGLE_SHEET_ID;
 
-    if (!process.env.GOOGLE_SHEET_ID || !process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !privateKey) {
+    if (!sheetId || !serviceAccountEmail || !privateKey) {
       console.warn('Google Sheets environment variables are not fully configured. Skipping sheet append.');
       return; // Return silently if not configured
     }
 
-    // Authenticate with the Google Sheets API
-    const auth = new google.auth.GoogleAuth({
-      credentials: {
-        client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: privateKey,
-      },
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-    });
+    // Authenticate with the Google Sheets API using JWT
+    const auth = new google.auth.JWT(
+      serviceAccountEmail,
+      undefined,
+      privateKey,
+      ['https://www.googleapis.com/auth/spreadsheets'],
+    );
 
     const sheets = google.sheets({ version: 'v4', auth });
     
     // Append the row to the specified sheet
     await sheets.spreadsheets.values.append({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      spreadsheetId: sheetId,
       range: sheetName,
       valueInputOption: 'USER_ENTERED',
       resource: {
