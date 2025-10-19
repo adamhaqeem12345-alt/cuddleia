@@ -37,7 +37,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
 
   if (price === 0) {
     return (
-      <p className="text-xl font-headline font-bold text-primary text-right">
+      <p className="text-xl font-headline font-bold text-primary">
         Free
       </p>
     );
@@ -47,8 +47,8 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
   const originalPriceStyle = isTotal ? "text-lg" : "text-base";
 
   return (
-    <div className='text-right'>
-        <div className="flex items-baseline gap-2 justify-end">
+    <div className={isTotal ? 'text-right' : ''}>
+        <div className="flex items-baseline gap-2" style={{justifyContent: isTotal ? 'flex-end' : 'flex-start'}}>
             {originalPrice && (
                 <p className={`${originalPriceStyle} font-headline font-bold text-muted-foreground line-through`}>
                     ${originalPrice.toFixed(2)}
@@ -60,7 +60,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
         </div>
         <div className="h-6">
             {isLoading ? (
-                <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1 ml-auto"></div>
+                <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1" style={{marginLeft: isTotal ? 'auto' : '0'}}></div>
             ) : convertedPrice !== null ? (
                 <p className="text-sm text-muted-foreground">(approx. RM {convertedPrice.toFixed(2)})</p>
             ) : (
