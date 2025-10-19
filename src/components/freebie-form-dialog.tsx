@@ -77,7 +77,7 @@ export const FreebieFormDialog = ({ product }: FreebieFormDialogProps) => {
             <h3 className="font-headline text-2xl font-bold mb-2">Success!</h3>
             <p className="text-muted-foreground">Thank you! Your free guide is on its way to your inbox.</p>
              <DialogFooter className="mt-6">
-                <Button onClick={() => setOpen(false)} variant="outline">Close</Button>
+                <Button onClick={() => setOpen(false)} variant="outline" className="rounded-full">Close</Button>
             </DialogFooter>
           </div>
         ) : (
@@ -91,18 +91,18 @@ export const FreebieFormDialog = ({ product }: FreebieFormDialogProps) => {
             <form onSubmit={handleSubmit} className="space-y-4 pt-4">
               <div>
                 <label htmlFor="freebie-name" className="sr-only">Full Name</label>
-                <Input id="freebie-name" type="text" placeholder="Your Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                <Input id="freebie-name" type="text" placeholder="Your Full Name" value={name} onChange={(e) => setName(e.target.value)} required className="rounded-full"/>
               </div>
               <div>
                 <label htmlFor="freebie-email" className="sr-only">Email</label>
-                <Input id="freebie-email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="freebie-email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required className="rounded-full"/>
               </div>
               <div>
                 <label htmlFor="freebie-phone" className="sr-only">Phone Number (Optional)</label>
-                <Input id="freebie-phone" type="tel" placeholder="Phone Number (Optional)" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input id="freebie-phone" type="tel" placeholder="Phone Number (Optional)" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-full"/>
               </div>
               <DialogFooter>
-                <Button type="submit" className="w-full" disabled={status === 'sending'}>
+                <Button type="submit" className="w-full rounded-full" disabled={status === 'sending'}>
                   {status === 'sending' ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
