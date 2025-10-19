@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const AboutPage = () => {
   return (
     <div className="bg-background">
-      <div className="bg-accent">
+      <div className="bg-background">
         <section className="flex h-[40vh] flex-col items-center justify-center">
           <div className="container mx-auto px-4 text-center">
             <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg font-bold">

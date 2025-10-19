@@ -17,7 +17,7 @@ export default function Home() {
   
   return (
     <>
-      <section className="h-[75vh] bg-accent flex flex-col items-center justify-center text-center px-4">
+      <section className="h-[75vh] bg-background flex flex-col items-center justify-center text-center px-4">
         <div>
           <h1 className="font-headline text-5xl md:text-7xl lg:text-8xl text-foreground drop-shadow-lg font-bold">Where Creativity Meets Barakah</h1>
           <p className="mt-4 font-body text-lg md:text-xl max-w-2xl mx-auto text-muted-foreground">Discover cozy wallpapers and Islamic booklets designed to bring warmth, beauty, and serenity to your digital life.</p>
@@ -32,7 +32,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-accent py-24 sm:py-32">
+      <section className="bg-background py-24 sm:py-32">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
             <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden group">
@@ -53,7 +53,7 @@ export default function Home() {
       </section>
 
       {completeCollection && (
-        <section className="bg-accent py-24 sm:py-32">
+        <section className="bg-background py-24 sm:py-32">
           <div className="container mx-auto px-4">
             <div>
               <h2 className="text-center font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">Get The Complete 5-Volume Series</h2>

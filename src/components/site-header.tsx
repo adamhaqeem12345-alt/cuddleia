@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ export function SiteHeader() {
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <header className="w-full sticky top-0 z-40 bg-accent">
+    <header className="w-full sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         <Link href="/" className="transition-transform hover:scale-105">
           <div className="flex items-center gap-2">
