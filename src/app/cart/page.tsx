@@ -69,8 +69,8 @@ export default function CartPage() {
                       </h3>
                        <p className="text-sm text-muted-foreground">Price: ${item.price.toFixed(2)}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                       <p className="font-bold text-lg text-right">${(item.price * item.quantity).toFixed(2)}</p>
+                    <div className="flex flex-col items-end gap-2 w-32">
+                       <p className="font-bold text-lg text-right w-full">${(item.price * item.quantity).toFixed(2)}</p>
                        <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)} className="text-muted-foreground hover:text-destructive">
                          <Trash2 className="h-4 w-4 mr-1" />
                          Remove

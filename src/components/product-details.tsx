@@ -41,13 +41,14 @@ export const ProductDetails = ({ product }: { product: Product }) => {
             />
           </div>
           <div className="flex flex-col h-full">
-            <h1 className="font-headline text-4xl lg:text-5xl text-foreground mb-4 font-bold">{product.name}</h1>
-            
-            <div className="mb-6">
-                <ProductPrice price={product.price} originalPrice={product.originalPrice} />
+            <div className="flex justify-between items-start">
+                <h1 className="font-headline text-4xl lg:text-5xl text-foreground mb-4 font-bold pr-4">{product.name}</h1>
+                <div className="text-right flex-shrink-0">
+                    <ProductPrice price={product.price} originalPrice={product.originalPrice} />
+                </div>
             </div>
 
-            <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap mb-8">
+            <div className="prose prose-lg max-w-none text-muted-foreground font-body whitespace-pre-wrap my-8">
                 <p>{product.description}</p>
             </div>
 

@@ -30,15 +30,17 @@ const ProductCard = ({ product }: { product: Product }) => {
       </CardHeader>
       <CardContent className="flex flex-1 flex-col p-6">
         <div className="flex-1">
-          <CardTitle className="mb-2">
-            <Link href={`/products/${product.id}`} className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
-              {product.name}
-            </Link>
-          </CardTitle>
-          <div className="mb-4">
-            <ProductPrice price={product.price} originalPrice={product.originalPrice} />
+           <div className="flex justify-between items-start">
+              <CardTitle className="mb-2 pr-4">
+                <Link href={`/products/${product.id}`} className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
+                  {product.name}
+                </Link>
+              </CardTitle>
+              <div className="text-right flex-shrink-0">
+                 <ProductPrice price={product.price} originalPrice={product.originalPrice} />
+              </div>
           </div>
-          <p className="text-sm font-body text-muted-foreground line-clamp-3 mb-4">{product.description.split('\\n\\n')[0]}</p>
+          <p className="text-sm font-body text-muted-foreground line-clamp-3 my-4">{product.description.split('\\n\\n')[0]}</p>
           {product.disclaimer && (
             <div className="flex items-start gap-2 bg-muted/50 p-3 rounded-lg text-xs text-muted-foreground">
               <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
