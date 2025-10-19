@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -23,7 +24,7 @@ const SuccessContent = () => {
             <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
                 Thank you for your purchase. You will receive an email confirmation shortly with your order details and download links.
             </p>
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="rounded-full">
                 <Link href="/products">Continue Shopping</Link>
             </Button>
         </>
@@ -41,10 +42,10 @@ const FailedContent = () => {
                 Unfortunately, we were unable to process your payment. Please try again or contact us if the problem persists.
             </p>
              <div className="flex gap-4 justify-center">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="rounded-full">
                     <Link href="/checkout">Try Again</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline">
+                <Button asChild size="lg" variant="outline" className="rounded-full">
                     <Link href="/products">Continue Shopping</Link>
                 </Button>
             </div>
@@ -63,10 +64,10 @@ const CanceledContent = () => {
                 Your payment process was canceled. Your cart is still waiting for you if you'd like to try again.
             </p>
             <div className="flex gap-4 justify-center">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="rounded-full">
                     <Link href="/checkout">Back to Checkout</Link>
                 </Button>
-                 <Button asChild size="lg" variant="outline">
+                 <Button asChild size="lg" variant="outline" className="rounded-full">
                     <Link href="/products">Continue Shopping</Link>
                 </Button>
             </div>

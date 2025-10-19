@@ -132,7 +132,7 @@ export default function CheckoutPage() {
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
             <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-8 font-bold">Checkout</h1>
             <p className="text-muted-foreground text-lg mb-8">Your cart is empty. You can't proceed to checkout.</p>
-            <Button asChild>
+            <Button asChild className="rounded-full">
                 <Link href="/products">Continue Shopping</Link>
             </Button>
         </div>
@@ -176,17 +176,23 @@ export default function CheckoutPage() {
               <div className="border-t p-6 space-y-3">
                  <div className="flex justify-between text-lg">
                     <span>Subtotal</span>
-                    <span className="font-bold">${subtotal.toFixed(2)}</span>
+                    <div className="text-right">
+                      <span className="font-bold">${subtotal.toFixed(2)}</span>
+                    </div>
                 </div>
                 {appliedDiscount > 0 && (
                     <div className="flex justify-between text-lg text-green-600">
                         <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
-                        <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+                        <div className="text-right">
+                          <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+                        </div>
                     </div>
                 )}
                 <div className="flex justify-between text-lg">
                     <span>Taxes & Fees</span>
-                    <span className="font-bold">$0.00</span>
+                     <div className="text-right">
+                      <span className="font-bold">$0.00</span>
+                    </div>
                 </div>
                  <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
                     <span>Total</span>

@@ -33,7 +33,7 @@ export default function CartPage() {
       {cart.length === 0 ? (
         <div className="text-center">
           <p className="text-muted-foreground text-lg mb-8">Your cart is empty.</p>
-          <Button asChild>
+          <Button asChild className="rounded-full">
             <Link href="/products">Continue Shopping</Link>
           </Button>
         </div>
@@ -87,19 +87,25 @@ export default function CartPage() {
                 <div className="space-y-4">
                     <div className="flex justify-between text-lg">
                         <span>Subtotal</span>
-                        <span className="font-bold text-right">${subtotal.toFixed(2)}</span>
+                        <div className="text-right">
+                          <p className="font-bold text-lg">${subtotal.toFixed(2)}</p>
+                        </div>
                     </div>
 
                     {appliedDiscount > 0 && (
                       <div className="flex justify-between text-lg text-green-600">
                         <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
-                        <span className="font-bold text-right">-${(subtotal * appliedDiscount).toFixed(2)}</span>
+                        <div className="text-right">
+                          <p className="font-bold">-${(subtotal * appliedDiscount).toFixed(2)}</p>
+                        </div>
                       </div>
                     )}
 
                     <div className="flex justify-between text-lg">
                         <span>Taxes & Fees</span>
-                        <span className="font-bold text-right">$0.00</span>
+                         <div className="text-right">
+                          <p className="font-bold">$0.00</p>
+                        </div>
                     </div>
                      <div className="border-t pt-4 mt-4 flex justify-between items-start text-2xl font-bold">
                         <span>Total</span>
