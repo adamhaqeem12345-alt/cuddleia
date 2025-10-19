@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
 
     if (!zohoUser || !zohoPass) {
         console.error('Zoho Mail credentials are not set in environment variables.');
-        return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
+        return NextResponse.json({ error: 'Server is not configured to send emails. Please contact support.' }, { status: 500 });
     }
 
     // Create a transporter object using the default SMTP transport
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Error sending email:', error);
-    return NextResponse.json({ error: 'Failed to send message.' }, { status: 500 });
+    // Log the detailed error on the server side for debugging
+    return NextResponse.json({ error: 'Failed to send message. Please try again later.' }, { status: 500 });
   }
 }
