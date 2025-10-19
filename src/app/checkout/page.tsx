@@ -24,8 +24,9 @@ export default function CheckoutPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('toyyibpay');
+  const [{ isPending, options: paypalOptions }] = usePayPalScriptReducer();
 
-  const [{ isPending }] = usePayPalScriptReducer();
+  const isPayPalAvailable = paypalOptions.clientId && paypalOptions.clientId !== 'test';
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -189,15 +190,17 @@ export default function CheckoutPage() {
         <div>
             <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment Details</h2>
             <div className="border rounded-2xl shadow-sm bg-card p-8">
-                 <div className="grid grid-cols-2 gap-4 mb-8">
+                 <div className={cn("mb-8", isPayPalAvailable ? "grid grid-cols-2 gap-4" : "")}>
                     <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
                        <Landmark className="h-6 w-6"/>
                        <span className="font-semibold">Online Banking (MY)</span>
                     </button>
-                     <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
-                       <CreditCard className="h-6 w-6"/>
-                       <span className="font-semibold">PayPal / Card</span>
-                    </button>
+                    {isPayPalAvailable && (
+                      <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
+                        <CreditCard className="h-6 w-6"/>
+                        <span className="font-semibold">PayPal / Card</span>
+                      </button>
+                    )}
                 </div>
 
                 {selectedPaymentMethod === 'toyyibpay' ? (
@@ -229,26 +232,28 @@ export default function CheckoutPage() {
                         </div>
                     </div>
                 ) : (
-                    <div>
-                        {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
-                        <div style={{ display: (isPending || isLoading) ? 'none' : 'block' }}>
-                          <PayPalButtons 
-                              style={{ layout: "vertical", label: "pay" }}
-                              disabled={isPending || isLoading || cart.length === 0}
-                              createOrder={createPayPalOrder}
-                              onApprove={onPayPalApprove}
-                              onError={(err) => {
-                                  setError("An error occurred with the PayPal transaction. Please try again.");
-                                  console.error("PayPal Error:", err);
-                                  setIsLoading(false);
-                              }}
-                          />
+                    isPayPalAvailable && (
+                        <div>
+                            {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
+                            <div style={{ display: (isPending || isLoading) ? 'none' : 'block' }}>
+                              <PayPalButtons 
+                                  style={{ layout: "vertical", label: "pay" }}
+                                  disabled={isPending || isLoading || cart.length === 0}
+                                  createOrder={createPayPalOrder}
+                                  onApprove={onPayPalApprove}
+                                  onError={(err) => {
+                                      setError("An error occurred with the PayPal transaction. Please try again.");
+                                      console.error("PayPal Error:", err);
+                                      setIsLoading(false);
+                                  }}
+                              />
+                            </div>
+                            <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
+                                <ShieldCheck className="h-4 w-4 text-green-600" />
+                                <span>Secure payment via PayPal.</span>
+                            </div>
                         </div>
-                         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-                            <ShieldCheck className="h-4 w-4 text-green-600" />
-                            <span>Secure payment via PayPal.</span>
-                        </div>
-                    </div>
+                    )
                 )}
                 {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
             </div>
