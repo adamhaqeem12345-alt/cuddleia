@@ -130,7 +130,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         border-radius: 50%;
                     }
                     .main-title {
-                        color: #b98a9d;
+                        color: #EC5C8C;
                         font-size: 24px;
                         margin: 0;
                         font-weight: bold;
@@ -139,7 +139,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         font-size: 32px;
                         margin: 40px 0 16px;
                         font-weight: bold;
-                        color: #b98a9d;
+                        color: #EC5C8C;
                     }
                     .intro-text {
                         font-size: 16px;
@@ -160,7 +160,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                     .product-title {
                         margin: 0 0 8px;
                         font-size: 18px;
-                        color: #b98a9d;
+                        color: #EC5C8C;
                         font-weight: bold;
                     }
                     .product-description {
@@ -172,13 +172,13 @@ export async function sendOrderConfirmationEmail(order: Order) {
                     .community-section {
                         margin-top: 40px;
                         padding-top: 40px;
-                        border-top: 1px solid rgba(191, 135, 155, 0.2);
+                        border-top: 1px solid rgba(236, 92, 140, 0.2);
                     }
                     .button {
                         display: inline-block;
                         padding: 12px 24px;
-                        background-color: #F4B4C9;
-                        color: #3e2e35;
+                        background-color: #EC5C8C;
+                        color: #ffffff;
                         text-decoration: none;
                         border-radius: 9999px;
                         font-weight: bold;

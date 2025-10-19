@@ -10,7 +10,7 @@
     --card-foreground: 345 10% 25%;
     --popover: 348 60% 98%;
     --popover-foreground: 345 10% 25%;
-    --primary: 340 70% 80%; /* #F4B4C9 - Soft pink */
+    --primary: 340 82% 64%; /* #EC5C8C */
     --primary-foreground: 345 10% 25%;
     --secondary: 260 70% 90%; /* #D0B4F4 - Pale lavender */
     --secondary-foreground: 345 10% 25%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 340 40% 85%;
     --input: 340 40% 85%;
-    --ring: 340 70% 80%;
+    --ring: 340 82% 64%;
     --radius: 0.5rem;
   }
  
@@ -33,7 +33,7 @@
     --card-foreground: 348 60% 97%;
     --popover: 345 10% 18%;
     --popover-foreground: 348 60% 97%;
-    --primary: 340 70% 80%;
+    --primary: 340 82% 64%;
     --primary-foreground: 345 10% 15%;
     --secondary: 260 70% 90%;
     --secondary-foreground: 345 10% 15%;
@@ -45,7 +45,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 345 10% 30%;
     --input: 345 10% 30%;
-    --ring: 340 70% 80%;
+    --ring: 340 82% 64%;
   }
 }
 
