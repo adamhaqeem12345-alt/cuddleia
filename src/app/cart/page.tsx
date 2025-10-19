@@ -51,7 +51,7 @@ export default function CartPage() {
                     Clear Cart
                 </Button>
             </div>
-            <div className="border rounded-2xl shadow-sm">
+            <div className="border rounded-2xl shadow-sm bg-card">
               <ul className="divide-y">
                 {cart.map(item => (
                   <li key={item.id} className="flex items-center gap-6 p-6">
