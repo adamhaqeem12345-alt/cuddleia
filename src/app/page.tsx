@@ -1,15 +1,19 @@
 
+'use client';
+
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Info, ArrowRight } from "lucide-react";
+import { Info, ArrowRight } from "lucide-react";
 import { products } from "@/lib/products";
 import { ProductPrice } from "@/components/product-price";
+import { FreebieFormDialog } from "@/components/freebie-form-dialog";
 
 export default function Home() {
   const completeCollection = products.find(p => p.id === '010');
   const wallpapers = products.filter(p => p.category === 'Wallpapers').slice(0, 3);
+  const freeBook = products.find(p => p.id === '001');
   
   return (
     <>
@@ -38,11 +42,7 @@ export default function Home() {
               <h2 className="font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">The Barakah Business Blueprint</h2>
               <p className="text-lg text-muted-foreground mb-8">A 5-volume series to guide you in building a sincere, halal, and successful business from the ground up. Start your journey today with the first volume, completely free.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                <Button asChild size="lg" className="rounded-full font-bold">
-                  <a href="https://drive.google.com/file/d/1-v2_zgCQDfpNjByZgD3IzzCla5XbO_lz/view?usp=drivesdk" target="_blank">
-                    <Download className="mr-2 h-5 w-5" />Get volume 1 for free
-                  </a>
-                </Button>
+                {freeBook && <FreebieFormDialog product={freeBook} />}
                 <Button asChild size="lg" variant="outline" className="rounded-full">
                   <Link href="/products">Explore the Series</Link>
                 </Button>

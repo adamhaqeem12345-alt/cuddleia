@@ -11,7 +11,7 @@ export interface Order {
         product: Product;
         quantity: number;
     }[];
-    total: string; // e.g., "$70.00"
+    total: string; // e.g., "$70.00" or "Free"
 }
 
 // 1. Create a transporter
@@ -77,18 +77,23 @@ export async function sendOrderConfirmationEmail(order: Order) {
         `;
     }).join('');
 
+    const isFree = order.total.toLowerCase() === 'free';
+    const subject = isFree ? `Your Free Cuddleia Guide Is Here!` : `Your Cuddleia Order Confirmation (#${order.id})`;
+    const title = isFree ? `Here is your free guide, ${order.customerName}!` : `Thank you for your order, ${order.customerName}!`;
+    const message = isFree ? `Thank you for your interest. Your digital product is ready for you to download. Here are the details:` : `We've received your order and your digital products are ready for you. Here are the details:`;
+
     const mailOptions = {
         from: `"Cuddleia" <${zohoUser}>`,
         to: order.customerEmail,
-        subject: `Your Cuddleia Order Confirmation (#${order.id})`,
+        subject: subject,
         html: `
             <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px;">
-                <h1 style="color: #333;">Thank you for your order, ${order.customerName}!</h1>
-                <p>We've received your order and your digital products are ready for you. Here are the details:</p>
+                <h1 style="color: #333;">${title}</h1>
+                <p>${message}</p>
                 <hr>
                 ${itemsHtml}
                 <hr>
-                <p style="font-size: 1.2em; font-weight: bold;">Total: ${order.total}</p>
+                ${!isFree ? `<p style="font-size: 1.2em; font-weight: bold;">Total: ${order.total}</p>` : ''}
                 <p>If you have any questions, please reply to this email.</p>
                 <p>With warmth,<br>The Cuddleia Team</p>
             </div>
