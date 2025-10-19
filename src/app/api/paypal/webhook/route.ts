@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
-import { appendToSheet } from '@/lib/google-sheets';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -97,27 +96,6 @@ export async function POST(req: NextRequest) {
                     })).filter((item: any) => item.product),
                     total: orderTotal,
                 };
-
-                // Append to Google Sheet
-                try {
-                    const timestamp = new Date(orderData.create_time).toISOString();
-                    const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
-                    const amount = parseFloat(purchaseUnit.amount.value);
-                    // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                    // PayPal does not provide a phone number, so we leave it empty.
-                    const sheetRow = [timestamp, order.customerName, order.customerEmail, '', itemsString, amount];
-                    console.log("Attempting to append PayPal order to 'Cuddleia Sales Log' sheet:", sheetRow);
-                    const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
-
-                    if (!sheetResult.success) {
-                        console.error("Failed to append PayPal order to Google Sheet:", sheetResult.error);
-                        // We don't fail the webhook, but we are aware of the logging issue.
-                    } else {
-                        console.log("Successfully appended PayPal order to 'Cuddleia Sales Log' sheet.");
-                    }
-                } catch (sheetError: any) {
-                    console.error("Caught an exception while trying to append PayPal order to Google Sheet:", sheetError.message);
-                }
 
                 await sendOrderConfirmationEmail(order);
                 console.log(`Order confirmation email sent for order ${orderData.id}`);

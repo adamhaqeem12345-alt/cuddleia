@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
-import { appendToSheet } from '@/lib/google-sheets';
 
 // This is a temporary in-memory store. In a serverless environment, this is not reliable.
 // A more robust solution would use a database (e.g., Firestore) or cache (e.g., Redis).
@@ -51,26 +50,6 @@ export async function POST(req: NextRequest) {
                 })).filter((i: any) => i.product),
                 total: orderTotal,
             };
-            
-            // Append to Google Sheet
-            try {
-                const timestamp = new Date().toISOString();
-                const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
-                const totalInUSD = billDetails.totalAmountUSD;
-                // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                const sheetRow = [timestamp, billDetails.name, billDetails.email, billDetails.phone, itemsString, totalInUSD];
-                console.log("Attempting to append ToyyibPay order to 'Cuddleia Sales Log' sheet:", sheetRow);
-                const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
-
-                if (!sheetResult.success) {
-                    console.error("Failed to append ToyyibPay order to Google Sheet:", sheetResult.error);
-                    // Don't fail the webhook, but we are aware of the issue.
-                } else {
-                    console.log("Successfully appended ToyyibPay order to 'Cuddleia Sales Log' sheet.");
-                }
-            } catch (sheetError: any) {
-                console.error("Caught an exception while trying to append ToyyibPay order to Google Sheet:", sheetError.message);
-            }
             
             await sendOrderConfirmationEmail(order);
             console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);

@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
-import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,26 +17,6 @@ export async function POST(req: NextRequest) {
     if (!product || product.price !== 0) {
         return NextResponse.json({ error: 'Product not found or is not free.' }, { status: 404 });
     }
-    
-    // Append to Google Sheet first
-    try {
-        const timestamp = new Date().toISOString();
-        // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-        const sheetRow = [timestamp, name, email, phone || '', product.name, 0];
-        console.log("Attempting to append to 'Cuddleia Sales Log' sheet for freebie:", sheetRow);
-        const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
-        
-        if (!sheetResult.success) {
-          console.error("Failed to append freebie download to Google Sheet:", sheetResult.error);
-          // IMPORTANT: Even if sheet fails, proceed with sending the email to the user.
-          // The error is logged on the server for debugging.
-        } else {
-          console.log("Successfully appended freebie download to 'Cuddleia Sales Log' sheet.");
-        }
-    } catch (sheetError: any) {
-        console.error("Caught an exception while trying to append freebie to Google Sheet:", sheetError.message);
-    }
-
 
     // Create a mock order object to use the existing email service
     const order: Order = {
@@ -67,7 +46,6 @@ Another heart touched by Cuddleia! 💖
     `;
     await sendTelegramNotification(telegramMessage);
 
-    // Return success regardless of sheet append outcome
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });
 
   } catch (error: any) {
