@@ -34,7 +34,9 @@ const transporter = nodemailer.createTransport({
 
 // 2. Function to send the contact form submission
 export async function sendContactFormEmail(name: string, email: string, subject: string, message: string) {
-    if (!zohoUser) throw new Error("Email service is not configured.");
+    if (!zohoUser || !zohoPass) {
+        throw new Error("Email service is not configured. Please check server environment variables.");
+    }
 
     const mailOptions = {
         from: `"Cuddleia Contact Form" <${zohoUser}>`,
@@ -57,7 +59,9 @@ export async function sendContactFormEmail(name: string, email: string, subject:
 
 // 3. Function to send the order confirmation email
 export async function sendOrderConfirmationEmail(order: Order) {
-    if (!zohoUser) throw new Error("Email service is not configured.");
+    if (!zohoUser || !zohoPass) {
+        throw new Error("Email service is not configured. Please check server environment variables.");
+    }
     
     const itemsHtml = order.items.map(item => {
         const downloadUrl = item.product.bundleIncludes ? "https://drive.google.com/drive/folders/1ZSw8l2E9gFBD6sUyyok0S2VtKgMhoeNn" : item.product.downloadUrl;
@@ -89,7 +93,9 @@ export async function sendOrderConfirmationEmail(order: Order) {
     const isFree = order.total.toLowerCase() === 'free';
     const subject = isFree ? `Your Free Download from Cuddleia` : `Thank you for your order, ${order.customerName}!`;
     const title = isFree ? `Your free download is here, ${order.customerName}!` : `Thank you for your order, ${order.customerName}!`;
-    const message = `We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:`;
+    const message = isFree 
+        ? "We're so excited for you to enjoy your new digital goodie. Here is the download link for the item you requested:"
+        : "We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:";
     const communityDescription = "Connect with fellow creators, share your journey, and get updates by joining our supportive corner on Telegram.";
 
     const mailOptions = {
