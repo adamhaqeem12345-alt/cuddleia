@@ -1,16 +1,59 @@
 
+'use client';
+
+import { useState, FormEvent } from 'react';
 import type { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Mail, Send } from 'lucide-react';
+import { Mail, Send, Loader2, CheckCircle, XCircle } from 'lucide-react';
 
+// Metadata is still supported in client components
 export const metadata: Metadata = {
   title: 'Contact Us | Cuddleia',
   description: 'Get in touch with the Cuddleia team. We\'d love to hear from you!',
 };
 
+type SubmissionStatus = 'idle' | 'sending' | 'success' | 'error';
+
 export default function ContactPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<SubmissionStatus>('idle');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus('sending');
+    setError('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong.');
+      }
+
+      setStatus('success');
+      // Reset form
+      setName('');
+      setEmail('');
+      setSubject('');
+      setMessage('');
+    } catch (err: any) {
+      setStatus('error');
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="bg-background">
       <div className="bg-accent">
@@ -42,30 +85,54 @@ export default function ContactPage() {
                 </div>
             </div>
             <div className="bg-card p-8 rounded-2xl shadow-lg">
-              <form className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
-                  <Input id="name" type="text" placeholder="Your Name" required />
+              {status === 'success' ? (
+                <div className="flex flex-col items-center justify-center text-center h-full">
+                  <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+                  <h3 className="font-headline text-2xl font-bold mb-2">Message Sent!</h3>
+                  <p className="text-muted-foreground mb-6">Thank you for reaching out. We'll get back to you soon.</p>
+                  <Button onClick={() => setStatus('idle')} variant="outline">Send Another Message</Button>
                 </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
-                  <Input id="email" type="email" placeholder="your@email.com" required />
-                </div>
-                 <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">Subject</label>
-                  <Input id="subject" type="text" placeholder="Question about a product" required />
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">Message</label>
-                  <Textarea id="message" placeholder="Your message here..." rows={5} required />
-                </div>
-                <div>
-                  <Button type="submit" size="lg" className="w-full font-bold rounded-full">
-                    <Send className="mr-2 h-5 w-5" />
-                    Send Message
-                  </Button>
-                </div>
-              </form>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                    <Input id="name" type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
+                    <Input id="email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label htmlFor="subject" className="block text-sm font-medium text-foreground mb-2">Subject</label>
+                    <Input id="subject" type="text" placeholder="Question about a product" value={subject} onChange={(e) => setSubject(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label htmlFor="message" className="block text-sm font-medium text-foreground mb-2">Message</label>
+                    <Textarea id="message" placeholder="Your message here..." rows={5} value={message} onChange={(e) => setMessage(e.target.value)} required />
+                  </div>
+                  <div>
+                    <Button type="submit" size="lg" className="w-full font-bold rounded-full" disabled={status === 'sending'}>
+                      {status === 'sending' ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-5 w-5" />
+                          Send Message
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  {status === 'error' && (
+                     <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-lg flex items-center gap-2">
+                        <XCircle className="h-5 w-5"/>
+                        <span>{error || 'An unexpected error occurred.'}</span>
+                     </div>
+                  )}
+                </form>
+              )}
             </div>
           </div>
         </div>
