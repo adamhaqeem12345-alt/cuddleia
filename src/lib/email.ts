@@ -69,7 +69,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                         <td width="120" valign="top">
-                            <img src="${item.product.imageUrl}" alt="${item.product.name}" style="width: 100px; height: 125px; object-fit: cover; border-radius: 8px;">
+                            <img src="${item.product.imageUrl}" alt="${item.product.name}" style="width: 100px; height: auto; object-fit: cover; border-radius: 8px;">
                         </td>
                         <td valign="top" style="padding-left: 20px;">
                             <h3 class="product-title">${item.product.name}</h3>
@@ -103,8 +103,8 @@ export async function sendOrderConfirmationEmail(order: Order) {
                 <style>
                     body {
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        background: linear-gradient(120deg, #F9E6EB 0%, #D0B4F4 100%);
-                        color: #BF879B; /* Main Pink Text Color */
+                        background: linear-gradient(120deg, #fceef2 0%, #e6dcf4 100%);
+                        color: #5c4b53;
                         margin: 0;
                         padding: 0;
                     }
@@ -130,7 +130,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         border-radius: 50%;
                     }
                     .main-title {
-                        color: #BF879B;
+                        color: #b98a9d;
                         font-size: 24px;
                         margin: 0;
                         font-weight: bold;
@@ -139,11 +139,11 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         font-size: 32px;
                         margin: 40px 0 16px;
                         font-weight: bold;
-                        color: #BF879B;
+                        color: #b98a9d;
                     }
                     .intro-text {
                         font-size: 16px;
-                        color: #BF879B;
+                        color: #5c4b53;
                         margin: 0 auto 40px;
                         max-width: 480px;
                         line-height: 1.5;
@@ -160,13 +160,13 @@ export async function sendOrderConfirmationEmail(order: Order) {
                     .product-title {
                         margin: 0 0 8px;
                         font-size: 18px;
-                        color: #BF879B;
+                        color: #b98a9d;
                         font-weight: bold;
                     }
                     .product-description {
                         margin: 0 0 16px;
                         font-size: 14px;
-                        color: #BF879B;
+                        color: #5c4b53;
                         line-height: 1.5;
                     }
                     .community-section {
@@ -178,7 +178,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         display: inline-block;
                         padding: 12px 24px;
                         background-color: #F4B4C9;
-                        color: #2d2d2d;
+                        color: #3e2e35;
                         text-decoration: none;
                         border-radius: 9999px;
                         font-weight: bold;
