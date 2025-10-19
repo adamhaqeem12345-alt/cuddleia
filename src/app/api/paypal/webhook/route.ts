@@ -79,32 +79,31 @@ export async function POST(req: NextRequest) {
 
         console.log(`Received PayPal Webhook: ${eventType}`);
 
-        switch (eventType) {
-            case 'CHECKOUT.ORDER.COMPLETED':
-                const orderData = event.resource;
-                const purchaseUnit = orderData.purchase_units[0];
-                const customId = purchaseUnit.custom_id; // Expecting cart items as JSON string
+        if (eventType === 'CHECKOUT.ORDER.COMPLETED') {
+            const orderData = event.resource;
+            const purchaseUnit = orderData.purchase_units[0];
+            const customId = purchaseUnit.custom_id; // Expecting cart items as JSON string
 
-                try {
-                    const cartItems = JSON.parse(customId);
-                     const orderTotal = `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`;
-                     const order = {
-                        id: orderData.id,
-                        customerName: `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`,
-                        customerEmail: orderData.payer.email_address,
-                        items: cartItems.map((item: any) => ({
-                            product: getProductById(item.id)!,
-                            quantity: item.quantity,
-                        })).filter((item: any) => item.product),
-                        total: orderTotal,
-                    };
+            try {
+                const cartItems = JSON.parse(customId);
+                 const orderTotal = `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`;
+                 const order = {
+                    id: orderData.id,
+                    customerName: `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`,
+                    customerEmail: orderData.payer.email_address,
+                    items: cartItems.map((item: any) => ({
+                        product: getProductById(item.id)!,
+                        quantity: item.quantity,
+                    })).filter((item: any) => item.product),
+                    total: orderTotal,
+                };
 
-                    await sendOrderConfirmationEmail(order);
-                    console.log(`Order confirmation email sent for order ${orderData.id}`);
+                await sendOrderConfirmationEmail(order);
+                console.log(`Order confirmation email sent for order ${orderData.id}`);
 
-                    // Send Telegram notification
-                    const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
-                    const telegramMessage = `
+                // Send Telegram notification
+                const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
+                const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
 
 Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! 🥳
@@ -118,28 +117,26 @@ Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! �
 ${itemsList}
 
 Let's get this packed with love and duas! 💖
-                    `;
-                    await sendTelegramNotification(telegramMessage);
+                `;
+                await sendTelegramNotification(telegramMessage);
 
-                    // Append to Google Sheet
-                    try {
-                        const timestamp = new Date(orderData.create_time).toISOString();
-                        const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
-                        const amount = parseFloat(purchaseUnit.amount.value);
-                        // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                        await appendToSheet('Cuddleia Sales Log', [timestamp, order.customerName, order.customerEmail, '', itemsString, amount]);
-                    } catch (sheetError) {
-                        console.error("Failed to append PayPal order to Google Sheet:", sheetError);
-                    }
-
-
-                } catch (e) {
-                     console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e);
+                // Append to Google Sheet
+                try {
+                    const timestamp = new Date(orderData.create_time).toISOString();
+                    const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
+                    const amount = parseFloat(purchaseUnit.amount.value);
+                    // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+                    await appendToSheet('Cuddleia Sales Log', [timestamp, order.customerName, order.customerEmail, '', itemsString, amount]);
+                } catch (sheetError) {
+                    console.error("Failed to append PayPal order to Google Sheet:", sheetError);
                 }
-                
-                break;
-            default:
-                console.log(`Unhandled event type: ${eventType}`);
+
+
+            } catch (e) {
+                 console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e);
+            }
+        } else {
+            console.log(`Unhandled event type: ${eventType}`);
         }
 
         return NextResponse.json({ received: true }, { status: 200 });

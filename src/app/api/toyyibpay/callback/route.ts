@@ -4,7 +4,6 @@ import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
-import { getConvertedAmount } from '@/app/actions';
 
 // This is a temporary in-memory store. In production, you'd use a database.
 const billStore: { [billCode: string]: any } = {};
@@ -29,11 +28,9 @@ export async function POST(req: NextRequest) {
     
     const billcode = formData.get('billcode') as string;
     const status = formData.get('status') as string;
-    const order_id = formData.get('order_id') as string;
-    const transaction_id = formData.get('transaction_id') as string;
 
     console.log('--- ToyyibPay Server-to-Server Webhook (POST) ---');
-    console.log({ billcode, status, order_id, transaction_id });
+    console.log({ billcode, status });
 
     if (status === '1') {
       const billDetails = getBillDetails(billcode);
