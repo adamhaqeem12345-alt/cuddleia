@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,6 +45,14 @@ Someone just grabbed a freebie! Here are the details:
 Another heart touched by Cuddleia! 💖
     `;
     await sendTelegramNotification(telegramMessage);
+
+    // Append to Google Sheet
+    try {
+      const timestamp = new Date().toISOString();
+      await appendToSheet('Freebie Downloads', [timestamp, name, email, product.name]);
+    } catch (sheetError) {
+        console.error("Failed to append to Google Sheet:", sheetError);
+    }
     
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });
 

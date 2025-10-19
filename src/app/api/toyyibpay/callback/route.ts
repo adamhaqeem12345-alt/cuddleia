@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 // This is a temporary in-memory store. In production, you'd use a database.
 const billStore: { [billCode: string]: any } = {};
@@ -54,10 +55,11 @@ export async function POST(req: NextRequest) {
             console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
 
             // Send Telegram notification
+            const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
             const telegramMessage = `
 🛍️ *New ToyyibPay Order!* 🛍️
 
-Alhamdulillah, a new order has come in!
+Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! 🥳
 
 *Order ID:* ${billcode}
 *Name:* ${billDetails.name}
@@ -65,11 +67,20 @@ Alhamdulillah, a new order has come in!
 *Total:* ${orderTotal}
 
 *Items:*
-${order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n')}
+${itemsList}
 
-Let's celebrate this barakah! ✨
+Let's get this packed with love and duas! 💖
             `;
             await sendTelegramNotification(telegramMessage);
+
+            // Append to Google Sheet
+            try {
+                const timestamp = new Date().toISOString();
+                const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
+                await appendToSheet('Orders', [timestamp, order.id, order.customerName, order.customerEmail, order.total, itemsString, 'ToyyibPay']);
+            } catch (sheetError) {
+                console.error("Failed to append ToyyibPay order to Google Sheet:", sheetError);
+            }
             
             // Clean up the stored details
             delete billStore[billcode];

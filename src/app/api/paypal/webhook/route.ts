@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -102,10 +103,11 @@ export async function POST(req: NextRequest) {
                     console.log(`Order confirmation email sent for order ${orderData.id}`);
 
                     // Send Telegram notification
+                    const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
                     const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
 
-Alhamdulillah, a new order has come in!
+Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! 🥳
 
 *Order ID:* ${order.id}
 *Name:* ${order.customerName}
@@ -113,11 +115,21 @@ Alhamdulillah, a new order has come in!
 *Total:* ${order.total}
 
 *Items:*
-${order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n')}
+${itemsList}
 
-Let's celebrate this barakah! ✨
+Let's get this packed with love and duas! 💖
                     `;
                     await sendTelegramNotification(telegramMessage);
+
+                    // Append to Google Sheet
+                    try {
+                        const timestamp = new Date(orderData.create_time).toISOString();
+                        const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
+                        await appendToSheet('Orders', [timestamp, order.id, order.customerName, order.customerEmail, order.total, itemsString, 'PayPal']);
+                    } catch (sheetError) {
+                        console.error("Failed to append PayPal order to Google Sheet:", sheetError);
+                    }
+
 
                 } catch (e) {
                      console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e);
