@@ -65,18 +65,18 @@ export async function sendOrderConfirmationEmail(order: Order) {
         const description = item.product.description.split('.')[0] + '.';
 
         return `
-            <div style="margin-bottom: 24px; padding: 16px; background-color: #f9f9f9; border-radius: 12px;">
+            <div class="product-item">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                         <td width="120" valign="top">
                             <img src="${item.product.imageUrl}" alt="${item.product.name}" style="width: 100px; height: 125px; object-fit: cover; border-radius: 8px;">
                         </td>
                         <td valign="top" style="padding-left: 20px;">
-                            <h3 style="margin: 0 0 8px; font-size: 18px; color: #000000; font-weight: bold;">${item.product.name}</h3>
-                            <p style="margin: 0 0 16px; font-size: 14px; color: #555555; line-height: 1.5;">
+                            <h3 class="product-title">${item.product.name}</h3>
+                            <p class="product-description">
                                 ${description}
                             </p>
-                            <a href="${downloadUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #F4B4C9; color: #2d2d2d; text-decoration: none; border-radius: 9999px; font-weight: bold; font-family: sans-serif;">
+                            <a href="${downloadUrl}" target="_blank" class="button">
                                 Download Now
                             </a>
                         </td>
@@ -90,34 +90,137 @@ export async function sendOrderConfirmationEmail(order: Order) {
     const subject = isFree ? `Your Free Download from Cuddleia` : `Thank you for your order, ${order.customerName}!`;
     const title = isFree ? `Your free download is here, ${order.customerName}!` : `Thank you for your order, ${order.customerName}!`;
     const message = `We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:`;
-    const communityDescription = "Get exclusive updates, join discussions, and connect with fellow creatives in our cozy Telegram community.";
+    const communityDescription = "Connect with fellow creators, share your journey, and get updates by joining our supportive corner on Telegram.";
 
     const mailOptions = {
         from: `"Cuddleia" <${zohoUser}>`,
         to: order.customerEmail,
         subject: subject,
         html: `
-            <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; background-color: #ffffff; color: #000000; padding: 40px 20px; text-align: center;">
-                <div style="max-width: 600px; margin: auto;">
-                    <img src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png" alt="Cuddleia Logo" style="width: 80px; height: 80px; margin: 0 auto 16px; border-radius: 50%;">
-                    <h1 style="color: #000000; font-size: 24px; margin: 0; font-weight: bold;">Cuddleia</h1>
-                    
-                    <h2 style="font-size: 32px; margin: 40px 0 16px; font-weight: bold;">${title}</h2>
-                    <p style="font-size: 16px; color: #555555; margin: 0 auto 40px; max-width: 480px; line-height: 1.5;">${message}</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    :root {
+                        --bg-color: #ffffff;
+                        --text-color: #000000;
+                        --muted-text-color: #333333;
+                        --product-bg-color: #fafafa;
+                        --border-color: #f0f0f0;
+                        --primary-color: #F4B4C9;
+                        --primary-text-color: #2d2d2d;
+                    }
+                    @media (prefers-color-scheme: dark) {
+                        :root {
+                            --bg-color: #121212;
+                            --text-color: #ffffff;
+                            --muted-text-color: #bbbbbb;
+                            --product-bg-color: #1e1e1e;
+                            --border-color: #2a2a2a;
+                        }
+                    }
+                    body {
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                        background-color: var(--bg-color);
+                        color: var(--text-color);
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        text-align: center;
+                        padding: 40px 20px;
+                    }
+                    .content-wrapper {
+                        max-width: 600px;
+                        margin: auto;
+                    }
+                    .logo {
+                        width: 80px;
+                        height: 80px;
+                        margin: 0 auto 16px;
+                        border-radius: 50%;
+                    }
+                    .main-title {
+                        color: var(--text-color);
+                        font-size: 24px;
+                        margin: 0;
+                        font-weight: bold;
+                    }
+                    .sub-title {
+                        font-size: 32px;
+                        margin: 40px 0 16px;
+                        font-weight: bold;
+                        color: var(--text-color);
+                    }
+                    .intro-text {
+                        font-size: 16px;
+                        color: var(--muted-text-color);
+                        margin: 0 auto 40px;
+                        max-width: 480px;
+                        line-height: 1.5;
+                    }
+                    .product-list {
+                        text-align: left;
+                    }
+                    .product-item {
+                        margin-bottom: 24px;
+                        padding: 16px;
+                        background-color: var(--product-bg-color);
+                        border-radius: 12px;
+                    }
+                    .product-title {
+                        margin: 0 0 8px;
+                        font-size: 18px;
+                        color: var(--text-color);
+                        font-weight: bold;
+                    }
+                    .product-description {
+                        margin: 0 0 16px;
+                        font-size: 14px;
+                        color: var(--muted-text-color);
+                        line-height: 1.5;
+                    }
+                    .community-section {
+                        margin-top: 40px;
+                        padding-top: 40px;
+                        border-top: 1px solid var(--border-color);
+                    }
+                    .button {
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background-color: var(--primary-color);
+                        color: var(--primary-text-color);
+                        text-decoration: none;
+                        border-radius: 9999px;
+                        font-weight: bold;
+                        font-family: sans-serif;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="content-wrapper">
+                        <img src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png" alt="Cuddleia Logo" class="logo">
+                        <h1 class="main-title">Cuddleia</h1>
+                        
+                        <h2 class="sub-title">${title}</h2>
+                        <p class="intro-text">${message}</p>
 
-                    <div style="text-align: left;">
-                        ${itemsHtml}
-                    </div>
+                        <div class="product-list">
+                            ${itemsHtml}
+                        </div>
 
-                    <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid #eeeeee;">
-                        <h2 style="font-size: 24px; margin: 0 0 16px; font-weight: bold;">Join Our Community!</h2>
-                        <p style="font-size: 16px; color: #555555; margin: 0 auto 24px; max-width: 480px; line-height: 1.5;">${communityDescription}</p>
-                        <a href="https://t.me/+Tt1wP2OgPBE1NjU1" target="_blank" style="display: inline-block; padding: 14px 28px; background-color: #F4B4C9; color: #2d2d2d; text-decoration: none; border-radius: 9999px; font-weight: bold; font-family: sans-serif;">
-                            Join our Telegram Channel
-                        </a>
+                        <div class="community-section">
+                            <h2 class="sub-title" style="margin-top: 0;">Join Our Community!</h2>
+                            <p class="intro-text">${communityDescription}</p>
+                            <a href="https://t.me/+Tt1wP2OgPBE1NjU1" target="_blank" class="button">
+                                Join our Telegram Channel
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </body>
+            </html>
         `,
     };
 
