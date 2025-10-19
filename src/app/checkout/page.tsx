@@ -7,9 +7,13 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-react';
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
+import { cn } from '@/lib/utils';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+
+type PaymentMethod = 'toyyibpay' | 'paypal';
 
 export default function CheckoutPage() {
   const { cart, clearCart } = useCart();
@@ -19,10 +23,13 @@ export default function CheckoutPage() {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('toyyibpay');
+
+  const [{ isPending }] = usePayPalScriptReducer();
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handlePayment = async () => {
+  const handleToyyibPayPayment = async () => {
     if (!name || !email || !phone) {
       setError('Please fill in all fields: Name, Email, and Phone Number.');
       return;
@@ -45,7 +52,6 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Failed to create payment bill.');
       }
 
-      // Redirect to ToyyibPay payment page
       router.push(data.paymentUrl);
 
     } catch (err: any) {
@@ -53,8 +59,21 @@ export default function CheckoutPage() {
       setIsLoading(false);
     }
   };
+  
+  // Will be implemented in the next steps
+  const createPayPalOrder = async () => {
+    // Placeholder function
+    return "TEST_ORDER_ID";
+  }
 
-  if (cart.length === 0) {
+  const onPayPalApprove = async (data: any) => {
+    // Placeholder function
+     console.log('Payment approved:', data);
+     clearCart();
+     router.push('/checkout/success');
+  }
+
+  if (cart.length === 0 && !isPending) {
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
             <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-8 font-bold">Checkout</h1>
@@ -117,63 +136,63 @@ export default function CheckoutPage() {
             </div>
         </div>
         <div>
-            <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment</h2>
+            <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment Details</h2>
             <div className="border rounded-2xl shadow-sm bg-card p-8">
-                <div className="space-y-6">
-                   <div>
-                       <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
-                       <Input 
-                         id="name" 
-                         type="text"
-                         value={name}
-                         onChange={(e) => setName(e.target.value)}
-                         placeholder="Your Full Name" 
-                         required 
-                         className="rounded-full"
-                        />
-                   </div>
-                   <div>
-                       <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
-                       <Input 
-                         id="email" 
-                         type="email"
-                         value={email}
-                         onChange={(e) => setEmail(e.target.value)}
-                         placeholder="your@email.com" 
-                         required 
-                         className="rounded-full"
-                        />
-                   </div>
-                   <div>
-                       <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
-                       <Input 
-                         id="phone" 
-                         type="tel"
-                         value={phone}
-                         onChange={(e) => setPhone(e.target.value)}
-                         placeholder="e.g., 60123456789" 
-                         required 
-                         className="rounded-full"
-                        />
-                   </div>
+                 <div className="grid grid-cols-2 gap-4 mb-8">
+                    <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
+                       <Landmark className="h-6 w-6"/>
+                       <span className="font-semibold">Online Banking</span>
+                    </button>
+                     <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
+                       <CreditCard className="h-6 w-6"/>
+                       <span className="font-semibold">PayPal / Card</span>
+                    </button>
                 </div>
 
-                <div className="mt-8">
-                  <Button onClick={handlePayment} disabled={isLoading} size="lg" className="w-full font-bold rounded-full">
-                    {isLoading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</>
-                    ) : (
-                      'Proceed to Payment'
-                    )}
-                  </Button>
-                </div>
-                
-                 {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
+                {selectedPaymentMethod === 'toyyibpay' ? (
+                    <div>
+                        <div className="space-y-6">
+                           <div>
+                               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                               <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your Full Name" required className="rounded-full"/>
+                           </div>
+                           <div>
+                               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
+                               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required className="rounded-full"/>
+                           </div>
+                           <div>
+                               <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                               <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789" required className="rounded-full"/>
+                           </div>
+                        </div>
 
-                 <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-                    <ShieldCheck className="h-4 w-4 text-green-600" />
-                    <span>Secure payment via ToyyibPay.</span>
-                </div>
+                        <div className="mt-8">
+                          <Button onClick={handleToyyibPayPayment} disabled={isLoading} size="lg" className="w-full font-bold rounded-full">
+                            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Proceed to Payment'}
+                          </Button>
+                        </div>
+                        
+                         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
+                            <ShieldCheck className="h-4 w-4 text-green-600" />
+                            <span>Secure payment via ToyyibPay.</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        {(isPending || isLoading) && <div className="text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto my-4"/></div>}
+                        <PayPalButtons 
+                            style={{ layout: "vertical", label: "pay" }}
+                            disabled={isPending || isLoading || cart.length === 0}
+                            createOrder={createPayPalOrder}
+                            onApprove={onPayPalApprove}
+                        />
+                         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
+                            <ShieldCheck className="h-4 w-4 text-green-600" />
+                            <span>Secure payment via PayPal.</span>
+                        </div>
+                    </div>
+                )}
+                {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
             </div>
         </div>
       </div>
