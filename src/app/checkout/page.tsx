@@ -52,6 +52,7 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Failed to create payment bill.');
       }
 
+      // Redirect the user to the ToyyibPay payment page
       router.push(data.paymentUrl);
 
     } catch (err: any) {
@@ -62,6 +63,7 @@ export default function CheckoutPage() {
   
   const createPayPalOrder = async (data: CreateOrderData, actions: any) => {
     setIsLoading(true);
+    setError('');
     try {
         const response = await fetch('/api/paypal/create-order', {
             method: 'POST',
@@ -78,7 +80,6 @@ export default function CheckoutPage() {
         }
 
         if (order.orderID) {
-            setError('');
             setIsLoading(false);
             return order.orderID;
         } else {
@@ -87,12 +88,14 @@ export default function CheckoutPage() {
     } catch (err: any) {
         setError(err.message);
         setIsLoading(false);
-        return '';
+        // Instructs paypal to show an error message to the user.
+        return Promise.reject(err);
     }
   };
 
   const onPayPalApprove = async (data: OnApproveData, actions: any) => {
     setIsLoading(true);
+    setError('');
     try {
         const response = await fetch('/api/paypal/capture-order', {
             method: 'POST',
@@ -108,13 +111,16 @@ export default function CheckoutPage() {
             throw new Error(capturedData.error || 'Failed to capture payment.');
         }
         
-        // Payment is successful
+        // Payment is successful, clear cart and redirect
         clearCart();
         router.push('/checkout/success');
 
     } catch (err: any) {
         setError(err.message);
         setIsLoading(false);
+        // You can show an error to the user in the PayPal flow.
+        // This is useful for things like failed card payments.
+        return Promise.reject(err);
     }
   };
 
@@ -170,7 +176,7 @@ export default function CheckoutPage() {
                     <span className="font-bold">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-lg">
-                    <span>Taxes</span>
+                    <span>Taxes & Fees</span>
                     <span className="font-bold">$0.00</span>
                 </div>
                  <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
@@ -186,7 +192,7 @@ export default function CheckoutPage() {
                  <div className="grid grid-cols-2 gap-4 mb-8">
                     <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
                        <Landmark className="h-6 w-6"/>
-                       <span className="font-semibold">Online Banking</span>
+                       <span className="font-semibold">Online Banking (MY)</span>
                     </button>
                      <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
                        <CreditCard className="h-6 w-6"/>
@@ -219,18 +225,25 @@ export default function CheckoutPage() {
                         
                          <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                             <ShieldCheck className="h-4 w-4 text-green-600" />
-                            <span>Secure payment via ToyyibPay.</span>
+                            <span>Secure payment via ToyyibPay (FPX).</span>
                         </div>
                     </div>
                 ) : (
                     <div>
-                        {(isPending || isLoading) && <div className="text-center"><Loader2 className="h-8 w-8 animate-spin mx-auto my-4"/></div>}
-                        <PayPalButtons 
-                            style={{ layout: "vertical", label: "pay" }}
-                            disabled={isPending || isLoading || cart.length === 0}
-                            createOrder={createPayPalOrder}
-                            onApprove={onPayPalApprove}
-                        />
+                        {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
+                        <div style={{ display: (isPending || isLoading) ? 'none' : 'block' }}>
+                          <PayPalButtons 
+                              style={{ layout: "vertical", label: "pay" }}
+                              disabled={isPending || isLoading || cart.length === 0}
+                              createOrder={createPayPalOrder}
+                              onApprove={onPayPalApprove}
+                              onError={(err) => {
+                                  setError("An error occurred with the PayPal transaction. Please try again.");
+                                  console.error("PayPal Error:", err);
+                                  setIsLoading(false);
+                              }}
+                          />
+                        </div>
                          <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                             <ShieldCheck className="h-4 w-4 text-green-600" />
                             <span>Secure payment via PayPal.</span>

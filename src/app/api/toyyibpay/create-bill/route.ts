@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
 
     if (!secretKey || !categoryCode) {
-      console.error('Server configuration error: Missing ToyyibPay Secret Key or Category Code.');
+      console.error('Server configuration error: Missing TOYYIBPAY_SECRET_KEY or TOYYIBPAY_CATEGORY_CODE.');
       return NextResponse.json({ 
         error: 'Server configuration error. Please contact support.' 
       }, { status: 500 });
@@ -47,15 +47,15 @@ export async function POST(req: NextRequest) {
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
-      billReturnUrl: `${req.nextUrl.origin}/checkout/success`,
-      billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
+      billReturnUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`, // This is the user redirect URL
+      billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`, // This is the server webhook URL
       billExternalReferenceNo: `order-${Date.now()}`,
       billTo: name,
       billEmail: email,
       billPhone: phone,
       billSplitPayment: '0',
       billSplitPaymentArgs: '',
-      billPaymentChannel: '2', // 0: FPX, 1: Credit Card, 2: Both
+      billPaymentChannel: '0', // 0: FPX Only
       billContentEmail: 'Thank you for your purchase from Cuddleia! You will receive your download links shortly.',
       billChargeToCustomer: '1' // 1: Pass transaction charges to customer
     });
