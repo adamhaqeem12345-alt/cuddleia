@@ -39,16 +39,19 @@ const getPayPalAccessToken = async (): Promise<string> => {
 
 export async function POST(req: NextRequest) {
     try {
-        const { cart } = (await req.json()) as { cart: CartItem[] };
+        const { cart, totalAmountUSD } = (await req.json()) as { cart: CartItem[], totalAmountUSD: number };
 
-        if (!cart || cart.length === 0) {
-            return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
+        if (!cart || cart.length === 0 || totalAmountUSD === undefined) {
+            return NextResponse.json({ error: 'Cart and total amount are required.' }, { status: 400 });
         }
 
-        const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2);
+        const finalTotal = totalAmountUSD.toFixed(2);
 
-        if (parseFloat(totalAmountUSD) <= 0) {
-            return NextResponse.json({ error: 'Total amount must be positive.' }, { status: 400 });
+        if (parseFloat(finalTotal) <= 0) {
+             // Allow $0 if cart has items (e.g. 100% discount on free item)
+             if(cart.length === 0 || parseFloat(finalTotal) < 0) {
+                return NextResponse.json({ error: 'Total amount must be positive.' }, { status: 400 });
+             }
         }
 
         const accessToken = await getPayPalAccessToken();
@@ -60,7 +63,7 @@ export async function POST(req: NextRequest) {
                 {
                     amount: {
                         currency_code: 'USD',
-                        value: totalAmountUSD,
+                        value: finalTotal,
                     },
                     // Pass cart details for webhook fulfillment
                     custom_id: JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity }))),

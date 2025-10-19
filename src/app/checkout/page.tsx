@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark, XCircle } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-react';
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,7 @@ import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData }
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
 export default function CheckoutPage() {
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, appliedDiscount } = useCart();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,6 +29,8 @@ export default function CheckoutPage() {
   const isPayPalAvailable = paypalOptions.clientId && paypalOptions.clientId !== 'test';
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discountAmount = subtotal * appliedDiscount;
+  const total = subtotal - discountAmount;
 
   const handleToyyibPayPayment = async () => {
     if (!name || !email || !phone) {
@@ -44,7 +46,7 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ cart, name, email, phone }),
+        body: JSON.stringify({ cart, name, email, phone, totalAmountUSD: total }),
       });
 
       const data = await response.json();
@@ -71,7 +73,7 @@ export default function CheckoutPage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ cart }),
+            body: JSON.stringify({ cart, totalAmountUSD: total }),
         });
 
         const order = await response.json();
@@ -176,13 +178,19 @@ export default function CheckoutPage() {
                     <span>Subtotal</span>
                     <span className="font-bold">${subtotal.toFixed(2)}</span>
                 </div>
+                {appliedDiscount > 0 && (
+                    <div className="flex justify-between text-lg text-green-600">
+                        <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
+                        <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+                    </div>
+                )}
                 <div className="flex justify-between text-lg">
                     <span>Taxes & Fees</span>
                     <span className="font-bold">$0.00</span>
                 </div>
                  <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
                     <span>Total</span>
-                    <ProductPrice price={subtotal} isTotal={true}/>
+                    <ProductPrice price={total} isTotal={true}/>
                 </div>
               </div>
             </div>
@@ -243,6 +251,7 @@ export default function CheckoutPage() {
                             {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                             <div style={{ display: (isPending || isLoading) ? 'none' : 'block' }}>
                               <PayPalButtons 
+                                  key={total} // Add key to re-render buttons when total changes
                                   style={{ layout: "vertical", label: "pay" }}
                                   disabled={isPending || isLoading || cart.length === 0}
                                   createOrder={createPayPalOrder}

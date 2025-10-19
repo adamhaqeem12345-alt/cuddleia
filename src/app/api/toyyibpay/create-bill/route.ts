@@ -18,13 +18,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
     }
 
-    const { cart, name, email, phone } = (await req.json()) as { cart: CartItem[], name: string, email: string, phone: string };
+    const { cart, name, email, phone, totalAmountUSD } = (await req.json()) as { cart: CartItem[], name: string, email: string, phone: string, totalAmountUSD: number };
     
-    if (!cart || cart.length === 0 || !name || !email || !phone) {
-        return NextResponse.json({ error: 'Cart and user details are required.' }, { status: 400 });
+    if (!cart || cart.length === 0 || !name || !email || !phone || totalAmountUSD === undefined) {
+        return NextResponse.json({ error: 'Cart, user details, and total amount are required.' }, { status: 400 });
     }
 
-    const totalAmountUSD = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 

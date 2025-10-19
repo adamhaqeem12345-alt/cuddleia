@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -13,6 +14,11 @@ interface CartContextType {
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  discountCode: string;
+  appliedDiscount: number;
+  discountMessage: { success?: string; error?: string };
+  applyDiscount: (code: string) => void;
+  removeDiscount: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -20,26 +26,40 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
+  const [discountMessage, setDiscountMessage] = useState<{ success?: string; error?: string }>({});
 
-  // Load cart from localStorage on initial client-side render
-  useEffect(() => {
+  const loadFromStorage = () => {
     try {
       const savedCart = localStorage.getItem('cart');
-      if (savedCart) {
-        setCart(JSON.parse(savedCart));
-      }
+      if (savedCart) setCart(JSON.parse(savedCart));
+
+      const savedDiscountCode = localStorage.getItem('discountCode');
+      if (savedDiscountCode) setDiscountCode(savedDiscountCode);
+
+      const savedAppliedDiscount = localStorage.getItem('appliedDiscount');
+      if (savedAppliedDiscount) setAppliedDiscount(JSON.parse(savedAppliedDiscount));
+
     } catch (error) {
-      console.error("Failed to parse cart from localStorage", error);
+      console.error("Failed to parse data from localStorage", error);
     }
     setIsInitialLoad(false);
+  };
+
+  // Load state from localStorage on initial client-side render
+  useEffect(() => {
+    loadFromStorage();
   }, []);
 
-  // Save cart to localStorage whenever it changes, but not on the initial load
+  // Save state to localStorage whenever it changes
   useEffect(() => {
     if (!isInitialLoad) {
       localStorage.setItem('cart', JSON.stringify(cart));
+      localStorage.setItem('discountCode', discountCode);
+      localStorage.setItem('appliedDiscount', JSON.stringify(appliedDiscount));
     }
-  }, [cart, isInitialLoad]);
+  }, [cart, discountCode, appliedDiscount, isInitialLoad]);
 
   const addToCart = (product: Product) => {
     setCart(prevCart => {
@@ -71,10 +91,35 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const clearCart = () => {
     setCart([]);
+    setDiscountCode('');
+    setAppliedDiscount(0);
+    setDiscountMessage({});
+    localStorage.removeItem('cart');
+    localStorage.removeItem('discountCode');
+    localStorage.removeItem('appliedDiscount');
   }
 
+  const applyDiscount = (code: string) => {
+    setDiscountMessage({});
+    if (code.toUpperCase() === 'CUDDLE10') {
+      setAppliedDiscount(0.10);
+      setDiscountCode(code);
+      setDiscountMessage({ success: 'Discount code applied! You get 10% off.' });
+    } else {
+      setAppliedDiscount(0);
+      setDiscountCode('');
+      setDiscountMessage({ error: 'Invalid discount code. Please try again.' });
+    }
+  };
+
+  const removeDiscount = () => {
+    setAppliedDiscount(0);
+    setDiscountCode('');
+    setDiscountMessage({});
+  };
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, discountCode, appliedDiscount, discountMessage, applyDiscount, removeDiscount }}>
       {children}
     </CartContext.Provider>
   );

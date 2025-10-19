@@ -11,32 +11,19 @@ import { ProductPrice } from '@/components/product-price';
 import { useState } from 'react';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
-  const [discountCode, setDiscountCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState(0);
-  const [discountError, setDiscountError] = useState('');
-  const [discountSuccess, setDiscountSuccess] = useState('');
+  const { cart, removeFromCart, clearCart, appliedDiscount, discountCode, discountMessage, applyDiscount, removeDiscount } = useCart();
+  const [tempDiscountCode, setTempDiscountCode] = useState('');
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const total = subtotal - (subtotal * appliedDiscount);
 
   const handleApplyDiscount = () => {
-    setDiscountError('');
-    setDiscountSuccess('');
-    if (discountCode.toUpperCase() === 'CUDDLE10') {
-      setAppliedDiscount(0.10);
-      setDiscountSuccess('Discount code applied! You get 10% off.');
-    } else {
-      setAppliedDiscount(0);
-      setDiscountError('Invalid discount code. Please try again.');
-    }
+    applyDiscount(tempDiscountCode);
   };
   
   const handleRemoveDiscount = () => {
-    setAppliedDiscount(0);
-    setDiscountCode('');
-    setDiscountError('');
-    setDiscountSuccess('');
+    removeDiscount();
+    setTempDiscountCode('');
   }
 
   return (
@@ -105,7 +92,7 @@ export default function CartPage() {
 
                     {appliedDiscount > 0 && (
                       <div className="flex justify-between text-lg text-green-600">
-                        <span>Discount (10%)</span>
+                        <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
                         <span className="font-bold text-right">-${(subtotal * appliedDiscount).toFixed(2)}</span>
                       </div>
                     )}
@@ -126,24 +113,24 @@ export default function CartPage() {
                     <Input 
                       type="text" 
                       placeholder="Enter code" 
-                      value={discountCode} 
-                      onChange={(e) => setDiscountCode(e.target.value)}
+                      value={appliedDiscount > 0 ? discountCode : tempDiscountCode} 
+                      onChange={(e) => setTempDiscountCode(e.target.value)}
                       disabled={appliedDiscount > 0}
                       className="rounded-full"
                     />
                     <Button onClick={handleApplyDiscount} disabled={appliedDiscount > 0} className="rounded-full">Apply</Button>
                   </div>
-                  {discountSuccess && (
+                  {discountMessage.success && (
                     <div className="flex items-center gap-2 mt-3 text-sm text-green-600">
                       <CheckCircle className="h-4 w-4" />
-                      <span>{discountSuccess}</span>
+                      <span>{discountMessage.success}</span>
                       <button onClick={handleRemoveDiscount} className="ml-auto text-xs font-bold underline">Remove</button>
                     </div>
                   )}
-                  {discountError && (
+                  {discountMessage.error && (
                     <div className="flex items-center gap-2 mt-3 text-sm text-destructive">
                       <XCircle className="h-4 w-4" />
-                      <span>{discountError}</span>
+                      <span>{discountMessage.error}</span>
                     </div>
                   )}
                 </div>
