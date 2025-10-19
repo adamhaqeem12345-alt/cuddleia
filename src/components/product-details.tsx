@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Info, Download, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { ProductPrice } from './product-price';
+import { FreebieFormDialog } from './freebie-form-dialog';
 
 export const ProductDetails = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
@@ -64,12 +65,7 @@ export const ProductDetails = ({ product }: { product: Product }) => {
                     </div>
                 )}
                 {isFree ? (
-                    <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
-                        <a href={product.downloadUrl} target="_blank">
-                            <Download className="h-5 w-5 mr-2" />
-                            Download Now
-                        </a>
-                    </Button>
+                   <FreebieFormDialog product={product} />
                 ) : (
                    <Button size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full" onClick={handleAddToCart}>
                         <ShoppingCart className="h-5 w-5 mr-2" />
