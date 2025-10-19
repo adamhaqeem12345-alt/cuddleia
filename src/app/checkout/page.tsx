@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
@@ -190,16 +190,22 @@ export default function CheckoutPage() {
         <div>
             <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment Details</h2>
             <div className="border rounded-2xl shadow-sm bg-card p-8">
-                 <div className={cn("mb-8", isPayPalAvailable ? "grid grid-cols-2 gap-4" : "")}>
+                 <div className="grid grid-cols-2 gap-4 mb-8">
                     <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
                        <Landmark className="h-6 w-6"/>
                        <span className="font-semibold">Online Banking (MY)</span>
                     </button>
-                    {isPayPalAvailable && (
+                    {isPayPalAvailable ? (
                       <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
                         <CreditCard className="h-6 w-6"/>
                         <span className="font-semibold">PayPal / Card</span>
                       </button>
+                    ) : (
+                      <div className="relative flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/50 cursor-not-allowed">
+                        <CreditCard className="h-6 w-6 text-muted-foreground"/>
+                        <span className="font-semibold text-muted-foreground">PayPal / Card</span>
+                        <span className="absolute bottom-1 right-1 text-xs text-muted-foreground">Unavailable</span>
+                      </div>
                     )}
                 </div>
 
