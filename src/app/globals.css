@@ -20,8 +20,8 @@
     --accent-foreground: 345 10% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 340 40% 85%;
-    --input: 348 60% 97%;
+    --border: 342 93% 92%;
+    --input: 348 60% 97%; /* #F9E6EB - Very light pink */
     --ring: 340 82% 64%;
     --radius: 0.5rem;
   }
