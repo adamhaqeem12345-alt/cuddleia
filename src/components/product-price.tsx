@@ -47,8 +47,8 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
   const originalPriceStyle = isTotal ? "text-lg" : "text-base";
 
   return (
-    <div>
-        <div className="flex items-baseline gap-2">
+    <div className='text-right'>
+        <div className="flex items-baseline gap-2 justify-end">
             <p className={`${priceStyle} font-headline font-bold text-primary`}>
                 ${price.toFixed(2)}
             </p>
@@ -60,7 +60,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
         </div>
         <div className="h-6">
             {isLoading ? (
-                <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1"></div>
+                <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1 ml-auto"></div>
             ) : convertedPrice !== null ? (
                 <p className="text-sm text-muted-foreground">(approx. RM {convertedPrice.toFixed(2)})</p>
             ) : (

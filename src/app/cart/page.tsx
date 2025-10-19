@@ -56,15 +56,10 @@ export default function CartPage() {
                         <Link href={`/products/${item.id}`}>{item.name}</Link>
                       </h3>
                        <p className="text-sm text-muted-foreground">Price: ${item.price.toFixed(2)}</p>
+                       <p className="text-sm text-muted-foreground md:hidden">Qty: {item.quantity}</p>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={e => updateQuantity(item.id, parseInt(e.target.value))}
-                        className="w-20 text-center"
-                      />
+                    <div className="hidden md:flex items-center gap-4">
+                      <p className='text-muted-foreground'>Qty: {item.quantity}</p>
                       <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
                         <Trash2 className="h-5 w-5 text-muted-foreground" />
                       </Button>
@@ -87,7 +82,7 @@ export default function CartPage() {
                         <span>Taxes</span>
                         <span className="font-bold">$0.00</span>
                     </div>
-                     <div className="border-t pt-4 mt-4 flex justify-between text-2xl font-bold">
+                     <div className="border-t pt-4 mt-4 flex justify-between items-start text-2xl font-bold">
                         <span>Total</span>
                          <ProductPrice price={subtotal} isTotal={true}/>
                     </div>
@@ -102,5 +97,3 @@ export default function CartPage() {
     </div>
   );
 }
-
-    
