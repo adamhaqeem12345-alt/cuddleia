@@ -34,14 +34,14 @@ Time to reply and spread some joy! ✨
     // Append to Google Sheet
     const timestamp = new Date().toISOString();
     const sheetRow = [timestamp, name, email, subject, message];
-    console.log("Attempting to append to 'Contact Form Submissions' sheet:", sheetRow);
-    const sheetResult = await appendToSheet('Contact Form Submissions', sheetRow);
+    console.log("Attempting to append to 'Sheet1' sheet:", sheetRow);
+    const sheetResult = await appendToSheet('Sheet1', sheetRow);
     
     if (!sheetResult.success) {
       console.error("Failed to append to Google Sheet in /api/contact:", sheetResult.error);
       // Still return success to the user, as the email was sent. Log the error server-side.
     } else {
-      console.log("Successfully appended to 'Contact Form Submissions' sheet.");
+      console.log("Successfully appended to 'Sheet1' sheet.");
     }
     
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });

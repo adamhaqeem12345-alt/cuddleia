@@ -105,14 +105,14 @@ export async function POST(req: NextRequest) {
                 // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
                 // PayPal does not provide a phone number, so we leave it empty.
                 const sheetRow = [timestamp, order.customerName, order.customerEmail, '', itemsString, amount];
-                console.log("Attempting to append PayPal order to 'Cuddleia Sales Log' sheet:", sheetRow);
-                const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
+                console.log("Attempting to append PayPal order to 'Sheet1' sheet:", sheetRow);
+                const sheetResult = await appendToSheet('Sheet1', sheetRow);
 
                 if (!sheetResult.success) {
                     console.error("Failed to append PayPal order to Google Sheet:", sheetResult.error);
                     // We don't fail the webhook, but we are aware of the logging issue.
                 } else {
-                    console.log("Successfully appended PayPal order to 'Cuddleia Sales Log' sheet.");
+                    console.log("Successfully appended PayPal order to 'Sheet1' sheet.");
                 }
 
                 await sendOrderConfirmationEmail(order);

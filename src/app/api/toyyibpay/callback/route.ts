@@ -58,14 +58,14 @@ export async function POST(req: NextRequest) {
             const totalInUSD = billDetails.totalAmountUSD;
             // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
             const sheetRow = [timestamp, billDetails.name, billDetails.email, billDetails.phone, itemsString, totalInUSD];
-            console.log("Attempting to append ToyyibPay order to 'Cuddleia Sales Log' sheet:", sheetRow);
-            const sheetResult = await appendToSheet('Cuddleia Sales Log', sheetRow);
+            console.log("Attempting to append ToyyibPay order to 'Sheet1' sheet:", sheetRow);
+            const sheetResult = await appendToSheet('Sheet1', sheetRow);
 
             if (!sheetResult.success) {
                 console.error("Failed to append ToyyibPay order to Google Sheet:", sheetResult.error);
                 // Don't fail the webhook, but we are aware of the issue.
             } else {
-                console.log("Successfully appended ToyyibPay order to 'Cuddleia Sales Log' sheet.");
+                console.log("Successfully appended ToyyibPay order to 'Sheet1' sheet.");
             }
             
             await sendOrderConfirmationEmail(order);
