@@ -51,9 +51,12 @@ Another heart touched by Cuddleia! 💖
     try {
       const timestamp = new Date().toISOString();
       // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-      await appendToSheet('Cuddleia Sales Log', [timestamp, name, email, phone || '', product.name, 0]);
-    } catch (sheetError) {
-        console.error("Failed to append freebie download to Google Sheet:", sheetError);
+      const sheetRow = [timestamp, name, email, phone || '', product.name, 0];
+      console.log("Attempting to append to 'Cuddleia Sales Log' sheet for freebie:", sheetRow);
+      await appendToSheet('Cuddleia Sales Log', sheetRow);
+      console.log("Successfully appended freebie download to 'Cuddleia Sales Log' sheet.");
+    } catch (sheetError: any) {
+        console.error("Failed to append freebie download to Google Sheet:", sheetError.message);
         // We log the error but do not fail the request
     }
     

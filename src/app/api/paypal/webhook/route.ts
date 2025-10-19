@@ -127,14 +127,17 @@ Let's get this packed with love and duas! 💖
                     const amount = parseFloat(purchaseUnit.amount.value);
                     // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
                     // PayPal does not provide a phone number, so we leave it empty.
-                    await appendToSheet('Cuddleia Sales Log', [timestamp, order.customerName, order.customerEmail, '', itemsString, amount]);
-                } catch (sheetError) {
-                    console.error("Failed to append PayPal order to Google Sheet:", sheetError);
+                    const sheetRow = [timestamp, order.customerName, order.customerEmail, '', itemsString, amount];
+                    console.log("Attempting to append PayPal order to 'Cuddleia Sales Log' sheet:", sheetRow);
+                    await appendToSheet('Cuddleia Sales Log', sheetRow);
+                    console.log("Successfully appended PayPal order to 'Cuddleia Sales Log' sheet.");
+                } catch (sheetError: any) {
+                    console.error("Failed to append PayPal order to Google Sheet:", sheetError.message);
                 }
 
 
-            } catch (e) {
-                 console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e);
+            } catch (e: any) {
+                 console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e.message);
             }
         } else {
             console.log(`Unhandled event type: ${eventType}`);

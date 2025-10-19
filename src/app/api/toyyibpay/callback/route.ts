@@ -5,16 +5,19 @@ import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
 
-// This is a temporary in-memory store. In production, you'd use a database.
+// This is a temporary in-memory store. In a serverless environment, this is not reliable.
+// A more robust solution would use a database (e.g., Firestore) or cache (e.g., Redis).
 const billStore: { [billCode: string]: any } = {};
 
 // Helper to store bill details when created
 export const storeBillDetails = (billCode: string, details: any) => {
+    console.log(`Storing details for bill: ${billCode}`);
     billStore[billCode] = details;
 };
 
 // Helper to retrieve bill details
 const getBillDetails = (billCode: string) => {
+    console.log(`Retrieving details for bill: ${billCode}. Found: ${!!billStore[billCode]}`);
     return billStore[billCode];
 };
 
@@ -78,24 +81,29 @@ Let's get this packed with love and duas! 💖
                 const itemsString = order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', ');
                 const totalInUSD = billDetails.totalAmountUSD;
                 // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                await appendToSheet('Cuddleia Sales Log', [timestamp, billDetails.name, billDetails.email, billDetails.phone, itemsString, totalInUSD]);
-            } catch (sheetError) {
-                console.error("Failed to append ToyyibPay order to Google Sheet:", sheetError);
+                const sheetRow = [timestamp, billDetails.name, billDetails.email, billDetails.phone, itemsString, totalInUSD];
+                console.log("Attempting to append ToyyibPay order to 'Cuddleia Sales Log' sheet:", sheetRow);
+                await appendToSheet('Cuddleia Sales Log', sheetRow);
+                console.log("Successfully appended ToyyibPay order to 'Cuddleia Sales Log' sheet.");
+            } catch (sheetError: any) {
+                console.error("Failed to append ToyyibPay order to Google Sheet:", sheetError.message);
             }
             
             // Clean up the stored details
             delete billStore[billcode];
+            console.log(`Cleaned up stored details for bill: ${billcode}`);
 
-        } catch (e) {
-            console.error(`Failed to process confirmation for bill ${billcode}:`, e);
+        } catch (e: any) {
+            console.error(`Failed to process confirmation for bill ${billcode}:`, e.message);
         }
       } else {
-        console.warn(`Could not find details for ToyyibPay bill ${billcode} to send confirmation.`);
+        console.warn(`Could not find details for ToyyibPay bill ${billcode} to send confirmation. The in-memory store might have been cleared.`);
       }
     } else {
       console.log(`Webhook: Payment for bill ${billcode} has status: ${status}.`);
     }
 
+    // ToyyibPay requires a 200 OK response, regardless of processing outcome.
     return new Response(null, { status: 200 });
 
   } catch (error: any) {
@@ -117,6 +125,8 @@ export async function GET(req: NextRequest) {
     console.log({ status_id, billcode, order_id });
     
     const origin = req.nextUrl.origin;
+    // Always redirect to the success page, as the webhook is the source of truth for payment status.
+    // The success page will show a generic success message, and the email confirmation is what matters.
     const redirectUrl = new URL('/checkout/success', origin);
 
     if(status_id) redirectUrl.searchParams.set('status_id', status_id);
