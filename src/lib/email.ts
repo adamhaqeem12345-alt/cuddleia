@@ -101,28 +101,10 @@ export async function sendOrderConfirmationEmail(order: Order) {
             <html>
             <head>
                 <style>
-                    :root {
-                        --bg-color: #ffffff;
-                        --text-color: #000000;
-                        --muted-text-color: #333333;
-                        --product-bg-color: #fafafa;
-                        --border-color: #f0f0f0;
-                        --primary-color: #F4B4C9;
-                        --primary-text-color: #2d2d2d;
-                    }
-                    @media (prefers-color-scheme: dark) {
-                        :root {
-                            --bg-color: #121212;
-                            --text-color: #ffffff;
-                            --muted-text-color: #bbbbbb;
-                            --product-bg-color: #1e1e1e;
-                            --border-color: #2a2a2a;
-                        }
-                    }
                     body {
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        background-color: var(--bg-color);
-                        color: var(--text-color);
+                        background: linear-gradient(120deg, #F9E6EB 0%, #D0B4F4 100%);
+                        color: #BF879B; /* Main Pink Text Color */
                         margin: 0;
                         padding: 0;
                     }
@@ -133,6 +115,13 @@ export async function sendOrderConfirmationEmail(order: Order) {
                     .content-wrapper {
                         max-width: 600px;
                         margin: auto;
+                        background-color: rgba(255, 255, 255, 0.7);
+                        border-radius: 24px;
+                        padding: 40px;
+                        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        border: 1px solid rgba(255, 255, 255, 0.18);
                     }
                     .logo {
                         width: 80px;
@@ -141,7 +130,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         border-radius: 50%;
                     }
                     .main-title {
-                        color: var(--text-color);
+                        color: #BF879B;
                         font-size: 24px;
                         margin: 0;
                         font-weight: bold;
@@ -150,11 +139,11 @@ export async function sendOrderConfirmationEmail(order: Order) {
                         font-size: 32px;
                         margin: 40px 0 16px;
                         font-weight: bold;
-                        color: var(--text-color);
+                        color: #BF879B;
                     }
                     .intro-text {
                         font-size: 16px;
-                        color: var(--muted-text-color);
+                        color: #BF879B;
                         margin: 0 auto 40px;
                         max-width: 480px;
                         line-height: 1.5;
@@ -165,31 +154,31 @@ export async function sendOrderConfirmationEmail(order: Order) {
                     .product-item {
                         margin-bottom: 24px;
                         padding: 16px;
-                        background-color: var(--product-bg-color);
+                        background-color: rgba(255, 255, 255, 0.5);
                         border-radius: 12px;
                     }
                     .product-title {
                         margin: 0 0 8px;
                         font-size: 18px;
-                        color: var(--text-color);
+                        color: #BF879B;
                         font-weight: bold;
                     }
                     .product-description {
                         margin: 0 0 16px;
                         font-size: 14px;
-                        color: var(--muted-text-color);
+                        color: #BF879B;
                         line-height: 1.5;
                     }
                     .community-section {
                         margin-top: 40px;
                         padding-top: 40px;
-                        border-top: 1px solid var(--border-color);
+                        border-top: 1px solid rgba(191, 135, 155, 0.2);
                     }
                     .button {
                         display: inline-block;
                         padding: 12px 24px;
-                        background-color: var(--primary-color);
-                        color: var(--primary-text-color);
+                        background-color: #F4B4C9;
+                        color: #2d2d2d;
                         text-decoration: none;
                         border-radius: 9999px;
                         font-weight: bold;
