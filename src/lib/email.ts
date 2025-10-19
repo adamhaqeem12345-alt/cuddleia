@@ -61,20 +61,27 @@ export async function sendOrderConfirmationEmail(order: Order) {
     
     const itemsHtml = order.items.map(item => {
         const downloadUrl = item.product.bundleIncludes ? "https://drive.google.com/drive/folders/1ZSw8l2E9gFBD6sUyyok0S2VtKgMhoeNn" : item.product.downloadUrl;
-        const description = item.product.description.split('\\n\\n')[0];
+        // Shorten description to the first sentence.
+        const description = item.product.description.split('.')[0] + '.';
 
         return `
-            <div style="margin-bottom: 24px; padding: 16px; background-color: #f9f9f9; border-radius: 12px; display: flex; align-items: flex-start; gap: 20px;">
-                <img src="${item.product.imageUrl}" alt="${item.product.name}" style="width: 100px; height: 125px; object-fit: cover; border-radius: 8px;">
-                <div style="color: #000000;">
-                    <h3 style="margin: 0 0 8px; font-size: 18px; color: #000000; font-weight: bold;">${item.product.name}</h3>
-                    <p style="margin: 0 0 16px; font-size: 14px; color: #555555; line-height: 1.5;">
-                        ${description}
-                    </p>
-                    <a href="${downloadUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 9999px; font-weight: bold;">
-                        Download Now
-                    </a>
-                </div>
+            <div style="margin-bottom: 24px; padding: 16px; background-color: #f9f9f9; border-radius: 12px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                        <td width="120" valign="top">
+                            <img src="${item.product.imageUrl}" alt="${item.product.name}" style="width: 100px; height: 125px; object-fit: cover; border-radius: 8px;">
+                        </td>
+                        <td valign="top" style="padding-left: 20px;">
+                            <h3 style="margin: 0 0 8px; font-size: 18px; color: #000000; font-weight: bold;">${item.product.name}</h3>
+                            <p style="margin: 0 0 16px; font-size: 14px; color: #555555; line-height: 1.5;">
+                                ${description}
+                            </p>
+                            <a href="${downloadUrl}" target="_blank" style="display: inline-block; padding: 12px 24px; background-color: #F4B4C9; color: #2d2d2d; text-decoration: none; border-radius: 9999px; font-weight: bold; font-family: sans-serif;">
+                                Download Now
+                            </a>
+                        </td>
+                    </tr>
+                </table>
             </div>
         `;
     }).join('');
@@ -105,7 +112,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                     <div style="margin-top: 40px; padding-top: 40px; border-top: 1px solid #eeeeee;">
                         <h2 style="font-size: 24px; margin: 0 0 16px; font-weight: bold;">Join Our Community!</h2>
                         <p style="font-size: 16px; color: #555555; margin: 0 auto 24px; max-width: 480px; line-height: 1.5;">${communityDescription}</p>
-                        <a href="https://t.me/+Tt1wP2OgPBE1NjU1" target="_blank" style="display: inline-block; padding: 14px 28px; background-color: #000000; color: #ffffff; text-decoration: none; border-radius: 9999px; font-weight: bold;">
+                        <a href="https://t.me/+Tt1wP2OgPBE1NjU1" target="_blank" style="display: inline-block; padding: 14px 28px; background-color: #F4B4C9; color: #2d2d2d; text-decoration: none; border-radius: 9999px; font-weight: bold; font-family: sans-serif;">
                             Join our Telegram Channel
                         </a>
                     </div>
