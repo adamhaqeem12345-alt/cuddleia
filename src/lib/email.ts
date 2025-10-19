@@ -103,7 +103,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
                 <style>
                     body {
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        background: linear-gradient(120deg, #fceef2 0%, #e6dcf4 100%);
+                        background: #FED5E3;
                         color: #5c4b53;
                         margin: 0;
                         padding: 0;
