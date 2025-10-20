@@ -77,7 +77,7 @@ Let's get this packed with love and duas! 💖
 
             // Secondary action: Log to Google Sheets
             try {
-                const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+                const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
                 if (spreadsheetId) {
                     const timestamp = new Date().toISOString();
                     const productNames = order.items.map(i => i.product.name).join(', ');

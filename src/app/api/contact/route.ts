@@ -33,7 +33,7 @@ Time to reply and spread some joy! ✨
 
     // Secondary action: Log to Google Sheets
     try {
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
             // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
