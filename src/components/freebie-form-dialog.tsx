@@ -100,7 +100,7 @@ export const FreebieFormDialog = ({ product }: FreebieFormDialogProps) => {
               </div>
               <div>
                 <label htmlFor="freebie-phone" className="sr-only">Phone Number (Optional)</label>
-                <Input id="freebie-phone" type="tel" placeholder="Phone Number (Optional)" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-full"/>
+                <Input id="freebie-phone" type="text" placeholder="Phone Number (Optional)" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-full"/>
               </div>
               <DialogFooter>
                 <Button type="submit" className="w-full rounded-full" disabled={status === 'sending'}>
