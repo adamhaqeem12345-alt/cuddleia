@@ -108,7 +108,7 @@ function FreebieForm() {
             <p className="text-muted-foreground mt-2">Get your free copy instantly via email.</p>
         </div>
         <div className="bg-card p-8 rounded-2xl shadow-lg">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 <h3 className="font-headline text-2xl font-bold text-center">Enter your details</h3>
                 <div>
                 <label htmlFor="freebie-name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
