@@ -1,42 +1,41 @@
 
 import { google } from 'googleapis';
+import { sendTelegramNotification } from './telegram';
 
-const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
+// Read variables at the top level. Next.js will replace these with their values at build time.
+const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+const spreadsheetId = process.env.GOOGLE_SHEET_ID;
 
-// This function is now designed to work in serverless environments
-// where process.env might not be populated from a .env file at runtime.
-// The Next.js build process will replace process.env variables.
+// Perform a check at the module level. If variables are missing, the app will fail to build.
+if (!privateKey || !clientEmail || !spreadsheetId) {
+  const missingVars = [
+    !privateKey && 'GOOGLE_PRIVATE_KEY',
+    !clientEmail && 'GOOGLE_CLIENT_EMAIL',
+    !spreadsheetId && 'GOOGLE_SHEET_ID',
+  ].filter(Boolean).join(', ');
+
+  // This error will appear during the build process if variables are not set.
+  throw new Error(`CRITICAL ERROR: The following Google Sheets environment variables are missing: ${missingVars}. The application cannot start.`);
+}
+
 async function getAuthClient() {
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-
-  if (!privateKey || !clientEmail) {
-    // This error will be thrown at build time or runtime if the variables are not set in the environment.
-    throw new Error('Google Sheets API credentials (private key or client email) are not set correctly in environment variables.');
-  }
-
   const auth = new google.auth.JWT(
     clientEmail,
     undefined,
     privateKey,
-    SCOPES
+    ['https://www.googleapis.com/auth/spreadsheets']
   );
-
   return auth;
 }
 
 export async function appendToSheet(sheetName: string, data: any[]) {
-  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-  if (!spreadsheetId) {
-      throw new Error('Google Sheet ID is not set in environment variables.');
-  }
-
   try {
     const auth = await getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });
     
     await sheets.spreadsheets.values.append({
-      spreadsheetId: spreadsheetId,
+      spreadsheetId: spreadsheetId!, // The check above ensures this is defined
       range: sheetName,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
@@ -44,10 +43,9 @@ export async function appendToSheet(sheetName: string, data: any[]) {
       },
     });
 
-    console.log(`Successfully wrote to Google Sheet: ${sheetName}`);
-
   } catch (error: any) {
-    console.error(`Failed to write to Google Sheet '${sheetName}':`, error.message);
-    throw error; // Re-throw so the calling API route can handle it (e.g., send a notification)
+    console.error(`Google Sheets Error: Failed to write to sheet '${sheetName}':`, error.message);
+    // Re-throw the error so the calling API route can handle it
+    throw error;
   }
 }
