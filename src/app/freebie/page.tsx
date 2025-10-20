@@ -120,7 +120,7 @@ function FreebieForm() {
                 </div>
                 <div>
                 <label htmlFor="freebie-phone" className="block text-sm font-medium text-foreground mb-2">Phone Number (Optional)</label>
-                <Input id="freebie-phone" type="number" inputMode="numeric" placeholder="e.g., 60123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input id="freebie-phone" type="text" inputMode="numeric" placeholder="e.g., 60123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
                 <div className="pt-2">
                 <Button type="submit" size="lg" className="w-full font-bold rounded-full" disabled={status === 'sending'}>
