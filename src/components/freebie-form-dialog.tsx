@@ -4,7 +4,7 @@
 import { useState, FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Loader2, CheckCircle, XCircle, Download } from 'lucide-react';
 import { Product } from '@/lib/products';
 
@@ -31,11 +31,13 @@ export const FreebieFormDialog = ({ product }: FreebieFormDialogProps) => {
   };
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
-      // Reset form state when dialog is closed
-      resetForm();
-    }
     setOpen(isOpen);
+    if (!isOpen) {
+      // Use a timeout to allow the closing animation to finish before resetting state
+      setTimeout(() => {
+        resetForm();
+      }, 300);
+    }
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -78,7 +80,7 @@ export const FreebieFormDialog = ({ product }: FreebieFormDialogProps) => {
             <h3 className="font-headline text-2xl font-bold mb-2">Success!</h3>
             <p className="text-muted-foreground">Thank you! Your free guide is on its way to your inbox.</p>
              <DialogFooter className="mt-6">
-                <Button onClick={() => setOpen(false)} variant="outline" className="rounded-full">Close</Button>
+                <Button onClick={() => handleOpenChange(false)} variant="outline" className="rounded-full w-full">Close</Button>
             </DialogFooter>
           </div>
         ) : (
