@@ -86,8 +86,17 @@ Let's get this packed with love and duas! 💖
                 billDetails.totalAmountUSD.toFixed(2)
               ];
               await appendToSheet('Cuddleia Sales Log', sheetData);
-            } catch (sheetError) {
+            } catch (sheetError: any) {
               console.error("Failed to log ToyyibPay order to sheet:", sheetError);
+              await sendTelegramNotification(`
+🚨 *Google Sheets Logging Failed* 🚨
+
+A ToyyibPay order was completed, but logging it to Google Sheets failed.
+
+*Error:* ${sheetError.message}
+*Bill Code:* ${billcode}
+*Customer:* ${billDetails.name} (${billDetails.email})
+              `);
             }
             
             delete billStore[billcode];

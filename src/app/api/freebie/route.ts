@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
     await sendOrderConfirmationEmail(order);
     
     // Secondary actions (don't block response if they fail)
-    Promise.all([
-      sendTelegramNotification(`
+    // Send Telegram notification for the freebie download
+    sendTelegramNotification(`
 🎉 *New Free Download!* 🎉
 
 Someone just grabbed a freebie! Here are the details:
@@ -45,19 +45,32 @@ Someone just grabbed a freebie! Here are the details:
 - ${product.name}
 
 Another heart touched by Cuddleia! 💖
-      `),
-      appendToSheet('Cuddleia Sales Log', [
-        new Date().toISOString(),
-        name,
-        email,
-        phone || '',
-        product.name,
-        '0.00'
-      ])
-    ]).catch(error => {
-        // Log errors from secondary actions to the server console
-        console.error("Error in secondary actions (Telegram or Sheets):", error);
-    });
+    `).catch(err => console.error("Failed to send Telegram notification for freebie:", err));
+    
+    // Log to Google Sheet
+    try {
+        const sheetData = [
+            new Date().toISOString(),
+            name,
+            email,
+            phone || '',
+            product.name,
+            '0.00'
+        ];
+        await appendToSheet('Cuddleia Sales Log', sheetData);
+    } catch (sheetError: any) {
+        console.error("Failed to log freebie download to sheet:", sheetError);
+        // Send a Telegram notification about the logging failure
+        await sendTelegramNotification(`
+🚨 *Google Sheets Logging Failed* 🚨
+
+A freebie download occurred, but logging it to Google Sheets failed.
+
+*Error:* ${sheetError.message}
+*Item:* ${product.name}
+*Downloaded by:* ${name} (${email})
+        `);
+    }
 
     return NextResponse.json({ success: true, message: 'Email sent successfully!' }, { status: 200 });
 

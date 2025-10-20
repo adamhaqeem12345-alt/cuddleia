@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
     }
     
+    // Primary actions
     await sendContactFormEmail(name, email, subject, message);
     
     const telegramMessage = `
@@ -30,7 +31,7 @@ Time to reply and spread some joy! ✨
     `;
     await sendTelegramNotification(telegramMessage);
 
-    // Log to Google Sheet
+    // Secondary action: Log to Google Sheet
     try {
       const sheetData = [
         new Date().toISOString(),
@@ -41,8 +42,17 @@ Time to reply and spread some joy! ✨
         '', // Amount is not applicable
       ];
       await appendToSheet('Cuddleia Sales Log', sheetData);
-    } catch (sheetError) {
+    } catch (sheetError: any) {
       console.error("Failed to log contact form to sheet:", sheetError);
+      // Send a Telegram notification about the logging failure
+      await sendTelegramNotification(`
+🚨 *Google Sheets Logging Failed* 🚨
+
+A new contact form submission was received, but logging it to Google Sheets failed.
+
+*Error:* ${sheetError.message}
+*Submitted by:* ${name} (${email})
+      `);
     }
     
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });

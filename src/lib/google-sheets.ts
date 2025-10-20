@@ -44,6 +44,7 @@ export async function appendToSheet(sheetName: string, data: any[]) {
 
   } catch (error: any) {
     console.error(`Failed to write to Google Sheet '${sheetName}':`, error.message);
-    // We log the error but do not re-throw, so it doesn't break the main API flow.
+    // Re-throw the error so the calling function can handle it, e.g., by sending a notification.
+    throw error;
   }
 }

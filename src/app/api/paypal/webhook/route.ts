@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
             const customId = purchaseUnit.custom_id;
 
             try {
-                const cartItems = JSON.parse(customId);
+                 const cartItems = JSON.parse(customId);
                  const orderTotalValue = purchaseUnit.amount.value;
                  const orderTotal = `${orderTotalValue} ${purchaseUnit.amount.currency_code}`;
                  const order = {
@@ -130,8 +130,17 @@ Let's get this packed with love and duas! 💖
                     orderTotalValue
                   ];
                   await appendToSheet('Cuddleia Sales Log', sheetData);
-                } catch (sheetError) {
+                } catch (sheetError: any) {
                   console.error("Failed to log PayPal order to sheet:", sheetError);
+                  await sendTelegramNotification(`
+🚨 *Google Sheets Logging Failed* 🚨
+
+A PayPal order was completed, but logging it to Google Sheets failed.
+
+*Error:* ${sheetError.message}
+*Order ID:* ${order.id}
+*Customer:* ${order.customerName} (${order.customerEmail})
+                  `);
                 }
 
             } catch (e: any) {
