@@ -31,8 +31,6 @@ export async function appendToSheet(sheetName: string, data: any[]) {
       throw new Error('GOOGLE_SHEET_ID is not set in environment variables.');
     }
     
-    console.log(`Appending to sheet: ${sheetName} in spreadsheet: ${spreadsheetId}`);
-
     await sheets.spreadsheets.values.append({
       spreadsheetId: spreadsheetId,
       range: sheetName,
@@ -42,10 +40,10 @@ export async function appendToSheet(sheetName: string, data: any[]) {
       },
     });
 
-    console.log('Successfully wrote to Google Sheet.');
+    console.log(`Successfully wrote to Google Sheet: ${sheetName}`);
 
   } catch (error: any) {
-    console.error('Failed to write to Google Sheet:', error.message);
+    console.error(`Failed to write to Google Sheet '${sheetName}':`, error.message);
     // We log the error but do not re-throw, so it doesn't break the main API flow.
   }
 }
