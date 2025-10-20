@@ -9,6 +9,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Download, Info, ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { ProductPrice } from "@/components/product-price";
+import { FreebieFormDialog } from "@/components/freebie-form-dialog";
 
 const ProductCard = ({ product }: { product: Product }) => {
   const isFree = product.price === 0;
@@ -50,12 +51,12 @@ const ProductCard = ({ product }: { product: Product }) => {
       </CardContent>
       <CardFooter>
         {isFree ? (
-           <Button asChild size="lg" className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-              <Link href={product.downloadUrl!} target="_blank" rel="noopener noreferrer">
-                  <Download className="mr-2 h-5 w-5" />
-                  Download Now
-              </Link>
-          </Button>
+            <FreebieFormDialog product={product}>
+                <Button size="lg" className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
+                    <Download className="mr-2 h-5 w-5" />
+                    Download Now
+                </Button>
+            </FreebieFormDialog>
         ) : product.bundleIncludes ? (
             <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
               <Link href={`/products/${product.id}`}>
