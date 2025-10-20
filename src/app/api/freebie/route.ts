@@ -69,7 +69,8 @@ The /api/freebie endpoint failed to process a request. The user did NOT receive 
 
 Please investigate the server logs immediately.
     `;
-    await sendTelegramNotification(criticalErrorMessage);
+    // We try to send a notification, but don't await it or let it block the response.
+    sendTelegramNotification(criticalErrorMessage);
     
     return NextResponse.json({ error: error.message || 'Failed to process your request.' }, { status: 500 });
   }
