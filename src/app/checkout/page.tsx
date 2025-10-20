@@ -15,12 +15,19 @@ import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData }
 
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
-export default function CheckoutPage() {
-  const { cart, clearCart, appliedDiscount } = useCart();
-  const router = useRouter();
+// Custom hook to manage form state
+function useCheckoutForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  return { name, setName, email, setEmail, phone, setPhone };
+}
+
+
+export default function CheckoutPage() {
+  const { cart, clearCart, appliedDiscount } = useCart();
+  const router = useRouter();
+  const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('toyyibpay');
