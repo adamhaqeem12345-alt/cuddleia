@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 // This is a temporary in-memory store. In a serverless environment, this is not reliable.
 // A more robust solution would use a database (e.g., Firestore) or cache (e.g., Redis).
@@ -73,6 +74,19 @@ ${itemsList}
 Let's get this packed with love and duas! 💖
             `;
             await sendTelegramNotification(telegramMessage);
+
+            // Secondary action: Log to Google Sheets
+            try {
+                const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+                if (spreadsheetId) {
+                    const timestamp = new Date().toISOString();
+                    const productNames = order.items.map(i => i.product.name).join(', ');
+                    const values = [[timestamp, order.customerName, order.customerEmail, billDetails.phone, productNames, 'ToyyibPay Sale', order.total]];
+                    await appendToSheet(spreadsheetId, 'Submissions', values);
+                }
+            } catch (sheetError: any) {
+                console.error("Google Sheets logging for ToyyibPay callback failed:", sheetError.message);
+            }
 
             delete billStore[billcode];
             console.log(`Cleaned up stored details for bill: ${billcode}`);

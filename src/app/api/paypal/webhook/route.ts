@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -117,6 +118,19 @@ ${itemsList}
 Let's get this packed with love and duas! 💖
                 `;
                 await sendTelegramNotification(telegramMessage);
+
+                // Secondary action: Log to Google Sheets
+                try {
+                    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+                    if (spreadsheetId) {
+                        const timestamp = new Date().toISOString();
+                        const productNames = order.items.map(i => i.product.name).join(', ');
+                        const values = [[timestamp, order.customerName, order.customerEmail, '', productNames, 'PayPal Sale', order.total]];
+                        await appendToSheet(spreadsheetId, 'Submissions', values);
+                    }
+                } catch (sheetError: any) {
+                    console.error("Google Sheets logging for PayPal webhook failed:", sheetError.message);
+                }
 
             } catch (e: any) {
                  console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e.message);

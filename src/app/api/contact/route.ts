@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendContactFormEmail } from '@/lib/email';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,6 +30,19 @@ ${message}
 Time to reply and spread some joy! ✨
     `;
     await sendTelegramNotification(telegramMessage);
+
+    // Secondary action: Log to Google Sheets
+    try {
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        if (spreadsheetId) {
+            const timestamp = new Date().toISOString();
+            const values = [[timestamp, name, email, subject, message, 'Contact Form']];
+            await appendToSheet(spreadsheetId, 'Submissions', values);
+        }
+    } catch (sheetError: any) {
+        console.error("Google Sheets logging for contact form failed:", sheetError.message);
+        // Do not re-throw; we don't want this to cause a 500 error for the user.
+    }
     
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });
 

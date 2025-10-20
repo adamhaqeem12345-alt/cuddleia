@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,8 +41,15 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
 *Phone:* ${phone || 'Not provided'}
         `;
         await sendTelegramNotification(telegramMessage);
-    } catch (teleError: any) {
-        console.error("Telegram notification for freebie failed:", teleError.message);
+
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        if (spreadsheetId) {
+            const timestamp = new Date().toISOString();
+            const values = [[timestamp, name, email, phone || '', product.name, 'Freebie']];
+            await appendToSheet(spreadsheetId, 'Submissions', values);
+        }
+    } catch (secondaryError: any) {
+        console.error("Secondary action (Telegram/Sheets) for freebie failed:", secondaryError.message);
         // Do not re-throw; we don't want this to cause a 500 error for the user.
     }
 
