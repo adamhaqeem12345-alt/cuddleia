@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendContactFormEmail } from '@/lib/email';
 import { sendTelegramNotification } from '@/lib/telegram';
-import { appendToSheet } from '@/lib/google-sheets';
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,30 +29,6 @@ ${message}
 Time to reply and spread some joy! ✨
     `;
     await sendTelegramNotification(telegramMessage);
-
-    // Secondary action: Log to Google Sheet
-    try {
-      const sheetData = [
-        new Date().toISOString(),
-        name,
-        email,
-        '', // Phone number is not collected in contact form
-        subject,
-        '', // Amount is not applicable
-      ];
-      await appendToSheet('Cuddleia Sales Log', sheetData);
-    } catch (sheetError: any) {
-      console.error("Failed to log contact form to sheet:", sheetError);
-      // Send a Telegram notification about the logging failure
-      await sendTelegramNotification(`
-🚨 *Google Sheets Logging Failed* 🚨
-
-A new contact form submission was received, but logging it to Google Sheets failed.
-
-*Error:* ${sheetError.message}
-*Submitted by:* ${name} (${email})
-      `);
-    }
     
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });
 

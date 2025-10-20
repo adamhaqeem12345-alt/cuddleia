@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
-import { appendToSheet } from '@/lib/google-sheets';
 
 const getPayPalAccessToken = async (): Promise<string> => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -118,30 +117,6 @@ ${itemsList}
 Let's get this packed with love and duas! 💖
                 `;
                 await sendTelegramNotification(telegramMessage);
-
-                // Log to Google Sheet
-                try {
-                  const sheetData = [
-                    new Date().toISOString(),
-                    order.customerName,
-                    order.customerEmail,
-                    orderData.payer.phone?.phone_number?.national_number || '', // PayPal may not provide phone number
-                    order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', '),
-                    orderTotalValue
-                  ];
-                  await appendToSheet('Cuddleia Sales Log', sheetData);
-                } catch (sheetError: any) {
-                  console.error("Failed to log PayPal order to sheet:", sheetError);
-                  await sendTelegramNotification(`
-🚨 *Google Sheets Logging Failed* 🚨
-
-A PayPal order was completed, but logging it to Google Sheets failed.
-
-*Error:* ${sheetError.message}
-*Order ID:* ${order.id}
-*Customer:* ${order.customerName} (${order.customerEmail})
-                  `);
-                }
 
             } catch (e: any) {
                  console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e.message);

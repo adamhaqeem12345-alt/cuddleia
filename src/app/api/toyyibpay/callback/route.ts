@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
 import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
-import { appendToSheet } from '@/lib/google-sheets';
 
 // This is a temporary in-memory store. In a serverless environment, this is not reliable.
 // A more robust solution would use a database (e.g., Firestore) or cache (e.g., Redis).
@@ -75,30 +74,6 @@ Let's get this packed with love and duas! 💖
             `;
             await sendTelegramNotification(telegramMessage);
 
-            // Log to Google Sheet
-            try {
-              const sheetData = [
-                new Date().toISOString(),
-                billDetails.name,
-                billDetails.email,
-                billDetails.phone,
-                order.items.map(i => `${i.product.name} (x${i.quantity})`).join(', '),
-                billDetails.totalAmountUSD.toFixed(2)
-              ];
-              await appendToSheet('Cuddleia Sales Log', sheetData);
-            } catch (sheetError: any) {
-              console.error("Failed to log ToyyibPay order to sheet:", sheetError);
-              await sendTelegramNotification(`
-🚨 *Google Sheets Logging Failed* 🚨
-
-A ToyyibPay order was completed, but logging it to Google Sheets failed.
-
-*Error:* ${sheetError.message}
-*Bill Code:* ${billcode}
-*Customer:* ${billDetails.name} (${billDetails.email})
-              `);
-            }
-            
             delete billStore[billcode];
             console.log(`Cleaned up stored details for bill: ${billcode}`);
 
