@@ -90,8 +90,8 @@ Let's get this packed with love and duas! 💖
               console.error("Failed to log ToyyibPay order to sheet:", sheetError);
             }
             
-            delete billStore[billCode];
-            console.log(`Cleaned up stored details for bill: ${billCode}`);
+            delete billStore[billcode];
+            console.log(`Cleaned up stored details for bill: ${billcode}`);
 
         } catch (e: any) {
             console.error(`Failed to process confirmation for bill ${billcode}:`, e.message);
