@@ -31,15 +31,16 @@ export function FreebieFormDialog({ product, children }: FreebieFormDialogProps)
   const [error, setError] = useState('');
 
   // Reset form state when the dialog is closed
-  useEffect(() => {
-    if (!open) {
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
       setName('');
       setEmail('');
       setPhone('');
       setStatus('idle');
       setError('');
     }
-  }, [open]);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,13 +62,14 @@ export function FreebieFormDialog({ product, children }: FreebieFormDialogProps)
 
       setStatus('success');
     } catch (err: any) {
+      console.error("Freebie form submission error:", err); // Robust client-side logging
       setStatus('error');
       setError(err.message);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         {status === 'success' ? (
