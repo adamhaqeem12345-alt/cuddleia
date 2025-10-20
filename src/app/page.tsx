@@ -43,10 +43,10 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 {freeBook && (
                    <Button asChild size="lg" className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                      <Link href={`/freebie?productId=${freeBook.id}`}>
+                      <a href={freeBook.downloadUrl} target="_blank" rel="noopener noreferrer">
                         <Download className="mr-2 h-5 w-5" />
                         Download Now
-                      </Link>
+                      </a>
                     </Button>
                 )}
                 <Button asChild size="lg" variant="secondary" className="rounded-full">
@@ -184,3 +184,5 @@ export default function Home() {
     </>
   );
 }
+
+    

@@ -66,10 +66,10 @@ export const ProductDetails = ({ product }: { product: Product }) => {
                 )}
                 {isFree ? (
                     <Button asChild size="lg" className="w-full rounded-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95">
-                        <Link href={`/freebie?productId=${product.id}`}>
+                        <a href={product.downloadUrl} target="_blank" rel="noopener noreferrer">
                             <Download className="mr-2 h-5 w-5" />
                             Download Now
-                        </Link>
+                        </a>
                     </Button>
                 ) : isInCart ? (
                     <Button size="lg" className="w-full font-bold rounded-full" disabled>
@@ -89,3 +89,5 @@ export const ProductDetails = ({ product }: { product: Product }) => {
     </div>
   );
 };
+
+    
