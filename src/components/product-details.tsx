@@ -89,5 +89,3 @@ export const ProductDetails = ({ product }: { product: Product }) => {
     </div>
   );
 };
-
-    
