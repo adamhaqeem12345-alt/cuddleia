@@ -126,7 +126,7 @@ Let's get this packed with love and duas! 💖
                         const timestamp = new Date().toISOString();
                         const productNames = order.items.map(i => i.product.name).join(', ');
                         // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                        const values = [[timestamp, order.customerName, order.customerEmail, '', productNames, orderTotalValue]];
+                        const values = [[timestamp, order.customerName, order.customerEmail, '', productNames, orderTotalValue.toString()]];
                         await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
                     }
                 } catch (secondaryError: any) {

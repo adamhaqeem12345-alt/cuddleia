@@ -46,7 +46,7 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
             // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-            const values = [[timestamp, name, email, phone || '', product.name, 0]];
+            const values = [[timestamp, name, email, phone || '', product.name, '0']];
             await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
         }
     } catch (secondaryError: any) {
