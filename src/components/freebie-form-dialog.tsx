@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, FormEvent, useEffect, ReactNode } from 'react';
+import { useState, FormEvent, ReactNode } from 'react';
 import { Product } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,11 +35,13 @@ export function FreebieFormDialog({ product, children }: FreebieFormDialogProps)
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen);
     if (!isOpen) {
-      setName('');
-      setEmail('');
-      setPhone('');
-      setStatus('idle');
-      setError('');
+      setTimeout(() => {
+        setName('');
+        setEmail('');
+        setPhone('');
+        setStatus('idle');
+        setError('');
+      }, 300); // Delay reset to allow for closing animation
     }
   };
 
@@ -62,7 +65,7 @@ export function FreebieFormDialog({ product, children }: FreebieFormDialogProps)
 
       setStatus('success');
     } catch (err: any) {
-      console.error("Freebie form submission error:", err); // Robust client-side logging
+      console.error("Freebie form submission error:", err);
       setStatus('error');
       setError(err.message);
     }
@@ -89,7 +92,7 @@ export function FreebieFormDialog({ product, children }: FreebieFormDialogProps)
                     Enter your details below to receive a download link for "{product.name}" in your email.
                   </DialogDescription>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                <form onSubmit={handleSubmit} className="space-y-4 pt-4" noValidate>
                   <div>
                     <label htmlFor="freebie-name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
                     <Input id="freebie-name" type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required />
@@ -100,7 +103,7 @@ export function FreebieFormDialog({ product, children }: FreebieFormDialogProps)
                   </div>
                    <div>
                     <label htmlFor="freebie-phone" className="block text-sm font-medium text-foreground mb-2">Phone Number (Optional)</label>
-                    <Input id="freebie-phone" type="text" placeholder="e.g., 60123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    <Input id="freebie-phone" type="text" inputMode="numeric" placeholder="e.g., 60123456789" value={phone} onChange={(e) => setPhone(e.target.value)} />
                   </div>
                   <div className="pt-4">
                     <Button type="submit" size="lg" className="w-full font-bold rounded-full" disabled={status === 'sending'}>
