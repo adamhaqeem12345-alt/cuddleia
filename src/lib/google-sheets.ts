@@ -1,14 +1,16 @@
 
 import { google } from 'googleapis';
+import { sendTelegramNotification } from './telegram';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 async function getAuthClient() {
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+  const sheetId = process.env.GOOGLE_SHEET_ID;
 
-  if (!privateKey || !clientEmail) {
-    throw new Error('Google Sheets API credentials are not set in environment variables.');
+  if (!privateKey || !clientEmail || !sheetId) {
+    throw new Error('Google Sheets API credentials (private key, client email, or sheet ID) are not set correctly in environment variables.');
   }
 
   const auth = new google.auth.JWT(
@@ -26,10 +28,6 @@ export async function appendToSheet(sheetName: string, data: any[]) {
     const auth = await getAuthClient();
     const sheets = google.sheets({ version: 'v4', auth });
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-
-    if (!spreadsheetId) {
-      throw new Error('GOOGLE_SHEET_ID is not set in environment variables.');
-    }
     
     await sheets.spreadsheets.values.append({
       spreadsheetId: spreadsheetId,
@@ -44,7 +42,7 @@ export async function appendToSheet(sheetName: string, data: any[]) {
 
   } catch (error: any) {
     console.error(`Failed to write to Google Sheet '${sheetName}':`, error.message);
-    // Re-throw the error so the calling function can handle it, e.g., by sending a notification.
+    // Re-throw the error so the calling function can handle it.
     throw error;
   }
 }
