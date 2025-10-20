@@ -15,7 +15,7 @@ const getPayPalAccessToken = async (): Promise<string> => {
     }
 
     const auth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-    const url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token'; // Use sandbox URL
+    const url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token';
 
     const response = await fetch(url, {
         method: 'POST',
@@ -36,7 +36,6 @@ const getPayPalAccessToken = async (): Promise<string> => {
     return data.access_token;
 };
 
-
 export async function POST(req: NextRequest) {
     try {
         const { cart, totalAmountUSD, name, email, phone } = (await req.json()) as { cart: CartItem[], totalAmountUSD: number, name: string, email: string, phone: string };
@@ -46,23 +45,20 @@ export async function POST(req: NextRequest) {
         }
 
         const finalTotal = totalAmountUSD.toFixed(2);
-
-        // Allow $0 if cart has items (e.g. 100% discount on free item)
-        // But do not allow negative amounts.
+        
         if (parseFloat(finalTotal) < 0) {
             return NextResponse.json({ error: 'Total amount cannot be negative.' }, { status: 400 });
         }
         
-        // This payload will be stored in PayPal's system and returned with the webhook
         const customIdPayload = {
             cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
             name,
             email,
             phone
-        }
+        };
 
         const accessToken = await getPayPalAccessToken();
-        const url = 'https://api-m.sandbox.paypal.com/v2/checkout/orders'; // Use sandbox URL
+        const url = 'https://api-m.sandbox.paypal.com/v2/checkout/orders';
 
         const orderPayload = {
             intent: 'CAPTURE',
@@ -72,14 +68,12 @@ export async function POST(req: NextRequest) {
                         currency_code: 'USD',
                         value: finalTotal,
                     },
-                    // Pass cart and user details for webhook fulfillment.
-                    // This is the key to making the process stateless.
                     custom_id: JSON.stringify(customIdPayload),
                 },
             ],
             application_context: {
                 brand_name: 'Cuddleia',
-                return_url: `${req.nextUrl.origin}/checkout/success`,
+                return_url: `${req.nextUrl.origin}/checkout/success?source=paypal`,
                 cancel_url: `${req.nextUrl.origin}/checkout`,
             }
         };

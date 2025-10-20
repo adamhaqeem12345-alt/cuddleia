@@ -36,7 +36,6 @@ Time to reply and spread some joy! ✨
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
-            // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
             const values = [[timestamp, name, email, '', `Contact: ${subject}`, 'N/A']];
             await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
         }

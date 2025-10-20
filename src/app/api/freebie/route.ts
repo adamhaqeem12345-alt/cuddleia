@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid or non-free product selected.' }, { status: 400 });
     }
 
-    // This is the primary action. If this fails, the whole request should fail.
     const order: Order = {
         id: `FREE-${Date.now()}`,
         customerName: name,
@@ -28,7 +27,6 @@ export async function POST(req: NextRequest) {
     };
     await sendOrderConfirmationEmail(order);
     
-    // Secondary actions (logging/notification). Failure here should not fail the request for the user.
     try {
         const telegramMessage = `
 🎁 *Freebie Download!* 🎁
@@ -45,13 +43,11 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
-            // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
             const values = [[timestamp, name, email, phone || '', product.name, '0']];
             await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
         }
     } catch (secondaryError: any) {
         console.error("Secondary action (Telegram/Sheets) for freebie failed:", secondaryError.message);
-        // Do not re-throw; we don't want this to cause a 500 error for the user.
     }
 
     return NextResponse.json({ success: true, message: 'Freebie request processed successfully!' }, { status: 200 });
@@ -59,8 +55,9 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
   } catch (error: any) {
     console.error('Error in /api/freebie:', error);
     
-    // Send a critical error notification if the primary action fails
-    const criticalErrorMessage = `
+    // We can try to send a critical error notification, but don't let it block the response.
+    try {
+        const criticalErrorMessage = `
 🚨 *CRITICAL ERROR: Freebie API Failed* 🚨
 
 The /api/freebie endpoint failed to process a request. The user did NOT receive their download link.
@@ -68,9 +65,11 @@ The /api/freebie endpoint failed to process a request. The user did NOT receive 
 *Reason:* ${error.message || 'An unknown error occurred.'}
 
 Please investigate the server logs immediately.
-    `;
-    // We try to send a notification, but don't await it or let it block the response.
-    sendTelegramNotification(criticalErrorMessage);
+        `;
+        sendTelegramNotification(criticalErrorMessage);
+    } catch (notificationError) {
+        console.error("Failed to send critical error notification:", notificationError);
+    }
     
     return NextResponse.json({ error: error.message || 'Failed to process your request.' }, { status: 500 });
   }

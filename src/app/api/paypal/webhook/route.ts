@@ -33,11 +33,12 @@ const getPayPalAccessToken = async (): Promise<string> => {
     return data.access_token;
 };
 
-const verifyWebhook = async (req: NextRequest, rawBody: string) => {
+const verifyWebhook = async (req: NextRequest) => {
+    const rawBody = await req.text();
     // Return true in development if webhook ID is not set, for easier testing.
     if (!process.env.PAYPAL_WEBHOOK_ID) {
         console.warn("PAYPAL_WEBHOOK_ID is not set. Skipping webhook verification. THIS SHOULD ONLY BE IN DEVELOPMENT.");
-        return true;
+        return { isVerified: true, body: rawBody };
     }
     
     const accessToken = await getPayPalAccessToken();
@@ -63,16 +64,12 @@ const verifyWebhook = async (req: NextRequest, rawBody: string) => {
     });
 
     const verifyResult = await verifyResponse.json();
-
-    return verifyResult.verification_status === 'SUCCESS';
+    return { isVerified: verifyResult.verification_status === 'SUCCESS', body: rawBody };
 };
 
-
 export async function POST(req: NextRequest) {
-    const rawBody = await req.text();
-
     try {
-        const isVerified = await verifyWebhook(req, rawBody);
+        const { isVerified, body: rawBody } = await verifyWebhook(req);
         
         if (!isVerified) {
             console.error('Webhook signature verification failed.');
@@ -81,43 +78,44 @@ export async function POST(req: NextRequest) {
 
         const event = JSON.parse(rawBody);
         const eventType = event.event_type;
-
         console.log(`Received PayPal Webhook: ${eventType}`);
 
         if (eventType === 'CHECKOUT.ORDER.COMPLETED') {
             const orderData = event.resource;
             const purchaseUnit = orderData.purchase_units[0];
-            const customId = purchaseUnit.custom_id;
+            
+            let customIdPayload;
+            try {
+                 customIdPayload = JSON.parse(purchaseUnit.custom_id);
+            } catch (e) {
+                console.error(`CRITICAL: Failed to parse custom_id from PayPal webhook for order ${orderData.id}. Payload: ${purchaseUnit.custom_id}`);
+                return NextResponse.json({ received: true }, { status: 200 });
+            }
+
+            const orderTotalValue = purchaseUnit.amount.value;
+            const orderTotal = `${orderTotalValue} ${purchaseUnit.amount.currency_code}`;
+
+            const customerName = customIdPayload.name || `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`;
+            const customerEmail = customIdPayload.email || orderData.payer.email_address;
+            const customerPhone = customIdPayload.phone || '';
+
+            const order = {
+                id: orderData.id,
+                customerName: customerName,
+                customerEmail: customerEmail,
+                items: customIdPayload.cart.map((item: any) => ({
+                    product: getProductById(item.id)!,
+                    quantity: item.quantity,
+                })).filter((item: any) => item.product),
+                total: orderTotal,
+            };
+
+            await sendOrderConfirmationEmail(order);
+            console.log(`Order confirmation email sent for order ${orderData.id}`);
 
             try {
-                 const customIdPayload = JSON.parse(customId);
-                 const orderTotalValue = purchaseUnit.amount.value;
-                 const orderTotal = `${orderTotalValue} ${purchaseUnit.amount.currency_code}`;
-
-                 // Use name/email from custom_id as the primary source of truth
-                 const customerName = customIdPayload.name || `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`;
-                 const customerEmail = customIdPayload.email || orderData.payer.email_address;
-                 const customerPhone = customIdPayload.phone || '';
-
-
-                 const order = {
-                    id: orderData.id,
-                    customerName: customerName,
-                    customerEmail: customerEmail,
-                    items: customIdPayload.cart.map((item: any) => ({
-                        product: getProductById(item.id)!,
-                        quantity: item.quantity,
-                    })).filter((item: any) => item.product),
-                    total: orderTotal,
-                };
-
-                await sendOrderConfirmationEmail(order);
-                console.log(`Order confirmation email sent for order ${orderData.id}`);
-
-                // Secondary actions (logging/notification)
-                try {
-                    const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
-                    const telegramMessage = `
+                const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
+                const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
 
 Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! 🥳
@@ -131,23 +129,18 @@ Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! �
 ${itemsList}
 
 Let's get this packed with love and duas! 💖
-                    `;
-                    await sendTelegramNotification(telegramMessage);
+                `;
+                await sendTelegramNotification(telegramMessage);
 
-                    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-                    if (spreadsheetId) {
-                        const timestamp = new Date().toISOString();
-                        const productNames = order.items.map(i => i.product.name).join(', ');
-                        // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                        const values = [[timestamp, order.customerName, order.customerEmail, customerPhone, productNames, orderTotalValue.toString()]];
-                        await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
-                    }
-                } catch (secondaryError: any) {
-                    console.error("Secondary action (Telegram/Sheets) for PayPal webhook failed:", secondaryError.message);
+                const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+                if (spreadsheetId) {
+                    const timestamp = new Date().toISOString();
+                    const productNames = order.items.map(i => i.product.name).join(', ');
+                    const values = [[timestamp, order.customerName, order.customerEmail, customerPhone, productNames, orderTotalValue.toString()]];
+                    await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
                 }
-
-            } catch (e: any) {
-                 console.error('Error parsing custom_id or sending confirmations for PayPal webhook:', e.message);
+            } catch (secondaryError: any) {
+                console.error("Secondary action (Telegram/Sheets) for PayPal webhook failed:", secondaryError.message);
             }
         } else {
             console.log(`Unhandled event type: ${eventType}`);

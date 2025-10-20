@@ -26,14 +26,12 @@ export async function POST(req: NextRequest) {
     const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    // ToyyibPay requires a minimum of RM1.00
     if (totalAmountUSD > 0 && totalAmountInSen < 100) {
         return NextResponse.json({ error: 'Total amount must be at least RM1.00 for ToyyibPay.' }, { status: 400 });
     }
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
     
-    // We will pass the necessary details in the billExternalReferenceNo to retrieve them in the webhook
     const orderDetails = {
       name,
       email,
@@ -41,7 +39,6 @@ export async function POST(req: NextRequest) {
       cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
       totalAmountUSD
     };
-    // Encode the details to safely pass in the URL
     const encodedOrderDetails = encodeURIComponent(JSON.stringify(orderDetails));
 
     const bodyParams = new URLSearchParams({
@@ -54,7 +51,6 @@ export async function POST(req: NextRequest) {
       billAmount: totalAmountInSen.toString(),
       billReturnUrl: `${req.nextUrl.origin}/checkout/success`,
       billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
-      // Use billExternalReferenceNo to pass our data. It's the most reliable way.
       billExternalReferenceNo: encodedOrderDetails,
       billTo: name,
       billEmail: email,
