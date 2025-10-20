@@ -36,8 +36,9 @@ Time to reply and spread some joy! ✨
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
-            const values = [[timestamp, name, email, subject, message, 'Contact Form']];
-            await appendToSheet(spreadsheetId, 'Submissions', values);
+            // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+            const values = [[timestamp, name, email, '', `Contact: ${subject}`, 'N/A']];
+            await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
         }
     } catch (sheetError: any) {
         console.error("Google Sheets logging for contact form failed:", sheetError.message);

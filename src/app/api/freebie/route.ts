@@ -45,8 +45,9 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
-            const values = [[timestamp, name, email, phone || '', product.name, 'Freebie']];
-            await appendToSheet(spreadsheetId, 'Submissions', values);
+            // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
+            const values = [[timestamp, name, email, phone || '', product.name, 0]];
+            await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
         }
     } catch (secondaryError: any) {
         console.error("Secondary action (Telegram/Sheets) for freebie failed:", secondaryError.message);
