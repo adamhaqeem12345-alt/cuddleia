@@ -39,7 +39,7 @@ const getPayPalAccessToken = async (): Promise<string> => {
 
 export async function POST(req: NextRequest) {
     try {
-        const { cart, totalAmountUSD } = (await req.json()) as { cart: CartItem[], totalAmountUSD: number };
+        const { cart, totalAmountUSD, name, email, phone } = (await req.json()) as { cart: CartItem[], totalAmountUSD: number, name: string, email: string, phone: string };
 
         if (!cart || cart.length === 0 || totalAmountUSD === undefined) {
             return NextResponse.json({ error: 'Cart and total amount are required.' }, { status: 400 });
@@ -53,6 +53,13 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ error: 'Total amount must be positive.' }, { status: 400 });
              }
         }
+        
+        const customIdPayload = {
+            cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+            name,
+            email,
+            phone
+        }
 
         const accessToken = await getPayPalAccessToken();
         const url = 'https://api-m.sandbox.paypal.com/v2/checkout/orders'; // Use sandbox URL
@@ -65,8 +72,8 @@ export async function POST(req: NextRequest) {
                         currency_code: 'USD',
                         value: finalTotal,
                     },
-                    // Pass cart details for webhook fulfillment
-                    custom_id: JSON.stringify(cart.map(item => ({ id: item.id, quantity: item.quantity }))),
+                    // Pass cart and user details for webhook fulfillment
+                    custom_id: JSON.stringify(customIdPayload),
                 },
             ],
             application_context: {

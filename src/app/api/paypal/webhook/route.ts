@@ -84,14 +84,21 @@ export async function POST(req: NextRequest) {
             const customId = purchaseUnit.custom_id;
 
             try {
-                 const cartItems = JSON.parse(customId);
+                 const customIdPayload = JSON.parse(customId);
                  const orderTotalValue = purchaseUnit.amount.value;
                  const orderTotal = `${orderTotalValue} ${purchaseUnit.amount.currency_code}`;
+
+                 // Use name/email from custom_id if available, otherwise fall back to payer object
+                 const customerName = customIdPayload.name || `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`;
+                 const customerEmail = customIdPayload.email || orderData.payer.email_address;
+                 const customerPhone = customIdPayload.phone || '';
+
+
                  const order = {
                     id: orderData.id,
-                    customerName: `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`,
-                    customerEmail: orderData.payer.email_address,
-                    items: cartItems.map((item: any) => ({
+                    customerName: customerName,
+                    customerEmail: customerEmail,
+                    items: customIdPayload.cart.map((item: any) => ({
                         product: getProductById(item.id)!,
                         quantity: item.quantity,
                     })).filter((item: any) => item.product),
@@ -121,12 +128,12 @@ Let's get this packed with love and duas! 💖
                     `;
                     await sendTelegramNotification(telegramMessage);
 
-                    const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
+                    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
                     if (spreadsheetId) {
                         const timestamp = new Date().toISOString();
                         const productNames = order.items.map(i => i.product.name).join(', ');
                         // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)
-                        const values = [[timestamp, order.customerName, order.customerEmail, '', productNames, orderTotalValue.toString()]];
+                        const values = [[timestamp, order.customerName, order.customerEmail, customerPhone, productNames, orderTotalValue.toString()]];
                         await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
                     }
                 } catch (secondaryError: any) {

@@ -74,13 +74,19 @@ export default function CheckoutPage() {
   const createPayPalOrder = async (data: CreateOrderData, actions: any) => {
     setIsLoading(true);
     setError('');
+    if (!name || !email) {
+      setError('Please fill in your Name and Email before proceeding with PayPal.');
+      setIsLoading(false);
+      return Promise.reject(new Error('User details missing'));
+    }
+
     try {
         const response = await fetch('/api/paypal/create-order', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ cart, totalAmountUSD: total }),
+            body: JSON.stringify({ cart, totalAmountUSD: total, name, email, phone }),
         });
 
         const order = await response.json();
@@ -107,29 +113,13 @@ export default function CheckoutPage() {
     setIsLoading(true);
     setError('');
     try {
-        const response = await fetch('/api/paypal/capture-order', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ orderID: data.orderID }),
-        });
-
-        const capturedData = await response.json();
-
-        if (!response.ok || !capturedData.success) {
-            throw new Error(capturedData.error || 'Failed to capture payment.');
-        }
-        
-        // Payment is successful, clear cart and redirect
+        // Capture is handled by webhook. Just redirect.
         clearCart();
-        router.push('/checkout/success');
+        router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
 
     } catch (err: any) {
         setError(err.message);
         setIsLoading(false);
-        // You can show an error to the user in the PayPal flow.
-        // This is useful for things like failed card payments.
         return Promise.reject(err);
     }
   };
@@ -209,46 +199,49 @@ export default function CheckoutPage() {
             </div>
         </div>
         <div>
-            <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Payment Details</h2>
+            <h2 className="font-headline text-3xl md:text-4xl text-foreground mb-8 font-bold">Your Details</h2>
             <div className="border rounded-2xl shadow-sm bg-card p-8">
-                 <div className="grid grid-cols-2 gap-4 mb-8">
-                    <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
-                       <Landmark className="h-6 w-6"/>
-                       <span className="font-semibold">Online Banking (MY)</span>
-                    </button>
-                    {isPayPalAvailable ? (
-                      <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
-                        <CreditCard className="h-6 w-6"/>
-                        <span className="font-semibold">PayPal / Card</span>
-                      </button>
-                    ) : (
-                      <div className="relative flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/50 cursor-not-allowed">
-                        <CreditCard className="h-6 w-6 text-muted-foreground"/>
-                        <span className="font-semibold text-muted-foreground">PayPal / Card</span>
-                        <span className="absolute bottom-1 right-1 text-xs text-muted-foreground">Unavailable</span>
-                      </div>
-                    )}
+                <div className="space-y-6">
+                   <div>
+                       <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                       <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your Full Name" required className="rounded-full"/>
+                   </div>
+                   <div>
+                       <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
+                       <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required className="rounded-full"/>
+                   </div>
+                   <div>
+                       <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                       <Input id="phone" type="text" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789 (Required for ToyyibPay)" required className="rounded-full"/>
+                   </div>
+                </div>
+
+                <div className="mt-8">
+                    <h3 className="font-headline text-xl text-foreground mb-4 font-bold">Select Payment Method</h3>
+                     <div className="grid grid-cols-2 gap-4 mb-8">
+                        <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
+                           <Landmark className="h-6 w-6"/>
+                           <span className="font-semibold">Online Banking (MY)</span>
+                        </button>
+                        {isPayPalAvailable ? (
+                          <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
+                            <CreditCard className="h-6 w-6"/>
+                            <span className="font-semibold">PayPal / Card</span>
+                          </button>
+                        ) : (
+                          <div className="relative flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/50 cursor-not-allowed">
+                            <CreditCard className="h-6 w-6 text-muted-foreground"/>
+                            <span className="font-semibold text-muted-foreground">PayPal / Card</span>
+                            <span className="absolute bottom-1 right-1 text-xs text-muted-foreground">Unavailable</span>
+                          </div>
+                        )}
+                    </div>
                 </div>
 
                 {selectedPaymentMethod === 'toyyibpay' ? (
                     <div>
-                        <div className="space-y-6">
-                           <div>
-                               <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">Full Name</label>
-                               <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your Full Name" required className="rounded-full"/>
-                           </div>
-                           <div>
-                               <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">Email</label>
-                               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required className="rounded-full"/>
-                           </div>
-                           <div>
-                               <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
-                               <Input id="phone" type="text" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789" required className="rounded-full"/>
-                           </div>
-                        </div>
-
                         <div className="mt-8">
-                          <Button onClick={handleToyyibPayPayment} disabled={isLoading} size="lg" className="w-full font-bold rounded-full">
+                          <Button onClick={handleToyyibPayPayment} disabled={isLoading || !name || !email || !phone} size="lg" className="w-full font-bold rounded-full">
                             {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Proceed to Payment'}
                           </Button>
                         </div>
@@ -266,7 +259,7 @@ export default function CheckoutPage() {
                               <PayPalButtons 
                                   key={total} // Add key to re-render buttons when total changes
                                   style={{ layout: "vertical", label: "pay" }}
-                                  disabled={isPending || isLoading || cart.length === 0}
+                                  disabled={isPending || isLoading || cart.length === 0 || !name || !email}
                                   createOrder={createPayPalOrder}
                                   onApprove={onPayPalApprove}
                                   onError={(err) => {

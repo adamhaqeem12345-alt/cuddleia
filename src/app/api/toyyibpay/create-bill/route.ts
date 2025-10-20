@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
 import { getConvertedAmount } from '@/app/actions';
-import { storeBillDetails } from '../callback/route';
 
 interface CartItem extends Product {
   quantity: number;
@@ -32,19 +31,30 @@ export async function POST(req: NextRequest) {
     }
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
-    const externalReferenceNo = `order-${Date.now()}`;
     
+    // We will pass the necessary details in the billExternalReferenceNo to retrieve them in the webhook
+    const orderDetails = {
+      name,
+      email,
+      phone,
+      cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+      totalAmountUSD
+    };
+    // Encode the details to safely pass in the URL
+    const encodedOrderDetails = encodeURIComponent(JSON.stringify(orderDetails));
+
     const bodyParams = new URLSearchParams({
       userSecretKey: secretKey,
       categoryCode: categoryCode,
       billName: 'Cuddleia Digital Goods',
-      billDescription: `Your order from Cuddleia (${externalReferenceNo})`,
+      billDescription: `Your order from Cuddleia`,
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
       billReturnUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
       billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
-      billExternalReferenceNo: externalReferenceNo,
+      // Use order_id (aliased as billExternalReferenceNo) to pass our data
+      billExternalReferenceNo: encodedOrderDetails,
       billTo: name,
       billEmail: email,
       billPhone: phone,
@@ -65,10 +75,6 @@ export async function POST(req: NextRequest) {
 
     if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
         const billCode = data[0].BillCode;
-
-        // Store details for the webhook to use later
-        storeBillDetails(billCode, { name, email, phone, cart, totalAmountInSen, totalAmountUSD });
-
         const paymentUrl = `https://toyyibpay.com/${billCode}`;
         return NextResponse.json({ paymentUrl });
     } else {

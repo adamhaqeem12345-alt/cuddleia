@@ -42,7 +42,7 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
         `;
         await sendTelegramNotification(telegramMessage);
 
-        const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
             // Columns: Date, Customer Name, Customer Email, Phone Number, Products Purchased, Amounts (USD)

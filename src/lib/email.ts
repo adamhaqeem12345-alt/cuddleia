@@ -15,8 +15,8 @@ export interface Order {
 }
 
 // 1. Create a transporter
-const zohoUser = process.env.NEXT_PUBLIC_ZOHO_MAIL_USER;
-const zohoPass = process.env.NEXT_PUBLIC_ZOHO_MAIL_APP_PASSWORD;
+const zohoUser = process.env.ZOHO_MAIL_USER;
+const zohoPass = process.env.ZOHO_MAIL_APP_PASSWORD;
 
 if (!zohoUser || !zohoPass) {
     console.warn("Zoho Mail credentials are not set. Email functionality will be disabled.");
