@@ -56,8 +56,10 @@ export async function POST(req: NextRequest) {
             await sendOrderConfirmationEmail(order);
             console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
 
-            const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
-            const telegramMessage = `
+            // Secondary actions (logging/notification)
+            try {
+                const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
+                const telegramMessage = `
 🛍️ *New ToyyibPay Order!* 🛍️
 
 Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! 🥳
@@ -72,11 +74,9 @@ Alhamdulillah, a new order has come in! So much barakah! ✨ Let's celebrate! �
 ${itemsList}
 
 Let's get this packed with love and duas! 💖
-            `;
-            await sendTelegramNotification(telegramMessage);
+                `;
+                await sendTelegramNotification(telegramMessage);
 
-            // Secondary action: Log to Google Sheets
-            try {
                 const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
                 if (spreadsheetId) {
                     const timestamp = new Date().toISOString();
@@ -85,8 +85,8 @@ Let's get this packed with love and duas! 💖
                     const values = [[timestamp, order.customerName, order.customerEmail, billDetails.phone, productNames, billDetails.totalAmountUSD]];
                     await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
                 }
-            } catch (sheetError: any) {
-                console.error("Google Sheets logging for ToyyibPay callback failed:", sheetError.message);
+            } catch (secondaryError: any) {
+                console.error("Secondary action (Telegram/Sheets) for ToyyibPay callback failed:", secondaryError.message);
             }
 
             delete billStore[billcode];

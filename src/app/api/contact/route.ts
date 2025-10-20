@@ -12,10 +12,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
     }
     
-    // Primary actions
+    // Primary action
     await sendContactFormEmail(name, email, subject, message);
     
-    const telegramMessage = `
+    // Secondary actions (logging/notification). Failure here should not fail the request for the user.
+    try {
+        const telegramMessage = `
 💌 *New Message from Cuddleia!* 💌
 
 You've received a new message from your website. Here are the details:
@@ -28,11 +30,9 @@ You've received a new message from your website. Here are the details:
 ${message}
 
 Time to reply and spread some joy! ✨
-    `;
-    await sendTelegramNotification(telegramMessage);
+        `;
+        await sendTelegramNotification(telegramMessage);
 
-    // Secondary action: Log to Google Sheets
-    try {
         const spreadsheetId = process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID;
         if (spreadsheetId) {
             const timestamp = new Date().toISOString();
@@ -40,8 +40,8 @@ Time to reply and spread some joy! ✨
             const values = [[timestamp, name, email, '', `Contact: ${subject}`, 'N/A']];
             await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
         }
-    } catch (sheetError: any) {
-        console.error("Google Sheets logging for contact form failed:", sheetError.message);
+    } catch (secondaryError: any) {
+        console.error("Secondary action (Telegram/Sheets) for contact form failed:", secondaryError.message);
         // Do not re-throw; we don't want this to cause a 500 error for the user.
     }
     
