@@ -15,18 +15,18 @@ export async function POST(req: NextRequest) {
     
     const billcode = formData.get('billcode') as string;
     const status = formData.get('status') as string; // '1' for success
-    const order_id = formData.get('order_id') as string;
+    const order_id = formData.get('order_id') as string; // This is our custom JSON payload
     const billpaymentAmount = formData.get('billpaymentAmount') as string;
     
-    // The details passed from create-bill are in 'order_id'
-    const orderDetails = JSON.parse(decodeURIComponent(order_id));
-    const { name, email, phone, cart, totalAmountUSD } = orderDetails;
-
     console.log('--- ToyyibPay Server-to-Server Webhook (POST) ---');
     console.log({ billcode, status, order_id, billpaymentAmount });
 
     if (status === '1') {
         try {
+            // The details we passed are in 'order_id' (billExternalReferenceNo)
+            const orderDetails = JSON.parse(decodeURIComponent(order_id));
+            const { name, email, phone, cart, totalAmountUSD } = orderDetails;
+
             const orderTotalMYR = parseFloat(billpaymentAmount).toFixed(2);
             const orderTotal = `RM${orderTotalMYR}`;
             const order: Order = {
@@ -95,6 +95,7 @@ Let's get this packed with love and duas! 💖
 /**
  * Handles the user redirect from the ToyyibPay payment page.
  * This is less reliable for confirmation but good for redirecting the user.
+ * We no longer use this for logging, only for redirecting.
  */
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -108,6 +109,7 @@ export async function GET(req: NextRequest) {
     const origin = req.nextUrl.origin;
     const redirectUrl = new URL('/checkout/success', origin);
 
+    // Pass the parameters along to the success page for display purposes if needed
     if(status_id) redirectUrl.searchParams.set('status_id', status_id);
     if(billcode) redirectUrl.searchParams.set('billcode', billcode);
     if(order_id) redirectUrl.searchParams.set('order_id', order_id);

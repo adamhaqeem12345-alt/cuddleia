@@ -47,13 +47,13 @@ export async function POST(req: NextRequest) {
 
         const finalTotal = totalAmountUSD.toFixed(2);
 
-        if (parseFloat(finalTotal) <= 0) {
-             // Allow $0 if cart has items (e.g. 100% discount on free item)
-             if(cart.length === 0 || parseFloat(finalTotal) < 0) {
-                return NextResponse.json({ error: 'Total amount must be positive.' }, { status: 400 });
-             }
+        // Allow $0 if cart has items (e.g. 100% discount on free item)
+        // But do not allow negative amounts.
+        if (parseFloat(finalTotal) < 0) {
+            return NextResponse.json({ error: 'Total amount cannot be negative.' }, { status: 400 });
         }
         
+        // This payload will be stored in PayPal's system and returned with the webhook
         const customIdPayload = {
             cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
             name,
@@ -72,7 +72,8 @@ export async function POST(req: NextRequest) {
                         currency_code: 'USD',
                         value: finalTotal,
                     },
-                    // Pass cart and user details for webhook fulfillment
+                    // Pass cart and user details for webhook fulfillment.
+                    // This is the key to making the process stateless.
                     custom_id: JSON.stringify(customIdPayload),
                 },
             ],

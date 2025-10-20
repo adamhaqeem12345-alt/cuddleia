@@ -34,6 +34,12 @@ const getPayPalAccessToken = async (): Promise<string> => {
 };
 
 const verifyWebhook = async (req: NextRequest, rawBody: string) => {
+    // Return true in development if webhook ID is not set, for easier testing.
+    if (!process.env.PAYPAL_WEBHOOK_ID) {
+        console.warn("PAYPAL_WEBHOOK_ID is not set. Skipping webhook verification. THIS SHOULD ONLY BE IN DEVELOPMENT.");
+        return true;
+    }
+    
     const accessToken = await getPayPalAccessToken();
     const url = 'https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature';
 
@@ -88,7 +94,7 @@ export async function POST(req: NextRequest) {
                  const orderTotalValue = purchaseUnit.amount.value;
                  const orderTotal = `${orderTotalValue} ${purchaseUnit.amount.currency_code}`;
 
-                 // Use name/email from custom_id if available, otherwise fall back to payer object
+                 // Use name/email from custom_id as the primary source of truth
                  const customerName = customIdPayload.name || `${orderData.payer.name.given_name} ${orderData.payer.name.surname}`;
                  const customerEmail = customIdPayload.email || orderData.payer.email_address;
                  const customerPhone = customIdPayload.phone || '';

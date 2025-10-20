@@ -26,8 +26,9 @@ export async function POST(req: NextRequest) {
     const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
-    if (totalAmountInSen < 100) {
-        return NextResponse.json({ error: 'Total amount must be at least RM1.00.' }, { status: 400 });
+    // ToyyibPay requires a minimum of RM1.00
+    if (totalAmountUSD > 0 && totalAmountInSen < 100) {
+        return NextResponse.json({ error: 'Total amount must be at least RM1.00 for ToyyibPay.' }, { status: 400 });
     }
     
     const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
@@ -51,9 +52,9 @@ export async function POST(req: NextRequest) {
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
-      billReturnUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
+      billReturnUrl: `${req.nextUrl.origin}/checkout/success`,
       billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
-      // Use order_id (aliased as billExternalReferenceNo) to pass our data
+      // Use billExternalReferenceNo to pass our data. It's the most reliable way.
       billExternalReferenceNo: encodedOrderDetails,
       billTo: name,
       billEmail: email,
