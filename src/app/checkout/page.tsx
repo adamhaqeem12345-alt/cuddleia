@@ -243,7 +243,7 @@ export default function CheckoutPage() {
                            </div>
                            <div>
                                <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
-                               <Input id="phone" type="text" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789" required className="rounded-full"/>
+                               <Input id="phone" type="number" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789" required className="rounded-full"/>
                            </div>
                         </div>
 
