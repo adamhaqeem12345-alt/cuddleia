@@ -11,7 +11,7 @@ import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-re
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
-import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData, OnApproveActions, CreateOrderActions } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
 
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
@@ -71,44 +71,45 @@ export default function CheckoutPage() {
     }
   };
   
-  const createPayPalOrder = (data: CreateOrderData, actions: CreateOrderActions) => {
+  const createPayPalOrder = (data: CreateOrderData, actions: any) => {
     setError('');
     if (!name || !email) {
       setError('Please fill in your Name and Email before proceeding with PayPal.');
       return Promise.reject(new Error('User details missing'));
     }
-
-    const cartDetails = cart.map(item => ({ id: item.id, quantity: item.quantity }));
-    const customIdPayload = {
-      cart: cartDetails,
-      name,
-      email,
-      phone,
-    };
-
+    
+    // This payload is created on the CLIENT and sent directly to PayPal.
+    // It is simple, robust, and avoids the complex server-to-server call for creation.
     return actions.order.create({
       purchase_units: [
         {
           amount: {
-            value: total.toFixed(2), // CRITICAL: Must be a string with 2 decimal places in USD.
+            // CRITICAL: The value must be a string with two decimal places.
+            value: total.toFixed(2),
             currency_code: 'USD',
           },
-          custom_id: JSON.stringify(customIdPayload),
+          // We pass all necessary details here so the webhook can use them.
+          custom_id: JSON.stringify({
+              cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+              name,
+              email,
+              phone,
+          }),
         },
       ],
       application_context: {
         brand_name: 'Cuddleia',
-        return_url: `${window.location.origin}/checkout/success?source=paypal`,
-        cancel_url: `${window.location.origin}/checkout`,
+        shipping_preference: 'NO_SHIPPING',
       }
     });
   };
 
-  const onPayPalApprove = async (data: OnApproveData, actions: OnApproveActions) => {
+  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
     setIsLoading(true);
     setError('');
     
     try {
+      // The order is approved by the user. Now, capture it on the server.
       const response = await fetch('/api/paypal/capture-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -123,25 +124,24 @@ export default function CheckoutPage() {
       
       console.log('Payment captured successfully:', result);
       
+      // Clear cart and redirect to success page
       clearCart();
       router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
-      return Promise.resolve();
 
     } catch (err: any) {
-        let errorMessage = "An error occurred while capturing the payment. Please try again.";
-        if (err.message) {
-            errorMessage = err.message;
-        }
-        setError(errorMessage);
+        setError(err.message || 'An error occurred while capturing the payment.');
         console.error("PayPal Capture Error:", err);
         setIsLoading(false);
-        if (actions.order) {
-           // Instructs paypal to show an error message to the user.
-           return actions.order.restart();
-        }
-        return Promise.reject(err);
+        // Let the PayPal SDK handle showing the error to the user
+        throw err;
     }
   };
+  
+  const onPayPalError = (err: any) => {
+    setError("An error occurred with the PayPal transaction. Please try again or use another payment method.");
+    console.error("PayPal Button Error:", err);
+  };
+
 
   if (cart.length === 0 && !isPending) {
     return (
@@ -276,16 +276,12 @@ export default function CheckoutPage() {
                             {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                             <div style={{ opacity: (isPending || isLoading) ? 0.5 : 1 }}>
                               <PayPalButtons 
-                                  key={name + email + total} // Add key to re-render buttons when crucial data changes
+                                  key={name + email + total} // Re-render buttons when crucial data changes
                                   style={{ layout: "vertical", label: "pay" }}
                                   disabled={isPending || isLoading || cart.length === 0 || !name || !email}
                                   createOrder={createPayPalOrder}
                                   onApprove={onPayPalApprove}
-                                  onError={(err) => {
-                                      setError("An error occurred with the PayPal transaction. Please try again.");
-                                      console.error("PayPal Error:", err);
-                                      setIsLoading(false);
-                                  }}
+                                  onError={onPayPalError}
                               />
                             </div>
                             <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
@@ -302,3 +298,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
