@@ -11,7 +11,7 @@ import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-re
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
-import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer, CreateOrderData } from '@paypal/react-paypal-js';
 
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
@@ -105,7 +105,7 @@ export default function CheckoutPage() {
     });
   };
 
-  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
+  const onPayPalApprove = async (data: { orderID: string }, actions: any) => {
     setIsLoading(true);
     setError('');
     
@@ -310,3 +310,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
