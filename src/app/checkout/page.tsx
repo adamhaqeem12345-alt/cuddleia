@@ -78,8 +78,8 @@ export default function CheckoutPage() {
       return Promise.reject(new Error('User details missing'));
     }
     
-    // This payload is created on the CLIENT and sent directly to PayPal.
-    // It is simple, robust, and avoids the complex server-to-server call for creation.
+    // Create the order payload directly on the client.
+    // This is simpler and more robust for this use case.
     return actions.order.create({
       purchase_units: [
         {
@@ -94,6 +94,7 @@ export default function CheckoutPage() {
               name,
               email,
               phone,
+              totalAmountUSD: total
           }),
         },
       ],
@@ -108,33 +109,44 @@ export default function CheckoutPage() {
     setIsLoading(true);
     setError('');
     
-    try {
-      // The order is approved by the user. Now, capture it on the server.
-      const response = await fetch('/api/paypal/capture-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orderID: data.orderID }),
-      });
+    // This function captures the funds from the transaction.
+    return actions.order.capture().then(async (details: any) => {
+        try {
+            // The payment is now confirmed and captured by PayPal.
+            // Now, we call our server to log the sale and send the email.
+            const response = await fetch('/api/paypal/confirm-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderDetails: details }),
+            });
 
-      const result = await response.json();
+            const result = await response.json();
 
-      if (!response.ok) {
-          throw new Error(result.error || 'Failed to capture payment.');
-      }
-      
-      console.log('Payment captured successfully:', result);
-      
-      // Clear cart and redirect to success page
-      clearCart();
-      router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
+            if (!response.ok) {
+                // The payment was captured by PayPal, but our server failed to log it.
+                // We should still redirect the user to success, but log this error.
+                console.error("Server-side confirmation failed:", result.error);
+                // In a real-world scenario, you might want to have a retry mechanism here.
+            }
+            
+            // Clear cart and redirect to the success page.
+            clearCart();
+            router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
 
-    } catch (err: any) {
-        setError(err.message || 'An error occurred while capturing the payment.');
+        } catch (err: any) {
+             // This error is for our server call, not PayPal capture.
+            setError("Your payment was successful, but we had trouble confirming your order. Please contact us.");
+            console.error("PayPal Server Confirmation Error:", err);
+            setIsLoading(false);
+            // Even if our backend fails, redirect the user since their payment went through.
+            router.push(`/checkout/success?source=paypal&order_id=${data.orderID}&confirmation_error=true`);
+        }
+    }).catch((err: any) => {
+        // This catches errors from actions.order.capture()
+        setError("An error occurred while capturing the payment. Please try again.");
         console.error("PayPal Capture Error:", err);
         setIsLoading(false);
-        // Let the PayPal SDK handle showing the error to the user
-        throw err;
-    }
+    });
   };
   
   const onPayPalError = (err: any) => {
@@ -298,5 +310,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
