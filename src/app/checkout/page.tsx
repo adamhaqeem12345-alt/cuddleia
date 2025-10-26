@@ -90,7 +90,7 @@ export default function CheckoutPage() {
       purchase_units: [
         {
           amount: {
-            value: total.toFixed(2), // CRITICAL: Must be a string with 2 decimal places
+            value: total.toFixed(2), // CRITICAL: Must be a string with 2 decimal places in USD.
             currency_code: 'USD',
           },
           custom_id: JSON.stringify(customIdPayload),
@@ -302,3 +302,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
