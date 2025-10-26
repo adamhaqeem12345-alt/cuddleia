@@ -11,7 +11,7 @@ import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-re
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
-import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer, OnApproveData, CreateOrderData, OnApproveActions } from '@paypal/react-paypal-js';
 
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
@@ -72,20 +72,16 @@ export default function CheckoutPage() {
   };
   
   const createPayPalOrder = async (data: CreateOrderData, actions: any) => {
-    setIsLoading(true);
     setError('');
     if (!name || !email) {
       setError('Please fill in your Name and Email before proceeding with PayPal.');
-      setIsLoading(false);
       return Promise.reject(new Error('User details missing'));
     }
 
     try {
         const response = await fetch('/api/paypal/create-order', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cart, totalAmountUSD: total, name, email, phone }),
         });
 
@@ -96,30 +92,49 @@ export default function CheckoutPage() {
         }
 
         if (order.orderID) {
-            setIsLoading(false);
             return order.orderID;
         } else {
             throw new Error('Could not retrieve order ID.');
         }
     } catch (err: any) {
         setError(err.message);
-        setIsLoading(false);
         // Instructs paypal to show an error message to the user.
         return Promise.reject(err);
     }
   };
 
-  const onPayPalApprove = async (data: OnApproveData, actions: any) => {
+  const onPayPalApprove = async (data: OnApproveData, actions: OnApproveActions) => {
     setIsLoading(true);
     setError('');
+    
+    if (!actions.order) {
+        setError("An unexpected error occurred. Could not find order actions.");
+        setIsLoading(false);
+        return Promise.reject(new Error("Order actions not available"));
+    }
+
     try {
-        // Capture is handled by webhook. Just redirect.
+        const capture = await actions.order.capture();
+        console.log('Payment captured successfully:', capture);
+        
+        // This is where we manually trigger post-payment actions
+        // In a real app, you might want to call your backend to verify the capture
+        // and then trigger the redirect and cart clearing.
+        // For this flow, we assume client-side capture is sufficient.
+        
         clearCart();
         router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
+        return Promise.resolve(); // Signal success to PayPal
 
     } catch (err: any) {
-        setError(err.message);
+        let errorMessage = "An error occurred while capturing the payment. Please try again.";
+        if (err.message) {
+            errorMessage = err.message;
+        }
+        setError(errorMessage);
+        console.error("PayPal Capture Error:", err);
         setIsLoading(false);
+        // This tells PayPal to show an error message to the user
         return Promise.reject(err);
     }
   };
@@ -257,7 +272,7 @@ export default function CheckoutPage() {
                             {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                             <div style={{ display: (isPending || isLoading) ? 'none' : 'block' }}>
                               <PayPalButtons 
-                                  key={total} // Add key to re-render buttons when total changes
+                                  key={name + email + total} // Add key to re-render buttons when crucial data changes
                                   style={{ layout: "vertical", label: "pay" }}
                                   disabled={isPending || isLoading || cart.length === 0 || !name || !email}
                                   createOrder={createPayPalOrder}

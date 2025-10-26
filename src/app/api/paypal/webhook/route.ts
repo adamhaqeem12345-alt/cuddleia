@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
             await sendOrderConfirmationEmail(order);
             console.log(`Order confirmation email sent for order ${orderData.id}`);
 
+            // Secondary actions (logging/notification). Failure here should not fail the request.
             try {
                 const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
                 const telegramMessage = `
@@ -141,6 +142,8 @@ Let's get this packed with love and duas! 💖
                 }
             } catch (secondaryError: any) {
                 console.error("Secondary action (Telegram/Sheets) for PayPal webhook failed:", secondaryError.message);
+                // Log the data that failed to be sent
+                console.error("Failed to log the following data to Google Sheets:", [[new Date().toISOString(), customerName, customerEmail, customerPhone, order.items.map(i => i.product.name).join(', '), orderTotalValue.toString()]]);
             }
         } else {
             console.log(`Unhandled event type: ${eventType}`);
