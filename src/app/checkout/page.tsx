@@ -105,7 +105,7 @@ export default function CheckoutPage() {
     });
   };
 
-  const onPayPalApprove = async (data: { orderID: string }, actions: any) => {
+  const onPayPalApprove = async (data: any, actions: any) => {
     setIsLoading(true);
     setError('');
     
@@ -310,5 +310,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
-    
