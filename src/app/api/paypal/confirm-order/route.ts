@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
-import { getProductById } from '@/lib/products';
+import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
 
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         
         // Secondary, non-blocking actions: Telegram and Google Sheets
         try {
-            const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
+            const itemsList = order.items.map((i: { product: Product, quantity: number }) => `- ${i.product.name} (x${i.quantity})`).join('\n');
             const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
 
@@ -60,7 +60,7 @@ ${itemsList}
             const spreadsheetId = process.env.GOOGLE_SHEET_ID;
             if (spreadsheetId) {
                 const timestamp = new Date().toISOString();
-                const productNames = order.items.map(i => i.product.name).join(', ');
+                const productNames = order.items.map((i: { product: Product }) => i.product.name).join(', ');
                 const values = [[timestamp, order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
                 await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
             }
