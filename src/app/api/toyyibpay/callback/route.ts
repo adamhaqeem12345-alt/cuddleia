@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     // Extract all data from the webhook payload
     const billcode = formData.get('billcode') as string;
     const status = formData.get('status') as string; // '1' for success, '3' for fail
-    const billExternalReferenceNo = formData.get('order_id') as string;
+    const order_id = formData.get('order_id') as string; // This is our custom JSON payload
     const billpaymentAmount = formData.get('billpaymentAmount') as string;
     const msg = formData.get('msg') as string;
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     console.log({
         billcode,
         status,
-        billExternalReferenceNo,
+        order_id,
         billpaymentAmount,
         msg
     });
@@ -29,11 +29,10 @@ export async function POST(req: NextRequest) {
     if (status === '1') { // Payment was successful
         let orderDetails;
         try {
-            // The custom data we sent is in the 'order_id' field.
-            // This is coming directly from Toyyibpay's server, so it will not be truncated.
-            orderDetails = JSON.parse(billExternalReferenceNo);
+            // The complete, untruncated custom data we sent is in the 'order_id' field of the webhook.
+            orderDetails = JSON.parse(order_id);
         } catch (e) {
-            console.error(`CRITICAL: Failed to parse order_id from ToyyibPay webhook for bill ${billcode}. Payload: ${billExternalReferenceNo}`);
+            console.error(`CRITICAL: Failed to parse order_id from ToyyibPay webhook for bill ${billcode}. Payload: ${order_id}`);
             // Acknowledge receipt to ToyyibPay even if we can't parse, to prevent retries.
             return new Response('OK', { status: 200 }); 
         }

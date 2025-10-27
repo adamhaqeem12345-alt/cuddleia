@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
       totalAmountUSD
     };
-    // CRITICAL: This is now sent in the webhook, not the redirect. It's okay if it's long.
+    // CRITICAL: This is sent in the webhook, not the redirect. It's okay if it's long.
     const encodedOrderDetails = JSON.stringify(orderDetails);
 
     const bodyParams = new URLSearchParams({
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
-      billReturnUrl: `${siteUrl}/checkout/success`,
+      billReturnUrl: `${siteUrl}/api/toyyibpay/callback`, // This now points to the GET handler in the callback route
       billCallbackUrl: `${siteUrl}/api/toyyibpay/callback`,
       billExternalReferenceNo: encodedOrderDetails, // This will be sent back to us in the webhook
       billTo: name,
