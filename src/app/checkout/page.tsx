@@ -11,7 +11,7 @@ import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-re
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { cn } from '@/lib/utils';
-import { PayPalButtons, usePayPalScriptReducer, CreateOrderData } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 
 type PaymentMethod = 'toyyibpay' | 'paypal';
 
@@ -71,7 +71,7 @@ export default function CheckoutPage() {
     }
   };
   
-  const createPayPalOrder = (data: CreateOrderData, actions: any) => {
+  const createPayPalOrder = (data: any, actions: any) => {
     setError('');
     if (!name || !email) {
       setError('Please fill in your Name and Email before proceeding with PayPal.');
@@ -79,7 +79,6 @@ export default function CheckoutPage() {
     }
     
     // Create the order payload directly on the client.
-    // This is simpler and more robust for this use case.
     return actions.order.create({
       purchase_units: [
         {
@@ -310,3 +309,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
