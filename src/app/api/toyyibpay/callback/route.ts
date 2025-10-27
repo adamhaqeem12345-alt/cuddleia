@@ -5,25 +5,36 @@ import { getProductById } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
 
+// This function handles the server-to-server POST webhook from ToyyibPay
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     
+    // Extract all data from the webhook payload
     const billcode = formData.get('billcode') as string;
-    const status = formData.get('status') as string; // '1' for success
-    const billExternalReferenceNo = formData.get('order_id') as string; // Correctly get the reference
+    const status = formData.get('status') as string; // '1' for success, '3' for fail
+    const billExternalReferenceNo = formData.get('order_id') as string;
     const billpaymentAmount = formData.get('billpaymentAmount') as string;
-    
-    console.log('--- ToyyibPay Server-to-Server Webhook (POST) ---');
-    console.log({ billcode, status, billExternalReferenceNo, billpaymentAmount });
+    const msg = formData.get('msg') as string;
 
-    if (status === '1') {
+    console.log('--- ToyyibPay Server-to-Server Webhook Received (POST) ---');
+    console.log({
+        billcode,
+        status,
+        billExternalReferenceNo,
+        billpaymentAmount,
+        msg
+    });
+
+    if (status === '1') { // Payment was successful
         let orderDetails;
         try {
+            // The custom data we sent is in the 'order_id' field
             orderDetails = JSON.parse(decodeURIComponent(billExternalReferenceNo));
         } catch (e) {
             console.error(`CRITICAL: Failed to parse order_id from ToyyibPay webhook for bill ${billcode}. Payload: ${billExternalReferenceNo}`);
-            return new Response(null, { status: 200 }); // Acknowledge receipt to prevent retries
+            // Acknowledge receipt to ToyyibPay even if we can't parse, to prevent retries.
+            return new Response('OK', { status: 200 }); 
         }
 
         const { name, email, phone, cart, totalAmountUSD } = orderDetails;
@@ -41,11 +52,16 @@ export async function POST(req: NextRequest) {
             total: orderTotal,
         };
         
-        // Primary action: Send email confirmation. This should throw an error if it fails.
-        await sendOrderConfirmationEmail(order);
-        console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
+        try {
+            // Primary action: Send email confirmation. This should throw an error if it fails.
+            await sendOrderConfirmationEmail(order);
+            console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
+        } catch(emailError: any) {
+            console.error(`CRITICAL: Failed to send confirmation email for successful order ${billcode}.`, emailError.message);
+            // Don't re-throw, as we want to attempt secondary actions.
+        }
 
-        // Secondary actions (logging/notification). Failure here should not fail the request.
+        // Secondary actions (logging/notification). Failure here should be logged but not block the process.
         try {
             const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
             const telegramMessage = `
@@ -77,23 +93,29 @@ Let's get this packed with love and duas! 💖
             console.error("Secondary action (Telegram/Sheets) for ToyyibPay callback failed:", secondaryError.message);
         }
     } else {
-      console.log(`Webhook: Payment for bill ${billcode} has status: ${status}. No action taken.`);
+      // Log failed or other status payments for monitoring purposes.
+      console.log(`Webhook: Payment for bill ${billcode} has status: ${status} (${msg}). No action taken.`);
     }
 
-    return new Response(null, { status: 200 });
+    // IMPORTANT: Always return a 200 OK response to ToyyibPay to acknowledge receipt of the webhook.
+    // Failure to do so will cause ToyyibPay to retry sending the webhook.
+    return new Response('OK', { status: 200 });
 
   } catch (error: any) {
-    console.error('ToyyibPay Webhook Error:', error);
+    console.error('ToyyibPay Webhook General Error:', error);
+    // Return a 500 but ToyyibPay will likely retry. This indicates a server-side bug.
     return NextResponse.json({ error: 'An error occurred processing the callback.' }, { status: 500 });
   }
 }
 
+// This function handles the user's browser being redirected back from ToyyibPay
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const origin = req.nextUrl.origin;
     const redirectUrl = new URL('/checkout/success', origin);
     
-    // Pass all query parameters from ToyyibPay to the success page
+    // Pass all query parameters from ToyyibPay (status_id, order_id, billcode) to the success page.
+    // The success page will use these to display the correct message to the user.
     searchParams.forEach((value, key) => {
         redirectUrl.searchParams.set(key, value);
     });
