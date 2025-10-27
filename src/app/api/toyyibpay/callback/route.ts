@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
         try {
             // The custom data we sent is in the 'order_id' field.
             // This is coming directly from Toyyibpay's server, so it will not be truncated.
-            orderDetails = JSON.parse(decodeURIComponent(billExternalReferenceNo));
+            orderDetails = JSON.parse(billExternalReferenceNo);
         } catch (e) {
             console.error(`CRITICAL: Failed to parse order_id from ToyyibPay webhook for bill ${billcode}. Payload: ${billExternalReferenceNo}`);
             // Acknowledge receipt to ToyyibPay even if we can't parse, to prevent retries.
@@ -116,6 +116,8 @@ export async function GET(req: NextRequest) {
     // Pass all relevant query parameters from ToyyibPay (status_id, etc) to the success page.
     // The success page will use these to display the correct message to the user.
     searchParams.forEach((value, key) => {
+        // We only need status_id and billcode for display purposes on the client.
+        // The actual order data is handled by the POST webhook.
         if (key === 'status_id' || key === 'billcode') {
             redirectUrl.searchParams.set(key, value);
         }
