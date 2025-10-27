@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Product } from '@/lib/products';
 import { getConvertedAmount } from '@/app/actions';
+import { createPendingOrder, PendingOrder } from '@/lib/order-cache';
 
 interface CartItem extends Product {
   quantity: number;
@@ -29,6 +30,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Cart, user details, and total amount are required.' }, { status: 400 });
     }
 
+    // 1. Create a pending order and get a unique ID
+    const pendingOrder: Omit<PendingOrder, 'id' | 'createdAt'> = {
+      name,
+      email,
+      phone,
+      cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+      totalAmountUSD
+    };
+    const orderId = createPendingOrder(pendingOrder);
+
     const totalAmountMYR = await getConvertedAmount(totalAmountUSD);
     const totalAmountInSen = Math.round(totalAmountMYR * 100);
 
@@ -38,27 +49,17 @@ export async function POST(req: NextRequest) {
     
     const toyyibpayUrl = 'https://dev.toyyibpay.com/index.php/api/createBill';
     
-    const orderDetails = {
-      name,
-      email,
-      phone,
-      cart: cart.map(item => ({ id: item.id, quantity: item.quantity })),
-      totalAmountUSD
-    };
-    // CRITICAL: This is sent in the webhook, not the redirect. It's okay if it's long.
-    const encodedOrderDetails = JSON.stringify(orderDetails);
-
     const bodyParams = new URLSearchParams({
       userSecretKey: secretKey,
       categoryCode: categoryCode,
       billName: 'Cuddleia Digital Goods',
-      billDescription: `Your order from Cuddleia`,
+      billDescription: `Your order from Cuddleia (${orderId})`,
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
-      billReturnUrl: `${siteUrl}/api/toyyibpay/callback`, // This now points to the GET handler in the callback route
+      billReturnUrl: `${siteUrl}/api/toyyibpay/callback`,
       billCallbackUrl: `${siteUrl}/api/toyyibpay/callback`,
-      billExternalReferenceNo: encodedOrderDetails, // This will be sent back to us in the webhook
+      billExternalReferenceNo: orderId, // 2. Send ONLY the unique ID
       billTo: name,
       billEmail: email,
       billPhone: phone,
