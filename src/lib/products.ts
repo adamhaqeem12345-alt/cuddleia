@@ -13,6 +13,7 @@ export interface Product {
     disclaimer: string;
     includedInBundle?: string[];
     bundleIncludes?: string[];
+    bundleProducts?: Product[];
 }
 
 export const products: Product[] = [
@@ -160,12 +161,3 @@ export const getProductById = (id: string): Product | undefined => {
     }
     return product;
 }
-
-// Extend Product interface to include resolved bundle products
-export interface ProductWithBundled extends Product {
-    bundleProducts?: Product[];
-}
-
-    
-
-    
