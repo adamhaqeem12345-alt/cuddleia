@@ -4,9 +4,9 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 const SuccessContent = () => {
     const { clearCart } = useCart();
@@ -75,26 +75,35 @@ const CanceledContent = () => {
     );
 }
 
-export default function CheckoutStatusPage() {
+function CheckoutStatusContent() {
     const searchParams = useSearchParams();
     const statusId = searchParams?.get('status_id');
+    const source = searchParams?.get('source');
 
-    const renderContent = () => {
-        switch (statusId) {
-            case '1': // Success
-                return <SuccessContent />;
-            case '3': // Failed
-                return <FailedContent />;
-            case '4': // Canceled by user (if Toyyibpay supports this redirect)
-                return <CanceledContent />;
-            default: // Default to success for safety, e.g. if params are missing
-                return <SuccessContent />;
-        }
-    };
-    
+    // Handle PayPal success which doesn't provide a status_id
+    if (source === 'paypal') {
+        return <SuccessContent />;
+    }
+
+    // Handle ToyyibPay statuses
+    switch (statusId) {
+        case '1': // Success
+            return <SuccessContent />;
+        case '3': // Failed
+            return <FailedContent />;
+        case '4': // Canceled by user (if Toyyibpay supports this redirect)
+            return <CanceledContent />;
+        default: // Default to success for safety, e.g. if params are missing
+            return <SuccessContent />;
+    }
+}
+
+export default function CheckoutStatusPage() {
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
-           {renderContent()}
+           <Suspense fallback={<div className="flex flex-col items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-muted-foreground">Loading payment status...</p></div>}>
+             <CheckoutStatusContent />
+           </Suspense>
         </div>
     );
 }
