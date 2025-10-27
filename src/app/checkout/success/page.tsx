@@ -77,7 +77,7 @@ const CanceledContent = () => {
 
 export default function CheckoutStatusPage() {
     const searchParams = useSearchParams();
-    const statusId = searchParams.get('status_id');
+    const statusId = searchParams?.get('status_id');
 
     const renderContent = () => {
         switch (statusId) {
