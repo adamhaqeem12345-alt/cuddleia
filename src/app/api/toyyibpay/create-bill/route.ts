@@ -11,9 +11,15 @@ export async function POST(req: NextRequest) {
   try {
     const secretKey = process.env.TOYYIBPAY_SECRET_KEY;
     const categoryCode = process.env.TOYYIBPAY_CATEGORY_CODE;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
     if (!secretKey || !categoryCode) {
       console.error('Server configuration error: Missing TOYYIBPAY_SECRET_KEY or TOYYIBPAY_CATEGORY_CODE.');
+      return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
+    }
+    
+    if (!siteUrl) {
+      console.error('Server configuration error: Missing NEXT_PUBLIC_SITE_URL.');
       return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
     }
 
@@ -49,8 +55,8 @@ export async function POST(req: NextRequest) {
       billPriceSetting: '1',
       billPayorInfo: '1',
       billAmount: totalAmountInSen.toString(),
-      billReturnUrl: `${req.nextUrl.origin}/checkout/success`,
-      billCallbackUrl: `${req.nextUrl.origin}/api/toyyibpay/callback`,
+      billReturnUrl: `${siteUrl}/checkout/success`,
+      billCallbackUrl: `${siteUrl}/api/toyyibpay/callback`,
       billExternalReferenceNo: encodedOrderDetails,
       billTo: name,
       billEmail: email,
