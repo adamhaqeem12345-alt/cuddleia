@@ -7,13 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ShieldCheck, Loader2, CreditCard, Landmark } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Loader2, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
-import { cn } from '@/lib/utils';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
-
-type PaymentMethod = 'toyyibpay' | 'paypal';
 
 // Custom hook to manage form state
 function useCheckoutForm() {
@@ -30,7 +27,6 @@ export default function CheckoutPage() {
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('toyyibpay');
   const [{ isPending, options: paypalOptions }] = usePayPalScriptReducer();
 
   const isPayPalAvailable = paypalOptions.clientId && paypalOptions.clientId !== 'test';
@@ -38,38 +34,6 @@ export default function CheckoutPage() {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = subtotal * appliedDiscount;
   const total = subtotal - discountAmount;
-
-  const handleToyyibPayPayment = async () => {
-    if (!name || !email || !phone) {
-      setError('Please fill in all fields: Name, Email, and Phone Number.');
-      return;
-    }
-    setError('');
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/toyyibpay/create-bill', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ cart, name, email, phone, totalAmountUSD: total }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment bill.');
-      }
-
-      // Redirect the user to the ToyyibPay payment page
-      router.push(data.paymentUrl);
-
-    } catch (err: any) {
-      setError(err.message);
-      setIsLoading(false);
-    }
-  };
   
   const createPayPalOrder = (data: any, actions: any) => {
     setError('');
@@ -241,48 +205,14 @@ export default function CheckoutPage() {
                        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required className="rounded-full"/>
                    </div>
                    <div>
-                       <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
-                       <Input id="phone" type="text" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789 (Required for ToyyibPay)" required className="rounded-full"/>
+                       <label htmlFor="phone" className="block text-sm font-medium text-foreground mb-2">Phone Number (Optional)</label>
+                       <Input id="phone" type="text" inputMode="numeric" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., 60123456789" className="rounded-full"/>
                    </div>
                 </div>
 
-                <div className="mt-8">
-                    <h3 className="font-headline text-xl text-foreground mb-4 font-bold">Select Payment Method</h3>
-                     <div className="grid grid-cols-2 gap-4 mb-8">
-                        <button onClick={() => setSelectedPaymentMethod('toyyibpay')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'toyyibpay', "hover:bg-accent": selectedPaymentMethod !== 'toyyibpay' })}>
-                           <Landmark className="h-6 w-6"/>
-                           <span className="font-semibold">Online Banking (MY)</span>
-                        </button>
-                        {isPayPalAvailable ? (
-                          <button onClick={() => setSelectedPaymentMethod('paypal')} className={cn("flex items-center justify-center gap-2 p-4 border rounded-lg transition-all", { "ring-2 ring-primary border-primary": selectedPaymentMethod === 'paypal', "hover:bg-accent": selectedPaymentMethod !== 'paypal' })}>
-                            <CreditCard className="h-6 w-6"/>
-                            <span className="font-semibold">PayPal / Card</span>
-                          </button>
-                        ) : (
-                          <div className="relative flex items-center justify-center gap-2 p-4 border rounded-lg bg-muted/50 cursor-not-allowed">
-                            <CreditCard className="h-6 w-6 text-muted-foreground"/>
-                            <span className="font-semibold text-muted-foreground">PayPal / Card</span>
-                            <span className="absolute bottom-1 right-1 text-xs text-muted-foreground">Unavailable</span>
-                          </div>
-                        )}
-                    </div>
-                </div>
-
-                {selectedPaymentMethod === 'toyyibpay' ? (
-                    <div>
-                        <div className="mt-8">
-                          <Button onClick={handleToyyibPayPayment} disabled={isLoading || !name || !email || !phone} size="lg" className="w-full font-bold rounded-full">
-                            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing...</> : 'Proceed to Payment'}
-                          </Button>
-                        </div>
-                        
-                         <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-                            <ShieldCheck className="h-4 w-4 text-green-600" />
-                            <span>Secure payment via ToyyibPay (FPX).</span>
-                        </div>
-                    </div>
-                ) : (
-                    isPayPalAvailable && (
+                <div className="mt-12">
+                     <h3 className="font-headline text-xl text-foreground mb-4 font-bold text-center">Payment Method</h3>
+                    {isPayPalAvailable ? (
                         <div>
                             {(isPending || isLoading) && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                             <div style={{ opacity: (isPending || isLoading) ? 0.5 : 1 }}>
@@ -297,11 +227,16 @@ export default function CheckoutPage() {
                             </div>
                             <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                                 <ShieldCheck className="h-4 w-4 text-green-600" />
-                                <span>Secure payment via PayPal.</span>
+                                <span>Secure payment via PayPal / Credit Card.</span>
                             </div>
                         </div>
-                    )
-                )}
+                    ) : (
+                        <div className="text-center text-muted-foreground p-4 border rounded-lg bg-muted/50">
+                            <CreditCard className="h-8 w-8 mx-auto mb-2"/>
+                            <p>Payment provider is currently unavailable.</p>
+                        </div>
+                    )}
+                </div>
                 {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
             </div>
         </div>
@@ -309,5 +244,7 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    
 
     
