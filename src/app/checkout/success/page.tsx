@@ -93,7 +93,7 @@ function CheckoutStatusContent() {
             return <FailedContent />;
         case '4': // Canceled by user (if Toyyibpay supports this redirect)
             return <CanceledContent />;
-        default: // Default to success for safety, e.g. if params are missing
+        default: // If params are missing for some reason, show a pending/success state.
             return <SuccessContent />;
     }
 }

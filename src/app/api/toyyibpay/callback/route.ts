@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail, Order } from '@/lib/email';
-import { getProductById } from '@/lib/products';
+import { getProductById, Product } from '@/lib/products';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
 
@@ -29,7 +29,8 @@ export async function POST(req: NextRequest) {
     if (status === '1') { // Payment was successful
         let orderDetails;
         try {
-            // The custom data we sent is in the 'order_id' field
+            // The custom data we sent is in the 'order_id' field.
+            // This is coming directly from Toyyibpay's server, so it will not be truncated.
             orderDetails = JSON.parse(decodeURIComponent(billExternalReferenceNo));
         } catch (e) {
             console.error(`CRITICAL: Failed to parse order_id from ToyyibPay webhook for bill ${billcode}. Payload: ${billExternalReferenceNo}`);
@@ -52,18 +53,14 @@ export async function POST(req: NextRequest) {
             total: orderTotal,
         };
         
+        // This is now the primary place for order fulfillment.
         try {
             // Primary action: Send email confirmation. This should throw an error if it fails.
             await sendOrderConfirmationEmail(order);
             console.log(`Order confirmation sent for ToyyibPay bill ${billcode}`);
-        } catch(emailError: any) {
-            console.error(`CRITICAL: Failed to send confirmation email for successful order ${billcode}.`, emailError.message);
-            // Don't re-throw, as we want to attempt secondary actions.
-        }
 
-        // Secondary actions (logging/notification). Failure here should be logged but not block the process.
-        try {
-            const itemsList = order.items.map(i => `- ${i.product.name} (x${i.quantity})`).join('\n');
+            // Secondary actions (logging/notification) only after email is confirmed sent.
+            const itemsList = order.items.map((i: { product: Product; quantity: number }) => `- ${i.product.name} (x${i.quantity})`).join('\n');
             const telegramMessage = `
 🛍️ *New ToyyibPay Order!* 🛍️
 
@@ -85,12 +82,14 @@ Let's get this packed with love and duas! 💖
             const spreadsheetId = process.env.GOOGLE_SHEET_ID;
             if (spreadsheetId) {
                 const timestamp = new Date().toISOString();
-                const productNames = order.items.map(i => i.product.name).join(', ');
+                const productNames = order.items.map((i: { product: Product }) => i.product.name).join(', ');
                 const values = [[timestamp, name, email, phone, productNames, totalAmountUSD.toString()]];
                 await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
             }
-        } catch (secondaryError: any) {
-            console.error("Secondary action (Telegram/Sheets) for ToyyibPay callback failed:", secondaryError.message);
+        } catch (fulfillmentError: any) {
+            console.error(`CRITICAL: Order fulfillment failed for successful order ${billcode}.`, fulfillmentError.message);
+            // Even on failure, we must return 200 to Toyyibpay to prevent retries.
+            // The error is logged for manual intervention.
         }
     } else {
       // Log failed or other status payments for monitoring purposes.
@@ -111,13 +110,15 @@ Let's get this packed with love and duas! 💖
 // This function handles the user's browser being redirected back from ToyyibPay
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
-    const origin = req.nextUrl.origin;
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin;
     const redirectUrl = new URL('/checkout/success', origin);
     
-    // Pass all query parameters from ToyyibPay (status_id, order_id, billcode) to the success page.
+    // Pass all relevant query parameters from ToyyibPay (status_id, etc) to the success page.
     // The success page will use these to display the correct message to the user.
     searchParams.forEach((value, key) => {
-        redirectUrl.searchParams.set(key, value);
+        if (key === 'status_id' || key === 'billcode') {
+            redirectUrl.searchParams.set(key, value);
+        }
     });
     
     return NextResponse.redirect(redirectUrl);
