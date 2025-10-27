@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Total amount must be at least RM1.00 for ToyyibPay.' }, { status: 400 });
     }
     
-    const toyyibpayUrl = 'https://toyyibpay.com/index.php/api/createBill';
+    const toyyibpayUrl = 'https://dev.toyyibpay.com/index.php/api/createBill';
     
     const orderDetails = {
       name,
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 
     if (data && Array.isArray(data) && data[0] && data[0].BillCode) {
         const billCode = data[0].BillCode;
-        const paymentUrl = `https://toyyibpay.com/${billCode}`;
+        const paymentUrl = `https://dev.toyyibpay.com/${billCode}`;
         return NextResponse.json({ paymentUrl });
     } else {
         console.error('ToyyibPay API Error:', data);
