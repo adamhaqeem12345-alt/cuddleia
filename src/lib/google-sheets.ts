@@ -32,7 +32,7 @@ export async function appendToSheet(spreadsheetId: string, range: string, values
         }
 
         const authClient = await getAuthClient();
-        const sheets = google.sheets({ version: 'v4', auth: authClient });
+        const sheets = google.sheets({ version: 'v4', auth: authClient as any });
 
         const response = await sheets.spreadsheets.values.append({
             spreadsheetId,
