@@ -31,7 +31,7 @@ function LoadingOverlay() {
 
 
 export default function CheckoutPage() {
-  const { cart, clearCart, appliedDiscount } = useCart();
+  const { cart, appliedDiscount } = useCart();
   const router = useRouter();
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
@@ -98,11 +98,10 @@ export default function CheckoutPage() {
                 // The payment was captured by PayPal, but our server failed to log it.
                 // We should still redirect the user to success, but log this error.
                 console.error("Server-side confirmation failed:", result.error);
-                // In a real-world scenario, you might want to have a retry mechanism here.
+                // In a real-world scenario, you might have a retry mechanism here.
             }
             
-            // Clear cart and redirect to the success page.
-            clearCart();
+            // We no longer clear the cart here. This will be done on the success page.
             router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
 
         } catch (err: any) {
@@ -123,6 +122,7 @@ export default function CheckoutPage() {
   const onPayPalError = (err: any) => {
     setError("An error occurred with the PayPal transaction. Please try again or use another payment method.");
     console.error("PayPal Button Error:", err);
+    setIsProcessing(false);
   };
 
 
@@ -229,7 +229,7 @@ export default function CheckoutPage() {
                                 <PayPalButtons 
                                     key={name + email + total} // Re-render buttons when crucial data changes
                                     style={{ layout: "vertical", label: "pay" }}
-                                    disabled={isPending || cart.length === 0 || !name || !email}
+                                    disabled={isPending || cart.length === 0 || !name || !email || isProcessing}
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
                                     onError={onPayPalError}

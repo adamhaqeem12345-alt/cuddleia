@@ -10,6 +10,8 @@ import { useEffect, useState, Suspense } from 'react';
 
 const SuccessContent = () => {
     const { clearCart } = useCart();
+    
+    // Clear the cart once the success component mounts.
     useEffect(() => {
         clearCart();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,28 +81,6 @@ function CheckoutStatusContent() {
     const searchParams = useSearchParams();
     const source = searchParams?.get('source');
     const confirmationError = searchParams?.get('confirmation_error');
-    const [isPayPalLoading, setIsPayPalLoading] = useState(true);
-
-    // This effect handles the initial loading state for PayPal redirects.
-    useEffect(() => {
-        if (source === 'paypal') {
-            // Simulate a short delay to ensure all client-side scripts have run
-            const timer = setTimeout(() => setIsPayPalLoading(false), 500);
-            return () => clearTimeout(timer);
-        } else {
-            setIsPayPalLoading(false);
-        }
-    }, [source]);
-    
-    // Display a loader for PayPal payments while state is being synchronized
-    if (source === 'paypal' && isPayPalLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground">Finalizing your order...</p>
-            </div>
-        )
-    }
     
     // Handle PayPal success (and potential server confirmation errors)
     if (source === 'paypal') {
@@ -130,7 +110,7 @@ function CheckoutStatusContent() {
 export default function CheckoutStatusPage() {
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
-           <Suspense fallback={<div className="flex flex-col items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-muted-foreground">Loading payment status...</p></div>}>
+           <Suspense fallback={<div className="flex flex-col items-center justify-center h-[50vh]"><Loader2 className="h-12 w-12 animate-spin text-primary mb-4" /><p className="text-muted-foreground">Finalizing your order...</p></div>}>
              <CheckoutStatusContent />
            </Suspense>
         </div>
