@@ -36,11 +36,20 @@ export default function CheckoutPage() {
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCardLoading, setIsCardLoading] = useState(false);
   const [{ isPending }] = usePayPalScriptReducer();
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = subtotal * appliedDiscount;
   const total = subtotal - discountAmount;
+  
+  const handlePaymentClick = () => {
+    // This handler will show the loading indicator for the card button.
+    setIsCardLoading(true);
+    setTimeout(() => {
+        setIsCardLoading(false);
+    }, 3000); // Hide after 3 seconds
+  };
   
   const createPayPalOrder = (data: any, actions: any) => {
     setError('');
@@ -98,7 +107,7 @@ export default function CheckoutPage() {
                 // In a real-world scenario, you might have a retry mechanism here.
             }
             
-            // We no longer clear the cart here. This will be done on the success page.
+            // Redirect to the success page
             router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
 
         } catch (err: any) {
@@ -124,8 +133,6 @@ export default function CheckoutPage() {
 
 
   if (cart.length === 0 && !isProcessing) {
-    // We check for isPending here too so that we dont get a flash of this page
-    // while the PayPal script is still loading.
     if (isPending) {
         return <LoadingOverlay />;
     }
@@ -234,16 +241,28 @@ export default function CheckoutPage() {
                           </div>
                       ) : (
                           <div>
-                              <div style={{ opacity: isPending ? 0.5 : 1 }}>
+                              <div style={{ opacity: isProcessing ? 0.5 : 1 }}>
                                 <PayPalButtons 
                                     key={name + email + total} // Re-render buttons when crucial data changes
                                     style={{ layout: "vertical", label: "pay" }}
                                     disabled={cart.length === 0 || !name || !email || isProcessing}
+                                    onClick={(data, actions) => {
+                                        // The 'card' funding source is for the black "Debit or Credit Card" button.
+                                        if (data.fundingSource === 'card') {
+                                            handlePaymentClick();
+                                        }
+                                    }}
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
                                     onError={onPayPalError}
                                 />
                               </div>
+                              {isCardLoading && (
+                                <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Opening secure card payment form...</span>
+                                </div>
+                              )}
                               <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                                   <ShieldCheck className="h-4 w-4 text-green-600" />
                                   <span>Secure payment via PayPal / Credit Card.</span>
