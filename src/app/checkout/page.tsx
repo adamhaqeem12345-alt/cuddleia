@@ -36,9 +36,7 @@ export default function CheckoutPage() {
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [{ isPending, options: paypalOptions }] = usePayPalScriptReducer();
-
-  const isPayPalAvailable = paypalOptions.clientId && paypalOptions.clientId !== 'test';
+  const [{ isPending }] = usePayPalScriptReducer();
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = subtotal * appliedDiscount;
@@ -71,7 +69,6 @@ export default function CheckoutPage() {
         },
       ],
       application_context: {
-        brand_name: 'Cuddleia',
         shipping_preference: 'NO_SHIPPING',
       }
     });
@@ -126,7 +123,12 @@ export default function CheckoutPage() {
   };
 
 
-  if (cart.length === 0 && !isPending && !isProcessing) {
+  if (cart.length === 0 && !isProcessing) {
+    // We check for isPending here too so that we dont get a flash of this page
+    // while the PayPal script is still loading.
+    if (isPending) {
+        return <LoadingOverlay />;
+    }
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
             <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-8 font-bold">Checkout</h1>
@@ -222,14 +224,21 @@ export default function CheckoutPage() {
 
                   <div className="mt-12">
                       <h3 className="font-headline text-xl text-foreground mb-4 font-bold text-center">Payment Method</h3>
-                      {isPayPalAvailable ? (
+                      
+                      {isPending ? (
+                          <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
+                      ) : !process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ? (
+                           <div className="text-center text-muted-foreground p-4 border rounded-lg bg-muted/50">
+                              <CreditCard className="h-8 w-8 mx-auto mb-2"/>
+                              <p>Payment provider is currently unavailable.</p>
+                          </div>
+                      ) : (
                           <div>
-                              {isPending && <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>}
                               <div style={{ opacity: isPending ? 0.5 : 1 }}>
                                 <PayPalButtons 
                                     key={name + email + total} // Re-render buttons when crucial data changes
                                     style={{ layout: "vertical", label: "pay" }}
-                                    disabled={isPending || cart.length === 0 || !name || !email || isProcessing}
+                                    disabled={cart.length === 0 || !name || !email || isProcessing}
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
                                     onError={onPayPalError}
@@ -239,11 +248,6 @@ export default function CheckoutPage() {
                                   <ShieldCheck className="h-4 w-4 text-green-600" />
                                   <span>Secure payment via PayPal / Credit Card.</span>
                               </div>
-                          </div>
-                      ) : (
-                          <div className="text-center text-muted-foreground p-4 border rounded-lg bg-muted/50">
-                              <CreditCard className="h-8 w-8 mx-auto mb-2"/>
-                              <p>Payment provider is currently unavailable.</p>
                           </div>
                       )}
                   </div>
