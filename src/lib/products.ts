@@ -27,7 +27,6 @@ export const products: Product[] = [
     category: "Booklets",
     downloadUrl: "https://drive.google.com/file/d/1-v2_zgCQDfpNjByZgD3IzzCla5XbO_lz/view?usp=drivesdk",
     disclaimer: "A 20-page booklet written by the author with the help of AI, reviewed and refined to align with sincerity and clarity.",
-    bundleIncludes: ["010"],
   },
   {
     id: "006",
@@ -40,7 +39,6 @@ export const products: Product[] = [
     category: "Booklets",
     downloadUrl: "https://drive.google.com/file/d/1BHSSOioZWeoQS3sOCL6f8E-EP2rHwPyF/view?usp=drivesdk",
     disclaimer: "A 37-page booklet written by the author with the help of AI, reviewed and refined to align with sincerity and clarity.",
-    bundleIncludes: ["010"],
   },
   {
     id: "007",
@@ -53,7 +51,6 @@ export const products: Product[] = [
     category: "Booklets",
     downloadUrl: "https://drive.google.com/file/d/1oC5qtfRb2m52frSve9vGBOX2NLoDQZX4/view?usp=drivesdk",
     disclaimer: "A 36-page booklet written by the author with the help of AI, reviewed and refined to align with sincerity and clarity.",
-    bundleIncludes: ["010"],
   },
   {
     id: "008",
@@ -66,7 +63,6 @@ export const products: Product[] = [
     category: "Booklets",
     downloadUrl: "https://drive.google.com/file/d/1TDWKNxGadHRsBqAtmxegr7GpU7HxEIHK/view?usp=drivesdk",
     disclaimer: "A 61-page booklet written by the author with the help of AI, reviewed and refined to align with sincerity and clarity.",
-    bundleIncludes: ["010"],
   },
   {
     id: "009",
@@ -79,7 +75,6 @@ export const products: Product[] = [
     category: "Booklets",
     downloadUrl: "https://drive.google.com/file/d/16m54EeuJkE96uo5uYXD036KRXBcYqewq/view?usp=drivesdk",
     disclaimer: "A 41-page booklet written by the author with the help of AI, reviewed and refined to align with sincerity and clarity.",
-    bundleIncludes: ["010"],
   },
   {
     id: "010",
@@ -160,6 +155,8 @@ export const getProductById = (id: string): Product | undefined => {
     }
     return product;
 }
+
+    
 
     
 
