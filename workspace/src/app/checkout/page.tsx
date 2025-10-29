@@ -8,7 +8,7 @@ import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, ShieldCheck, Loader2, CreditCard } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 
@@ -107,7 +107,7 @@ export default function CheckoutPage() {
                 // In a real-world scenario, you might have a retry mechanism here.
             }
             
-            // We no longer clear the cart here. This will be done on the success page.
+            // Redirect to the success page
             router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
 
         } catch (err: any) {
@@ -132,10 +132,9 @@ export default function CheckoutPage() {
   };
 
 
-  if (cart.length === 0) {
-    // Check if isProcessing is false to avoid flashing this page during final redirect
-    if (isProcessing) {
-      return <LoadingOverlay />;
+  if (cart.length === 0 && !isProcessing) {
+    if (isPending) {
+        return <LoadingOverlay />;
     }
     return (
         <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
@@ -252,9 +251,6 @@ export default function CheckoutPage() {
                                         if (data.fundingSource === 'card') {
                                             handlePaymentClick();
                                         }
-                                        // Return true to continue with the standard checkout flow.
-                                        // Return false can be used to show a validation error.
-                                        return true;
                                     }}
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
