@@ -120,10 +120,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const applyDiscount = (code: string) => {
     setDiscountMessage({});
-    if (code.toUpperCase() === 'CUDDLE10') {
+    const upperCaseCode = code.toUpperCase();
+    
+    if (upperCaseCode === 'CUDDLE10') {
       setAppliedDiscount(0.10);
       setDiscountCode(code);
       setDiscountMessage({ success: 'Discount code applied! You get 10% off.' });
+    } else if (upperCaseCode === 'CUDDLE90') {
+      setAppliedDiscount(0.90);
+      setDiscountCode(code);
+      setDiscountMessage({ success: 'Discount code applied! You get 90% off.' });
     } else {
       setAppliedDiscount(0);
       setDiscountCode('');
