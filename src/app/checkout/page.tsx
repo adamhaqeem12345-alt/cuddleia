@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, ShieldCheck, Loader2, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
-import { PayPalButtons, usePayPalScriptReducer, ApplePayButton } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 
 // Custom hook to manage form state
 function useCheckoutForm() {
@@ -256,19 +256,6 @@ export default function CheckoutPage() {
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
                                     onError={onPayPalError}
-                                />
-                                <ApplePayButton
-                                  key={"applepay" + name + email + total}
-                                  style={{
-                                    height: 55,
-                                    borderRadius: 8,
-                                    buttonColor: 'black',
-                                    buttonType: 'buy'
-                                  }}
-                                  disabled={cart.length === 0 || !name || !email || isProcessing}
-                                  createOrder={createPayPalOrder}
-                                  onApprove={onPayPalApprove}
-                                  onError={onPayPalError}
                                 />
                               </div>
                               {isCardLoading && (
