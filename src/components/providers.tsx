@@ -18,7 +18,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     }
     
     return (
-        <PayPalScriptProvider options={{ clientId: paypalClientId }}>
+        <PayPalScriptProvider options={{ clientId: paypalClientId, components: "buttons,applepay" }}>
             <CartProvider>
                 {children}
             </CartProvider>

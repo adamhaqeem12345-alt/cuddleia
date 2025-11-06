@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { ArrowLeft, ShieldCheck, Loader2, CreditCard } from 'lucide-react';
 import { useState } from 'react';
 import { ProductPrice } from '@/components/product-price';
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
+import { PayPalButtons, usePayPalScriptReducer, ApplePayButton } from '@paypal/react-paypal-js';
 
 // Custom hook to manage form state
 function useCheckoutForm() {
@@ -54,12 +54,13 @@ export default function CheckoutPage() {
   const createPayPalOrder = (data: any, actions: any) => {
     setError('');
     if (!name || !email) {
-      setError('Please fill in your Name and Email before proceeding with PayPal.');
+      setError('Please fill in your Name and Email before proceeding.');
       return Promise.reject(new Error('User details missing'));
     }
     
     // Create the order payload directly on the client.
     return actions.order.create({
+      intent: 'CAPTURE',
       purchase_units: [
         {
           amount: {
@@ -126,13 +127,14 @@ export default function CheckoutPage() {
   };
   
   const onPayPalError = (err: any) => {
-    setError("An error occurred with the PayPal transaction. Please try again or use another payment method.");
-    console.error("PayPal Button Error:", err);
+    setError("An error occurred with the transaction. Please try again or use another payment method.");
+    console.error("PayPal/ApplePay Button Error:", err);
     setIsProcessing(false);
   };
 
 
   if (cart.length === 0 && !isProcessing) {
+    // Don't show empty cart if paypal script is still loading
     if (isPending) {
         return <LoadingOverlay />;
     }
@@ -242,12 +244,11 @@ export default function CheckoutPage() {
                       ) : (
                           <div>
                               <div style={{ opacity: isProcessing ? 0.5 : 1 }}>
-                                <PayPalButtons 
-                                    key={name + email + total} // Re-render buttons when crucial data changes
+                                <PayPalButtons
+                                    key={"paypal" + name + email + total}
                                     style={{ layout: "vertical", label: "pay" }}
                                     disabled={cart.length === 0 || !name || !email || isProcessing}
                                     onClick={(data, actions) => {
-                                        // The 'card' funding source is for the black "Debit or Credit Card" button.
                                         if (data.fundingSource === 'card') {
                                             handlePaymentClick();
                                         }
@@ -255,6 +256,19 @@ export default function CheckoutPage() {
                                     createOrder={createPayPalOrder}
                                     onApprove={onPayPalApprove}
                                     onError={onPayPalError}
+                                />
+                                <ApplePayButton
+                                  key={"applepay" + name + email + total}
+                                  style={{
+                                    height: 55,
+                                    borderRadius: 8,
+                                    buttonColor: 'black',
+                                    buttonType: 'buy'
+                                  }}
+                                  disabled={cart.length === 0 || !name || !email || isProcessing}
+                                  createOrder={createPayPalOrder}
+                                  onApprove={onPayPalApprove}
+                                  onError={onPayPalError}
                                 />
                               </div>
                               {isCardLoading && (
@@ -265,7 +279,7 @@ export default function CheckoutPage() {
                               )}
                               <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                                   <ShieldCheck className="h-4 w-4 text-green-600" />
-                                  <span>Secure payment via PayPal / Credit Card.</span>
+                                  <span>Secure payment via PayPal / Apple Pay / Credit Card.</span>
                               </div>
                           </div>
                       )}
