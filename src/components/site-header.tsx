@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -10,12 +9,15 @@ import { useState, useEffect } from 'react';
 export function SiteHeader() {
   const { cart } = useCart();
   const [hasMounted, setHasMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
 
   const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <header className="w-full sticky top-0 z-40 bg-background/80 backdrop-blur-sm">
@@ -47,7 +49,7 @@ export function SiteHeader() {
           </Link>
 
           <div className="md:hidden">
-            <Sheet>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon" className="h-14 w-14 rounded-full">
                   <Menu className="h-7 w-7 text-foreground" />
@@ -56,10 +58,10 @@ export function SiteHeader() {
               </SheetTrigger>
               <SheetContent>
                 <nav className="flex flex-col items-center gap-6 mt-12">
-                   <Link href="/" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Home</Link>
-                  <Link href="/products" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Products</Link>
-                  <Link href="/about" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">About</Link>
-                  <Link href="/contact" className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Contact</Link>
+                   <Link href="/" onClick={closeMenu} className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Home</Link>
+                  <Link href="/products" onClick={closeMenu} className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Products</Link>
+                  <Link href="/about" onClick={closeMenu} className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">About</Link>
+                  <Link href="/contact" onClick={closeMenu} className="font-headline text-2xl text-foreground/80 transition-colors hover:text-primary font-bold">Contact</Link>
                 </nav>
               </SheetContent>
             </Sheet>
