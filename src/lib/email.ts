@@ -195,7 +195,7 @@ export async function sendOrderConfirmationEmail(order: Order) {
             <body>
                 <div class="container">
                     <div class="content-wrapper">
-                        <img src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png" alt="Cuddleia Logo" class="logo">
+                        <img src="https://lh3.googleusercontent.com/pw/AP1GczMReXGIH7m9qGAxMQjVLi2sKf1FVzjCt6fvUco_30BemlxBNLzHsGUlMu2tdKgqvjAlCJB62XIB-Mul6L61XhHXLfLf13F51ykQZ1hk4ydTsmlbaKw=w2400" alt="Cuddleia Logo" class="logo">
                         <h1 class="main-title">Cuddleia</h1>
                         
                         <h2 class="sub-title">${title}</h2>
