@@ -1,4 +1,3 @@
-
 import Image from 'next/image';
 import type { Metadata } from 'next';
 import { Heart, Feather, Sparkles, ShieldCheck } from 'lucide-react';
@@ -122,7 +121,7 @@ const AboutPage = () => {
               <div className="relative h-40 w-40 flex-shrink-0">
                 <Image
                   alt="Adam Haqeem"
-                  src="https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png"
+                  src="https://lh3.googleusercontent.com/pw/AP1GczMReXGIH7m9qGAxMQjVLi2sKf1FVzjCt6fvUco_30BemlxBNLzHsGUlMu2tdKgqvjAlCJB62XIB-Mul6L61XhHXLfLf13F51ykQZ1hk4ydTsmlbaKw=w2400"
                   fill
                   className="rounded-full object-cover shadow-lg"
                 />

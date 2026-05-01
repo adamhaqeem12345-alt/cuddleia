@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from "next/image";
@@ -36,7 +35,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
             <div className="relative aspect-[3/4] w-full max-w-xs mx-auto rounded-lg shadow-2xl overflow-hidden group">
-              <Image src="https://i.postimg.cc/Dw8v8XB3/Barakah-Business-Blueprint-Vol-I.png" alt="Barakah Business Blueprint Vol. 1 (The Gentle Beginning)" fill className="object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" />
+              <Image src="https://lh3.googleusercontent.com/pw/AP1GczNfz0RO9v8WgOLLEwYIfdgUIbQTfmIAGiRhmYUJUn6tYH4xnB9c-6QjMQFOGlYzK55_cQM8jPQI36XzC78JXssiRSD0aqcexK57edjlSksYXFuqFqQ=w2400" alt="Barakah Business Blueprint Vol. 1 (The Gentle Beginning)" fill className="object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none" />
             </div>
             <div className="text-center md:text-left">
               <h2 className="font-headline text-4xl md:text-5xl text-foreground mb-4 font-bold">The Barakah Business Blueprint</h2>
@@ -168,7 +167,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl">
-              <Image src="https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png" alt="Founder of Cuddleia" fill className="object-cover" />
+              <Image src="https://lh3.googleusercontent.com/pw/AP1GczPWT4q6jGw8k86-g7kvifJdGHPsVaUHdhcDTgs_dyCSJ47rwL2J7QPBzOddw6NT3HoDcOgTFj_v_63P2X71qOQ_SoYiaCUjb3WQoUz9pwVACbRQ0Gs=w2400" alt="Founder of Cuddleia" fill className="object-cover" />
             </div>
             <div>
               <h2 className="font-headline text-4xl md:text-5xl text-foreground font-bold mb-4">Made with Heart &amp; Soul</h2>
