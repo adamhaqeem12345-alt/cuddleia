@@ -1,4 +1,3 @@
-
 export interface Product {
     id: string;
     name: string;
@@ -21,7 +20,7 @@ export const products: Product[] = [
     name: "Barakah Business Blueprint Vol. 1 (The Gentle Beginning)",
     description: "Start your halal business journey with peace and purpose. Volume I of the Barakah Business Blueprint guides you through the gentle beginning — learning how to build with sincerity, clarity, and calm direction. You’ll explore the right business models for Muslims, choose halal payment gateways, and understand how to use automation and AI ethically to simplify your workflow.\n\nThis volume turns hesitation into movement, helping you take your first steady steps toward a business that grows with integrity and barakah. It also includes the 7-Day Launch Challenge, a guided plan to help you move from intention to real action — one small, sincere step at a time.\n\nWhat you’ll learn:\n• The best halal business models to begin with\n• The platforms and payment options most suitable for your first launch\n• Ethical automation and AI tools for calm productivity\n• Halal marketing and community-based branding principles\n• The 7-Day Launch Challenge to start with focus and sincerity",
     price: 0,
-    imageUrl: "https://i.postimg.cc/Dw8v8XB3/Barakah-Business-Blueprint-Vol-I.png",
+    imageUrl: "https://lh3.googleusercontent.com/pw/AP1GczNfz0RO9v8WgOLLEwYIfdgUIbQTfmIAGiRhmYUJUn6tYH4xnB9c-6QjMQFOGlYzK55_cQM8jPQI36XzC78JXssiRSD0aqcexK57edjlSksYXFuqFqQ=w2400",
     imageWidth: 1080,
     imageHeight: 1350,
     category: "Booklets",
@@ -140,7 +139,6 @@ export const products: Product[] = [
   }
 ];
 
-// Helper function to find a product by its ID
 export const getProductById = (id: string): Product | undefined => {
     const product = products.find(p => p.id === id);
 
@@ -155,9 +153,3 @@ export const getProductById = (id: string): Product | undefined => {
     }
     return product;
 }
-
-    
-
-    
-
-    
