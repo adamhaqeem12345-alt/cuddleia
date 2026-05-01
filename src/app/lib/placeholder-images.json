@@ -1,0 +1,109 @@
+
+{
+  "images": [
+    {
+      "id": "vol1",
+      "url": "https://i.postimg.cc/Dw8v8XB3/Barakah-Business-Blueprint-Vol-I.png",
+      "width": 1080,
+      "height": 1350,
+      "description": "Barakah Business Blueprint Vol 1 (The Gentle Beginning)",
+      "dataAiHint": "book cover"
+    },
+    {
+      "id": "vol2",
+      "url": "https://i.postimg.cc/KzXpt6bQ/Barakah-Business-Blueprint-Vol-II-by-Cuddleia.png",
+      "width": 1080,
+      "height": 1350,
+      "description": "Barakah Business Blueprint Vol 2 (Building The Base)",
+      "dataAiHint": "book cover"
+    },
+    {
+      "id": "vol3",
+      "url": "https://i.postimg.cc/SsDZHJ8r/Barakah-Business-Blueprint-Vol-III.png",
+      "width": 1080,
+      "height": 1350,
+      "description": "Barakah Business Blueprint Vol 3 (Creating, Marketing & Selling With Soul)",
+      "dataAiHint": "book cover"
+    },
+    {
+      "id": "vol4",
+      "url": "https://i.postimg.cc/KzDzbyvC/Barakah-Business-Blueprint-Vol-IV.png",
+      "width": 1080,
+      "height": 1350,
+      "description": "Barakah Business Blueprint Vol 4 (Nurturing, Scaling & Sustaining With Barakah)",
+      "dataAiHint": "book cover"
+    },
+    {
+      "id": "vol5",
+      "url": "https://i.postimg.cc/sftVLXJn/Barakah-Business-Blueprint-Vol-V.png",
+      "width": 1080,
+      "height": 1350,
+      "description": "Barakah Business Blueprint Vol 5 (Legacy, Leadership & Wealth)",
+      "dataAiHint": "book cover"
+    },
+    {
+      "id": "collection",
+      "url": "https://i.postimg.cc/rsqhc9sF/The-complete-collection-Vol-I.png",
+      "width": 1080,
+      "height": 1350,
+      "description": "Barakah Business Blueprint — The Complete Collection (Vol. 1-5)",
+      "dataAiHint": "bundle package"
+    },
+    {
+      "id": "wallpaper-maroon",
+      "url": "https://i.postimg.cc/WbdpVVJV/Islamic-i-Pad-Wallpaper-zip-2.png",
+      "width": 2732,
+      "height": 2048,
+      "description": "iPad Wallpaper (Maroon Series)",
+      "dataAiHint": "ipad wallpaper"
+    },
+    {
+      "id": "wallpaper-minimalist",
+      "url": "https://i.postimg.cc/25KS03k1/Islamic-i-Pad-Wallpaper-zip-3.png",
+      "width": 2732,
+      "height": 2048,
+      "description": "iPad Wallpaper (Minimalist Series)",
+      "dataAiHint": "ipad wallpaper"
+    },
+    {
+      "id": "wallpaper-pink",
+      "url": "https://i.postimg.cc/CL9yrDkT/Islamic-i-Pad-Wallpaper-zip-4.png",
+      "width": 2732,
+      "height": 2048,
+      "description": "iPad Wallpaper (Pink series)",
+      "dataAiHint": "ipad wallpaper"
+    },
+    {
+      "id": "test-product",
+      "url": "https://i.postimg.cc/MTBtTMXR/Heading.png",
+      "width": 1920,
+      "height": 1080,
+      "description": "Cuddleia Test product",
+      "dataAiHint": "placeholder banner"
+    },
+    {
+      "id": "about-background",
+      "url": "https://i.postimg.cc/0rg91k8k/IMG-0426.png",
+      "width": 1920,
+      "height": 1080,
+      "description": "Pastel floral graphics background used in About page",
+      "dataAiHint": "pastel flowers"
+    },
+    {
+      "id": "founder-logo",
+      "url": "https://i.postimg.cc/YS91wKqP/Pink-Blush-Circle-Creative-Logo-Design.png",
+      "width": 400,
+      "height": 400,
+      "description": "Cuddleia Logo and Founder Image",
+      "dataAiHint": "brand logo"
+    },
+    {
+      "id": "heart-soul-section",
+      "url": "https://i.postimg.cc/6pCrhLbM/Heading-zip-1.png",
+      "width": 1200,
+      "height": 900,
+      "description": "Made with Heart & Soul section image on homepage",
+      "dataAiHint": "aesthetic background"
+    }
+  ]
+}
