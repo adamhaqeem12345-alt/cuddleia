@@ -38,7 +38,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             </Link>
           </CardTitle>
           <div className="mt-2">
-            <ProductPrice price={product.price} originalPrice={product.originalPrice} />
+            <ProductPrice price={product.price} priceMYR={product.priceMYR} originalPrice={product.originalPrice} />
           </div>
           <p className="text-sm font-body text-muted-foreground line-clamp-3 my-4">{product.description.split('\\n\\n')[0]}</p>
           {product.disclaimer && (

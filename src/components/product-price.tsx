@@ -6,16 +6,24 @@ import { getConvertedAmount } from '@/app/actions';
 
 interface ProductPriceProps {
   price: number;
+  priceMYR?: number;
   originalPrice?: number;
   isTotal?: boolean;
 }
 
-export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductPriceProps) => {
+export const ProductPrice = ({ price, priceMYR, originalPrice, isTotal = false }: ProductPriceProps) => {
   const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchConvertedPrice = async () => {
+      // If we already have a fixed MYR price, we don't need to fetch an approximation.
+      if (priceMYR !== undefined) {
+        setConvertedPrice(priceMYR);
+        setIsLoading(false);
+        return;
+      }
+
       if (price > 0) {
         try {
           setIsLoading(true);
@@ -33,7 +41,7 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
     };
 
     fetchConvertedPrice();
-  }, [price]);
+  }, [price, priceMYR]);
 
   if (price === 0) {
     return (
@@ -62,7 +70,9 @@ export const ProductPrice = ({ price, originalPrice, isTotal = false }: ProductP
             {isLoading ? (
                 <div className="h-4 w-20 bg-muted/50 rounded animate-pulse mt-1" style={{marginLeft: isTotal ? 'auto' : '0'}}></div>
             ) : convertedPrice !== null ? (
-                <p className="text-sm text-muted-foreground">(approx. RM {convertedPrice.toFixed(2)})</p>
+                <p className="text-sm text-muted-foreground">
+                    {priceMYR !== undefined ? `(RM ${convertedPrice.toFixed(2)})` : `(approx. RM ${convertedPrice.toFixed(2)})`}
+                </p>
             ) : (
                 <p className="text-sm text-muted-foreground">USD</p>
             )}
