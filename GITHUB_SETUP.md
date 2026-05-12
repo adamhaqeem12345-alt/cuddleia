@@ -1,24 +1,22 @@
-# Resetting your GitHub Connection
+# How to Re-Export to GitHub Safely
 
-If you are seeing the error `Git: remote: Repository not found` and the GitHub connection UI is missing, follow these exact steps to fix it:
+I see your screen! Thank you for the screenshot. Here is exactly how to fix the "Repository not found" error on your iPad:
 
-## 1. Locate the Deployment Icon
-The GitHub connection is often located in the **Deployment/Hosting** tab (usually a Cloud or Rocket icon) in the far left sidebar, separate from the **Source Control** (branch icon) tab.
+## 1. The "Publish" Button
+The easiest way to reconnect is the **blue "Publish" button** in the very top right corner of your screen (next to your profile picture in the header).
+- Click **"Publish"**.
+- It should recognize that the old repository is gone and offer to let you create a **new one**.
 
-## 2. If the "Connect to GitHub" button is missing:
-- Go to the **Source Control** tab.
-- Look for a button that says **"Initialize Repository"** or **"Publish to GitHub"**.
-- If you see a blue button that says **"Sync Changes"** or a list of files, the system thinks it's already connected. Click the "..." (three dots) menu in the Source Control panel and look for **Remote > Remove Remote**.
+## 2. Using the Firebase Integration
+If the Publish button just gives an error, look at the **bottom right panel** of your screen (under "MORE INTEGRATIONS"):
+- Look for the card that says **"Host Web App with Firebase"**.
+- Click on that card.
+- Inside there, you will often find the "GitHub" connection status. You can **Disconnect** the dead repository from there and then **Reconnect** to a new one.
 
-## 3. The Clean Restart
-1. Go to GitHub and create a **new, empty repository** with a different name (e.g., `cuddleia-store-v2`).
-2. In Firebase Studio, go to the **Source Control** tab.
-3. Stage all your changes (click the `+` icon next to "Changes").
-4. Type a message like "Initial commit with security" and click **Commit**.
-5. Once committed, look for a button that says **"Publish Branch"** or **"Publish to GitHub"**.
-6. Select your new repository name.
+## 3. Why it failed before
+The "Repository not found" error happened because you deleted the repository on the GitHub website, but this editor still has the old "address" saved in its memory. 
 
-## 4. Why your .env is safe
-Because of the `.gitignore` file I created, Git will literally "ignore" the existence of your `.env` file during this entire process. It will never leave this editor.
+## 4. Your Secrets are Safe
+I have verified that your `.gitignore` file is active. Even when you push to a new repository now, your `.env` file (containing your keys) **will not be uploaded**.
 
-**Note:** If you still can't see any GitHub options, try refreshing the browser tab for Firebase Studio.
+**Try the "Publish" button at the top right first!** It is the most direct way to start a fresh connection.
