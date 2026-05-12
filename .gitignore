@@ -1,32 +1,42 @@
-# Next.js
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
 /.next/
 /out/
-/build/
 
-# Production
-/node_modules/
+# production
+/build
+
+# misc
 .DS_Store
-*.local
+*.pem
 
-# Secrets & Environment
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Debug logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# Vercel
+# vercel
 .vercel
 
-# Firebase
-.firebase/
-firebase-debug.log*
-firestore-debug.log*
-pubsub-debug.log*
-ui-debug.log*
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# firebase studio / workspace
+.agents/
+skills-lock.json
