@@ -24,4 +24,5 @@ Cuddleia represents the intersection of technology and sincerity (*Ikhlas*). Our
 - **Automated Fulfillment:** Custom **Nodemailer** integration with Zoho Mail to deliver digital products to customers instantly upon successful payment.
 - **Dynamic Pricing:** Real-time exchange rate fetching to provide approximate local currency (MYR) values for a better customer experience.
 
-Built with sincerity and a commitment to digital excellence.
+---
+*Built with sincerity and a commitment to digital excellence.*
