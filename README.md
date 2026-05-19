@@ -9,11 +9,11 @@ Cuddleia represents the intersection of technology and sincerity (*Ikhlas*). Our
 - **The Barakah Business Blueprint:** A comprehensive 5-volume digital series designed to help entrepreneurs build ethical, faith-rooted businesses.
 - **Aesthetic Digital Goods:** High-resolution, custom-designed iPad and tablet wallpapers featuring minimalist Islamic art and calligraphy.
 - **Seamless E-commerce:** A fully integrated shopping experience with real-time currency conversion (USD to MYR) and secure global checkout.
-- **Ethical AI Integration:** Foundational content is thoughtfully generated using AI and then manually refined and designed to ensure a heartfelt, human touch.
+- **Ethical AI Integration:** Content is thoughtfully generated using AI and then manually refined and designed to ensure a heartfelt, human touch.
 
 ## 🛠️ Tech Stack
 - **Frontend:** Next.js 14 (App Router), React, TypeScript.
-- **Styling:** Tailwind CSS and ShadCN UI components for a modern, accessible interface.
+- **Styling:** Tailwind CSS and ShadCN UI components.
 - **AI Integration:** Firebase Genkit utilizing Gemini models for content assistance.
 - **Payments:** PayPal SDK integration for secure international transactions.
 - **Infrastructure:** Hosted with Firebase, utilizing Server Actions for dynamic data handling.
@@ -24,4 +24,4 @@ Cuddleia represents the intersection of technology and sincerity (*Ikhlas*). Our
 - **Automated Fulfillment:** Custom **Nodemailer** integration with Zoho Mail to deliver digital products to customers instantly upon successful payment.
 - **Dynamic Pricing:** Real-time exchange rate fetching to provide approximate local currency (MYR) values for a better customer experience.
 
-Built with love, sincerity, and a commitment to digital excellence.
+Built with sincerity and a commitment to digital excellence.
