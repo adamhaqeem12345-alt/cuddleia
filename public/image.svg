@@ -1,11 +1,22 @@
-<svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="12" cy="12" r="3" fill="#EC5C8C" />
-  <path d="M12 9C12 9 10.5 6 12 6C13.5 6 12 9 12 9Z" fill="#EC5C8C" opacity="0.8"/>
-  <path d="M12 15C12 15 13.5 18 12 18C10.5 18 12 15 12 15Z" fill="#EC5C8C" opacity="0.8"/>
-  <path d="M15 12C15 12 18 13.5 18 12C18 10.5 15 12 15 12Z" fill="#EC5C8C" opacity="0.8"/>
-  <path d="M9 12C9 12 6 10.5 6 12C6 13.5 9 12 9 12Z" fill="#EC5C8C" opacity="0.8"/>
-  <path d="M14.1213 14.1213C14.1213 14.1213 16.2426 16.2426 15.182 17.3033C14.1213 18.364 14.1213 14.1213 14.1213 14.1213Z" fill="#EC5C8C" opacity="0.6"/>
-  <path d="M9.87868 9.87868C9.87868 9.87868 7.75736 7.75736 8.81802 6.6967C9.87868 5.63604 9.87868 9.87868 9.87868 9.87868Z" fill="#EC5C8C" opacity="0.6"/>
-  <path d="M14.1213 9.87868C14.1213 9.87868 16.2426 7.75736 17.3033 8.81802C18.364 9.87868 14.1213 9.87868 14.1213 9.87868Z" fill="#EC5C8C" opacity="0.6"/>
-  <path d="M9.87868 14.1213C9.87868 14.1213 7.75736 16.2426 6.6967 15.182C5.63604 14.1213 9.87868 14.1213 9.87868 14.1213Z" fill="#EC5C8C" opacity="0.6"/>
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1000" height="1000" fill="#FED5E3"/>
+  
+  <!-- Group for Logo -->
+  <g transform="translate(500, 500)">
+    <!-- Main Text -->
+    <text text-anchor="middle" dy="0.35em" fill="#C189B1" style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 700; font-size: 110px; letter-spacing: 0.15em;">CUDDLEIA</text>
+    
+    <!-- Stylized Flower Icon (Hand-drawn aesthetic) -->
+    <g transform="translate(260, -80) scale(1.2)">
+      <path d="M20 50C20 50 5 35 5 20C5 5 20 0 20 0C20 0 35 5 35 20C35 35 20 50 20 50Z" fill="none" stroke="#C189B1" stroke-width="3"/>
+      <path d="M20 50V120" stroke="#C189B1" stroke-width="3"/>
+      <path d="M20 85C20 85 40 75 50 65" stroke="#C189B1" stroke-width="3"/>
+      <path d="M20 95C20 95 0 85 -10 75" stroke="#C189B1" stroke-width="3"/>
+      <!-- Petals around the center -->
+      <circle cx="20" cy="15" r="8" fill="none" stroke="#C189B1" stroke-width="2"/>
+      <path d="M10 25C10 25 5 15 10 5" fill="none" stroke="#C189B1" stroke-width="1.5"/>
+      <path d="M30 25C30 25 35 15 30 5" fill="none" stroke="#C189B1" stroke-width="1.5"/>
+    </g>
+  </g>
 </svg>
