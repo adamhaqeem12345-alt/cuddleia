@@ -16,7 +16,7 @@ You need to manually disconnect the link in the UI:
 3. Inside the GitHub section, click **"Disconnect"**.
 4. Now, go back to the top right and click **"Publish"** again. It will now let you start from scratch.
 
-## 3. Why the "image.svg" is important:
-Your recruiter can now see your logo asset at `www.cuddleia.com/image.svg`. This demonstrates your ability to host static assets correctly within a Next.js environment.
+## 3. Why the "logo.svg" is important:
+Your recruiter can now see your logo asset at `www.cuddleia.com/logo.svg`. This demonstrates your ability to host static assets correctly within a Next.js environment.
 
 **Privacy Check:** Your `.env` file is safely listed in `.gitignore` and will never be uploaded to GitHub.
