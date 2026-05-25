@@ -1,6 +1,0 @@
-<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="100" cy="100" r="90" fill="#FED5E3" fill-opacity="0.3"/>
-  <path d="M100 40C80 40 60 55 60 85C60 115 100 160 100 160C100 160 140 115 140 85C140 55 120 40 100 40Z" fill="#EC5C8C"/>
-  <path d="M100 65C108.284 65 115 71.7157 115 80C115 88.2843 108.284 95 100 95C91.7157 95 85 88.2843 85 80C85 71.7157 91.7157 65 100 65Z" fill="white"/>
-  <text x="50%" y="185" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="20" fill="#5c4b53" font-weight="bold">cuddleia</text>
-</svg>
