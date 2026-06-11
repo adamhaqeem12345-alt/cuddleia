@@ -11,27 +11,16 @@ export async function POST(req: NextRequest) {
         const { orderDetails } = await req.json();
 
         if (!orderDetails || orderDetails.status !== 'COMPLETED') {
-            return NextResponse.json({ error: 'Invalid or incomplete order details provided.' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid order details.' }, { status: 400 });
         }
 
         const purchaseUnit = orderDetails.purchase_units[0];
-        let customIdPayload;
-        try {
-            customIdPayload = JSON.parse(purchaseUnit.custom_id);
-        } catch (e) {
-            console.error(`CRITICAL: Failed to parse custom_id from PayPal confirmation for order ${orderDetails.id}.`);
-            return NextResponse.json({ success: true, message: 'Payment captured, but failed to process order context.' });
-        }
-        
-        const { name, email, phone, cart, totalAmountUSD } = customIdPayload;
+        const { name, email, phone, cart, totalAmountUSD } = JSON.parse(purchaseUnit.custom_id);
 
         const items = cart.map((item: any) => {
             const product = getProductById(item.id);
-            if (product) {
-                return { product, quantity: item.quantity };
-            }
-            return null;
-        }).filter((item: any): item is { product: Product; quantity: number } => item !== null);
+            return product ? { product, quantity: item.quantity } : null;
+        }).filter((i: any): i is { product: Product; quantity: number } => i !== null);
 
         const order = {
             id: orderDetails.id,
@@ -42,41 +31,26 @@ export async function POST(req: NextRequest) {
         };
         
         /**
-         * Background fulfillment to prevent PayPal webhook/UI timeouts.
+         * Sequential fulfillment to prevent function termination before email completes.
          */
-        (async () => {
-            try {
-                // Primary Fulfillment
-                await sendOrderConfirmationEmail(order);
+        try {
+            await sendOrderConfirmationEmail(order);
 
-                // Notifications
-                const itemsList = order.items.map((i) => `- ${i.product.name} (x${i.quantity})`).join('\n');
-                const telegramMessage = `
-🛍️ *New PayPal Order!* 🛍️
-*Order ID:* ${order.id}
-*Name:* ${order.customerName}
-*Email:* ${order.customerEmail}
-*Total:* ${order.total}
+            const itemsList = order.items.map((i) => `- ${i.product.name}`).join('\n');
+            const telegramMessage = `🛍️ *New Order!* 🛍️\n*Order ID:* ${order.id}\n*Name:* ${order.customerName}\n*Email:* ${order.customerEmail}\n\n*Items:*\n${itemsList}`;
+            sendTelegramNotification(telegramMessage).catch(console.error);
 
-*Items:*
-${itemsList}
-                `;
-                await sendTelegramNotification(telegramMessage);
-
-                // Sales Logging
-                const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-                if (spreadsheetId) {
-                    const timestamp = new Date().toISOString();
-                    const productNames = order.items.map((i) => i.product.name).join(', ');
-                    const values = [[timestamp, order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
-                    await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
-                }
-            } catch (error: any) {
-                console.error("[PayPal API] Background fulfillment failure:", error.message);
+            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+            if (spreadsheetId) {
+                const productNames = order.items.map((i) => i.product.name).join(', ');
+                const values = [[new Date().toISOString(), order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
+                appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
             }
-        })();
+        } catch (fulfillmentError: any) {
+            console.error("[PayPal API] Fulfillment Error:", fulfillmentError.message);
+        }
 
-        return NextResponse.json({ success: true, message: 'Order confirmed and fulfillment initiated.' });
+        return NextResponse.json({ success: true, message: 'Order confirmed.' });
 
     } catch (error: any) {
         console.error('Error in /api/paypal/confirm-order:', error);

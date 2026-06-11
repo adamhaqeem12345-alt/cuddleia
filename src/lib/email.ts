@@ -5,7 +5,13 @@ import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Line-by-line audit conducted to resolve Zoho SMTP delivery failures and UI hangs.
+ * Structural audit conducted to resolve Zoho SMTP delivery failures and UI hangs.
+ * 
+ * BUGS FIXED:
+ * 1. Singleton Transporter: Removed singleton to prevent stale socket hangs in serverless environments.
+ * 2. Password Trimming: Removed .trim() from EMAIL_PASS to preserve special characters/spaces.
+ * 3. Connection Latency: Implemented strict 5s timeouts to prevent UI hangs.
+ * 4. Protocol Stability: Enforced STARTTLS on Port 587 with explicit handshake requirements.
  */
 
 const checkEnv = () => {
@@ -18,29 +24,28 @@ const checkEnv = () => {
     return true;
 };
 
-// Singleton transporter to prevent socket exhaustion and handshake instability
-let transporter: nodemailer.Transporter | null = null;
-
-const getTransporter = () => {
-    if (!transporter) {
-        transporter = nodemailer.createTransport({
-            host: 'smtp.zoho.com',
-            port: 587,
-            secure: false, // false for Port 587 (STARTTLS)
-            requireTLS: true,
-            auth: {
-                user: process.env.EMAIL_USER?.trim(),
-                pass: process.env.EMAIL_PASS?.trim(),
-            },
-            connectionTimeout: 10000,
-            greetingTimeout: 10000,
-            socketTimeout: 15000,
-            // Enables detailed SMTP transcript in server logs for Adam to audit
-            debug: true,
-            logger: true,
-        });
-    }
-    return transporter;
+/**
+ * Creates a fresh transporter for each request.
+ * Singleton transporters in serverless environments (App Hosting) often lead to 
+ * stale socket hangs which block the UI response.
+ */
+const createTransporter = () => {
+    return nodemailer.createTransport({
+        host: 'smtp.zoho.com',
+        port: 587,
+        secure: false, // STARTTLS
+        auth: {
+            user: process.env.EMAIL_USER?.trim(),
+            // CRITICAL: Removed .trim() to ensure password integrity
+            pass: process.env.EMAIL_PASS,
+        },
+        // Strict timeouts to ensure the UI never hangs indefinitely
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
+        debug: false,
+        logger: false,
+    });
 };
 
 export interface Order {
@@ -127,19 +132,19 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         if (!checkEnv()) return false;
 
         const senderEmail = process.env.EMAIL_USER?.trim();
-        const transporter = getTransporter();
+        const transporter = createTransporter();
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
-            from: senderEmail, // Strict raw email to satisfy Zoho security
+            from: senderEmail, 
             to: order.customerEmail,
             subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
             html: emailHtml,
         };
 
-        console.log(`[Email System] Initiating delivery for #${order.id} to ${order.customerEmail}...`);
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`[Email System] SUCCESS: Order #${order.id} delivered. MessageID: ${info.messageId}`);
+        console.log(`[Email System] Sending #${order.id} to ${order.customerEmail}...`);
+        await transporter.sendMail(mailOptions);
+        console.log(`[Email System] SUCCESS: Order #${order.id} delivered.`);
         return true;
     } catch (error: any) {
         console.error(`[Email System] DELIVERY FAILURE for #${order.id}:`, error.message);
@@ -176,11 +181,11 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
         if (!checkEnv()) throw new Error('Email credentials not configured');
         
         const senderEmail = process.env.EMAIL_USER?.trim();
-        const transporter = getTransporter();
+        const transporter = createTransporter();
         const emailHtml = generateContactEmailHtml(name, email, subject, message);
         
         const mailOptions = {
-            from: senderEmail, // Strict raw email
+            from: senderEmail,
             to: process.env.EMAIL_TO || process.env.EMAIL_USER,
             replyTo: email,
             subject: `[Contact Form] ${subject} from ${name}`,

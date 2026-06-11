@@ -13,35 +13,24 @@ export async function POST(req: NextRequest) {
     }
     
     /**
-     * Parallel Processing Strategy:
-     * Backgrounding the email and notification tasks to eliminate UI "hang."
+     * Sequential execution for server-side stability.
      */
-    (async () => {
-        try {
-            await sendContactFormEmail(name, email, subject, message);
-            
-            const telegramMessage = `
-💌 *New Message from Cuddleia!* 💌
-*From:* ${name}
-*Email:* ${email}
-*Subject:* ${subject}
-*Message:*
-${message}
-            `;
-            await sendTelegramNotification(telegramMessage);
+    try {
+        await sendContactFormEmail(name, email, subject, message);
+        
+        const telegramMessage = `💌 *New Message!* 💌\n*From:* ${name}\n*Subject:* ${subject}\n*Message:* ${message}`;
+        sendTelegramNotification(telegramMessage).catch(console.error);
 
-            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-            if (spreadsheetId) {
-                const timestamp = new Date().toISOString();
-                const values = [[timestamp, name, email, '', `Contact: ${subject}`, 'N/A']];
-                await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
-            }
-        } catch (error: any) {
-            console.error("[Contact API] Background task failure:", error.message);
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        if (spreadsheetId) {
+            const values = [[new Date().toISOString(), name, email, '', `Contact: ${subject}`, 'N/A']];
+            appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
         }
-    })();
+    } catch (error: any) {
+        console.error("[Contact API] Processing failure:", error.message);
+    }
     
-    return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });
+    return NextResponse.json({ success: true, message: 'Message sent!' }, { status: 200 });
 
   } catch (error: any) {
     console.error('Error in /api/contact:', error);

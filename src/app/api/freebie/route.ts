@@ -27,38 +27,25 @@ export async function POST(req: NextRequest) {
     };
 
     /**
-     * Parallel Processing Strategy:
-     * We trigger the email fulfillment and other secondary tasks in the background.
-     * This prevents the "Success" page from hanging if SMTP or other APIs are slow.
+     * Sequential fulfillment to ensure completion in serverless environments.
+     * We strictly await the email delivery first.
      */
-    (async () => {
-        try {
-            // Initiate Email Delivery
-            await sendOrderConfirmationEmail(order);
+    try {
+        await sendOrderConfirmationEmail(order);
+        
+        // Background these as they are non-critical and use global fetch
+        const telegramMessage = `🎁 *Freebie!* 🎁\n*Product:* ${product.name}\n*Name:* ${name}\n*Email:* ${email}`;
+        sendTelegramNotification(telegramMessage).catch(console.error);
 
-            // Notify via Telegram
-            const telegramMessage = `
-🎁 *Freebie Download!* 🎁
-*Product:* ${product.name}
-*Name:* ${name}
-*Email:* ${email}
-*Phone:* ${phone || 'Not provided'}
-            `;
-            await sendTelegramNotification(telegramMessage);
-
-            // Log to Google Sheets
-            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-            if (spreadsheetId) {
-                const timestamp = new Date().toISOString();
-                const values = [[timestamp, name, email, phone || '', product.name, '0']];
-                await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
-            }
-        } catch (error: any) {
-            console.error("[Freebie API] Background task failure:", error.message);
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        if (spreadsheetId) {
+            const values = [[new Date().toISOString(), name, email, phone || '', product.name, '0']];
+            appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
         }
-    })();
+    } catch (fulfillmentError: any) {
+        console.error("[Freebie API] Fulfillment Error:", fulfillmentError.message);
+    }
 
-    // Respond to the user immediately
     return NextResponse.json({ 
         success: true, 
         message: 'Alhamdulillah, your guide is being prepared and will arrive in your inbox shortly!' 
@@ -66,6 +53,6 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('Error in /api/freebie:', error);
-    return NextResponse.json({ error: error.message || 'Failed to process your request.' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to process request.' }, { status: 500 });
   }
 }
