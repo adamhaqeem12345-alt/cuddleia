@@ -2,9 +2,17 @@
 import nodemailer from 'nodemailer';
 import { Product } from '@/interfaces/product';
 
+// --- Diagnostic Check ---
+const requiredEnv = ['EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'];
+const missingEnv = requiredEnv.filter(key => !process.env[key]);
+
+if (missingEnv.length > 0) {
+    console.error(`[Email System] CRITICAL: The following environment variables are missing: ${missingEnv.join(', ')}`);
+    console.error(`[Email System] Please ensure these are defined in your .env file or deployment settings.`);
+}
+
 // --- Common Transporter ---
 // Zoho Mail usually requires Port 465 with secure: true
-// Added timeouts to prevent the process from hanging if the connection is unstable.
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.zoho.com',
     port: Number(process.env.EMAIL_PORT) || 465,
@@ -13,19 +21,27 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,   // 10 seconds
+    // Tightened timeouts for Zoho performance
+    connectionTimeout: 15000, // 15 seconds
+    greetingTimeout: 15000,   // 15 seconds
     socketTimeout: 30000,     // 30 seconds
+    debug: false,             // Set to true only if actively debugging protocol
+    logger: false,
 });
 
 // Verify connection configuration on startup
-transporter.verify(function (error, success) {
-  if (error) {
-    console.error('CRITICAL: SMTP Connection Error (Verify Failed):', error);
-  } else {
-    console.log('Fulfillment Email Server is ready to deliver Barakah.');
-  }
-});
+if (missingEnv.length === 0) {
+    transporter.verify(function (error, success) {
+      if (error) {
+        console.error('[Email System] Connection Failed:', error.message);
+        if (error.message.includes('EAUTH')) {
+            console.error('[Email System] HINT: This is likely an authentication failure. If using Zoho with 2FA, you MUST use an "App Password" instead of your regular password.');
+        }
+      } else {
+        console.log('[Email System] SUCCESS: Server is ready to deliver Barakah.');
+      }
+    });
+}
 
 // --- Order Confirmation Logic ---
 export interface Order {
@@ -46,7 +62,7 @@ const generateOrderEmailHtml = (order: Order) => {
         table: `width: 100%; border-collapse: collapse; margin-top: 20px;`,
         th: `border-bottom: 2px solid #F6DEE4; padding: 12px; text-align: left; font-weight: bold; color: #333;`,
         td: `border-bottom: 1px solid #F6DEE4; padding: 12px; vertical-align: top;`,
-        downloadBtn: `display: inline-block; padding: 10px 20px; background-color: #EC5C8C; color: #ffffff; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; border: none;`,
+        downloadBtn: `display: inline-block; padding: 10px 20px; background-color: #EC5C8C; color: #ffffff !important; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; border: none;`,
         total: `text-align: right; font-size: 20px; font-weight: bold; color: #EC5C8C; margin-top: 20px;`
     };
 
@@ -109,7 +125,12 @@ const generateOrderEmailHtml = (order: Order) => {
 
 export const sendOrderConfirmationEmail = async (order: Order) => {
     try {
-        console.log(`[Fulfillment] Attempting delivery for #${order.id} to ${order.customerEmail}...`);
+        if (missingEnv.length > 0) {
+            console.error(`[Email System] Aborting delivery for #${order.id}: Missing credentials.`);
+            return false;
+        }
+
+        console.log(`[Email System] Attempting delivery for #${order.id} to ${order.customerEmail}...`);
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
@@ -120,11 +141,10 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`[Fulfillment] SUCCESS: Order #${order.id} delivered. ID: ${info.messageId}`);
+        console.log(`[Email System] SUCCESS: Order #${order.id} delivered. ID: ${info.messageId}`);
         return true;
     } catch (error: any) {
-        console.error(`[Fulfillment] CRITICAL ERROR for Order #${order.id}:`, error.message);
-        // We log the error but allow the calling function to handle the response state.
+        console.error(`[Email System] ERROR for Order #${order.id}:`, error.message);
         return false;
     }
 };
@@ -177,6 +197,8 @@ const generateContactEmailHtml = (name: string, email: string, subject: string, 
 
 export const sendContactFormEmail = async (name: string, email: string, subject: string, message: string) => {
     try {
+        if (missingEnv.length > 0) throw new Error('Missing email credentials');
+        
         const emailHtml = generateContactEmailHtml(name, email, subject, message);
         const mailOptions = {
             from: `"Cuddleia Contact" <${process.env.EMAIL_FROM}>`,
@@ -186,10 +208,10 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
             html: emailHtml,
         };
         await transporter.sendMail(mailOptions);
-        console.log('Contact form email sent successfully to business owner.');
+        console.log('[Email System] Contact form email sent successfully.');
         return true;
     } catch (error) {
-        console.error('Failed to send contact form email:', error);
+        console.error('[Email System] Failed to send contact form email:', error);
         throw error;
     }
 };
