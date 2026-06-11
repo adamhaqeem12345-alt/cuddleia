@@ -4,6 +4,7 @@ import { Product } from '@/interfaces/product';
 
 // --- Common Transporter ---
 // Zoho Mail usually requires Port 465 with secure: true
+// Added timeouts to prevent the process from hanging if the connection is unstable.
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.zoho.com',
     port: Number(process.env.EMAIL_PORT) || 465,
@@ -12,12 +13,15 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,   // 10 seconds
+    socketTimeout: 30000,     // 30 seconds
 });
 
 // Verify connection configuration on startup
 transporter.verify(function (error, success) {
   if (error) {
-    console.error('CRITICAL: SMTP Connection Error:', error);
+    console.error('CRITICAL: SMTP Connection Error (Verify Failed):', error);
   } else {
     console.log('Fulfillment Email Server is ready to deliver Barakah.');
   }
@@ -42,18 +46,20 @@ const generateOrderEmailHtml = (order: Order) => {
         table: `width: 100%; border-collapse: collapse; margin-top: 20px;`,
         th: `border-bottom: 2px solid #F6DEE4; padding: 12px; text-align: left; font-weight: bold; color: #333;`,
         td: `border-bottom: 1px solid #F6DEE4; padding: 12px; vertical-align: top;`,
-        downloadBtn: `display: inline-block; padding: 8px 16px; background-color: #EC5C8C; color: #ffffff; text-decoration: none; border-radius: 20px; font-weight: bold; font-size: 13px; margin-top: 8px;`,
+        downloadBtn: `display: inline-block; padding: 10px 20px; background-color: #EC5C8C; color: #ffffff; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; border: none;`,
         total: `text-align: right; font-size: 20px; font-weight: bold; color: #EC5C8C; margin-top: 20px;`
     };
 
     const itemsHtml = order.items.map(item => `
         <tr>
             <td style="${styles.td}">
-                <div style="font-weight: bold; margin-bottom: 4px;">${item.product.name}</div>
+                <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">${item.product.name}</div>
                 ${item.product.downloadUrl ? `
-                    <a href="${item.product.downloadUrl}" style="${styles.downloadBtn}">
-                        Download Your Product
-                    </a>
+                    <div style="margin-top: 8px;">
+                        <a href="${item.product.downloadUrl}" target="_blank" style="${styles.downloadBtn}">
+                            Download Now
+                        </a>
+                    </div>
                 ` : '<span style="font-size: 12px; color: #999;">Download link will be sent separately.</span>'}
             </td>
             <td style="${styles.td}">${item.quantity}</td>
@@ -65,14 +71,14 @@ const generateOrderEmailHtml = (order: Order) => {
         <div style="${styles.container}">
             <div style="${styles.header}">
                 <h1 style="${styles.h1}">Cuddleia</h1>
-                <p style="margin-top: 10px; color: #666;">Thank you for your purchase!</p>
+                <p style="margin-top: 10px; color: #666; font-size: 18px;">Your Digital Assets are Ready!</p>
             </div>
             <div style="${styles.body}">
-                <p>Assalamu'alaikum <strong>${order.customerName}</strong>,</p>
-                <p>Alhamdulillah, your order has been successfully processed. Below are your digital goods and order details.</p>
+                <p style="font-size: 18px;">Assalamu'alaikum <strong>${order.customerName}</strong>,</p>
+                <p>Alhamdulillah, your purchase is complete! Below you will find the download links for your cozy digital goods.</p>
                 
-                <p style="background: #FDF2F5; padding: 10px; border-radius: 8px; font-size: 14px;">
-                    <strong>Order ID:</strong> #${order.id}
+                <p style="background: #FDF2F5; padding: 12px; border-radius: 8px; font-size: 14px; margin: 20px 0;">
+                    <strong>Order Confirmation:</strong> #${order.id}
                 </p>
 
                 <table style="${styles.table}">
@@ -88,14 +94,14 @@ const generateOrderEmailHtml = (order: Order) => {
 
                 <div style="${styles.total}">Total: ${order.total}</div>
 
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #F6DEE4; font-size: 14px; color: #666;">
-                    <p><strong>Need help?</strong> If you have any trouble downloading your files, please simply reply to this email or contact us at <a href="mailto:hello@cuddleia.com" style="color: #EC5C8C;">hello@cuddleia.com</a>.</p>
-                    <p>JazakumAllahu Khayran for supporting our small business and bringing a piece of Cuddleia into your digital home.</p>
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #F6DEE4; font-size: 14px; color: #666;">
+                    <p><strong>Support:</strong> If you have any trouble downloading or using your files, simply reply to this email or reach us at <a href="mailto:hello@cuddleia.com" style="color: #EC5C8C; font-weight: bold;">hello@cuddleia.com</a>.</p>
+                    <p>JazakumAllahu Khayran for supporting Cuddleia. We hope these products bring peace and barakah to your digital space.</p>
                 </div>
             </div>
             <div style="${styles.footer}">
-                <p>&copy; ${new Date().getFullYear()} Cuddleia. Built with Heart and Barakah.</p>
-                <p>Where Creativity Meets Sincerity.</p>
+                <p>&copy; ${new Date().getFullYear()} Cuddleia. All rights reserved.</p>
+                <p>Built with Heart and Barakah.</p>
             </div>
         </div>
     `;
@@ -103,7 +109,8 @@ const generateOrderEmailHtml = (order: Order) => {
 
 export const sendOrderConfirmationEmail = async (order: Order) => {
     try {
-        console.log(`Attempting to send fulfillment email for order ${order.id} to ${order.customerEmail}...`);
+        console.log(`[Fulfillment] Attempting delivery for #${order.id} to ${order.customerEmail}...`);
+        
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
             from: `"Cuddleia" <${process.env.EMAIL_FROM}>`,
@@ -111,12 +118,13 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
             subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
             html: emailHtml,
         };
+
         const info = await transporter.sendMail(mailOptions);
-        console.log('Order confirmation email sent successfully. MessageId:', info.messageId);
+        console.log(`[Fulfillment] SUCCESS: Order #${order.id} delivered. ID: ${info.messageId}`);
         return true;
-    } catch (error) {
-        console.error('CRITICAL ERROR: Failed to send order confirmation email:', error);
-        // We don't throw so the payment flow isn't interrupted, but the logs will show the failure.
+    } catch (error: any) {
+        console.error(`[Fulfillment] CRITICAL ERROR for Order #${order.id}:`, error.message);
+        // We log the error but allow the calling function to handle the response state.
         return false;
     }
 };

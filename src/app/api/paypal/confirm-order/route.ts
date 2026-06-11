@@ -3,10 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
-import { getProductById } from '@/lib/product-service'; // Use the new internal service
-import { Product } from '@/interfaces/product'; // Use the central product interface
-
-// We no longer need the getProductById fetch function here, as it's been replaced by the internal service.
+import { getProductById } from '@/lib/product-service';
+import { Product } from '@/interfaces/product';
 
 export async function POST(req: NextRequest) {
     try {
@@ -21,25 +19,19 @@ export async function POST(req: NextRequest) {
         try {
             customIdPayload = JSON.parse(purchaseUnit.custom_id);
         } catch (e) {
-            console.error(`CRITICAL: Failed to parse custom_id from PayPal confirmation for order ${orderDetails.id}. Payload: ${purchaseUnit.custom_id}`);
-            return NextResponse.json({ success: true, message: 'Payment captured, but failed to process custom data.' });
+            console.error(`CRITICAL: Failed to parse custom_id from PayPal confirmation for order ${orderDetails.id}.`);
+            return NextResponse.json({ success: true, message: 'Payment captured, but failed to process order context.' });
         }
         
         const { name, email, phone, cart, totalAmountUSD } = customIdPayload;
 
-        // Directly retrieve all product details from the local product service.
         const items = cart.map((item: any) => {
             const product = getProductById(item.id);
             if (product) {
                 return { product, quantity: item.quantity };
             }
-            console.warn(`Product with ID ${item.id} not found. Skipping from order.`);
             return null;
-        }).filter((item: { product: Product; quantity: number } | null): item is { product: Product; quantity: number } => item !== null);
-
-        if (items.length !== cart.length) {
-          console.error(`CRITICAL: Mismatch in cart items for order ${orderDetails.id}. Some products could not be found locally.`);
-        }
+        }).filter((item: any): item is { product: Product; quantity: number } => item !== null);
 
         const order = {
             id: orderDetails.id,
@@ -49,11 +41,14 @@ export async function POST(req: NextRequest) {
             total: `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`,
         };
         
-        await sendOrderConfirmationEmail(order);
+        // Primary Action: Fulfillment Email
+        const emailSuccess = await sendOrderConfirmationEmail(order);
         
-        try {
-            const itemsList = order.items.map((i: { product: Product; quantity: number }) => `- ${i.product.name} (x${i.quantity})`).join('\n');
-            const telegramMessage = `
+        // Secondary Actions (Parallelized)
+        (async () => {
+            try {
+                const itemsList = order.items.map((i) => `- ${i.product.name} (x${i.quantity})`).join('\n');
+                const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
 
 Alhamdulillah, a new order has come in!
@@ -65,18 +60,26 @@ Alhamdulillah, a new order has come in!
 
 *Items:*
 ${itemsList}
-            `;
-            await sendTelegramNotification(telegramMessage);
+                `;
+                await sendTelegramNotification(telegramMessage);
 
-            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-            if (spreadsheetId) {
-                const timestamp = new Date().toISOString();
-                const productNames = order.items.map((i: { product: Product; quantity: number }) => i.product.name).join(', ');
-                const values = [[timestamp, order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
-                await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
+                const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+                if (spreadsheetId) {
+                    const timestamp = new Date().toISOString();
+                    const productNames = order.items.map((i) => i.product.name).join(', ');
+                    const values = [[timestamp, order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
+                    await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
+                }
+            } catch (secondaryError: any) {
+                console.error("Secondary action (Telegram/Sheets) for PayPal order failed:", secondaryError.message);
             }
-        } catch (secondaryError: any) {
-            console.error("Secondary action (Telegram/Sheets) for PayPal order failed:", secondaryError.message);
+        })();
+
+        if (!emailSuccess) {
+            return NextResponse.json({ 
+                success: true, 
+                message: 'Payment received, but we encountered an issue delivering your download links via email. Please check your spam folder or contact hello@cuddleia.com' 
+            });
         }
 
         return NextResponse.json({ success: true, message: 'Order confirmed and processed.' });

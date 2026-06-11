@@ -25,10 +25,16 @@ export async function POST(req: NextRequest) {
         items: [{ product: product, quantity: 1 }],
         total: "Free",
     };
-    await sendOrderConfirmationEmail(order);
+
+    // Primary Action: Send Fulfillment Email
+    const emailSuccess = await sendOrderConfirmationEmail(order);
     
-    try {
-        const telegramMessage = `
+    // Secondary Actions (Logging/Notification) 
+    // We initiate these but don't strictly await them if they might delay the user response unnecessarily.
+    // However, we want them to finish, so we'll wrap them in a separate block.
+    (async () => {
+        try {
+            const telegramMessage = `
 🎁 *Freebie Download!* 🎁
 
 Someone just grabbed a freebie! Alhamdulillah! ✨
@@ -37,17 +43,27 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
 *Name:* ${name}
 *Email:* ${email}
 *Phone:* ${phone || 'Not provided'}
-        `;
-        await sendTelegramNotification(telegramMessage);
+            `;
+            await sendTelegramNotification(telegramMessage);
 
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-        if (spreadsheetId) {
-            const timestamp = new Date().toISOString();
-            const values = [[timestamp, name, email, phone || '', product.name, '0']];
-            await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
+            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+            if (spreadsheetId) {
+                const timestamp = new Date().toISOString();
+                const values = [[timestamp, name, email, phone || '', product.name, '0']];
+                await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
+            }
+        } catch (secondaryError: any) {
+            console.error("Secondary action (Telegram/Sheets) for freebie failed:", secondaryError.message);
         }
-    } catch (secondaryError: any) {
-        console.error("Secondary action (Telegram/Sheets) for freebie failed:", secondaryError.message);
+    })();
+
+    if (!emailSuccess) {
+        // If the email failed to send, we tell the user but we don't block the "success" feeling entirely
+        // since we might have other ways to reach them or they might try again.
+        return NextResponse.json({ 
+            success: false, 
+            message: 'Alhamdulillah, we received your request, but our email server had a small hiccup. Please contact us if you do not receive your link shortly.' 
+        }, { status: 200 });
     }
 
     return NextResponse.json({ success: true, message: 'Freebie request processed successfully!' }, { status: 200 });
@@ -55,16 +71,13 @@ Someone just grabbed a freebie! Alhamdulillah! ✨
   } catch (error: any) {
     console.error('Error in /api/freebie:', error);
     
-    // We can try to send a critical error notification, but don't let it block the response.
     try {
         const criticalErrorMessage = `
 🚨 *CRITICAL ERROR: Freebie API Failed* 🚨
 
-The /api/freebie endpoint failed to process a request. The user did NOT receive their download link.
+The /api/freebie endpoint failed completely.
 
 *Reason:* ${error.message || 'An unknown error occurred.'}
-
-Please investigate the server logs immediately.
         `;
         sendTelegramNotification(criticalErrorMessage);
     } catch (notificationError) {
