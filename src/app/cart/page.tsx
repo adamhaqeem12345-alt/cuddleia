@@ -11,7 +11,8 @@ import { ProductPrice } from '@/components/product-price';
 import { useState } from 'react';
 
 export default function CartPage() {
-  const { cart, removeFromCart, clearCart, appliedDiscount, discountCode, discountMessage, applyDiscount, removeDiscount } = useCart();
+  const { cart, removeFromCart, clearCart, appliedDiscount: rawAppliedDiscount, discountCode, discountMessage, applyDiscount, removeDiscount } = useCart();
+  const appliedDiscount = rawAppliedDiscount || 0;
   const [tempDiscountCode, setTempDiscountCode] = useState('');
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -61,6 +62,7 @@ export default function CartPage() {
                         alt={item.name}
                         fill
                         className="object-cover"
+                        sizes="(max-width: 640px) 25vw, 100px"
                       />
                     </div>
                     <div className="flex-1">
@@ -126,14 +128,14 @@ export default function CartPage() {
                     />
                     <Button onClick={handleApplyDiscount} disabled={appliedDiscount > 0} className="rounded-full">Apply</Button>
                   </div>
-                  {discountMessage.success && (
+                  {discountMessage && discountMessage.success && (
                     <div className="flex items-center gap-2 mt-3 text-sm text-green-600">
                       <CheckCircle className="h-4 w-4" />
                       <span>{discountMessage.success}</span>
                       <button onClick={handleRemoveDiscount} className="ml-auto text-xs font-bold underline">Remove</button>
                     </div>
                   )}
-                  {discountMessage.error && (
+                  {discountMessage && discountMessage.error && (
                     <div className="flex items-center gap-2 mt-3 text-sm text-destructive">
                       <XCircle className="h-4 w-4" />
                       <span>{discountMessage.error}</span>

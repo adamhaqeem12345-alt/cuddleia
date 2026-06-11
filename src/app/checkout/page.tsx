@@ -7,8 +7,8 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ShieldCheck, Loader2, CreditCard } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 
@@ -20,17 +20,18 @@ function useCheckoutForm() {
   return { name, setName, email, setEmail, phone, setPhone };
 }
 
-function LoadingOverlay() {
+function LoadingOverlay({ text = 'Processing your order...' }: { text?: string }) {
     return (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-50">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-            <p className="text-muted-foreground text-lg">Processing your order...</p>
+            <p className="text-muted-foreground text-lg">{text}</p>
         </div>
     );
 }
 
 export default function CheckoutPage() {
-  const { cart, appliedDiscount } = useCart();
+  const { cart, appliedDiscount: rawAppliedDiscount } = useCart();
+  const appliedDiscount = rawAppliedDiscount || 0;
   const router = useRouter();
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
@@ -38,16 +39,26 @@ export default function CheckoutPage() {
   const [isCardLoading, setIsCardLoading] = useState(false);
   const [{ isPending }] = usePayPalScriptReducer();
 
+  useEffect(() => {
+    // Once the cart is loaded, if it's empty, redirect.
+    if (cart && cart.length === 0) {
+        router.push('/products');
+    }
+  }, [cart, router]);
+
+  // First, handle the loading state for the cart and PayPal scripts.
+  if (!cart || isPending) {
+      return <LoadingOverlay text="Loading your cart..." />;
+  }
+  
+  // After loading, if the cart is empty, render nothing while useEffect redirects.
+  if (cart.length === 0) {
+      return null;
+  }
+
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountAmount = subtotal * appliedDiscount;
   const total = subtotal - discountAmount;
-  
-  const handlePaymentClick = () => {
-    setIsCardLoading(true);
-    setTimeout(() => {
-        setIsCardLoading(false);
-    }, 3000);
-  };
   
   const createPayPalOrder = (data: any, actions: any) => {
     setError('');
@@ -84,16 +95,11 @@ export default function CheckoutPage() {
     
     return actions.order.capture().then(async (details: any) => {
         try {
-            const response = await fetch('/api/paypal/confirm-order', {
+            await fetch('/api/paypal/confirm-order', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ orderDetails: details }),
             });
-
-            if (!response.ok) {
-                console.error("Server-side confirmation failed");
-            }
-            
             router.push(`/checkout/success?source=paypal&order_id=${data.orderID}`);
         } catch (err: any) {
             setError("Your payment was successful, but we had trouble confirming your order.");
@@ -109,19 +115,6 @@ export default function CheckoutPage() {
     setError("An error occurred with the payment transaction. Please try again.");
     setIsProcessing(false);
   };
-
-  if (cart.length === 0 && !isProcessing) {
-    if (isPending) return <LoadingOverlay />;
-    return (
-        <div className="container mx-auto px-4 py-16 sm:py-24 text-center">
-            <h1 className="font-headline text-4xl md:text-5xl text-foreground mb-8 font-bold">Checkout</h1>
-            <p className="text-muted-foreground text-lg mb-8">Your cart is empty.</p>
-            <Button asChild className="rounded-full">
-                <Link href="/products">Continue Shopping</Link>
-            </Button>
-        </div>
-    )
-  }
 
   return (
     <>
@@ -149,6 +142,7 @@ export default function CheckoutPage() {
                           alt={item.name}
                           fill
                           className="object-cover"
+                          sizes="(max-width: 768px) 20vw, 80px"
                         />
                       </div>
                       <div className="flex-1">
@@ -202,37 +196,20 @@ export default function CheckoutPage() {
                   <div className="mt-12">
                       <h3 className="font-headline text-xl text-foreground mb-4 font-bold text-center">Payment Method</h3>
                       
-                      {isPending ? (
-                          <div className="text-center my-4"><Loader2 className="h-8 w-8 animate-spin mx-auto"/></div>
-                      ) : (
-                          <div>
-                              <div style={{ opacity: isProcessing ? 0.5 : 1 }}>
-                                <PayPalButtons 
-                                    key={name + email + total}
-                                    style={{ layout: "vertical", label: "pay" }}
-                                    disabled={cart.length === 0 || !name || !email || isProcessing}
-                                    onClick={(data) => {
-                                        if (data.fundingSource === 'card') {
-                                            handlePaymentClick();
-                                        }
-                                    }}
-                                    createOrder={createPayPalOrder}
-                                    onApprove={onPayPalApprove}
-                                    onError={onPayPalError}
-                                />
-                              </div>
-                              {isCardLoading && (
-                                <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    <span>Opening secure card payment form...</span>
-                                </div>
-                              )}
-                              <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-                                  <ShieldCheck className="h-4 w-4 text-green-600" />
-                                  <span>Secure payment via PayPal / Apple Pay / Credit Card.</span>
-                              </div>
-                          </div>
-                      )}
+                      <div style={{ opacity: isProcessing ? 0.5 : 1 }}>
+                        <PayPalButtons 
+                            key={name + email + total}
+                            style={{ layout: "vertical", label: "pay" }}
+                            disabled={cart.length === 0 || !name || !email || isProcessing}
+                            createOrder={createPayPalOrder}
+                            onApprove={onPayPalApprove}
+                            onError={onPayPalError}
+                        />
+                      </div>
+                      <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
+                          <ShieldCheck className="h-4 w-4 text-green-600" />
+                          <span>Secure payment via PayPal / Apple Pay / Credit Card.</span>
+                      </div>
                   </div>
                   {error && <p className="text-destructive mt-4 text-sm text-center">{error}</p>}
               </div>

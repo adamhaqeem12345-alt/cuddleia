@@ -3,42 +3,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sendOrderConfirmationEmail } from '@/lib/email';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { appendToSheet } from '@/lib/google-sheets';
+import { getProductById } from '@/lib/product-service'; // Use the new internal service
+import { Product } from '@/interfaces/product'; // Use the central product interface
 
-// Re-define the Product interface, as it's no longer imported.
-// In a mature microservices architecture, this might live in a shared types package.
-export interface Product {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    originalPrice?: number;
-    imageUrl: string;
-    imageWidth: number;
-    imageHeight: number;
-    category: 'Booklets' | 'Wallpapers';
-    downloadUrl?: string;
-    disclaimer: string;
-    bundleIncludes?: string[];
-    bundleProducts?: Product[];
-}
-
-// The URL for the new product service. In a Kubernetes environment, this would be a service name.
-const PRODUCT_SERVICE_URL = process.env.PRODUCT_SERVICE_URL || 'http://localhost:3001';
-
-// Fetches a product from the new microservice.
-const getProductById = async (id: string): Promise<Product | undefined> => {
-    try {
-        const response = await fetch(`${PRODUCT_SERVICE_URL}/products/${id}`);
-        if (!response.ok) {
-            console.error(`Failed to fetch product ${id} from product-service: ${response.statusText}`);
-            return undefined;
-        }
-        return await response.json();
-    } catch (error) {
-        console.error(`Error connecting to product-service to fetch ${id}:`, error);
-        return undefined;
-    }
-};
+// We no longer need the getProductById fetch function here, as it's been replaced by the internal service.
 
 export async function POST(req: NextRequest) {
     try {
@@ -59,20 +27,18 @@ export async function POST(req: NextRequest) {
         
         const { name, email, phone, cart, totalAmountUSD } = customIdPayload;
 
-        // Asynchronously fetch all product details from the product service.
-        const items = (await Promise.all(cart.map(async (item: any) => {
-            const product = await getProductById(item.id);
+        // Directly retrieve all product details from the local product service.
+        const items = cart.map((item: any) => {
+            const product = getProductById(item.id);
             if (product) {
                 return { product, quantity: item.quantity };
             }
             console.warn(`Product with ID ${item.id} not found. Skipping from order.`);
-            return null; // Return null for items where the product couldn't be fetched.
-        }))).filter((item): item is { product: Product; quantity: number } => item !== null);
+            return null;
+        }).filter((item): item is { product: Product; quantity: number } => item !== null);
 
         if (items.length !== cart.length) {
-          // If some products could not be fetched, this could be a critical issue.
-          // For now, we will log a warning and proceed with the items that were found.
-          console.error(`CRITICAL: Mismatch in cart items for order ${orderDetails.id}. Some products could not be fetched.`);
+          console.error(`CRITICAL: Mismatch in cart items for order ${orderDetails.id}. Some products could not be found locally.`);
         }
 
         const order = {

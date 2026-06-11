@@ -3,12 +3,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Product } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Info, Download, ShoppingCart, Check } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import { ProductPrice } from './product-price';
 import { FreebieFormDialog } from './freebie-form-dialog';
+import { Product } from '@/interfaces/product';
 
 export const ProductDetails = ({ product }: { product: Product }) => {
   const { addToCart, isProductInCart } = useCart();

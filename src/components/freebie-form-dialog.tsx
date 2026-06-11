@@ -2,7 +2,6 @@
 'use client';
 
 import { useState, FormEvent, ReactNode } from 'react';
-import { Product } from '@/lib/products';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, CheckCircle, XCircle, Download } from 'lucide-react';
@@ -15,6 +14,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog';
+import { Product } from '@/interfaces/product';
 
 type SubmissionStatus = 'idle' | 'sending' | 'success' | 'error';
 
