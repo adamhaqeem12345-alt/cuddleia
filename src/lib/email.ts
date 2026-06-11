@@ -1,223 +1,155 @@
 
 import nodemailer from 'nodemailer';
-import { Product } from './products';
+import { Product } from '@/interfaces/product';
 
-// Define the shape of the order for the confirmation email
+// --- Common Transporter ---
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
+
+// --- Order Confirmation Logic ---
 export interface Order {
     id: string;
     customerName: string;
     customerEmail: string;
-    items: {
-        product: Product;
-        quantity: number;
-    }[];
-    total: string; // e.g., "$70.00" or "Free"
+    items: { product: Product; quantity: number }[];
+    total: string;
 }
 
-// 1. Create a transporter
-const zohoUser = process.env.ZOHO_MAIL_USER;
-const zohoPass = process.env.ZOHO_MAIL_APP_PASSWORD;
-
-if (!zohoUser || !zohoPass) {
-    console.warn("Zoho Mail credentials are not set. Email functionality will be disabled.");
-}
-
-const transporter = nodemailer.createTransport({
-    host: 'smtp.zoho.com',
-    port: 465,
-    secure: true, // true for 465
-    auth: {
-        user: zohoUser,
-        pass: zohoPass,
-    },
-});
-
-// 2. Function to send the contact form submission
-export async function sendContactFormEmail(name: string, email: string, subject: string, message: string) {
-    if (!zohoUser || !zohoPass) {
-        throw new Error("Email service is not configured. Please check server environment variables.");
-    }
-
-    const mailOptions = {
-        from: `"Cuddleia Contact Form" <${zohoUser}>`,
-        to: zohoUser,
-        replyTo: email,
-        subject: `New Contact Form Submission: ${subject}`,
-        html: `
-            <h2>New message from your website's contact form</h2>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <hr>
-            <h3>Message:</h3>
-            <p>${message.replace(/\n/g, '<br>')}</p>
-        `,
+const generateOrderEmailHtml = (order: Order) => {
+    const styles = {
+        container: `font-family: Arial, sans-serif; color: #333;`,
+        header: `background-color: #f4f4f4; padding: 20px; text-align: center;`,
+        body: `padding: 20px;`,
+        footer: `background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px;`,
+        h1: `color: #5a3a31;`,
+        table: `width: 100%; border-collapse: collapse;`,
+        th: `border-bottom: 1px solid #ddd; padding: 8px; text-align: left;`,
+        td: `border-bottom: 1px solid #ddd; padding: 8px;`
     };
+    const itemsHtml = order.items.map(item => `
+        <tr>
+            <td style="${styles.td}">${item.product.name}</td>
+            <td style="${styles.td}">${item.quantity}</td>
+            <td style="${styles.td}">$${(item.product.price * item.quantity).toFixed(2)}</td>
+        </tr>
+    `).join('');
 
-    await transporter.sendMail(mailOptions);
-}
-
-// 3. Function to send the order confirmation email
-export async function sendOrderConfirmationEmail(order: Order) {
-    if (!zohoUser || !zohoPass) {
-        throw new Error("Email service is not configured. Please check server environment variables.");
-    }
-    
-    const itemsHtml = order.items.map(item => {
-        const downloadUrl = item.product.bundleIncludes ? "https://drive.google.com/drive/folders/1ZSw8l2E9gFBD6sUyyok0S2VtKgMhoeNn" : item.product.downloadUrl;
-        // Shorten description to the first sentence.
-        const description = item.product.description.split('.')[0] + '.';
-
-        return `
-            <div class="product-item">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tr>
-                        <td width="120" valign="top">
-                            <img src="${item.product.imageUrl}" alt="${item.product.name}" style="width: 100px; height: auto; object-fit: cover; border-radius: 8px;">
-                        </td>
-                        <td valign="top" style="padding-left: 20px;">
-                            <h3 class="product-title">${item.product.name}</h3>
-                            <p class="product-description">
-                                ${description}
-                            </p>
-                            <a href="${downloadUrl}" target="_blank" class="button">
-                                Download Now
-                            </a>
-                        </td>
-                    </tr>
-                </table>
+    return `
+        <div style="${styles.container}">
+            <div style="${styles.header}">
+                <h1 style="${styles.h1}">Barakah's 'Ilm Matching</h1>
+                <h2>Order Confirmation</h2>
             </div>
-        `;
-    }).join('');
+            <div style="${styles.body}">
+                <p>Alhamdulillah, ${order.customerName}, your order is confirmed!</p>
+                <p><strong>Order ID:</strong> ${order.id}</p>
+                <h3>Order Details:</h3>
+                <table style="${styles.table}">
+                    <thead>
+                        <tr>
+                            <th style="${styles.th}">Item</th>
+                            <th style="${styles.th}">Quantity</th>
+                            <th style="${styles.th}">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+                <h3 style="text-align: right; margin-top: 20px;">Total: ${order.total}</h3>
+                <p>We are preparing your order with love and care. You will receive a separate email once your order has shipped.</p>
+                <p>If you have any questions, please reply to this email.</p>
+                <p>JazakumAllahu Khayran for your support!</p>
+            </div>
+            <div style="${styles.footer}">
+                <p>&copy; ${new Date().getFullYear()} Barakah's 'Ilm Matching. All rights reserved.</p>
+            </div>
+        </div>
+    `;
+};
 
-    const isFree = order.total.toLowerCase() === 'free';
-    const subject = isFree ? `Your Free Download from Cuddleia` : `Thank you for your order, ${order.customerName}!`;
-    const title = isFree ? `Your free download is here, ${order.customerName}!` : `Thank you for your order, ${order.customerName}!`;
-    const message = isFree 
-        ? "We're so excited for you to enjoy your new digital goodie. Here is the download link for the item you requested:"
-        : "We're so excited for you to enjoy your new digital goodies. Here are the download links for the items you purchased:";
-    const communityDescription = "Connect with fellow creators, share your journey, and get updates by joining our supportive corner on Telegram.";
+export const sendOrderConfirmationEmail = async (order: Order) => {
+    try {
+        const emailHtml = generateOrderEmailHtml(order);
+        const mailOptions = {
+            from: `"Barakah's 'Ilm Matching" <${process.env.EMAIL_FROM}>`,
+            to: order.customerEmail,
+            subject: `Order Confirmed - Your Barakah's 'Ilm Matching Order #${order.id}`,
+            html: emailHtml,
+        };
+        await transporter.sendMail(mailOptions);
+        console.log('Order confirmation email sent to', order.customerEmail);
+    } catch (error) {
+        console.error('Failed to send order confirmation email:', error);
+    }
+};
 
-    const mailOptions = {
-        from: `"Cuddleia" <${zohoUser}>`,
-        to: order.customerEmail,
-        subject: subject,
-        html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body {
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-                        background: #FED5E3;
-                        color: #5c4b53;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    .container {
-                        text-align: center;
-                        padding: 40px 20px;
-                    }
-                    .content-wrapper {
-                        max-width: 600px;
-                        margin: auto;
-                        background-color: rgba(255, 255, 255, 0.7);
-                        border-radius: 24px;
-                        padding: 40px;
-                        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-                        backdrop-filter: blur(10px);
-                        -webkit-backdrop-filter: blur(10px);
-                        border: 1px solid rgba(255, 255, 255, 0.18);
-                    }
-                    .logo {
-                        width: 80px;
-                        height: 80px;
-                        margin: 0 auto 16px;
-                        border-radius: 50%;
-                    }
-                    .main-title {
-                        color: #EC5C8C;
-                        font-size: 24px;
-                        margin: 0;
-                        font-weight: bold;
-                    }
-                    .sub-title {
-                        font-size: 32px;
-                        margin: 40px 0 16px;
-                        font-weight: bold;
-                        color: #EC5C8C;
-                    }
-                    .intro-text {
-                        font-size: 16px;
-                        color: #5c4b53;
-                        margin: 0 auto 40px;
-                        max-width: 480px;
-                        line-height: 1.5;
-                    }
-                    .product-list {
-                        text-align: left;
-                    }
-                    .product-item {
-                        margin-bottom: 24px;
-                        padding: 16px;
-                        background-color: rgba(255, 255, 255, 0.5);
-                        border-radius: 12px;
-                    }
-                    .product-title {
-                        margin: 0 0 8px;
-                        font-size: 18px;
-                        color: #EC5C8C;
-                        font-weight: bold;
-                    }
-                    .product-description {
-                        margin: 0 0 16px;
-                        font-size: 14px;
-                        color: #5c4b53;
-                        line-height: 1.5;
-                    }
-                    .community-section {
-                        margin-top: 40px;
-                        padding-top: 40px;
-                        border-top: 1px solid rgba(236, 92, 140, 0.2);
-                    }
-                    .button {
-                        display: inline-block;
-                        padding: 12px 24px;
-                        background-color: #EC5C8C;
-                        color: #ffffff;
-                        text-decoration: none;
-                        border-radius: 9999px;
-                        font-weight: bold;
-                        font-family: sans-serif;
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="content-wrapper">
-                        <img src="https://lh3.googleusercontent.com/pw/AP1GczPCHiLF4qFPRxKdC0SXKMoo7Qor06uypGL4MPxzdf7QrlXaSEaMYDsuUVR58mPyDDoWmPm3ux7qYWRP8awcmJMdHc4PZiLDJPLOgj6MOdsbTMVCwFU=w2400" alt="Cuddleia Logo" class="logo">
-                        <h1 class="main-title">Cuddleia</h1>
-                        
-                        <h2 class="sub-title">${title}</h2>
-                        <p class="intro-text">${message}</p>
-
-                        <div class="product-list">
-                            ${itemsHtml}
-                        </div>
-
-                        <div class="community-section">
-                            <h2 class="sub-title" style="margin-top: 0;">Join Our Community!</h2>
-                            <p class="intro-text">${communityDescription}</p>
-                            <a href="https://t.me/+Tt1wP2OgPBE1NjU1" target="_blank" class="button">
-                                Join our Telegram Channel
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </body>
-            </html>
-        `,
+// --- Contact Form Logic ---
+const generateContactEmailHtml = (name: string, email: string, subject: string, message: string) => {
+    const styles = {
+        container: `font-family: Arial, sans-serif; color: #333; line-height: 1.6;`,
+        header: `background-color: #f4f4f4; padding: 20px; text-align: center;`,
+        body: `padding: 30px;`,
+        footer: `background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px;`,
+        h1: `color: #5a3a31;`,
+        h2: `color: #5a3a31; border-bottom: 2px solid #ddd; padding-bottom: 10px;`,
+        field: `margin-bottom: 20px;`,
+        label: `font-weight: bold; color: #555;`,
+        value: `margin-left: 10px;`,
+        messageBox: `background-color: #f9f9f9; border: 1px solid #ddd; padding: 15px; border-radius: 5px; margin-top: 10px;`
     };
 
-    await transporter.sendMail(mailOptions);
-}
+    return `
+        <div style="${styles.container}">
+            <div style="${styles.header}">
+                <h1 style="${styles.h1}">New Contact Form Submission</h1>
+            </div>
+            <div style="${styles.body}">
+                <h2 style="${styles.h2}">Message Details</h2>
+                <div style="${styles.field}">
+                    <span style="${styles.label}">From:</span>
+                    <span style="${styles.value}">${name}</span>
+                </div>
+                <div style="${styles.field}">
+                    <span style="${styles.label}">Email:</span>
+                    <a href="mailto:${email}">${email}</a>
+                </div>
+                <div style="${styles.field}">
+                    <span style="${styles.label}">Subject:</span>
+                    <span style="${styles.value}">${subject}</span>
+                </div>
+                <div>
+                    <span style="${styles.label}">Message:</span>
+                    <div style="${styles.messageBox}">${message}</div>
+                </div>
+            </div>
+            <div style="${styles.footer}">
+                <p>This is an automated notification from your website's contact form.</p>
+            </div>
+        </div>
+    `;
+};
+
+export const sendContactFormEmail = async (name: string, email: string, subject: string, message: string) => {
+    try {
+        const emailHtml = generateContactEmailHtml(name, email, subject, message);
+        const mailOptions = {
+            from: `"Barakah's 'Ilm Matching" <${process.env.EMAIL_FROM}>`,
+            to: process.env.EMAIL_TO, // The address that receives the contact form submissions
+            replyTo: email,
+            subject: `New Message from ${name}: ${subject}`,
+            html: emailHtml,
+        };
+        await transporter.sendMail(mailOptions);
+        console.log('Contact form email sent successfully.');
+    } catch (error) {
+        console.error('Failed to send contact form email:', error);
+        // Re-throw the error to be caught by the API route
+        throw error;
+    }
+};

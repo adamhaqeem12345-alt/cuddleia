@@ -5,27 +5,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Trash2, ArrowLeft, XCircle, CheckCircle } from 'lucide-react';
+import { Trash2, ArrowLeft } from 'lucide-react';
 import { ProductPrice } from '@/components/product-price';
-import { useState } from 'react';
 
 export default function CartPage() {
-  const { cart, removeFromCart, clearCart, appliedDiscount: rawAppliedDiscount, discountCode, discountMessage, applyDiscount, removeDiscount } = useCart();
-  const appliedDiscount = rawAppliedDiscount || 0;
-  const [tempDiscountCode, setTempDiscountCode] = useState('');
-
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const total = subtotal - (subtotal * appliedDiscount);
-
-  const handleApplyDiscount = () => {
-    applyDiscount(tempDiscountCode);
-  };
-  
-  const handleRemoveDiscount = () => {
-    removeDiscount();
-    setTempDiscountCode('');
-  }
+  const { cart, removeFromCart, clearCart, cartTotal } = useCart();
 
   return (
     <div className="container mx-auto px-4 py-16 sm:py-24">
@@ -90,18 +74,9 @@ export default function CartPage() {
                     <div className="flex justify-between text-lg">
                         <span>Subtotal</span>
                         <div className="text-right">
-                          <p className="font-bold text-lg">${subtotal.toFixed(2)}</p>
+                          <p className="font-bold text-lg">${cartTotal.toFixed(2)}</p>
                         </div>
                     </div>
-
-                    {appliedDiscount > 0 && (
-                      <div className="flex justify-between text-lg text-green-600">
-                        <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
-                        <div className="text-right">
-                          <p className="font-bold">-${(subtotal * appliedDiscount).toFixed(2)}</p>
-                        </div>
-                      </div>
-                    )}
 
                     <div className="flex justify-between text-lg">
                         <span>Taxes & Fees</span>
@@ -111,36 +86,8 @@ export default function CartPage() {
                     </div>
                      <div className="border-t pt-4 mt-4 flex justify-between items-start text-2xl font-bold">
                         <span>Total</span>
-                         <ProductPrice price={total} isTotal={true}/>
+                         <ProductPrice price={cartTotal} isTotal={true}/>
                     </div>
-                </div>
-
-                <div className="mt-8">
-                  <h3 className="font-headline text-lg font-bold mb-4">Discount Code (if any)</h3>
-                  <div className="flex gap-2">
-                    <Input 
-                      type="text" 
-                      placeholder="Enter code" 
-                      value={appliedDiscount > 0 ? discountCode : tempDiscountCode} 
-                      onChange={(e) => setTempDiscountCode(e.target.value)}
-                      disabled={appliedDiscount > 0}
-                      className="rounded-full"
-                    />
-                    <Button onClick={handleApplyDiscount} disabled={appliedDiscount > 0} className="rounded-full">Apply</Button>
-                  </div>
-                  {discountMessage && discountMessage.success && (
-                    <div className="flex items-center gap-2 mt-3 text-sm text-green-600">
-                      <CheckCircle className="h-4 w-4" />
-                      <span>{discountMessage.success}</span>
-                      <button onClick={handleRemoveDiscount} className="ml-auto text-xs font-bold underline">Remove</button>
-                    </div>
-                  )}
-                  {discountMessage && discountMessage.error && (
-                    <div className="flex items-center gap-2 mt-3 text-sm text-destructive">
-                      <XCircle className="h-4 w-4" />
-                      <span>{discountMessage.error}</span>
-                    </div>
-                  )}
                 </div>
 
                 <Button asChild size="lg" className="w-full mt-8 rounded-full font-bold">

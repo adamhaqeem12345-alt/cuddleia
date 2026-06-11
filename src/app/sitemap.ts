@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { products } from '@/lib/products';
+import { getProducts } from '@/lib/product-service';
 
 /**
  * Generates the sitemap for the Cuddleia website.
@@ -10,6 +10,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://cuddleia.com';
 
   const lastModified = new Date();
+
+  const products = getProducts();
 
   // Define static routes
   const routes = [
@@ -47,7 +49,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Generate dynamic product routes
   const productEntries = products.map((product) => ({
-    url: `${baseUrl}/products/${product.id}`,
+    url: `${baseUrl}/products/${product.slug}`,
     lastModified,
     changeFrequency: 'monthly' as const,
     priority: 0.6,

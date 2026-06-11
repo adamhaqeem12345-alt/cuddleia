@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -30,13 +29,11 @@ function LoadingOverlay({ text = 'Processing your order...' }: { text?: string }
 }
 
 export default function CheckoutPage() {
-  const { cart, appliedDiscount: rawAppliedDiscount } = useCart();
-  const appliedDiscount = rawAppliedDiscount || 0;
+  const { cart, cartTotal } = useCart();
   const router = useRouter();
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isCardLoading, setIsCardLoading] = useState(false);
   const [{ isPending }] = usePayPalScriptReducer();
 
   useEffect(() => {
@@ -55,10 +52,6 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
       return null;
   }
-
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const discountAmount = subtotal * appliedDiscount;
-  const total = subtotal - discountAmount;
   
   const createPayPalOrder = (data: any, actions: any) => {
     setError('');
@@ -71,7 +64,7 @@ export default function CheckoutPage() {
       purchase_units: [
         {
           amount: {
-            value: total.toFixed(2),
+            value: cartTotal.toFixed(2),
             currency_code: 'USD',
           },
           custom_id: JSON.stringify({
@@ -79,7 +72,7 @@ export default function CheckoutPage() {
               name,
               email,
               phone,
-              totalAmountUSD: total
+              totalAmountUSD: cartTotal
           }),
         },
       ],
@@ -156,21 +149,15 @@ export default function CheckoutPage() {
                 <div className="border-t p-6 space-y-3">
                   <div className="flex justify-between text-lg">
                       <span>Subtotal</span>
-                      <span className="font-bold">${subtotal.toFixed(2)}</span>
+                      <span className="font-bold">${cartTotal.toFixed(2)}</span>
                   </div>
-                  {appliedDiscount > 0 && (
-                      <div className="flex justify-between text-lg text-green-600">
-                          <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
-                          <span className="font-bold">-${discountAmount.toFixed(2)}</span>
-                      </div>
-                  )}
                   <div className="flex justify-between text-lg">
                       <span>Taxes & Fees</span>
                       <span className="font-bold">$0.00</span>
                   </div>
                   <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
                       <span>Total</span>
-                      <ProductPrice price={total} isTotal={true}/>
+                      <ProductPrice price={cartTotal} isTotal={true}/>
                   </div>
                 </div>
               </div>
@@ -198,7 +185,7 @@ export default function CheckoutPage() {
                       
                       <div style={{ opacity: isProcessing ? 0.5 : 1 }}>
                         <PayPalButtons 
-                            key={name + email + total}
+                            key={name + email + cartTotal}
                             style={{ layout: "vertical", label: "pay" }}
                             disabled={cart.length === 0 || !name || !email || isProcessing}
                             createOrder={createPayPalOrder}

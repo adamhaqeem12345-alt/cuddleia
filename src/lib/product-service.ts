@@ -10,6 +10,15 @@ export function getProducts(): Product[] {
 }
 
 /**
+ * Retrieves a single product by its ID.
+ * @param id The ID of the product to retrieve.
+ * @returns The product, or undefined if not found.
+ */
+export function getProductById(id: string): Product | undefined {
+    return products.find(p => p.id === id);
+}
+
+/**
  * Retrieves a single product by its slug.
  * If the product is a bundle, it enriches the product with the full details of the bundled items.
  * @param slug The slug of the product to retrieve.

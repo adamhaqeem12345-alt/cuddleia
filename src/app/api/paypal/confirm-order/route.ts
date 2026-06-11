@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
             }
             console.warn(`Product with ID ${item.id} not found. Skipping from order.`);
             return null;
-        }).filter((item): item is { product: Product; quantity: number } => item !== null);
+        }).filter((item: { product: Product; quantity: number } | null): item is { product: Product; quantity: number } => item !== null);
 
         if (items.length !== cart.length) {
           console.error(`CRITICAL: Mismatch in cart items for order ${orderDetails.id}. Some products could not be found locally.`);
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
         await sendOrderConfirmationEmail(order);
         
         try {
-            const itemsList = order.items.map((i) => `- ${i.product.name} (x${i.quantity})`).join('\n');
+            const itemsList = order.items.map((i: { product: Product; quantity: number }) => `- ${i.product.name} (x${i.quantity})`).join('\n');
             const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
 
@@ -71,7 +71,7 @@ ${itemsList}
             const spreadsheetId = process.env.GOOGLE_SHEET_ID;
             if (spreadsheetId) {
                 const timestamp = new Date().toISOString();
-                const productNames = order.items.map((i) => i.product.name).join(', ');
+                const productNames = order.items.map((i: { product: Product; quantity: number }) => i.product.name).join(', ');
                 const values = [[timestamp, order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
                 await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
             }
