@@ -3,13 +3,33 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { products, Product } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, Info, ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { ProductPrice } from "@/components/product-price";
 import { FreebieFormDialog } from "@/components/freebie-form-dialog";
+import { useEffect, useState } from "react";
+
+// Redefine the Product interface to include the slug
+export interface Product {
+    id: string;
+    slug: string;
+    name: string;
+    description: string;
+    price: number;
+    originalPrice?: number;
+    imageUrl: string;
+    imageWidth: number;
+    imageHeight: number;
+    category: 'Booklets' | 'Wallpapers';
+    downloadUrl?: string;
+    disclaimer: string;
+    bundleIncludes?: string[];
+}
+
+// The URL for our product service
+const PRODUCT_SERVICE_URL = process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL || 'http://localhost:3001';
 
 const ProductCard = ({ product }: { product: Product }) => {
   const isFree = product.price === 0;
@@ -23,7 +43,7 @@ const ProductCard = ({ product }: { product: Product }) => {
   return (
     <Card className="flex h-full transform flex-col overflow-hidden rounded-2xl bg-card shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:-translate-y-2 group">
       <CardHeader className="p-0">
-        <Link href={`/products/${product.id}`} className="block p-0">
+        <Link href={`/products/${product.slug}`} className="block p-0">
           <div className="relative w-full overflow-hidden" style={{ aspectRatio: `${product.imageWidth}/${product.imageHeight}`}}>
             <Image src={product.imageUrl} alt={product.name} fill className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
@@ -33,7 +53,7 @@ const ProductCard = ({ product }: { product: Product }) => {
       <CardContent className="flex flex-1 flex-col p-6">
         <div className="flex-1">
           <CardTitle>
-            <Link href={`/products/${product.id}`} className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
+            <Link href={`/products/${product.slug}`} className="font-bold tracking-tight font-headline text-2xl text-foreground transition-colors duration-300 group-hover:text-primary">
               {product.name}
             </Link>
           </CardTitle>
@@ -59,7 +79,7 @@ const ProductCard = ({ product }: { product: Product }) => {
             </FreebieFormDialog>
         ) : product.bundleIncludes ? (
             <Button asChild size="lg" className="w-full font-bold shadow-lg transition-all hover:scale-105 active:scale-95 rounded-full">
-              <Link href={`/products/${product.id}`}>
+              <Link href={`/products/${product.slug}`}>
                   View Bundle
               </Link>
             </Button>
@@ -80,8 +100,37 @@ const ProductCard = ({ product }: { product: Product }) => {
 }
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`${PRODUCT_SERVICE_URL}/products`);
+        if (response.ok) {
+          setProducts(await response.json());
+        } else {
+          console.error("Failed to fetch products from service.");
+        }
+      } catch (error) {
+        console.error("Error connecting to product service:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   const booklets = products.filter(p => p.category === 'Booklets');
   const wallpapers = products.filter(p => p.category === 'Wallpapers');
+
+  if (loading) {
+    return (
+        <div className="h-screen flex items-center justify-center">
+            <p>Loading our beautiful products...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="bg-background">
