@@ -79,6 +79,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const clearCart = () => {
     setCart([]);
+    setAppliedDiscount(0);
     localStorage.removeItem('barakah-cart');
   };
 

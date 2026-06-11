@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ShieldCheck, Loader2, CreditCard } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
@@ -33,7 +33,6 @@ export default function CheckoutPage() {
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isCardLoading, setIsCardLoading] = useState(false);
   const [{ isPending }] = usePayPalScriptReducer();
 
   const discountAmount = cartTotal * appliedDiscount;
@@ -52,13 +51,6 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
       return null;
   }
-  
-  const handlePaymentClick = () => {
-    setIsCardLoading(true);
-    setTimeout(() => {
-        setIsCardLoading(false);
-    }, 3000);
-  };
   
   const createPayPalOrder = (data: any, actions: any) => {
     setError('');
@@ -201,22 +193,11 @@ export default function CheckoutPage() {
                             key={name + email + total}
                             style={{ layout: "vertical", label: "pay" }}
                             disabled={cart.length === 0 || !name || !email || isProcessing}
-                            onClick={(data) => {
-                                if (data.fundingSource === 'card') {
-                                    handlePaymentClick();
-                                }
-                            }}
                             createOrder={createPayPalOrder}
                             onApprove={onPayPalApprove}
                             onError={onPayPalError}
                         />
                       </div>
-                      {isCardLoading && (
-                        <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Opening secure card payment...</span>
-                        </div>
-                      )}
                       <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
                           <ShieldCheck className="h-4 w-4 text-green-600" />
                           <span>Secure payment via PayPal / Apple Pay / Credit Card.</span>
