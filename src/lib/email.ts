@@ -5,7 +5,7 @@ import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * STRUCTURAL AUDIT: Fixed dynamic process.env access bug and enabled literal credential routing.
+ * STRUCTURAL AUDIT: Fixed dynamic process.env access bug and mismatched key names.
  */
 
 // Explicitly load .env for non-standard runtimes
@@ -14,24 +14,24 @@ if (typeof process !== 'undefined') {
 }
 
 /**
- * Validates that the required Zoho credentials exist in the environment.
- * STRUCTURAL FIX: Replaced dynamic indexing with literal access to ensure Webpack/Next.js mapping.
+ * Validates that the specific Zoho credentials exist in the environment.
+ * STRUCTURAL FIX: Uses literal keys ZOHO_MAIL_USER and ZOHO_MAIL_APP_PASSWORD.
  */
 const validateEnvironment = () => {
-    const user = process.env.EMAIL_USER;
-    const pass = process.env.EMAIL_PASS;
+    const user = process.env.ZOHO_MAIL_USER;
+    const pass = process.env.ZOHO_MAIL_APP_PASSWORD;
     
     if (!user || user.trim().length === 0) {
-        throw new Error("Structural Bug: process.env.EMAIL_USER is missing or empty.");
+        throw new Error("Structural Bug: process.env.ZOHO_MAIL_USER is missing or empty in .env.");
     }
     if (!pass || pass.trim().length === 0) {
-        throw new Error("Structural Bug: process.env.EMAIL_PASS is missing or empty.");
+        throw new Error("Structural Bug: process.env.ZOHO_MAIL_APP_PASSWORD is missing or empty in .env.");
     }
     return { user: user.trim(), pass: pass.trim() };
 };
 
 /**
- * Creates a fresh transporter for every request to avoid stale socket hangs.
+ * Creates a fresh transporter for every request using STARTTLS on Port 587.
  */
 const createTransporter = () => {
     const { user, pass } = validateEnvironment();
@@ -45,8 +45,8 @@ const createTransporter = () => {
             pass: pass,
         },
         requireTLS: true,
-        debug: true, // Internal tracker enabled
-        logger: true, // Internal tracker enabled
+        debug: true,
+        logger: true,
         connectionTimeout: 10000,
         greetingTimeout: 10000,
         socketTimeout: 15000,
@@ -138,7 +138,7 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
     
     const emailHtml = generateOrderEmailHtml(order);
     const mailOptions = {
-        from: user, 
+        from: `Cuddleia <${user}>`, 
         to: order.customerEmail,
         subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
         html: emailHtml,
@@ -146,13 +146,11 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
 
     try {
         await transporter.sendMail(mailOptions);
-        console.log(`[Email System] SUCCESS: Order #${order.id} delivered.`);
+        console.log(`[Email System] SUCCESS: Order #${order.id} delivered via ${user}`);
     } catch (error: any) {
         console.error(`[Email System] SMTP FAILURE:`, error.message);
-        
         const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder: ${order.id}\nError: ${error.message}`;
         sendTelegramNotification(alertMessage).catch(console.error);
-        
         throw new Error(`SMTP Error [${error.code || 'CONNECTION_FAILED'}]: ${error.message}`);
     }
 };
@@ -162,8 +160,8 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
     const transporter = createTransporter();
     
     const mailOptions = {
-        from: user,
-        to: process.env.EMAIL_TO || user,
+        from: `Cuddleia <${user}>`,
+        to: user,
         replyTo: email,
         subject: `[Contact Form] ${subject} from ${name}`,
         html: `
