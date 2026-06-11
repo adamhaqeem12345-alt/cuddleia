@@ -1,6 +1,7 @@
 
 export interface Product {
     id: string;
+    slug: string;
     name: string;
     description: string;
     price: number; // Price in USD
@@ -15,7 +16,16 @@ export interface Product {
     bundleProducts?: Product[];
 }
 
-export const products: Product[] = [
+const generateSlug = (name: string) => {
+  return name
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // remove non-word chars
+    .replace(/\s+/g, '-') // replace spaces with hyphens
+    .replace(/--+/g, '-') // replace multiple hyphens with a single one
+    .trim();
+};
+
+const rawProducts: Omit<Product, 'slug'>[] = [
   {
     id: "001",
     name: "Barakah Business Blueprint Vol. 1 (The Gentle Beginning)",
@@ -140,17 +150,4 @@ export const products: Product[] = [
   }
 ];
 
-export const getProductById = (id: string): Product | undefined => {
-    const product = products.find(p => p.id === id);
-
-    if (product?.bundleIncludes) {
-        const includedProducts = product.bundleIncludes
-            .map(bundleId => products.find(p => p.id === bundleId))
-            .filter((p): p is Product => p !== undefined);
-        return {
-            ...product,
-            bundleProducts: includedProducts,
-        };
-    }
-    return product;
-}
+export const products: Product[] = rawProducts.map(p => ({ ...p, slug: generateSlug(p.name) }));
