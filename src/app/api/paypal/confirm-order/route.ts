@@ -30,30 +30,25 @@ export async function POST(req: NextRequest) {
             total: `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`,
         };
         
-        /**
-         * Sequential fulfillment to prevent function termination before email completes.
-         */
-        try {
-            await sendOrderConfirmationEmail(order);
+        // Fulfillment
+        await sendOrderConfirmationEmail(order);
 
-            const itemsList = order.items.map((i) => `- ${i.product.name}`).join('\n');
-            const telegramMessage = `🛍️ *New Order!* 🛍️\n*Order ID:* ${order.id}\n*Name:* ${order.customerName}\n*Email:* ${order.customerEmail}\n\n*Items:*\n${itemsList}`;
-            sendTelegramNotification(telegramMessage).catch(console.error);
+        // Background logging
+        const itemsList = order.items.map((i) => `- ${i.product.name}`).join('\n');
+        const telegramMessage = `🛍️ *New Order!* 🛍️\n*Order ID:* ${order.id}\n*Name:* ${order.customerName}\n*Email:* ${order.customerEmail}\n\n*Items:*\n${itemsList}`;
+        sendTelegramNotification(telegramMessage).catch(console.error);
 
-            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-            if (spreadsheetId) {
-                const productNames = order.items.map((i) => i.product.name).join(', ');
-                const values = [[new Date().toISOString(), order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
-                appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
-            }
-        } catch (fulfillmentError: any) {
-            console.error("[PayPal API] Fulfillment Error:", fulfillmentError.message);
+        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+        if (spreadsheetId) {
+            const productNames = order.items.map((i) => i.product.name).join(', ');
+            const values = [[new Date().toISOString(), order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
+            appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
         }
 
         return NextResponse.json({ success: true, message: 'Order confirmed.' });
 
     } catch (error: any) {
-        console.error('Error in /api/paypal/confirm-order:', error);
-        return NextResponse.json({ error: error.message || 'Failed to confirm order.' }, { status: 500 });
+        console.error('PayPal Confirm Error:', error.message);
+        return NextResponse.json({ error: `Fulfillment Failed: ${error.message}` }, { status: 500 });
     }
 }

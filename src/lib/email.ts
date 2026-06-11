@@ -5,7 +5,7 @@ import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Identified and resolved structural bugs regarding error propagation and Zoho identity strictness.
+ * Structural audit: Simplified identity headers and improved error propagation.
  */
 
 const checkEnv = () => {
@@ -27,7 +27,7 @@ const createTransporter = () => {
         port: 587,
         secure: false, // STARTTLS
         auth: {
-            user: process.env.EMAIL_USER?.trim(),
+            user: (process.env.EMAIL_USER || '').trim(),
             pass: process.env.EMAIL_PASS,
         },
         requireTLS: true,
@@ -35,7 +35,7 @@ const createTransporter = () => {
         greetingTimeout: 5000,
         socketTimeout: 10000,
         tls: {
-            rejectUnauthorized: false, // Helps in restricted cloud environments
+            rejectUnauthorized: false,
         }
     });
 };
@@ -121,65 +121,52 @@ const generateOrderEmailHtml = (order: Order) => {
 
 export const sendOrderConfirmationEmail = async (order: Order) => {
     checkEnv();
-    const senderEmail = process.env.EMAIL_USER?.trim();
+    const senderEmail = (process.env.EMAIL_USER || '').trim();
     const transporter = createTransporter();
     
     const emailHtml = generateOrderEmailHtml(order);
     const mailOptions = {
-        from: `"Cuddleia Fulfillment" <${senderEmail}>`, // Formal identity strictly required by Zoho
+        from: senderEmail, // Strict identity for Zoho stability
         to: order.customerEmail,
         subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
         html: emailHtml,
     };
 
-    console.log(`[Email System] Attempting delivery of #${order.id} to ${order.customerEmail}...`);
-    
     try {
         await transporter.sendMail(mailOptions);
         console.log(`[Email System] SUCCESS: Order #${order.id} delivered.`);
     } catch (error: any) {
         console.error(`[Email System] DELIVERY FAILURE:`, error.message);
-        // Alert via Telegram if primary fulfillment fails
-        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder ID: ${order.id}\nCustomer: ${order.customerName}\nError: ${error.message}`;
+        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder: ${order.id}\nError: ${error.message}`;
         sendTelegramNotification(alertMessage).catch(console.error);
-        throw error; // Propagate to API route
+        throw new Error(`Email delivery failed: ${error.message}`);
     }
-};
-
-const generateContactEmailHtml = (name: string, email: string, subject: string, message: string) => {
-    return `
-        <div style="font-family: Arial, sans-serif; color: #333;">
-            <h1 style="color: #EC5C8C;">New Inquiry</h1>
-            <p><strong>From:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
-                <p><strong>Message:</strong></p>
-                <p>${message}</p>
-            </div>
-        </div>
-    `;
 };
 
 export const sendContactFormEmail = async (name: string, email: string, subject: string, message: string) => {
     checkEnv();
-    const senderEmail = process.env.EMAIL_USER?.trim();
+    const senderEmail = (process.env.EMAIL_USER || '').trim();
     const transporter = createTransporter();
-    const emailHtml = generateContactEmailHtml(name, email, subject, message);
     
     const mailOptions = {
-        from: `"Cuddleia Support" <${senderEmail}>`,
+        from: senderEmail,
         to: process.env.EMAIL_TO || senderEmail,
         replyTo: email,
         subject: `[Contact Form] ${subject} from ${name}`,
-        html: emailHtml,
+        html: `
+            <div style="font-family: Arial, sans-serif;">
+                <h2 style="color: #EC5C8C;">New Inquiry from ${name}</h2>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Message:</strong></p>
+                <p style="padding: 15px; background: #f9f9f9; border-radius: 8px;">${message}</p>
+            </div>
+        `,
     };
     
     try {
         await transporter.sendMail(mailOptions);
-        console.log('[Email System] Contact form inquiry delivered.');
     } catch (error: any) {
         console.error('[Email System] Contact form failure:', error.message);
-        throw error;
+        throw new Error(`Failed to send inquiry: ${error.message}`);
     }
 };

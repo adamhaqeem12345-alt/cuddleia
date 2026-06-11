@@ -28,21 +28,20 @@ export async function POST(req: NextRequest) {
 
     /**
      * PRIMARY ACTION: Email Fulfillment
-     * We strictly await this. If it fails, the error will be caught and a 500 returned.
+     * We await this to ensure we can catch and report errors.
      */
     await sendOrderConfirmationEmail(order);
     
     /**
-     * SECONDARY ACTIONS: Notifications & Logging
-     * Backgrounded to ensure the UI remains fast.
+     * SECONDARY ACTIONS: Backgrounded
      */
     const telegramMessage = `🎁 *Freebie!* 🎁\n*Product:* ${product.name}\n*Name:* ${name}\n*Email:* ${email}`;
-    sendTelegramNotification(telegramMessage).catch(err => console.error("[Telegram] Error:", err.message));
+    sendTelegramNotification(telegramMessage).catch(console.error);
 
     const spreadsheetId = process.env.GOOGLE_SHEET_ID;
     if (spreadsheetId) {
         const values = [[new Date().toISOString(), name, email, phone || '', product.name, '0']];
-        appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(err => console.error("[Sheets] Error:", err.message));
+        appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
     }
 
     return NextResponse.json({ 
@@ -51,9 +50,9 @@ export async function POST(req: NextRequest) {
     }, { status: 200 });
 
   } catch (error: any) {
-    console.error('CRITICAL: Freebie API failure:', error.message);
+    console.error('Freebie API Error:', error.message);
     return NextResponse.json({ 
-        error: 'We encountered an issue preparing your download. Please check your credentials or contact us if this persists.' 
+        error: `Fulfillment Error: ${error.message}. Please verify your email or contact support.` 
     }, { status: 500 });
   }
 }
