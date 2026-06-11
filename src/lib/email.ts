@@ -5,44 +5,51 @@ import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Structural audit: Fixed credential corruption, enabled debug tracking, and improved identity consistency.
+ * STRUCTURAL AUDIT: Fixed dynamic process.env access bug and enabled literal credential routing.
  */
 
-const checkEnv = () => {
-    const required = ['EMAIL_USER', 'EMAIL_PASS'];
-    const missing = required.filter(key => {
-        const val = process.env[key];
-        return !val || val.trim().length === 0;
-    });
+// Explicitly load .env for non-standard runtimes
+if (typeof process !== 'undefined') {
+    require('dotenv').config();
+}
+
+/**
+ * Validates that the required Zoho credentials exist in the environment.
+ * STRUCTURAL FIX: Replaced dynamic indexing with literal access to ensure Webpack/Next.js mapping.
+ */
+const validateEnvironment = () => {
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS;
     
-    if (missing.length > 0) {
-        throw new Error(`Missing or empty environment variables: ${missing.join(', ')}`);
+    if (!user || user.trim().length === 0) {
+        throw new Error("Structural Bug: process.env.EMAIL_USER is missing or empty.");
     }
-    return true;
+    if (!pass || pass.trim().length === 0) {
+        throw new Error("Structural Bug: process.env.EMAIL_PASS is missing or empty.");
+    }
+    return { user: user.trim(), pass: pass.trim() };
 };
 
 /**
- * Creates a fresh transporter with full debug logging enabled.
- * This acts as our internal error tracker for SMTP handshakes.
+ * Creates a fresh transporter for every request to avoid stale socket hangs.
  */
 const createTransporter = () => {
+    const { user, pass } = validateEnvironment();
+    
     return nodemailer.createTransport({
         host: 'smtp.zoho.com',
         port: 587,
-        secure: false, // STARTTLS
+        secure: false, // Use STARTTLS
         auth: {
-            user: (process.env.EMAIL_USER || '').trim(),
-            pass: (process.env.EMAIL_PASS || '').trim(), // Structural Fix: Trim password to prevent "ghost" whitespace bugs
+            user: user,
+            pass: pass,
         },
         requireTLS: true,
-        debug: true, // ERROR TRACKER: Enable SMTP debug logging
-        logger: true, // ERROR TRACKER: Log SMTP conversation to console
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 10000,
-        tls: {
-            rejectUnauthorized: false, // Necessary for many cloud-to-Zoho handshakes
-        }
+        debug: true, // Internal tracker enabled
+        logger: true, // Internal tracker enabled
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
     });
 };
 
@@ -126,13 +133,12 @@ const generateOrderEmailHtml = (order: Order) => {
 };
 
 export const sendOrderConfirmationEmail = async (order: Order) => {
-    checkEnv();
-    const senderEmail = (process.env.EMAIL_USER || '').trim();
+    const { user } = validateEnvironment();
     const transporter = createTransporter();
     
     const emailHtml = generateOrderEmailHtml(order);
     const mailOptions = {
-        from: senderEmail, 
+        from: user, 
         to: order.customerEmail,
         subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
         html: emailHtml,
@@ -142,31 +148,22 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         await transporter.sendMail(mailOptions);
         console.log(`[Email System] SUCCESS: Order #${order.id} delivered.`);
     } catch (error: any) {
-        // ERROR TRACKER: Log specific SMTP details to the server console
-        const smtpError = {
-            message: error.message,
-            code: error.code,
-            response: error.response,
-            responseCode: error.responseCode,
-            command: error.command
-        };
-        console.error(`[Email System] SMTP STRUCTURAL ERROR:`, JSON.stringify(smtpError, null, 2));
-
-        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder: ${order.id}\nError: ${error.message}\nCode: ${error.code}`;
+        console.error(`[Email System] SMTP FAILURE:`, error.message);
+        
+        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder: ${order.id}\nError: ${error.message}`;
         sendTelegramNotification(alertMessage).catch(console.error);
         
-        throw new Error(`SMTP Error [${error.code || 'UNKNOWN'}]: ${error.message}`);
+        throw new Error(`SMTP Error [${error.code || 'CONNECTION_FAILED'}]: ${error.message}`);
     }
 };
 
 export const sendContactFormEmail = async (name: string, email: string, subject: string, message: string) => {
-    checkEnv();
-    const senderEmail = (process.env.EMAIL_USER || '').trim();
+    const { user } = validateEnvironment();
     const transporter = createTransporter();
     
     const mailOptions = {
-        from: senderEmail,
-        to: process.env.EMAIL_TO || senderEmail,
+        from: user,
+        to: process.env.EMAIL_TO || user,
         replyTo: email,
         subject: `[Contact Form] ${subject} from ${name}`,
         html: `
@@ -182,7 +179,7 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
     try {
         await transporter.sendMail(mailOptions);
     } catch (error: any) {
-        console.error('[Email System] Contact form structural failure:', error.message);
-        throw new Error(`SMTP Error [${error.code || 'UNKNOWN'}]: ${error.message}`);
+        console.error('[Email System] Contact form failure:', error.message);
+        throw new Error(`SMTP Error [${error.code || 'CONNECTION_FAILED'}]: ${error.message}`);
     }
 };
