@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
     }
     
+    // Await email delivery so we can catch structural bugs
     await sendContactFormEmail(name, email, subject, message);
     
     // Background notifications
@@ -27,7 +28,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: 'Message sent!' }, { status: 200 });
 
   } catch (error: any) {
-    console.error('Contact API Error:', error.message);
+    console.error('Contact API Error Tracked:', error.message);
+    // STRUCTURAL FIX: Expose the raw error message to the client
     return NextResponse.json({ error: `Message Delivery Failed: ${error.message}` }, { status: 500 });
   }
 }

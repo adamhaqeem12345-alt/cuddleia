@@ -28,12 +28,12 @@ export async function POST(req: NextRequest) {
 
     /**
      * PRIMARY ACTION: Email Fulfillment
-     * We await this to ensure we can catch and report errors.
+     * This is awaited so the UI can report actual SMTP errors via our new tracker.
      */
     await sendOrderConfirmationEmail(order);
     
     /**
-     * SECONDARY ACTIONS: Backgrounded
+     * SECONDARY ACTIONS: Backgrounded to avoid blocking the user
      */
     const telegramMessage = `🎁 *Freebie!* 🎁\n*Product:* ${product.name}\n*Name:* ${name}\n*Email:* ${email}`;
     sendTelegramNotification(telegramMessage).catch(console.error);
@@ -50,9 +50,10 @@ export async function POST(req: NextRequest) {
     }, { status: 200 });
 
   } catch (error: any) {
-    console.error('Freebie API Error:', error.message);
+    console.error('Freebie API Error Tracked:', error.message);
+    // STRUCTURAL FIX: Return the actual error message to the client for debugging
     return NextResponse.json({ 
-        error: `Fulfillment Error: ${error.message}. Please verify your email or contact support.` 
+        error: `Fulfillment Failed: ${error.message}` 
     }, { status: 500 });
   }
 }

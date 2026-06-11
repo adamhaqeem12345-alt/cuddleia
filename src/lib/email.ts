@@ -5,21 +5,25 @@ import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Structural audit: Simplified identity headers and improved error propagation.
+ * Structural audit: Fixed credential corruption, enabled debug tracking, and improved identity consistency.
  */
 
 const checkEnv = () => {
     const required = ['EMAIL_USER', 'EMAIL_PASS'];
-    const missing = required.filter(key => !process.env[key]);
+    const missing = required.filter(key => {
+        const val = process.env[key];
+        return !val || val.trim().length === 0;
+    });
+    
     if (missing.length > 0) {
-        throw new Error(`Missing environment variables: ${missing.join(', ')}`);
+        throw new Error(`Missing or empty environment variables: ${missing.join(', ')}`);
     }
     return true;
 };
 
 /**
- * Creates a fresh transporter with strict timeout and identity settings.
- * Zoho requires explicit STARTTLS on Port 587.
+ * Creates a fresh transporter with full debug logging enabled.
+ * This acts as our internal error tracker for SMTP handshakes.
  */
 const createTransporter = () => {
     return nodemailer.createTransport({
@@ -28,14 +32,16 @@ const createTransporter = () => {
         secure: false, // STARTTLS
         auth: {
             user: (process.env.EMAIL_USER || '').trim(),
-            pass: process.env.EMAIL_PASS,
+            pass: (process.env.EMAIL_PASS || '').trim(), // Structural Fix: Trim password to prevent "ghost" whitespace bugs
         },
         requireTLS: true,
-        connectionTimeout: 5000, // 5 seconds to prevent UI hangs
+        debug: true, // ERROR TRACKER: Enable SMTP debug logging
+        logger: true, // ERROR TRACKER: Log SMTP conversation to console
+        connectionTimeout: 5000,
         greetingTimeout: 5000,
         socketTimeout: 10000,
         tls: {
-            rejectUnauthorized: false,
+            rejectUnauthorized: false, // Necessary for many cloud-to-Zoho handshakes
         }
     });
 };
@@ -126,7 +132,7 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
     
     const emailHtml = generateOrderEmailHtml(order);
     const mailOptions = {
-        from: senderEmail, // Strict identity for Zoho stability
+        from: senderEmail, 
         to: order.customerEmail,
         subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
         html: emailHtml,
@@ -136,10 +142,20 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         await transporter.sendMail(mailOptions);
         console.log(`[Email System] SUCCESS: Order #${order.id} delivered.`);
     } catch (error: any) {
-        console.error(`[Email System] DELIVERY FAILURE:`, error.message);
-        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder: ${order.id}\nError: ${error.message}`;
+        // ERROR TRACKER: Log specific SMTP details to the server console
+        const smtpError = {
+            message: error.message,
+            code: error.code,
+            response: error.response,
+            responseCode: error.responseCode,
+            command: error.command
+        };
+        console.error(`[Email System] SMTP STRUCTURAL ERROR:`, JSON.stringify(smtpError, null, 2));
+
+        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder: ${order.id}\nError: ${error.message}\nCode: ${error.code}`;
         sendTelegramNotification(alertMessage).catch(console.error);
-        throw new Error(`Email delivery failed: ${error.message}`);
+        
+        throw new Error(`SMTP Error [${error.code || 'UNKNOWN'}]: ${error.message}`);
     }
 };
 
@@ -166,7 +182,7 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
     try {
         await transporter.sendMail(mailOptions);
     } catch (error: any) {
-        console.error('[Email System] Contact form failure:', error.message);
-        throw new Error(`Failed to send inquiry: ${error.message}`);
+        console.error('[Email System] Contact form structural failure:', error.message);
+        throw new Error(`SMTP Error [${error.code || 'UNKNOWN'}]: ${error.message}`);
     }
 };
