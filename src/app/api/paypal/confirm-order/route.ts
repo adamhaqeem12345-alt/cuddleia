@@ -34,13 +34,13 @@ export async function POST(req: NextRequest) {
         await sendOrderConfirmationEmail(order);
 
         // Background logging
-        const itemsList = order.items.map((i) => `- ${i.product.name}`).join('\n');
+        const itemsList = order.items.map((i: { product: Product; quantity: number }) => `- ${i.product.name}`).join('\n');
         const telegramMessage = `🛍️ *New Order!* 🛍️\n*Order ID:* ${order.id}\n*Name:* ${order.customerName}\n*Email:* ${order.customerEmail}\n\n*Items:*\n${itemsList}`;
         sendTelegramNotification(telegramMessage).catch(console.error);
 
         const spreadsheetId = process.env.GOOGLE_SHEET_ID;
         if (spreadsheetId) {
-            const productNames = order.items.map((i) => i.product.name).join(', ');
+            const productNames = order.items.map((i: { product: Product; quantity: number }) => i.product.name).join(', ');
             const values = [[new Date().toISOString(), order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
             appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
         }
