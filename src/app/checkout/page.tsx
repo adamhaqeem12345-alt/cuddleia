@@ -11,7 +11,6 @@ import { useState, useEffect } from 'react';
 import { ProductPrice } from '@/components/product-price';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 
-// Custom hook to manage form state
 function useCheckoutForm() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,26 +28,26 @@ function LoadingOverlay({ text = 'Processing your order...' }: { text?: string }
 }
 
 export default function CheckoutPage() {
-  const { cart, cartTotal } = useCart();
+  const { cart, cartTotal, appliedDiscount } = useCart();
   const router = useRouter();
   const { name, setName, email, setEmail, phone, setPhone } = useCheckoutForm();
   const [error, setError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [{ isPending }] = usePayPalScriptReducer();
 
+  const discountAmount = cartTotal * appliedDiscount;
+  const total = cartTotal - discountAmount;
+
   useEffect(() => {
-    // Once the cart is loaded, if it's empty, redirect.
-    if (cart && cart.length === 0) {
+    if (cart && cart.length === 0 && !isProcessing) {
         router.push('/products');
     }
-  }, [cart, router]);
+  }, [cart, router, isProcessing]);
 
-  // First, handle the loading state for the cart and PayPal scripts.
   if (!cart || isPending) {
-      return <LoadingOverlay text="Loading your cart..." />;
+      return <LoadingOverlay text="Loading checkout..." />;
   }
-  
-  // After loading, if the cart is empty, render nothing while useEffect redirects.
+
   if (cart.length === 0) {
       return null;
   }
@@ -64,7 +63,7 @@ export default function CheckoutPage() {
       purchase_units: [
         {
           amount: {
-            value: cartTotal.toFixed(2),
+            value: total.toFixed(2),
             currency_code: 'USD',
           },
           custom_id: JSON.stringify({
@@ -72,7 +71,7 @@ export default function CheckoutPage() {
               name,
               email,
               phone,
-              totalAmountUSD: cartTotal
+              totalAmountUSD: total
           }),
         },
       ],
@@ -151,13 +150,19 @@ export default function CheckoutPage() {
                       <span>Subtotal</span>
                       <span className="font-bold">${cartTotal.toFixed(2)}</span>
                   </div>
+                  {appliedDiscount > 0 && (
+                      <div className="flex justify-between text-lg text-green-600">
+                          <span>Discount ({(appliedDiscount * 100).toFixed(0)}%)</span>
+                          <span className="font-bold">-${discountAmount.toFixed(2)}</span>
+                      </div>
+                  )}
                   <div className="flex justify-between text-lg">
                       <span>Taxes & Fees</span>
                       <span className="font-bold">$0.00</span>
                   </div>
                   <div className="border-t pt-3 mt-3 flex justify-between text-2xl font-bold">
                       <span>Total</span>
-                      <ProductPrice price={cartTotal} isTotal={true}/>
+                      <ProductPrice price={total} isTotal={true}/>
                   </div>
                 </div>
               </div>
@@ -185,7 +190,7 @@ export default function CheckoutPage() {
                       
                       <div style={{ opacity: isProcessing ? 0.5 : 1 }}>
                         <PayPalButtons 
-                            key={name + email + cartTotal}
+                            key={name + email + total}
                             style={{ layout: "vertical", label: "pay" }}
                             disabled={cart.length === 0 || !name || !email || isProcessing}
                             createOrder={createPayPalOrder}

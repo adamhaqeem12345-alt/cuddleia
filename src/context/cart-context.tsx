@@ -7,7 +7,7 @@ export interface CartItem extends Product {
   quantity: number;
 }
 
-interface CartContextType {
+export interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
@@ -16,6 +16,7 @@ interface CartContextType {
   clearCart: () => void;
   cartTotal: number;
   appliedDiscount: number;
+  setAppliedDiscount: (discount: number) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -29,13 +30,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (savedCart) {
         try {
             const parsedCart: CartItem[] = JSON.parse(savedCart);
-            // Basic validation to ensure parsed data is an array of cart items
             if (Array.isArray(parsedCart) && parsedCart.every(item => 'id' in item && 'quantity' in item)) {
                  setCart(parsedCart);
             }
         } catch (error) {
             console.error("Failed to parse cart from localStorage", error);
-            // If parsing fails, start with an empty cart
             setCart([]);
         }
     }
@@ -96,6 +95,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         clearCart,
         cartTotal,
         appliedDiscount,
+        setAppliedDiscount,
       }}
     >
       {children}
