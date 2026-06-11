@@ -27,23 +27,22 @@ export async function POST(req: NextRequest) {
     };
 
     /**
-     * Sequential fulfillment to ensure completion in serverless environments.
-     * We strictly await the email delivery first.
+     * PRIMARY ACTION: Email Fulfillment
+     * We strictly await this. If it fails, the error will be caught and a 500 returned.
      */
-    try {
-        await sendOrderConfirmationEmail(order);
-        
-        // Background these as they are non-critical and use global fetch
-        const telegramMessage = `🎁 *Freebie!* 🎁\n*Product:* ${product.name}\n*Name:* ${name}\n*Email:* ${email}`;
-        sendTelegramNotification(telegramMessage).catch(console.error);
+    await sendOrderConfirmationEmail(order);
+    
+    /**
+     * SECONDARY ACTIONS: Notifications & Logging
+     * Backgrounded to ensure the UI remains fast.
+     */
+    const telegramMessage = `🎁 *Freebie!* 🎁\n*Product:* ${product.name}\n*Name:* ${name}\n*Email:* ${email}`;
+    sendTelegramNotification(telegramMessage).catch(err => console.error("[Telegram] Error:", err.message));
 
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-        if (spreadsheetId) {
-            const values = [[new Date().toISOString(), name, email, phone || '', product.name, '0']];
-            appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(console.error);
-        }
-    } catch (fulfillmentError: any) {
-        console.error("[Freebie API] Fulfillment Error:", fulfillmentError.message);
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+    if (spreadsheetId) {
+        const values = [[new Date().toISOString(), name, email, phone || '', product.name, '0']];
+        appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values).catch(err => console.error("[Sheets] Error:", err.message));
     }
 
     return NextResponse.json({ 
@@ -52,7 +51,9 @@ export async function POST(req: NextRequest) {
     }, { status: 200 });
 
   } catch (error: any) {
-    console.error('Error in /api/freebie:', error);
-    return NextResponse.json({ error: error.message || 'Failed to process request.' }, { status: 500 });
+    console.error('CRITICAL: Freebie API failure:', error.message);
+    return NextResponse.json({ 
+        error: 'We encountered an issue preparing your download. Please check your credentials or contact us if this persists.' 
+    }, { status: 500 });
   }
 }

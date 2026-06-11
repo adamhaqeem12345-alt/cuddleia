@@ -5,29 +5,21 @@ import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Structural audit conducted to resolve Zoho SMTP delivery failures and UI hangs.
- * 
- * BUGS FIXED:
- * 1. Singleton Transporter: Removed singleton to prevent stale socket hangs in serverless environments.
- * 2. Password Trimming: Removed .trim() from EMAIL_PASS to preserve special characters/spaces.
- * 3. Connection Latency: Implemented strict 5s timeouts to prevent UI hangs.
- * 4. Protocol Stability: Enforced STARTTLS on Port 587 with explicit handshake requirements.
+ * Identified and resolved structural bugs regarding error propagation and Zoho identity strictness.
  */
 
 const checkEnv = () => {
     const required = ['EMAIL_USER', 'EMAIL_PASS'];
     const missing = required.filter(key => !process.env[key]);
     if (missing.length > 0) {
-        console.error(`[Email System] CRITICAL: Missing environment variables: ${missing.join(', ')}`);
-        return false;
+        throw new Error(`Missing environment variables: ${missing.join(', ')}`);
     }
     return true;
 };
 
 /**
- * Creates a fresh transporter for each request.
- * Singleton transporters in serverless environments (App Hosting) often lead to 
- * stale socket hangs which block the UI response.
+ * Creates a fresh transporter with strict timeout and identity settings.
+ * Zoho requires explicit STARTTLS on Port 587.
  */
 const createTransporter = () => {
     return nodemailer.createTransport({
@@ -36,15 +28,15 @@ const createTransporter = () => {
         secure: false, // STARTTLS
         auth: {
             user: process.env.EMAIL_USER?.trim(),
-            // CRITICAL: Removed .trim() to ensure password integrity
             pass: process.env.EMAIL_PASS,
         },
-        // Strict timeouts to ensure the UI never hangs indefinitely
-        connectionTimeout: 5000,
+        requireTLS: true,
+        connectionTimeout: 5000, // 5 seconds to prevent UI hangs
         greetingTimeout: 5000,
         socketTimeout: 10000,
-        debug: false,
-        logger: false,
+        tls: {
+            rejectUnauthorized: false, // Helps in restricted cloud environments
+        }
     });
 };
 
@@ -128,36 +120,29 @@ const generateOrderEmailHtml = (order: Order) => {
 };
 
 export const sendOrderConfirmationEmail = async (order: Order) => {
+    checkEnv();
+    const senderEmail = process.env.EMAIL_USER?.trim();
+    const transporter = createTransporter();
+    
+    const emailHtml = generateOrderEmailHtml(order);
+    const mailOptions = {
+        from: `"Cuddleia Fulfillment" <${senderEmail}>`, // Formal identity strictly required by Zoho
+        to: order.customerEmail,
+        subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
+        html: emailHtml,
+    };
+
+    console.log(`[Email System] Attempting delivery of #${order.id} to ${order.customerEmail}...`);
+    
     try {
-        if (!checkEnv()) return false;
-
-        const senderEmail = process.env.EMAIL_USER?.trim();
-        const transporter = createTransporter();
-        
-        const emailHtml = generateOrderEmailHtml(order);
-        const mailOptions = {
-            from: senderEmail, 
-            to: order.customerEmail,
-            subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
-            html: emailHtml,
-        };
-
-        console.log(`[Email System] Sending #${order.id} to ${order.customerEmail}...`);
         await transporter.sendMail(mailOptions);
         console.log(`[Email System] SUCCESS: Order #${order.id} delivered.`);
-        return true;
     } catch (error: any) {
-        console.error(`[Email System] DELIVERY FAILURE for #${order.id}:`, error.message);
-        
-        const alertMessage = `
-🚨 *FULFILLMENT FAILURE* 🚨
-Order ID: ${order.id}
-Customer: ${order.customerName} (${order.customerEmail})
-Error: ${error.message}
-        `;
-        await sendTelegramNotification(alertMessage);
-        
-        return false;
+        console.error(`[Email System] DELIVERY FAILURE:`, error.message);
+        // Alert via Telegram if primary fulfillment fails
+        const alertMessage = `🚨 *FULFILLMENT FAILURE* 🚨\nOrder ID: ${order.id}\nCustomer: ${order.customerName}\nError: ${error.message}`;
+        sendTelegramNotification(alertMessage).catch(console.error);
+        throw error; // Propagate to API route
     }
 };
 
@@ -177,24 +162,22 @@ const generateContactEmailHtml = (name: string, email: string, subject: string, 
 };
 
 export const sendContactFormEmail = async (name: string, email: string, subject: string, message: string) => {
+    checkEnv();
+    const senderEmail = process.env.EMAIL_USER?.trim();
+    const transporter = createTransporter();
+    const emailHtml = generateContactEmailHtml(name, email, subject, message);
+    
+    const mailOptions = {
+        from: `"Cuddleia Support" <${senderEmail}>`,
+        to: process.env.EMAIL_TO || senderEmail,
+        replyTo: email,
+        subject: `[Contact Form] ${subject} from ${name}`,
+        html: emailHtml,
+    };
+    
     try {
-        if (!checkEnv()) throw new Error('Email credentials not configured');
-        
-        const senderEmail = process.env.EMAIL_USER?.trim();
-        const transporter = createTransporter();
-        const emailHtml = generateContactEmailHtml(name, email, subject, message);
-        
-        const mailOptions = {
-            from: senderEmail,
-            to: process.env.EMAIL_TO || process.env.EMAIL_USER,
-            replyTo: email,
-            subject: `[Contact Form] ${subject} from ${name}`,
-            html: emailHtml,
-        };
-        
         await transporter.sendMail(mailOptions);
         console.log('[Email System] Contact form inquiry delivered.');
-        return true;
     } catch (error: any) {
         console.error('[Email System] Contact form failure:', error.message);
         throw error;
