@@ -2,8 +2,11 @@
 import nodemailer from 'nodemailer';
 import { Product } from '@/interfaces/product';
 
-// --- Environment Variable Check ---
-// We check these at runtime to ensure the system is healthy.
+/**
+ * @fileOverview Hardened email fulfillment system for Cuddleia.
+ * Optimized specifically for Zoho SMTP (Port 587 / STARTTLS).
+ */
+
 const checkEnv = () => {
     const required = ['EMAIL_USER', 'EMAIL_PASS'];
     const missing = required.filter(key => !process.env[key]);
@@ -15,26 +18,26 @@ const checkEnv = () => {
 };
 
 // --- Transporter Configuration ---
-// Using Port 587 with STARTTLS (secure: false) is often more reliable than 465.
+// We use Port 587 (STARTTLS) which is more reliable in serverless environments than Port 465.
 const transporter = nodemailer.createTransport({
     host: 'smtp.zoho.com',
     port: 587,
-    secure: false, 
+    secure: false, // Port 587 uses STARTTLS, so secure must be false
     auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.EMAIL_USER?.trim(),
+        pass: process.env.EMAIL_PASS?.trim(),
     },
     tls: {
-        // Explicitly require TLS and allow Zoho's specific handshakes
+        // Required for STARTTLS on port 587
         rejectUnauthorized: true,
+        minVersion: 'TLSv1.2'
     },
-    // Prevent long hangs if the connection is slow
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 20000,
+    // Strict timeouts to prevent the UI from hanging if Zoho is slow
+    connectionTimeout: 5000, // 5 seconds
+    greetingTimeout: 5000,
+    socketTimeout: 10000,
 });
 
-// --- Order Confirmation Logic ---
 export interface Order {
     id: string;
     customerName: string;
@@ -118,7 +121,8 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
     try {
         if (!checkEnv()) return false;
 
-        const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+        // Zoho requires the 'from' address to match the authenticated user email exactly.
+        const senderEmail = process.env.EMAIL_USER?.trim();
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
@@ -137,7 +141,6 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
     }
 };
 
-// --- Contact Form Logic ---
 const generateContactEmailHtml = (name: string, email: string, subject: string, message: string) => {
     return `
         <div style="font-family: Arial, sans-serif; color: #333;">
@@ -157,7 +160,7 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
     try {
         if (!checkEnv()) throw new Error('Email credentials not configured');
         
-        const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+        const senderEmail = process.env.EMAIL_USER?.trim();
         const emailHtml = generateContactEmailHtml(name, email, subject, message);
         
         const mailOptions = {
