@@ -15,12 +15,14 @@ interface CartContextType {
   isProductInCart: (productId: string) => boolean;
   clearCart: () => void;
   cartTotal: number;
+  appliedDiscount: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [appliedDiscount, setAppliedDiscount] = useState(0);
 
   useEffect(() => {
     const savedCart = localStorage.getItem('barakah-cart');
@@ -93,6 +95,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         isProductInCart,
         clearCart,
         cartTotal,
+        appliedDiscount,
       }}
     >
       {children}
