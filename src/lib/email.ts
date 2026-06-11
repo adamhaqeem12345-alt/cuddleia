@@ -2,46 +2,37 @@
 import nodemailer from 'nodemailer';
 import { Product } from '@/interfaces/product';
 
-// --- Diagnostic Check ---
-const requiredEnv = ['EMAIL_USER', 'EMAIL_PASS', 'EMAIL_FROM'];
-const missingEnv = requiredEnv.filter(key => !process.env[key]);
+// --- Environment Variable Check ---
+// We check these at runtime to ensure the system is healthy.
+const checkEnv = () => {
+    const required = ['EMAIL_USER', 'EMAIL_PASS'];
+    const missing = required.filter(key => !process.env[key]);
+    if (missing.length > 0) {
+        console.error(`[Email System] CRITICAL: Missing environment variables: ${missing.join(', ')}`);
+        return false;
+    }
+    return true;
+};
 
-if (missingEnv.length > 0) {
-    console.error(`[Email System] CRITICAL: The following environment variables are missing: ${missingEnv.join(', ')}`);
-    console.error(`[Email System] Please ensure these are defined in your .env file or deployment settings.`);
-}
-
-// --- Common Transporter ---
-// Zoho Mail usually requires Port 465 with secure: true
+// --- Transporter Configuration ---
+// Using Port 587 with STARTTLS (secure: false) is often more reliable than 465.
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.zoho.com',
-    port: Number(process.env.EMAIL_PORT) || 465,
-    secure: true, 
+    host: 'smtp.zoho.com',
+    port: 587,
+    secure: false, 
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    // Tightened timeouts for Zoho performance
-    connectionTimeout: 15000, // 15 seconds
-    greetingTimeout: 15000,   // 15 seconds
-    socketTimeout: 30000,     // 30 seconds
-    debug: false,             // Set to true only if actively debugging protocol
-    logger: false,
+    tls: {
+        // Explicitly require TLS and allow Zoho's specific handshakes
+        rejectUnauthorized: true,
+    },
+    // Prevent long hangs if the connection is slow
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
 });
-
-// Verify connection configuration on startup
-if (missingEnv.length === 0) {
-    transporter.verify(function (error, success) {
-      if (error) {
-        console.error('[Email System] Connection Failed:', error.message);
-        if (error.message.includes('EAUTH')) {
-            console.error('[Email System] HINT: This is likely an authentication failure. If using Zoho with 2FA, you MUST use an "App Password" instead of your regular password.');
-        }
-      } else {
-        console.log('[Email System] SUCCESS: Server is ready to deliver Barakah.');
-      }
-    });
-}
 
 // --- Order Confirmation Logic ---
 export interface Order {
@@ -125,71 +116,38 @@ const generateOrderEmailHtml = (order: Order) => {
 
 export const sendOrderConfirmationEmail = async (order: Order) => {
     try {
-        if (missingEnv.length > 0) {
-            console.error(`[Email System] Aborting delivery for #${order.id}: Missing credentials.`);
-            return false;
-        }
+        if (!checkEnv()) return false;
 
-        console.log(`[Email System] Attempting delivery for #${order.id} to ${order.customerEmail}...`);
+        const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
-            from: `"Cuddleia" <${process.env.EMAIL_FROM}>`,
+            from: `"Cuddleia" <${senderEmail}>`,
             to: order.customerEmail,
             subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
             html: emailHtml,
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`[Email System] SUCCESS: Order #${order.id} delivered. ID: ${info.messageId}`);
+        console.log(`[Email System] SUCCESS: Order #${order.id} delivered. MessageID: ${info.messageId}`);
         return true;
     } catch (error: any) {
-        console.error(`[Email System] ERROR for Order #${order.id}:`, error.message);
+        console.error(`[Email System] DELIVERY ERROR for #${order.id}:`, error.message);
         return false;
     }
 };
 
 // --- Contact Form Logic ---
 const generateContactEmailHtml = (name: string, email: string, subject: string, message: string) => {
-    const styles = {
-        container: `font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto;`,
-        header: `background-color: #f4f4f4; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;`,
-        body: `padding: 30px; border: 1px solid #ddd; border-top: none;`,
-        footer: `background-color: #f4f4f4; padding: 10px; text-align: center; font-size: 12px; border-radius: 0 0 8px 8px;`,
-        h1: `color: #EC5C8C; margin: 0;`,
-        h2: `color: #333; border-bottom: 2px solid #F6DEE4; padding-bottom: 10px;`,
-        field: `margin-bottom: 20px;`,
-        label: `font-weight: bold; color: #555; display: block; margin-bottom: 4px;`,
-        value: `color: #333;`,
-        messageBox: `background-color: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 8px; margin-top: 10px; font-style: italic;`
-    };
-
     return `
-        <div style="${styles.container}">
-            <div style="${styles.header}">
-                <h1 style="${styles.h1}">New Inquiry</h1>
-            </div>
-            <div style="${styles.body}">
-                <h2 style="${styles.h2}">Message Details</h2>
-                <div style="${styles.field}">
-                    <span style="${styles.label}">From:</span>
-                    <span style="${styles.value}">${name}</span>
-                </div>
-                <div style="${styles.field}">
-                    <span style="${styles.label}">Email:</span>
-                    <a href="mailto:${email}" style="color: #EC5C8C;">${email}</a>
-                </div>
-                <div style="${styles.field}">
-                    <span style="${styles.label}">Subject:</span>
-                    <span style="${styles.value}">${subject}</span>
-                </div>
-                <div>
-                    <span style="${styles.label}">Message:</span>
-                    <div style="${styles.messageBox}">${message}</div>
-                </div>
-            </div>
-            <div style="${styles.footer}">
-                <p>Automated notification from Cuddleia Storefront.</p>
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h1 style="color: #EC5C8C;">New Inquiry</h1>
+            <p><strong>From:</strong> ${name}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Subject:</strong> ${subject}</p>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee;">
+                <p><strong>Message:</strong></p>
+                <p>${message}</p>
             </div>
         </div>
     `;
@@ -197,21 +155,24 @@ const generateContactEmailHtml = (name: string, email: string, subject: string, 
 
 export const sendContactFormEmail = async (name: string, email: string, subject: string, message: string) => {
     try {
-        if (missingEnv.length > 0) throw new Error('Missing email credentials');
+        if (!checkEnv()) throw new Error('Email credentials not configured');
         
+        const senderEmail = process.env.EMAIL_FROM || process.env.EMAIL_USER;
         const emailHtml = generateContactEmailHtml(name, email, subject, message);
+        
         const mailOptions = {
-            from: `"Cuddleia Contact" <${process.env.EMAIL_FROM}>`,
-            to: process.env.EMAIL_TO,
+            from: `"Cuddleia Contact" <${senderEmail}>`,
+            to: process.env.EMAIL_TO || process.env.EMAIL_USER,
             replyTo: email,
             subject: `[Contact Form] ${subject} from ${name}`,
             html: emailHtml,
         };
+        
         await transporter.sendMail(mailOptions);
-        console.log('[Email System] Contact form email sent successfully.');
+        console.log('[Email System] Contact form sent.');
         return true;
-    } catch (error) {
-        console.error('[Email System] Failed to send contact form email:', error);
+    } catch (error: any) {
+        console.error('[Email System] Contact form failure:', error.message);
         throw error;
     }
 };
