@@ -4,7 +4,7 @@ import { Product } from '@/interfaces/product';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Optimized specifically for Zoho SMTP (Port 587 / STARTTLS).
+ * Line-by-line audit conducted to resolve Zoho SMTP delivery failures.
  */
 
 const checkEnv = () => {
@@ -17,26 +17,30 @@ const checkEnv = () => {
     return true;
 };
 
-// --- Transporter Configuration ---
-// We use Port 587 (STARTTLS) which is more reliable in serverless environments than Port 465.
-const transporter = nodemailer.createTransport({
-    host: 'smtp.zoho.com',
-    port: 587,
-    secure: false, // Port 587 uses STARTTLS, so secure must be false
-    auth: {
-        user: process.env.EMAIL_USER?.trim(),
-        pass: process.env.EMAIL_PASS?.trim(),
-    },
-    tls: {
-        // Required for STARTTLS on port 587
-        rejectUnauthorized: true,
-        minVersion: 'TLSv1.2'
-    },
-    // Strict timeouts to prevent the UI from hanging if Zoho is slow
-    connectionTimeout: 5000, // 5 seconds
-    greetingTimeout: 5000,
-    socketTimeout: 10000,
-});
+/**
+ * Creates a fresh transporter instance to ensure environment variables are current.
+ * Uses Port 587 with STARTTLS (secure: false) for maximum serverless compatibility.
+ */
+const getTransporter = () => {
+    return nodemailer.createTransport({
+        host: 'smtp.zoho.com',
+        port: 587,
+        secure: false, // Must be false for Port 587 / STARTTLS
+        requireTLS: true,
+        pool: true, // Use a pool for more reliable connection management
+        auth: {
+            user: process.env.EMAIL_USER?.trim(),
+            pass: process.env.EMAIL_PASS?.trim(),
+        },
+        tls: {
+            rejectUnauthorized: true,
+            minVersion: 'TLSv1.2'
+        },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 10000,
+    });
+};
 
 export interface Order {
     id: string;
@@ -121,22 +125,23 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
     try {
         if (!checkEnv()) return false;
 
-        // Zoho requires the 'from' address to match the authenticated user email exactly.
         const senderEmail = process.env.EMAIL_USER?.trim();
+        const transporter = getTransporter();
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
-            from: `"Cuddleia" <${senderEmail}>`,
+            from: `"Cuddleia" <${senderEmail}>`, // Strict Zoho requirement: from == authenticated user
             to: order.customerEmail,
             subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
             html: emailHtml,
         };
 
+        console.log(`[Email System] Initiating delivery for #${order.id} to ${order.customerEmail}...`);
         const info = await transporter.sendMail(mailOptions);
         console.log(`[Email System] SUCCESS: Order #${order.id} delivered. MessageID: ${info.messageId}`);
         return true;
     } catch (error: any) {
-        console.error(`[Email System] DELIVERY ERROR for #${order.id}:`, error.message);
+        console.error(`[Email System] DELIVERY FAILURE for #${order.id}:`, error.message);
         return false;
     }
 };
@@ -161,6 +166,7 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
         if (!checkEnv()) throw new Error('Email credentials not configured');
         
         const senderEmail = process.env.EMAIL_USER?.trim();
+        const transporter = getTransporter();
         const emailHtml = generateContactEmailHtml(name, email, subject, message);
         
         const mailOptions = {
@@ -172,7 +178,7 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
         };
         
         await transporter.sendMail(mailOptions);
-        console.log('[Email System] Contact form sent.');
+        console.log('[Email System] Contact form inquiry delivered.');
         return true;
     } catch (error: any) {
         console.error('[Email System] Contact form failure:', error.message);
