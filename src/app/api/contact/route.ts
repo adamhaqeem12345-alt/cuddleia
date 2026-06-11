@@ -12,37 +12,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
     }
     
-    // Primary action
-    await sendContactFormEmail(name, email, subject, message);
-    
-    // Secondary actions (logging/notification). Failure here should not fail the request for the user.
-    try {
-        const telegramMessage = `
+    /**
+     * Parallel Processing Strategy:
+     * Backgrounding the email and notification tasks to eliminate UI "hang."
+     */
+    (async () => {
+        try {
+            await sendContactFormEmail(name, email, subject, message);
+            
+            const telegramMessage = `
 💌 *New Message from Cuddleia!* 💌
-
-You've received a new message from your website. Here are the details:
-
 *From:* ${name}
 *Email:* ${email}
 *Subject:* ${subject}
-
 *Message:*
 ${message}
+            `;
+            await sendTelegramNotification(telegramMessage);
 
-Time to reply and spread some joy! ✨
-        `;
-        await sendTelegramNotification(telegramMessage);
-
-        const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-        if (spreadsheetId) {
-            const timestamp = new Date().toISOString();
-            const values = [[timestamp, name, email, '', `Contact: ${subject}`, 'N/A']];
-            await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
+            const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+            if (spreadsheetId) {
+                const timestamp = new Date().toISOString();
+                const values = [[timestamp, name, email, '', `Contact: ${subject}`, 'N/A']];
+                await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
+            }
+        } catch (error: any) {
+            console.error("[Contact API] Background task failure:", error.message);
         }
-    } catch (secondaryError: any) {
-        console.error("Secondary action (Telegram/Sheets) for contact form failed:", secondaryError.message);
-        // Do not re-throw; we don't want this to cause a 500 error for the user.
-    }
+    })();
     
     return NextResponse.json({ success: true, message: 'Message sent successfully!' }, { status: 200 });
 

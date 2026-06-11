@@ -18,23 +18,29 @@ const checkEnv = () => {
     return true;
 };
 
-/**
- * Creates a fresh transporter instance for Zoho SMTP on Port 465 (SSL).
- * SSL is often more "immediate" and failure-fast than STARTTLS (587) in serverless environments.
- */
+// Singleton transporter to prevent socket exhaustion and handshake instability
+let transporter: nodemailer.Transporter | null = null;
+
 const getTransporter = () => {
-    return nodemailer.createTransport({
-        host: 'smtp.zoho.com',
-        port: 465,
-        secure: true, // True for Port 465
-        auth: {
-            user: process.env.EMAIL_USER?.trim(),
-            pass: process.env.EMAIL_PASS?.trim(),
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-    });
+    if (!transporter) {
+        transporter = nodemailer.createTransport({
+            host: 'smtp.zoho.com',
+            port: 587,
+            secure: false, // false for Port 587 (STARTTLS)
+            requireTLS: true,
+            auth: {
+                user: process.env.EMAIL_USER?.trim(),
+                pass: process.env.EMAIL_PASS?.trim(),
+            },
+            connectionTimeout: 10000,
+            greetingTimeout: 10000,
+            socketTimeout: 15000,
+            // Enables detailed SMTP transcript in server logs for Adam to audit
+            debug: true,
+            logger: true,
+        });
+    }
+    return transporter;
 };
 
 export interface Order {
@@ -125,7 +131,7 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
-            from: `"Cuddleia" <${senderEmail}>`,
+            from: senderEmail, // Strict raw email to satisfy Zoho security
             to: order.customerEmail,
             subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
             html: emailHtml,
@@ -138,7 +144,6 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
     } catch (error: any) {
         console.error(`[Email System] DELIVERY FAILURE for #${order.id}:`, error.message);
         
-        // Alert the owner via Telegram if fulfillment fails
         const alertMessage = `
 🚨 *FULFILLMENT FAILURE* 🚨
 Order ID: ${order.id}
@@ -175,7 +180,7 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
         const emailHtml = generateContactEmailHtml(name, email, subject, message);
         
         const mailOptions = {
-            from: `"Cuddleia Contact" <${senderEmail}>`,
+            from: senderEmail, // Strict raw email
             to: process.env.EMAIL_TO || process.env.EMAIL_USER,
             replyTo: email,
             subject: `[Contact Form] ${subject} from ${name}`,
