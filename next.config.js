@@ -3,6 +3,8 @@ require('dotenv').config();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Triggering a re-bundle to fix corrupted cache
+  reactStrictMode: true,
   images: {
     remotePatterns: [
       {
