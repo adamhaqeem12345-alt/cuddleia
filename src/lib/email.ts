@@ -6,6 +6,7 @@ import { sendTelegramNotification } from './telegram';
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
  * STRUCTURAL AUDIT: Fixed dynamic process.env access bug and mismatched key names.
+ * DESIGN UPDATE: Aesthetic email template redesign.
  */
 
 // Explicitly load .env for non-standard runtimes
@@ -62,73 +63,117 @@ export interface Order {
 }
 
 const generateOrderEmailHtml = (order: Order) => {
-    const styles = {
-        container: "font-family: 'Alegreya', serif; color: #333; max-width: 600px; margin: 0 auto;",
-        header: "background-color: #F9E6EB; padding: 30px; text-align: center; border-radius: 16px 16px 0 0;",
-        body: "padding: 30px; background-color: #ffffff; border: 1px solid #F6DEE4;",
-        footer: "background-color: #F9E6EB; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 16px 16px; color: #777;",
-        h1: "color: #EC5C8C; margin: 0; font-size: 28px;",
-        table: "width: 100%; border-collapse: collapse; margin-top: 20px;",
-        th: "border-bottom: 2px solid #F6DEE4; padding: 12px; text-align: left; font-weight: bold; color: #333;",
-        td: "border-bottom: 1px solid #F6DEE4; padding: 12px; vertical-align: top;",
-        downloadBtn: "display: inline-block; padding: 10px 20px; background-color: #EC5C8C; color: #ffffff !important; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; border: none;",
-        total: "text-align: right; font-size: 20px; font-weight: bold; color: #EC5C8C; margin-top: 20px;"
-    };
+    // Brand Colors
+    const primary = "#EC5C8C";
+    const background = "#FED5E3";
+    const surface = "#FFFFFF";
+    const text = "#403438";
+    const muted = "#8C7B81";
 
     const itemsHtml = order.items.map(item => `
-        <tr>
-            <td style="${styles.td}">
-                <div style="font-weight: bold; font-size: 16px; margin-bottom: 4px;">${item.product.name}</div>
-                ${item.product.downloadUrl ? `
-                    <div style="margin-top: 8px;">
-                        <a href="${item.product.downloadUrl}" target="_blank" style="${styles.downloadBtn}">
-                            Download Now
-                        </a>
-                    </div>
-                ` : '<span style="font-size: 12px; color: #999;">Download link will be sent separately.</span>'}
-            </td>
-            <td style="${styles.td}">${item.quantity}</td>
-            <td style="${styles.td}">$${(item.product.price * item.quantity).toFixed(2)}</td>
-        </tr>
+        <div style="padding: 20px 0; border-bottom: 1px solid #F6DEE4;">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="vertical-align: top;">
+                        <div style="font-family: 'Georgia', serif; font-size: 18px; font-weight: bold; color: ${text}; margin-bottom: 4px;">${item.product.name}</div>
+                        <div style="font-size: 14px; color: ${muted}; mb-4">Quantity: ${item.quantity}</div>
+                        ${item.product.downloadUrl ? `
+                            <div style="margin-top: 15px;">
+                                <a href="${item.product.downloadUrl}" target="_blank" style="display: inline-block; padding: 12px 25px; background-color: ${primary}; color: #ffffff !important; text-decoration: none; border-radius: 30px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(236, 92, 140, 0.2);">
+                                    Download Your Files
+                                </a>
+                            </div>
+                        ` : '<div style="margin-top: 10px; font-size: 12px; color: #EC5C8C; font-style: italic;">Download link will be sent in a follow-up email.</div>'}
+                    </td>
+                    <td style="vertical-align: top; text-align: right; width: 80px;">
+                        <div style="font-size: 18px; font-weight: bold; color: ${text};">$${(item.product.price * item.quantity).toFixed(2)}</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     `).join('');
 
     return `
-        <div style="${styles.container}">
-            <div style="${styles.header}">
-                <h1 style="${styles.h1}">Cuddleia</h1>
-                <p style="margin-top: 10px; color: #666; font-size: 18px;">Your Digital Assets are Ready!</p>
-            </div>
-            <div style="${styles.body}">
-                <p style="font-size: 18px;">Assalamu'alaikum <strong>${order.customerName}</strong>,</p>
-                <p>Alhamdulillah, your purchase is complete! Below you will find the download links for your cozy digital goods.</p>
-                
-                <p style="background: #FDF2F5; padding: 12px; border-radius: 8px; font-size: 14px; margin: 20px 0;">
-                    <strong>Order Confirmation:</strong> #${order.id}
-                </p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Order from Cuddleia</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: ${background}; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: ${background}; padding: 40px 20px;">
+                <tr>
+                    <td align="center">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: ${surface}; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                            <!-- Header -->
+                            <tr>
+                                <td style="padding: 40px 40px 20px 40px; text-align: center;">
+                                    <div style="font-family: 'Georgia', serif; font-size: 32px; color: ${primary}; font-weight: bold; letter-spacing: -1px;">cuddleia</div>
+                                    <div style="width: 40px; height: 2px; background-color: ${primary}; margin: 15px auto;"></div>
+                                </td>
+                            </tr>
+                            
+                            <!-- Hero Section -->
+                            <tr>
+                                <td style="padding: 0 40px 30px 40px; text-align: center;">
+                                    <h1 style="font-family: 'Georgia', serif; font-size: 24px; color: ${text}; margin: 0;">Your digital goods are ready!</h1>
+                                    <p style="font-size: 16px; color: ${muted}; line-height: 1.6; margin-top: 10px;">
+                                        Assalamu'alaikum <strong>${order.customerName}</strong>,<br>
+                                        Alhamdulillah, your purchase is complete. We hope these cozy goods bring peace and barakah to your digital space.
+                                    </p>
+                                </td>
+                            </tr>
 
-                <table style="${styles.table}">
-                    <thead>
-                        <tr>
-                            <th style="${styles.th}">Product</th>
-                            <th style="${styles.th}">Qty</th>
-                            <th style="${styles.th}">Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>${itemsHtml}</tbody>
-                </table>
+                            <!-- Order Details Box -->
+                            <tr>
+                                <td style="padding: 0 40px;">
+                                    <div style="background-color: #FDF2F5; border-radius: 16px; padding: 25px;">
+                                        <div style="font-size: 12px; color: ${primary}; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Order Confirmation</div>
+                                        <div style="font-size: 20px; font-weight: bold; color: ${text}; mb-2">#${order.id}</div>
+                                        
+                                        <div style="margin-top: 20px;">
+                                            ${itemsHtml}
+                                        </div>
 
-                <div style="${styles.total}">Total: ${order.total}</div>
+                                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+                                            <tr>
+                                                <td style="font-size: 18px; color: ${text};">Total Paid</td>
+                                                <td style="text-align: right; font-size: 24px; font-weight: bold; color: ${primary};">${order.total}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
 
-                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #F6DEE4; font-size: 14px; color: #666;">
-                    <p><strong>Support:</strong> If you have any trouble downloading or using your files, simply reply to this email or reach us at <a href="mailto:hello@cuddleia.com" style="color: #EC5C8C; font-weight: bold;">hello@cuddleia.com</a>.</p>
-                    <p>JazakumAllahu Khayran for supporting Cuddleia. We hope these products bring peace and barakah to your digital space.</p>
-                </div>
-            </div>
-            <div style="${styles.footer}">
-                <p>&copy; ${new Date().getFullYear()} Cuddleia. All rights reserved.</p>
-                <p>Built with Heart and Barakah.</p>
-            </div>
-        </div>
+                            <!-- Support Section -->
+                            <tr>
+                                <td style="padding: 40px; text-align: center;">
+                                    <div style="font-size: 14px; color: ${muted}; line-height: 1.6;">
+                                        <strong>Need help?</strong> If you have any trouble downloading your files, simply reply to this email or reach us at 
+                                        <a href="mailto:hello@cuddleia.com" style="color: ${primary}; text-decoration: none; font-weight: bold;">hello@cuddleia.com</a>.
+                                    </div>
+                                    <div style="margin-top: 30px;">
+                                        <p style="font-family: 'Georgia', serif; font-style: italic; color: ${text}; margin: 0;">With love and sincerity,</p>
+                                        <p style="font-weight: bold; color: ${text}; margin: 5px 0 0 0;">The Cuddleia Team</p>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- Footer -->
+                            <tr>
+                                <td style="background-color: #F9E6EB; padding: 20px; text-align: center;">
+                                    <div style="font-size: 12px; color: ${muted};">
+                                        &copy; ${new Date().getFullYear()} Cuddleia. Built with Heart and Barakah.
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
+        </html>
     `;
 };
 
@@ -165,11 +210,16 @@ export const sendContactFormEmail = async (name: string, email: string, subject:
         replyTo: email,
         subject: `[Contact Form] ${subject} from ${name}`,
         html: `
-            <div style="font-family: Arial, sans-serif;">
-                <h2 style="color: #EC5C8C;">New Inquiry from ${name}</h2>
-                <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Message:</strong></p>
-                <p style="padding: 15px; background: #f9f9f9; border-radius: 8px;">${message}</p>
+            <div style="font-family: 'Georgia', serif; padding: 40px; background-color: #FDF2F5; color: #403438;">
+                <h2 style="color: #EC5C8C;">New Inquiry Received</h2>
+                <div style="background-color: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                    <p><strong>From:</strong> ${name} (${email})</p>
+                    <p><strong>Subject:</strong> ${subject}</p>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #F6DEE4;">
+                        <strong>Message:</strong><br>
+                        <p style="white-space: pre-wrap; line-height: 1.6;">${message}</p>
+                    </div>
+                </div>
             </div>
         `,
     };
