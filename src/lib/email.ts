@@ -1,10 +1,11 @@
 
 import nodemailer from 'nodemailer';
 import { Product } from '@/interfaces/product';
+import { sendTelegramNotification } from './telegram';
 
 /**
  * @fileOverview Hardened email fulfillment system for Cuddleia.
- * Line-by-line audit conducted to resolve Zoho SMTP delivery failures.
+ * Line-by-line audit conducted to resolve Zoho SMTP delivery failures and UI hangs.
  */
 
 const checkEnv = () => {
@@ -18,27 +19,21 @@ const checkEnv = () => {
 };
 
 /**
- * Creates a fresh transporter instance to ensure environment variables are current.
- * Uses Port 587 with STARTTLS (secure: false) for maximum serverless compatibility.
+ * Creates a fresh transporter instance for Zoho SMTP on Port 465 (SSL).
+ * SSL is often more "immediate" and failure-fast than STARTTLS (587) in serverless environments.
  */
 const getTransporter = () => {
     return nodemailer.createTransport({
         host: 'smtp.zoho.com',
-        port: 587,
-        secure: false, // Must be false for Port 587 / STARTTLS
-        requireTLS: true,
-        pool: true, // Use a pool for more reliable connection management
+        port: 465,
+        secure: true, // True for Port 465
         auth: {
             user: process.env.EMAIL_USER?.trim(),
             pass: process.env.EMAIL_PASS?.trim(),
         },
-        tls: {
-            rejectUnauthorized: true,
-            minVersion: 'TLSv1.2'
-        },
-        connectionTimeout: 5000,
-        greetingTimeout: 5000,
-        socketTimeout: 10000,
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
     });
 };
 
@@ -52,16 +47,16 @@ export interface Order {
 
 const generateOrderEmailHtml = (order: Order) => {
     const styles = {
-        container: `font-family: 'Alegreya', serif; color: #333; max-width: 600px; margin: 0 auto;`,
-        header: `background-color: #F9E6EB; padding: 30px; text-align: center; border-radius: 16px 16px 0 0;`,
-        body: `padding: 30px; background-color: #ffffff; border: 1px solid #F6DEE4;`,
-        footer: `background-color: #F9E6EB; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 16px 16px; color: #777;`,
-        h1: `color: #EC5C8C; margin: 0; font-size: 28px;`,
-        table: `width: 100%; border-collapse: collapse; margin-top: 20px;`,
-        th: `border-bottom: 2px solid #F6DEE4; padding: 12px; text-align: left; font-weight: bold; color: #333;`,
-        td: `border-bottom: 1px solid #F6DEE4; padding: 12px; vertical-align: top;`,
-        downloadBtn: `display: inline-block; padding: 10px 20px; background-color: #EC5C8C; color: #ffffff !important; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; border: none;`,
-        total: `text-align: right; font-size: 20px; font-weight: bold; color: #EC5C8C; margin-top: 20px;`
+        container: "font-family: 'Alegreya', serif; color: #333; max-width: 600px; margin: 0 auto;",
+        header: "background-color: #F9E6EB; padding: 30px; text-align: center; border-radius: 16px 16px 0 0;",
+        body: "padding: 30px; background-color: #ffffff; border: 1px solid #F6DEE4;",
+        footer: "background-color: #F9E6EB; padding: 20px; text-align: center; font-size: 12px; border-radius: 0 0 16px 16px; color: #777;",
+        h1: "color: #EC5C8C; margin: 0; font-size: 28px;",
+        table: "width: 100%; border-collapse: collapse; margin-top: 20px;",
+        th: "border-bottom: 2px solid #F6DEE4; padding: 12px; text-align: left; font-weight: bold; color: #333;",
+        td: "border-bottom: 1px solid #F6DEE4; padding: 12px; vertical-align: top;",
+        downloadBtn: "display: inline-block; padding: 10px 20px; background-color: #EC5C8C; color: #ffffff !important; text-decoration: none; border-radius: 25px; font-weight: bold; font-size: 14px; margin-top: 10px; border: none;",
+        total: "text-align: right; font-size: 20px; font-weight: bold; color: #EC5C8C; margin-top: 20px;"
     };
 
     const itemsHtml = order.items.map(item => `
@@ -130,7 +125,7 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         
         const emailHtml = generateOrderEmailHtml(order);
         const mailOptions = {
-            from: `"Cuddleia" <${senderEmail}>`, // Strict Zoho requirement: from == authenticated user
+            from: `"Cuddleia" <${senderEmail}>`,
             to: order.customerEmail,
             subject: `Your Digital Goods from Cuddleia (Order #${order.id})`,
             html: emailHtml,
@@ -142,6 +137,16 @@ export const sendOrderConfirmationEmail = async (order: Order) => {
         return true;
     } catch (error: any) {
         console.error(`[Email System] DELIVERY FAILURE for #${order.id}:`, error.message);
+        
+        // Alert the owner via Telegram if fulfillment fails
+        const alertMessage = `
+🚨 *FULFILLMENT FAILURE* 🚨
+Order ID: ${order.id}
+Customer: ${order.customerName} (${order.customerEmail})
+Error: ${error.message}
+        `;
+        await sendTelegramNotification(alertMessage);
+        
         return false;
     }
 };

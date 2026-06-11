@@ -41,18 +41,18 @@ export async function POST(req: NextRequest) {
             total: `${purchaseUnit.amount.value} ${purchaseUnit.amount.currency_code}`,
         };
         
-        // Primary Action: Fulfillment Email
-        const emailSuccess = await sendOrderConfirmationEmail(order);
-        
-        // Secondary Actions (Parallelized)
+        /**
+         * Background fulfillment to prevent PayPal webhook/UI timeouts.
+         */
         (async () => {
             try {
+                // Primary Fulfillment
+                await sendOrderConfirmationEmail(order);
+
+                // Notifications
                 const itemsList = order.items.map((i) => `- ${i.product.name} (x${i.quantity})`).join('\n');
                 const telegramMessage = `
 🛍️ *New PayPal Order!* 🛍️
-
-Alhamdulillah, a new order has come in!
-
 *Order ID:* ${order.id}
 *Name:* ${order.customerName}
 *Email:* ${order.customerEmail}
@@ -63,6 +63,7 @@ ${itemsList}
                 `;
                 await sendTelegramNotification(telegramMessage);
 
+                // Sales Logging
                 const spreadsheetId = process.env.GOOGLE_SHEET_ID;
                 if (spreadsheetId) {
                     const timestamp = new Date().toISOString();
@@ -70,19 +71,12 @@ ${itemsList}
                     const values = [[timestamp, order.customerName, order.customerEmail, phone || '', productNames, totalAmountUSD.toString()]];
                     await appendToSheet(spreadsheetId, 'Cuddleia Sales Log', values);
                 }
-            } catch (secondaryError: any) {
-                console.error("Secondary action (Telegram/Sheets) for PayPal order failed:", secondaryError.message);
+            } catch (error: any) {
+                console.error("[PayPal API] Background fulfillment failure:", error.message);
             }
         })();
 
-        if (!emailSuccess) {
-            return NextResponse.json({ 
-                success: true, 
-                message: 'Payment received, but we encountered an issue delivering your download links via email. Please check your spam folder or contact hello@cuddleia.com' 
-            });
-        }
-
-        return NextResponse.json({ success: true, message: 'Order confirmed and processed.' });
+        return NextResponse.json({ success: true, message: 'Order confirmed and fulfillment initiated.' });
 
     } catch (error: any) {
         console.error('Error in /api/paypal/confirm-order:', error);
